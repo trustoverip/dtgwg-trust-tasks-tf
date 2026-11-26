@@ -852,9 +852,9 @@ pub struct Response {
     #[serde(
         rename = "redactedFields",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub redacted_fields: ::std::vec::Vec<::std::string::String>,
+    pub redacted_fields: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.
     pub truncated: bool,
 }
@@ -1325,8 +1325,8 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetTeamId {
 #[non_exhaustive]
 pub struct VaultEntry {
     ///References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub attachments: ::std::vec::Vec<AttachmentRef>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub attachments: ::std::option::Option<::std::vec::Vec<AttachmentRef>>,
     ///Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach.
     #[serde(
         rename = "breachedAt",
@@ -2278,8 +2278,10 @@ pub mod builder {
         >,
         entries: ::std::result::Result<::std::vec::Vec<super::VaultEntry>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        redacted_fields:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        redacted_fields: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         truncated: ::std::result::Result<bool, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
@@ -2326,7 +2328,9 @@ pub mod builder {
         }
         pub fn redacted_fields<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.redacted_fields = value
@@ -2370,8 +2374,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct VaultEntry {
-        attachments:
-            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        attachments: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            ::std::string::String,
+        >,
         breached_at: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -2463,7 +2469,9 @@ pub mod builder {
     impl VaultEntry {
         pub fn attachments<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.attachments = value

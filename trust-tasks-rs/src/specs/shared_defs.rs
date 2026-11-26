@@ -1758,6 +1758,13 @@ macro_rules! d_Endorsement_b2183ac7 {
 }
 pub(crate) use d_Endorsement_b2183ac7;
 
+macro_rules! d_EnrolClient_6e26f32e {
+    () => {
+        "\"EnrolClient\":{\"additionalProperties\":false,\"description\":\"Who asks to be enrolled, as the client states it in an auth/oob/request for `deviceEnrol`. Revealed only in step 2, to the lock holder, after an admin identity and number proof.\",\"properties\":{\"consumerKind\":{\"$ref\":\"#/$defs/ConsumerKind\",\"description\":\"What kind of client asks to be enrolled, in the device family's own terms: a `companion` (`browser`, `mobile`, `desktop`) or a `service` (`mediator`, `aiAgent`, `daemon`). Self-asserted by the starter. The grant repeats it, and the VTA holds it beside the ACL entry the enrolment creates (CONVENTIONS §7 A9).\"},\"displayName\":{\"description\":\"The name the client gives itself (e.g. `Research agent on laptop`). Self-asserted and untrusted wherever rendered: an approver shows it as the client's own claim, never as a name the service vouches for.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"consumerKind\",\"displayName\"],\"title\":\"EnrolClient\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EnrolClient_6e26f32e;
+
 macro_rules! d_EnrolledVia_6efc0690 {
     () => {
         "\"EnrolledVia\":{\"description\":\"The anchor the binding rested on, recorded so an incident review can see how each factor came to exist. `install`: claimed with the community's install token (vtc/install/claim/finish/0.3). `invite`: redeemed from an administrator's invite (auth/step-up/approver/redeem/finish/0.1). `selfService`: added by the subject behind a factor they already held (auth/step-up/approver/enroll/0.1). `offline`: redeemed from an invite minted by the operator with host access while the service was stopped — an `invite`-shaped redemption whose issuer was the host rather than an administrator.\",\"enum\":[\"install\",\"invite\",\"selfService\",\"offline\"],\"title\":\"EnrolledVia\",\"type\":\"string\"}"
@@ -3319,6 +3326,20 @@ macro_rules! d_OobKey_3e240613 {
 }
 pub(crate) use d_OobKey_3e240613;
 
+macro_rules! d_OobPurpose_306448f7 {
+    () => {
+        "\"OobPurpose\":{\"description\":\"What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.2 defines `login` and `deviceEnrol`; version 0.1 defined `login` only. `stepUp` is a reserved name; adding a purpose is a new version of this component and of every task that references it, never an in-place edit. Named `OobPurpose` from 0.2, where 0.1 named it `Purpose`, so that it cannot be confused with the ACL family's `Purpose` (what content is used for), which the 0.2 scope records reference; the values on the wire are unchanged.\",\"enum\":[\"login\",\"deviceEnrol\"],\"title\":\"OobPurpose\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_OobPurpose_306448f7;
+
+macro_rules! d_Origin_c0ea5d24 {
+    () => {
+        "\"Origin\":{\"description\":\"A web origin (`https://host[:port]`, no path, no trailing slash). For `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document. For `deviceEnrol`, the origin of the `serviceEndpoint` of the service's `TrustTaskHTTPS` service in its DID document: the VTA endpoint the starter opened the request at.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^/?#\\\\s]+$\",\"title\":\"Origin\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Origin_c0ea5d24;
+
 macro_rules! d_Origin_c8f36e16 {
     () => {
         "\"Origin\":{\"description\":\"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^/?#\\\\s]+$\",\"title\":\"Origin\",\"type\":\"string\"}"
@@ -4088,6 +4109,13 @@ macro_rules! d_RequestedAttributes_14db4dcc {
     };
 }
 pub(crate) use d_RequestedAttributes_14db4dcc;
+
+macro_rules! d_RequestedScope_06a5a6b4 {
+    () => {
+        "\"RequestedScope\":{\"additionalProperties\":false,\"description\":\"The ceiling a client asks to be enrolled under, stated in an auth/oob/request for `deviceEnrol` and repeated in step 2. It is a ceiling, not a grant: the approver chooses the scope (`AclScope`) and the service refuses a grant that exceeds this. Where the client may act (the contexts) is not part of the ceiling; the approver chooses it.\",\"not\":{\"properties\":{\"keys\":{\"properties\":{\"scope\":{\"const\":\"all\"}},\"required\":[\"scope\"]}},\"required\":[\"keys\"]},\"properties\":{\"capabilities\":{\"description\":\"The most capabilities the client asks to hold, in the VTA's capability registry. Empty asks for none. A grant may hold these or fewer, never others.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"keys\":{\"$ref\":\"#/$defs/KeyScope\",\"description\":\"The most keys the client asks to invoke the VTA's signing oracle on: `none`, or `listed`. Never `all` for `deviceEnrol` (CONVENTIONS.md §7 A14). A grant may name these or fewer.\"},\"maxLifetimeDays\":{\"description\":\"The longest the client asks the enrolment to last, in days from the grant's `issuedAt`. The grant's `aclScope.expiresAt` may be earlier, never later. There is no unbounded enrolment.\",\"maximum\":365,\"minimum\":1,\"type\":\"integer\"},\"purposes\":{\"$ref\":\"#/$defs/PurposeScope\",\"description\":\"The most purposes the client asks to use content it reads for. A grant may name these or fewer; `any` here lets the approver choose any purpose except `modelTraining`, which is granted only by naming it. A wallet shows `any` to the person as any purpose (CONVENTIONS.md §7 A14).\"}},\"required\":[\"capabilities\",\"purposes\",\"keys\",\"maxLifetimeDays\"],\"title\":\"RequestedScope\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RequestedScope_06a5a6b4;
 
 macro_rules! d_Requester_1fb5b18c {
     () => {
@@ -5041,6 +5069,13 @@ macro_rules! d_Response_e667e25d {
 }
 pub(crate) use d_Response_e667e25d;
 
+macro_rules! d_Response_e8bde6b1 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The handle of the new request and the instant its claim window closes. The starter builds the trigger link from these and the service's DID.\",\"properties\":{\"claimClosesAt\":{\"description\":\"The instant by which the request must be claimed, as an RFC 3339 date-time. The trigger link's `_exp` carries the same instant in the link's own integer form: the starter converts this value into it when it builds the link. At most 180 s after the request was accepted; 120 s is RECOMMENDED.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"$ref\":\"#/$defs/RequestId\"}},\"required\":[\"requestId\",\"claimClosesAt\"],\"title\":\"Auth — OOB Request — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_e8bde6b1;
+
 macro_rules! d_Response_e9eb6e5d {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Show — response payload\",\"type\":\"object\"}"
@@ -5677,6 +5712,13 @@ macro_rules! d_Service_359a64d8 {
     };
 }
 pub(crate) use d_Service_359a64d8;
+
+macro_rules! d_Service_8dc97a3a {
+    () => {
+        "\"Service\":{\"additionalProperties\":false,\"description\":\"Who the service says it is.\",\"properties\":{\"did\":{\"description\":\"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link. For `deviceEnrol`, the DID of the VTA the client is enrolled at.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"name\":{\"description\":\"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"name\"],\"title\":\"Service\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Service_8dc97a3a;
 
 macro_rules! d_SessionId_81f3c33a {
     () => {

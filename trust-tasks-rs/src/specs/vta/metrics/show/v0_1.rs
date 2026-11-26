@@ -127,11 +127,10 @@ pub struct Histogram {
     ///Total number of observations.
     pub count: u64,
     ///Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub labels: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub labels: ::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    >,
     ///The histogram's stable name (e.g. `did_hosting_resolve_seconds`).
     pub name: HistogramName,
     ///Sum of all observed values.
@@ -224,11 +223,10 @@ impl<'de> ::serde::Deserialize<'de> for HistogramName {
 #[non_exhaustive]
 pub struct Metric {
     ///Dimensions the value is broken down by (e.g. `{"method": "resolve"}`). Absent or empty when the metric carries none.
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub labels: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub labels: ::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    >,
     ///The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.
     pub name: MetricName,
     ///The current reading.
@@ -365,7 +363,9 @@ pub mod builder {
             ::std::result::Result<::std::vec::Vec<super::HistogramBucket>, ::std::string::String>,
         count: ::std::result::Result<u64, ::std::string::String>,
         labels: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::HistogramName, ::std::string::String>,
@@ -406,7 +406,9 @@ pub mod builder {
         pub fn labels<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -518,7 +520,9 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Metric {
         labels: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::MetricName, ::std::string::String>,
@@ -537,7 +541,9 @@ pub mod builder {
         pub fn labels<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

@@ -928,9 +928,9 @@ pub struct Response {
     #[serde(
         rename = "largestBlobs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub largest_blobs: ::std::vec::Vec<ResponseLargestBlobsItem>,
+    pub largest_blobs: ::std::option::Option<::std::vec::Vec<ResponseLargestBlobsItem>>,
     pub limits: EffectiveLimits,
     ///On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.
     #[serde(
@@ -1879,7 +1879,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         largest_blobs: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseLargestBlobsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseLargestBlobsItem>>,
             ::std::string::String,
         >,
         limits: ::std::result::Result<super::EffectiveLimits, ::std::string::String>,
@@ -1915,7 +1915,9 @@ pub mod builder {
         }
         pub fn largest_blobs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseLargestBlobsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseLargestBlobsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.largest_blobs = value

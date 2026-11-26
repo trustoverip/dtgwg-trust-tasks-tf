@@ -52,17 +52,18 @@ pub struct CredentialCreationOptions {
     #[serde(
         rename = "excludeCredentials",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub exclude_credentials: ::std::vec::Vec<CredentialDescriptor>,
+    pub exclude_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
     /**
     Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.
 
     This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
 
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(rename = "pubKeyCredParams")]
     pub pub_key_cred_params: ::std::vec::Vec<CredentialCreationOptionsPubKeyCredParamsItem>,
     pub rp: CredentialCreationOptionsRp,
@@ -702,8 +703,8 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsUserName {
 pub struct CredentialDescriptor {
     ///base64url-encoded credential id.
     pub id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub transports: ::std::vec::Vec<CredentialDescriptorTransportsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
@@ -794,9 +795,9 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub allow_credentials: ::std::vec::Vec<CredentialDescriptor>,
+    pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
     ///base64url-encoded one-time nonce.
     pub challenge: ::std::string::String,
     /**
@@ -805,8 +806,9 @@ pub struct CredentialRequestOptions {
     This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
 
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "rpId",
         default,
@@ -1224,11 +1226,11 @@ pub mod builder {
         >,
         challenge: ::std::result::Result<::std::string::String, ::std::string::String>,
         exclude_credentials: ::std::result::Result<
-            ::std::vec::Vec<super::CredentialDescriptor>,
+            ::std::option::Option<::std::vec::Vec<super::CredentialDescriptor>>,
             ::std::string::String,
         >,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         pub_key_cred_params: ::std::result::Result<
@@ -1294,7 +1296,9 @@ pub mod builder {
         }
         pub fn exclude_credentials<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptor>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::CredentialDescriptor>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.exclude_credentials = value.try_into().map_err(|e| {
@@ -1305,7 +1309,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1694,7 +1700,7 @@ pub mod builder {
     pub struct CredentialDescriptor {
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
         transports: ::std::result::Result<
-            ::std::vec::Vec<super::CredentialDescriptorTransportsItem>,
+            ::std::option::Option<::std::vec::Vec<super::CredentialDescriptorTransportsItem>>,
             ::std::string::String,
         >,
         type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
@@ -1721,7 +1727,9 @@ pub mod builder {
         }
         pub fn transports<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptorTransportsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::CredentialDescriptorTransportsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.transports = value
@@ -1764,12 +1772,12 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct CredentialRequestOptions {
         allow_credentials: ::std::result::Result<
-            ::std::vec::Vec<super::CredentialDescriptor>,
+            ::std::option::Option<::std::vec::Vec<super::CredentialDescriptor>>,
             ::std::string::String,
         >,
         challenge: ::std::result::Result<::std::string::String, ::std::string::String>,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         rp_id: ::std::result::Result<
@@ -1800,7 +1808,9 @@ pub mod builder {
     impl CredentialRequestOptions {
         pub fn allow_credentials<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptor>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::CredentialDescriptor>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.allow_credentials = value
@@ -1821,7 +1831,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

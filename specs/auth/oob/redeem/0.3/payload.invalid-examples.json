@@ -1,0 +1,183 @@
+[
+  {
+    "note": "Missing requestId.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — the starter cannot ask for a longer session in redeem; additionalProperties: false rejects it.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "sessionEndsAt": "2027-01-01T00:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No tokens in the body — an accessToken member is rejected by additionalProperties: false.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "sessionEndsAt": "2026-10-10T18:00:00Z",
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ],
+      "accessToken": "eyJ…"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "sessionEndsAt is an RFC 3339 date-time; an integer count of seconds (the 0.1 form) is rejected.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "sessionEndsAt": 1791655200,
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "The 0.1 member name `notAfter` is gone — sessionEndsAt is required, and additionalProperties: false rejects notAfter.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "notAfter": "2026-10-10T18:00:00Z",
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Both shapes at once — a redeem response is a session or an enrolment, never both, so a login can never also hand back an ACL entry.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "sessionEndsAt": "2026-10-10T18:00:00Z",
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ],
+      "vtaDid": "did:web:vta.alice.example",
+      "aclEntry": {
+        "subject": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "role": "application",
+        "act": {
+          "scope": "contexts",
+          "contexts": [
+            "personal"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "capabilities": {
+          "scope": "none"
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        }
+      },
+      "swapClosesAt": "2026-10-10T10:03:32Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An enrolment without swapClosesAt — the client must always be told when the starter key stops being accepted.",
+    "payload": {
+      "vtaDid": "did:web:vta.alice.example",
+      "aclEntry": {
+        "subject": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "role": "application",
+        "act": {
+          "scope": "contexts",
+          "contexts": [
+            "personal"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "capabilities": {
+          "scope": "none"
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An enrolment whose aclEntry has no act scope — the entry is a whole acl/_shared/0.3 AclEntry, with authority stated, never implied.",
+    "payload": {
+      "vtaDid": "did:web:vta.alice.example",
+      "aclEntry": {
+        "subject": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "role": "application",
+        "keys": {
+          "scope": "none"
+        },
+        "capabilities": {
+          "scope": "none"
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        }
+      },
+      "swapClosesAt": "2026-10-10T10:03:32Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Neither shape — an empty success response says nothing about what was created.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An enrolment carrying a credential — the response carries the entry and nothing else (CONVENTIONS §3).",
+    "payload": {
+      "vtaDid": "did:web:vta.alice.example",
+      "aclEntry": {
+        "subject": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "role": "application",
+        "act": {
+          "scope": "contexts",
+          "contexts": [
+            "personal"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "capabilities": {
+          "scope": "none"
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        }
+      },
+      "swapClosesAt": "2026-10-10T10:03:32Z",
+      "accessToken": "eyJ…"
+    }
+  }
+]

@@ -1356,9 +1356,9 @@ pub struct Response {
     #[serde(
         rename = "myAwards",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub my_awards: ::std::vec::Vec<Award>,
+    pub my_awards: ::std::option::Option<::std::vec::Vec<Award>>,
     ///Accepted awards of this badge the caller holds; 0 where none.
     #[serde(rename = "myCount")]
     pub my_count: u64,
@@ -2113,7 +2113,10 @@ pub mod builder {
         credential_regime: ::std::result::Result<super::CredentialRegime, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         maker: ::std::result::Result<::std::option::Option<super::EntryId>, ::std::string::String>,
-        my_awards: ::std::result::Result<::std::vec::Vec<super::Award>, ::std::string::String>,
+        my_awards: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Award>>,
+            ::std::string::String,
+        >,
         my_count: ::std::result::Result<u64, ::std::string::String>,
         my_state: ::std::result::Result<super::MyState, ::std::string::String>,
         owners: ::std::result::Result<
@@ -2178,7 +2181,7 @@ pub mod builder {
         }
         pub fn my_awards<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Award>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Award>>>,
             T::Error: ::std::fmt::Display,
         {
             self.my_awards = value

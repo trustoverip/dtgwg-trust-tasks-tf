@@ -44,8 +44,8 @@ The operation takes effect through SPEC.md §7.2 item 12: a valid, authorized co
 #[non_exhaustive]
 pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub ext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     /**
     The control operation requested.
 
@@ -279,11 +279,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetId {
 #[non_exhaustive]
 pub struct Response {
     ///What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub effects: ::std::vec::Vec<ResponseEffectsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub effects: ::std::option::Option<::std::vec::Vec<ResponseEffectsItem>>,
     ///Vendor-namespaced extension data per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub ext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Echoed from the request, so the response is self-describing when retained apart from it.
     pub operation: ResponseOperation,
     /**
@@ -612,7 +612,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         ext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         operation: ::std::result::Result<super::PayloadOperation, ::std::string::String>,
@@ -636,7 +636,9 @@ pub mod builder {
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -757,11 +759,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         effects: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseEffectsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseEffectsItem>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         operation: ::std::result::Result<super::ResponseOperation, ::std::string::String>,
@@ -782,7 +784,9 @@ pub mod builder {
     impl Response {
         pub fn effects<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseEffectsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseEffectsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.effects = value
@@ -793,7 +797,9 @@ pub mod builder {
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

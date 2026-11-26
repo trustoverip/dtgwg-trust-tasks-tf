@@ -50,7 +50,7 @@ type Response struct {
 
 	// The criterion's current requirementsDigest. Null only when its manifest entry carries
 	// none.
-	RequirementsDigest *string `json:"requirementsDigest,omitempty"`
+	RequirementsDigest *string `json:"requirementsDigest"`
 	Ext                *Ext    `json:"ext,omitempty"`
 }
 

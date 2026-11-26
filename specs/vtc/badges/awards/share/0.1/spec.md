@@ -108,7 +108,7 @@ A conforming **producer** (the holder's portal or wallet) **MUST** present the l
 
 **Authority: holding the award — read now.** The signer shares only an award of their own that they accepted; the community reads the award's recipient at execution time and refuses every other signer as `notFound`. Sharing confers nothing and changes nothing the community recorded about the holding (VTI-BDG-002): it starts serving, to the public, what the holder already holds. The proof establishes who asked ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
-This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
+This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
 
 ## Definitions
 

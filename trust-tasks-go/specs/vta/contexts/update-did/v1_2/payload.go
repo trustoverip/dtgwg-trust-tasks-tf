@@ -65,7 +65,7 @@ type Payload struct {
 	// it. Anything that authenticated or signed as the previous DID keeps referring to it;
 	// this task does not migrate those references, and a consumer MUST NOT imply that it
 	// does.
-	DID *string `json:"did,omitempty"`
+	DID *string `json:"did"`
 	Ext *Ext    `json:"ext,omitempty"`
 }
 

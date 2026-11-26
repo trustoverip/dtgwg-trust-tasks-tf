@@ -158,8 +158,8 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub nonce: ::std::option::Option<::std::string::String>,
     ///The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub protocols: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub protocols: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///The mediator's current time (RFC 3339). Advisory; not a trusted time source.
     #[serde(rename = "serverTime")]
     pub server_time: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -296,8 +296,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        protocols:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        protocols: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         server_time:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
@@ -336,7 +338,9 @@ pub mod builder {
         }
         pub fn protocols<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.protocols = value

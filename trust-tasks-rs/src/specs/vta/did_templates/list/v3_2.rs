@@ -44,45 +44,50 @@ pub struct DidTemplateRecord {
     ///DID of the admin who last wrote the template.
     #[serde(rename = "createdBy")]
     pub created_by: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub defaults: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<DidTemplateRecordDescription>,
+    pub defaults:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub description: ::std::option::Option<::std::option::Option<DidTemplateRecordDescription>>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
     #[serde(
         rename = "keyRoles",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub key_roles: ::std::vec::Vec<RoleLayout>,
+    pub key_roles: ::std::option::Option<::std::vec::Vec<RoleLayout>>,
     /**
     The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
 
     A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
 
     An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.*/
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub keys: ::std::collections::HashMap<DidTemplateRecordKeysKey, DidTemplateRecordKeysValue>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub keys: ::std::option::Option<
+        ::std::collections::HashMap<DidTemplateRecordKeysKey, DidTemplateRecordKeysValue>,
+    >,
     pub kind: DidTemplateRecordKind,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub methods: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     pub name: DidTemplateRecordName,
     #[serde(
         rename = "optionalVars",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub optional_vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub optional_vars:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "requiredVars",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub required_vars: ::std::vec::Vec<::std::string::String>,
+    pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
     #[serde(rename = "schemaVersion")]
     pub schema_version: DidTemplateRecordSchemaVersion,
@@ -965,35 +970,44 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         created_by: ::std::result::Result<::std::string::String, ::std::string::String>,
         defaults: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         description: ::std::result::Result<
-            ::std::option::Option<super::DidTemplateRecordDescription>,
+            ::std::option::Option<::std::option::Option<super::DidTemplateRecordDescription>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
-        key_roles: ::std::result::Result<::std::vec::Vec<super::RoleLayout>, ::std::string::String>,
+        key_roles: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RoleLayout>>,
+            ::std::string::String,
+        >,
         keys: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::DidTemplateRecordKeysKey,
-                super::DidTemplateRecordKeysValue,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::DidTemplateRecordKeysKey,
+                    super::DidTemplateRecordKeysValue,
+                >,
             >,
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::DidTemplateRecordKind, ::std::string::String>,
-        methods:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        name: ::std::result::Result<super::DidTemplateRecordName, ::std::string::String>,
-        optional_vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        methods: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
             ::std::string::String,
         >,
-        required_vars:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        name: ::std::result::Result<super::DidTemplateRecordName, ::std::string::String>,
+        optional_vars: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        required_vars: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         schema_version:
             ::std::result::Result<super::DidTemplateRecordSchemaVersion, ::std::string::String>,
         scope: ::std::result::Result<super::Scope, ::std::string::String>,
@@ -1045,7 +1059,9 @@ pub mod builder {
         pub fn defaults<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1056,7 +1072,9 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::DidTemplateRecordDescription>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::DidTemplateRecordDescription>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -1078,7 +1096,7 @@ pub mod builder {
         }
         pub fn key_roles<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleLayout>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::RoleLayout>>>,
             T::Error: ::std::fmt::Display,
         {
             self.key_roles = value
@@ -1089,9 +1107,11 @@ pub mod builder {
         pub fn keys<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::DidTemplateRecordKeysKey,
-                    super::DidTemplateRecordKeysValue,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::DidTemplateRecordKeysKey,
+                        super::DidTemplateRecordKeysValue,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -1113,7 +1133,9 @@ pub mod builder {
         }
         pub fn methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.methods = value
@@ -1134,7 +1156,9 @@ pub mod builder {
         pub fn optional_vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1145,7 +1169,9 @@ pub mod builder {
         }
         pub fn required_vars<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.required_vars = value

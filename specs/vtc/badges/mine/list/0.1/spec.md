@@ -78,7 +78,7 @@ A conforming **consumer** (the community) **MUST**:
 
 **Authority: being the member.** The task has no target member: the signer reads only what they hold and what was offered to them. The proof establishes who asked ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10), and what is answered follows from it alone.
 
-This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
+This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
 
 ## Definitions
 

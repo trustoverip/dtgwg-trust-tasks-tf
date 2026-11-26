@@ -16,6 +16,7 @@ use crate::passes::{
     flatten_unevaluated_compositions, migrate_defs_to_definitions, normalize_titles,
     prune_unreachable_defs,
 };
+use crate::presence::{apply_presence, assert_no_marker, mark_nullable_optional_members};
 use crate::render::{
     apply_deprecation, apply_non_exhaustive, indent_safe_docs, render_module,
     strip_doc_schema_blocks,
@@ -42,6 +43,10 @@ pub struct Target {
     /// Whether [`generate_locked`] also writes a `schema_index` module — see
     /// [`Target::index`].
     pub(crate) index: bool,
+    /// Path of a module of the runtime crate that defines the member-presence
+    /// helper (`present`), or `None` to emit it into each
+    /// generated module (see `presence`).
+    pub(crate) presence_helpers: Option<&'static str>,
 }
 
 impl Default for Target {
@@ -68,6 +73,7 @@ impl Target {
             dependencies: Some(format!("{path}::__private")),
             generator: "trust-tasks-build",
             index: false,
+            presence_helpers: None,
         }
     }
 
@@ -90,6 +96,9 @@ impl Target {
             dependencies: None,
             generator: "trust-tasks-codegen",
             index: false,
+            // Crate-private in `trust-tasks-rs` (`src/specs/mod.rs`), so the
+            // 400-odd prebuilt modules share one copy without a public API.
+            presence_helpers: Some("crate::specs::__presence"),
         }
     }
 
@@ -163,6 +172,10 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     // these members"), which typify would otherwise turn into an untagged
     // enum that cannot hold two of the members at once.
     drop_anyof_of_required_members(&mut schema);
+    // Last, on the shape typify will read: tags each optional member whose
+    // schema admits `null`, so `apply_presence` can keep `null` apart from
+    // absent (see `presence`).
+    let nullable_tagged = mark_nullable_optional_members(&mut schema);
 
     // Round-trip the normalized schema into the schemars representation
     // typify works with.
@@ -205,6 +218,15 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
 
     let mut parsed: syn::File = syn::parse2(module_tokens.clone())
         .with_context(|| format!("failed to parse generated tokens for {ctx}:\n{module_tokens}"))?;
+    // Before the doc passes: it reads (and removes) the tag
+    // `mark_nullable_optional_members` left in the field docs.
+    apply_presence(
+        &mut parsed,
+        &target.dependency_tokens("serde"),
+        target.presence_helpers,
+        &nullable_tagged,
+    )
+    .with_context(|| format!("{ctx}: keeping member presence"))?;
     apply_non_exhaustive(&mut parsed);
     if let Some(note) = &bundle.deprecation {
         apply_deprecation(&mut parsed, note);
@@ -214,7 +236,9 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     if let Some(prefix) = &target.dependencies {
         apply_serde_crate(&mut parsed, &format!("{prefix}::serde"));
     }
-    Ok(prettyplease::unparse(&parsed))
+    let source = prettyplease::unparse(&parsed);
+    assert_no_marker(&source, &ctx)?;
+    Ok(source)
 }
 
 /// Rewrite every absolute path to one of [`DEPENDENCIES`] (`::serde::…`) to

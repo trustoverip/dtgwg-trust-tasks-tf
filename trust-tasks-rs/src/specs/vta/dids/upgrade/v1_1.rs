@@ -1154,8 +1154,8 @@ impl<'de> ::serde::Deserialize<'de> for KeyAssuranceLevel {
 #[non_exhaustive]
 pub struct KeyChangeApprovalState {
     ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub approvals: ::std::vec::Vec<RecordedApproval>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub approvals: ::std::option::Option<::std::vec::Vec<RecordedApproval>>,
     ///When the preview, and every approval bound to it, stops being usable.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -1494,15 +1494,16 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///From level 1: the roles and algorithms to mint, as a key-role template's layout gives them (CONVENTIONS.md §4). Absent, the VTA mints one `attestation` key and one `operational` key of the level-1 key's algorithm and one `x25519` `messaging` key. From level 2: absent, and refused if given — the replacements keep their predecessors' algorithms (VTI-KEY-184).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub layout: ::std::vec::Vec<RoleLayout>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub layout: ::std::option::Option<::std::vec::Vec<RoleLayout>>,
     ///Validated against the method profile's `UpdateParameters`. At level 3 under a method with witnesses, it names the witness enforcing CONVENTIONS.md §5.4 where the identity has none (`vta/dids:witnessRequired`).
     #[serde(
         rename = "methodParameters",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub method_parameters: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub method_parameters:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to.
     #[serde(
         rename = "previewId",
@@ -2037,8 +2038,8 @@ impl ::std::convert::TryFrom<::std::string::String> for ProtectionClass {
 #[non_exhaustive]
 pub struct Publication {
     ///Present when `selfPublish` is true.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub artifacts: ::std::vec::Vec<PublishedArtifact>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub artifacts: ::std::option::Option<::std::vec::Vec<PublishedArtifact>>,
     ///True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.
     #[serde(rename = "selfPublish")]
     pub self_publish: bool,
@@ -2910,8 +2911,8 @@ pub struct Response {
     )]
     pub from_level: ::std::option::Option<KeyAssuranceLevel>,
     ///Every key whose state this change sets or would set, after the change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub keys: ::std::vec::Vec<IdentityRoleKey>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub keys: ::std::option::Option<::std::vec::Vec<IdentityRoleKey>>,
     ///Present when `outcome` is `applied`: the version identifier of the change.
     #[serde(
         rename = "newVersionId",
@@ -4175,8 +4176,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct KeyChangeApprovalState {
-        approvals:
-            ::std::result::Result<::std::vec::Vec<super::RecordedApproval>, ::std::string::String>,
+        approvals: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         received: ::std::result::Result<u64, ::std::string::String>,
@@ -4195,7 +4198,9 @@ pub mod builder {
     impl KeyChangeApprovalState {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedApproval>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approvals = value
@@ -4270,9 +4275,12 @@ pub mod builder {
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        layout: ::std::result::Result<::std::vec::Vec<super::RoleLayout>, ::std::string::String>,
+        layout: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RoleLayout>>,
+            ::std::string::String,
+        >,
         method_parameters: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         preview_id: ::std::result::Result<
@@ -4363,7 +4371,7 @@ pub mod builder {
         }
         pub fn layout<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleLayout>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::RoleLayout>>>,
             T::Error: ::std::fmt::Display,
         {
             self.layout = value
@@ -4374,7 +4382,9 @@ pub mod builder {
         pub fn method_parameters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -4473,8 +4483,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Publication {
-        artifacts:
-            ::std::result::Result<::std::vec::Vec<super::PublishedArtifact>, ::std::string::String>,
+        artifacts: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            ::std::string::String,
+        >,
         self_publish: ::std::result::Result<bool, ::std::string::String>,
     }
     impl ::std::default::Default for Publication {
@@ -4488,7 +4500,9 @@ pub mod builder {
     impl Publication {
         pub fn artifacts<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PublishedArtifact>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.artifacts = value
@@ -5053,7 +5067,10 @@ pub mod builder {
             ::std::option::Option<super::KeyAssuranceLevel>,
             ::std::string::String,
         >,
-        keys: ::std::result::Result<::std::vec::Vec<super::IdentityRoleKey>, ::std::string::String>,
+        keys: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::IdentityRoleKey>>,
+            ::std::string::String,
+        >,
         new_version_id: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -5146,7 +5163,9 @@ pub mod builder {
         }
         pub fn keys<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::IdentityRoleKey>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::IdentityRoleKey>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.keys = value
