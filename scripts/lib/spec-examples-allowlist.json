@@ -481,10 +481,6 @@
     "vtc/directory/disclosure/0.1": {
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
     },
-    "vtc/directory/query/0.1": {
-      "missing-request": "Baseline (#1131): no request example when the lint landed.",
-      "missing-response": "Baseline (#1131): no #response example when the lint landed."
-    },
     "vtc/endorsement-types/delete/0.1": {
       "missing-request": "Baseline (#1131): no request example when the lint landed.",
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
