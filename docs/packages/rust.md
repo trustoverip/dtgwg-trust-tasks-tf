@@ -73,39 +73,30 @@ that does not reassemble. It saved 1.07 MiB of the `.crate`.
   definition gets a new macro and an unchanged one keeps its name across
   regenerations.
 
-## Generated types fold empty and null into absent
+## The `hcp` schemas carry presence themselves
 
-Until the Rust generator fix described below is released, typify (`typify-impl` 0.6.2,
-`src/structs.rs`, `generate_serde_attr` and `has_default`) gives an **optional** member these
-serde attributes:
-
-- an array without `uniqueItems`: a bare `Vec` with `default` and
-  `skip_serializing_if = "Vec::is_empty"`, so `[]` and absent decode alike and
-  `[]` is written as absent. An array with `uniqueItems` becomes
-  `Option<Vec<_>>`, and `Some(vec![])` is written `[]`;
-- an object with no `properties`: a bare map with `skip_serializing_if =
-  "Map::is_empty"`, so `{}` is written as absent;
-- a nullable member: `Option<_>` with `skip_serializing_if = "Option::is_none"`,
-  so `null` and absent decode alike, and `null` is written as absent.
-
-A **required** member gets no `default` and no `skip_serializing_if`: a
-required nullable member is an `Option<_>` that is written `null`. The loss
-happens on decode too, so a Rust consumer cannot tell the cases apart even
-when the sender kept them. Proofs are unaffected: they are verified over the
-document as received
+typify's own output folds an optional member's absent, empty (`[]`, `{}`) and
+`null` forms together (`typify-impl` 0.6.2, `src/structs.rs`,
+`generate_serde_attr` and `has_default`): an optional array without
+`uniqueItems` is a bare `Vec` skipped when empty, an optional object with no
+`properties` a map skipped when empty, and an optional nullable member an
+`Option` skipped when `None`, so a Rust type decoded from the generator's raw
+output cannot tell the three apart, even when the sender kept them. Whether a
+library's generated types keep them apart, and whether each writes a required
+nullable member's `null`, is a per-runtime fact that moves with the generators,
+so it is stated once, in the payload-presence row of
+[`runtime-parity.md`](../runtime-parity.md#differences), not here. Proofs are
+unaffected either way: they are verified over the document as received
 ([DEVELOPMENT.md](../DEVELOPMENT.md#extends-routing-a-newer-version-to-the-version-a-consumer-implements)).
 
-Two changes address this, and neither depends on the other. Where the difference carries
-meaning, the `hcp` schemas carry presence explicitly, so the document itself says what was
-asked for or what is null, whatever library wrote it. Separately, a Rust generator fix (a
-`fix(rs)!` change with its own coordinated release) restores absent, empty and null fidelity
-for every family. In the `hcp` family, the schemas carry presence in these members, which HCP's
-own shapes leave optional (each *pending HCP confirmation*, question 42):
+The `hcp` family does not depend on any generator keeping those forms apart.
+Where the difference carries meaning, its schemas carry presence explicitly, so
+the document itself says what was asked for or what is null, whichever library
+wrote it. These members, which HCP's own shapes leave optional, do so (each
+*pending HCP confirmation*, question 42):
 
 - `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
-  `grantId` are required and nullable. `hcp/import`'s `ImportedAuditEvent`,
-  HCP's own audit-event shape, leaves them optional: absent there means
-  unknown, never null;
+  `grantId` are required and nullable;
 - the export `hcp/export` returns requires `options`, with `includeVersions`
   and `includeAudit`, which say whether `versions` and `audit` were asked for.
   Read those, not whether the arrays are present. `hcp/import` accepts an
@@ -116,14 +107,25 @@ own shapes leave optional (each *pending HCP confirmation*, question 42):
 - a query's `categories` has `minItems: 1`, so a dropped `[]` cannot widen
   the query.
 
+`hcp/import`'s `ImportedAuditEvent`, HCP's own audit-event shape, leaves the
+five `AuditEvent` members above optional and nullable: absent there means
+unknown, `null` means none. A provider whose typed payload folds `null` into
+absent reads the payload as received to keep that difference.
+
 What remains in `hcp` is harmless, because HCP treats empty and absent (or
 null and absent) alike there: `evidence`, `relationships`, `confirmations`,
 `drawnFrom`, `covers`, `revealed`, an `AuditEvent`'s `categories`, `disclosed`
 and `data`, an export's `directives` and `delegations`, the `narrowedTo`,
 `metadata`, `unmapped` and `categoryMap` maps, and the optional
 nullable `language`, `confidence`, `validUntil` and `dimension`. A new `hcp`
-member whose empty or null value means something follows the same rule. The
-cross-runtime picture is in [`runtime-parity.md`](../runtime-parity.md#differences).
+member whose empty or null value means something follows the same rule.
+
+An entry subject's `relationship` is `"type": "null"`, as HCP reserves it.
+typify renders a member of that type `()`, and its builder's
+`Ok(Default::default())` and `Ok(value.relationship)` trip `clippy::unit_arg`,
+which `src/specs/mod.rs` therefore allows on the generated tree. A generator
+that renders such a member as anything else makes the allow unnecessary, not
+wrong.
 
 ## `trust-tasks-rs` unit tests see only the `acl` family
 
