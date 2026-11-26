@@ -581,6 +581,14 @@ four libraries act on it:
   item 11's digest is over the received document too, so two documents differing
   only in an extension member are an `idConflict`. Do not "simplify" any of these
   to verify the typed document.
+- **Item 2 (payload schema) also reads the received payload**, wherever the
+  typed consume path is handed the received document: as received for the
+  implemented version, and pruned exactly as the routing above prunes it for a
+  later one (a forwarded payload's added members are ones the implemented
+  schema refuses). A typed decode reads a `null` the schema forbids as absent,
+  so validating the re-encoding would accept it. Shared vectors:
+  `fixtures/consume/received-payload.json`; see
+  [runtime-parity.md](runtime-parity.md).
 
 `npm run extends-candidates` lists version pairs whose schemas already qualify;
 only an author can declare one, because the promise also covers meaning.

@@ -57,11 +57,28 @@ typed decoding. In Rust that means validating the payload **as received**:
 - `consume_dispatched` validates the received payload (`PayloadPolicy::Validate`)
   before decoding it, so it refuses the document `malformedRequest`;
 - `ValidatedPayload::validate_value` on the received payload refuses it;
-- the typed `consume_inbound::<P>` does **not**: it validates `P` re-encoded,
-  from which the `null` is already gone. A typed consumer that must refuse it
-  calls `P::validate_value` on the received payload before decoding.
+- the typed `consume_inbound::<P>` validates the received payload whenever
+  its `ProofPolicy` carries the received document
+  (`ProofPolicy::with_received`, as `GuardedConsumer::consume_body` binds it),
+  and `doc` is a reading of it. A document of `P`'s own version is validated
+  as received; a later version read forward along `extends` is validated with
+  its payload pruned to what `P`'s schema knows, as `consume_dispatched`
+  prunes a forwarded payload, since its added members are ones `P`'s schema
+  refuses. Without a received document it can only validate `P` re-encoded,
+  from which the `null` is already gone, so bind the policy whenever the
+  received JSON is in hand.
 
-(`trust-tasks-rs/tests/member_presence.rs` pins all three.) Refusing it at
+(`trust-tasks-rs/tests/member_presence.rs` pins all three, and
+`tests/received_payload_vectors.rs` runs the shared vectors in
+`fixtures/consume/received-payload.json`.)
+
+**Behavioural change.** Before this, `consume_inbound::<P>` validated `P`
+re-encoded even with the received document bound, and so accepted a document
+carrying a forbidden `null` (or anything else decoding into `P` drops, where
+the schema refuses it). It now refuses such a document `malformedRequest`. A
+consumer that relied on that acceptance must fix its producer; until a
+release carrying this change, a typed consumer that must refuse it calls
+`P::validate_value` on the received payload before decoding. Refusing it at
 decode instead was tried in the change that introduced these shapes and
 dropped before release: a `deserialize_with` on each of the ~14,600 such
 fields in the prebuilt tree cost about 2 GiB of compiler memory, and it made
