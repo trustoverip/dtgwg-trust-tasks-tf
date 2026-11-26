@@ -166,7 +166,7 @@ Before the person resolves a conflict, the Management Client **SHOULD** show the
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Bv2nT8kLqW3xC7hR1pM9sY6dF4gJ8aZe3uN6oVbK2iQ5kD7tH1yP4xS2wE9rA6jU3fG7lO1pK5vX8zN2bT4cW7"
   }
 }

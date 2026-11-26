@@ -142,7 +142,7 @@ The Management Client sends the directive to the provider. The payload is the to
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T12:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Np9sR3tYcM8wB2hV7kQ1xL6dF5gJ0aWe2uT3oZnC8iK4pD7mH1yS9vE6bX5rA2jU8lG3fO7qN0tZ4zK1cW6mY3"
   }
 }

@@ -490,6 +490,57 @@ describe("§4.9.2 parentThreadId", () => {
   });
 });
 
+describe("§4.11.3 ceremony", () => {
+  const CEREMONY = {
+    enactment: "urn:uuid:5c0e8a3a-7b1f-4a52-9d4e-2f6b8c1d0e37",
+    step: "request",
+    round: 2,
+    prev: [{ id: "urn:uuid:prev-1", digestMultibase: "zQmPrev" }],
+  };
+
+  it("carries the ceremony onto the success response", () => {
+    // The response half of a step belongs to the same enactment as the
+    // request, as `respond_with` has it in trust-tasks-rs.
+    const req = doc({ ceremony: CEREMONY });
+    const res = respondWith<Payload, Response>(req, "resp-1", { ok: true }, CLOCK);
+    assert.deepEqual(res.ceremony, CEREMONY);
+  });
+
+  it("carries the ceremony onto an error response", () => {
+    const req = doc({ ceremony: CEREMONY });
+    const err = refuse(req, "err-1", { code: "taskFailed", message: "no", retryable: false }, CLOCK);
+    assert.deepEqual(err.ceremony, CEREMONY);
+  });
+
+  it("carries the ceremony onto an error response addressed to an explicit recipient", () => {
+    const req = doc({ ceremony: CEREMONY });
+    const err = rejectWithRecipient(req, "err-1", { code: "taskFailed", retryable: false }, PEER, CLOCK);
+    assert.deepEqual(err.ceremony, CEREMONY);
+  });
+
+  it("carries the ceremony through the full pipeline", async () => {
+    const outcome = await run({ proof: PROOF, ceremony: CEREMONY });
+    assert.ok(outcome.kind === "handled");
+    assert.deepEqual(outcome.response.ceremony, CEREMONY);
+  });
+
+  it("gives the answer its own copy", () => {
+    const req = doc({ ceremony: structuredClone(CEREMONY) });
+    const res = respondWith<Payload, Response>(req, "resp-1", { ok: true }, CLOCK);
+    assert.notEqual(res.ceremony, req.ceremony);
+    assert.notEqual(res.ceremony!.prev, req.ceremony!.prev);
+    res.ceremony!.prev![0]!.id = "changed";
+    assert.equal(req.ceremony!.prev![0]!.id, "urn:uuid:prev-1");
+  });
+
+  it("omits the member entirely when the request has none", () => {
+    const res = respondWith<Payload, Response>(doc({}), "resp-1", { ok: true }, CLOCK);
+    assert.ok(!("ceremony" in res));
+    const err = refuse(doc({}), "err-1", { code: "taskFailed", message: "no", retryable: false }, CLOCK);
+    assert.ok(!("ceremony" in err));
+  });
+});
+
 describe("§8.2 inResponseTo", () => {
   it("names the document the error reports on", () => {
     const err = refuse(doc({}), "err-1", { code: "proofRequired", message: "no proof", retryable: false }, CLOCK);

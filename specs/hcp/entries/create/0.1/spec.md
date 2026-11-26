@@ -118,6 +118,8 @@ The REQUIRED `proof` establishes which client VID sent the assertion and that it
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result: the created entry (`201`, HCP 9.4.3) | `entry` | **Wrapped**: HCP returns the entry or disclosure itself; this task puts it in `entry`, as HCP's own Get entry result does (HCP 5.2.2). |
 
+The request payload's root is closed: a top-level entry member that HCP does not define cannot be written through this task, although HCP's Create body is an entry whose undefined members a provider preserves (HCP 4.2, 9.4.3, A.2). The nested `subject`, `content`, `classification`, `assertion` and `record` stay open.
+
 ### Parties
 
 | HCP role | Trust Task member |
@@ -177,7 +179,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2HdT9qLw5RnX3vYb8KcF1mJp7sAe4uGz6oNiQ2xV9tB5kW3rM8yD1gS6hL4jE7aP2cU9nO5fZ3wC8vT1bR6mK4q"
   }
 }
