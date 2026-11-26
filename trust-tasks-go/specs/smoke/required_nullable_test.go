@@ -47,11 +47,11 @@ func TestRequiredNullableMemberRoundTrips(t *testing.T) {
 	}
 }
 
-// The other half of the rule: an optional nullable member keeps omitempty, so
-// a nil writes no key. acl/update 0.3 reads an absent `label` as "leave it
-// unchanged" (and `"label": null` as "clear it", which a Go client cannot
-// send: docs/packages/go.md). This pins the prebuilt generator's tag choice on
-// the optional side, which the required-nullable fix must not change.
+// The other half of the rule: an optional nullable member left unset writes no
+// key. acl/update 0.3 reads an absent `label` as "leave it unchanged" (and
+// `"label": null` as "clear it"; docs/packages/go.md says how a Go client sends
+// that). This pins the prebuilt generator's tag choice on the optional side,
+// which the required-nullable fix must not change.
 func TestOptionalNullableMemberOmitsNil(t *testing.T) {
 	got, err := json.Marshal(aclupdatev0_3.Payload{Subject: "did:example:alice"})
 	if err != nil {
