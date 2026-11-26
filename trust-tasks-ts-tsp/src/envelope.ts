@@ -1,5 +1,12 @@
 import type { TransportContext, TransportHandler } from "@openvtc/trust-tasks/runtime";
-import { pack, unpack, decodeEnvelope, type PackKeys, type UnpackKeys } from "@openvtc/vti-tsp-js";
+import { pack, unpack, decodeEnvelope, isRevisionError, peekRevision, type PackKeys, type UnpackKeys } from "@openvtc/vti-tsp-js";
+
+/** The TSP version this binding speaks: TSP 1.0 (`YTSP-BAA`), the released
+ * specification, as `@openvtc/vti-tsp-js` 0.4 and `affinidi-tsp` 0.5 do. A
+ * message from a peer still on a draft (Rev 2 `YTSP-AAB`, Rev 3 `YTSP-AAC`) is
+ * refused as `unsupportedTspVersion`: TSP has no version negotiation, so that
+ * peer has to upgrade. */
+export const TSP_VERSION = "1.0";
 
 /** The binding's stable identifier (`bindings/tsp/0.1` §1). Never on the wire. */
 export const BINDING_URI = "https://trusttasks.org/binding/tsp/0.1";
@@ -8,7 +15,10 @@ export const BINDING_URI = "https://trusttasks.org/binding/tsp/0.1";
  * TSP VID is a framework VID, so — unlike DIDComm — no identifier is transformed. */
 export const ENVELOPE_TYPE = "https://trusttasks.org/binding/tsp/0.1/envelope";
 
-/** The keys needed to seal a message to a recipient (from `@openvtc/vti-tsp-js`). */
+/** The keys needed to seal and open a message (from `@openvtc/vti-tsp-js`). TSP
+ * 1.0 seals with HPKE-Base, so neither carries the sender's X25519 key: the
+ * sender is authenticated by the outer Ed25519 signature and the ESSR sender
+ * field. */
 export type { PackKeys, UnpackKeys };
 
 /** The {@link TransportHandler} for one TSP exchange: `peer` is the VID TSP
@@ -33,6 +43,7 @@ export class TspTransport implements TransportHandler {
  * `trust-task-error` — there is nothing authenticated to reply about (§4). */
 export type TspFailureKind =
   | "notForThisReceiver"
+  | "unsupportedTspVersion"
   | "notFinalRecipient"
   | "wrongEnvelopeType"
   | "invalidBody";
@@ -78,9 +89,9 @@ export interface PackParams {
   keys: PackKeys;
 }
 
-/** Seal `document` into a Direct TSP message from `senderVid` to `receiverVid`
- * (§2, §5.1). The payload is the envelope object `{type: ENVELOPE_TYPE,
- * document}`, HPKE-Auth sealed and signed. */
+/** Seal `document` into a TSP 1.0 Direct message from `senderVid` to
+ * `receiverVid` (§2, §5.1). The payload is the envelope object `{type:
+ * ENVELOPE_TYPE, document}`, HPKE-Base sealed and signed. */
 export async function packTrustTask(
   document: Record<string, unknown>,
   { senderVid, receiverVid, keys }: PackParams,
@@ -92,7 +103,8 @@ export async function packTrustTask(
 
 /** The sender VID a TSP message names, read from the cleartext envelope without
  * verifying anything. Unauthenticated until {@link unpackTrustTask} opens it —
- * use it only to decide whether to open it, or to resolve the sender's keys. */
+ * use it only to decide whether to open it, or to resolve the sender's keys.
+ * Undefined for bytes that are not a TSP 1.0 message, including a draft one. */
 export function advertisedSender(wire: Uint8Array): string | undefined {
   try {
     return decodeEnvelope(wire).envelope.sender;
@@ -106,10 +118,35 @@ export interface UnpackParams {
   keys: UnpackKeys;
 }
 
-/** Open a Direct TSP message addressed to `recipientVid` and take out the Trust
- * Task document. `keys` carries the recipient's decryption key and the resolved
- * sender's public keys, against which the signature and HPKE authentication are
- * checked. Throws {@link TspEnvelopeError}. */
+/** The refusal for a message that declares a TSP version this binding does not
+ * speak, read from the version marker without keys; else undefined (the
+ * message is TSP 1.0, or not readable as TSP at all). */
+export function unsupportedVersion(wire: Uint8Array): TspEnvelopeError | undefined {
+  try {
+    peekRevision(wire);
+    return undefined;
+  } catch (cause) {
+    return versionRefusal(cause);
+  }
+}
+
+function versionRefusal(cause: unknown): TspEnvelopeError | undefined {
+  // A revision error with no MAJOR is bytes that are not a TSP frame at all,
+  // which is not a version question.
+  if (!isRevisionError(cause) || cause.major === undefined) return undefined;
+  return new TspEnvelopeError(
+    "unsupportedTspVersion",
+    `${cause.message.replace(/^tsp: /, "")} (the sender must move to TSP ${TSP_VERSION}; there is no version negotiation)`,
+    undefined,
+    { cause },
+  );
+}
+
+/** Open a TSP 1.0 Direct message addressed to `recipientVid` and take out the
+ * Trust Task document. `keys` carries the recipient's decryption key and the
+ * resolved sender's Ed25519 public key, against which the signature is
+ * checked. Throws {@link TspEnvelopeError}: `unsupportedTspVersion` for a
+ * message from a peer on a TSP draft. */
 export async function unpackTrustTask<P = unknown>(
   wire: Uint8Array,
   { recipientVid, keys }: UnpackParams,
@@ -118,7 +155,7 @@ export async function unpackTrustTask<P = unknown>(
   try {
     message = await unpack(wire, keys);
   } catch (cause) {
-    throw new TspEnvelopeError("notForThisReceiver", String(cause), undefined, { cause });
+    throw versionRefusal(cause) ?? new TspEnvelopeError("notForThisReceiver", String(cause), undefined, { cause });
   }
 
   // The receiver VID on the wire is the one the sender wrote: the seal proves

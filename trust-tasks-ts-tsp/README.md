@@ -5,7 +5,8 @@ transport binding ([`bindings/tsp/0.1`](https://trusttasks.org/binding/tsp/0.1))
 for TypeScript, on
 [`@openvtc/vti-tsp-js`](https://www.npmjs.com/package/@openvtc/vti-tsp-js) — the
 pure-TypeScript TSP the VTA browser plugin uses (browser, Node, React Native, no
-WASM). The counterpart of the Rust `trust-tasks-tsp` crate, the Dart
+WASM). It speaks **TSP 1.0** (`YTSP-BAA`), the released specification, which is
+byte-compatible with the Rust `affinidi-tsp` the VTA and Keyring use. The counterpart of the Rust `trust-tasks-tsp` crate, the Dart
 `trust_tasks_tsp` package and the Go `trust-tasks-go/tsp` module: all seal the
 same envelope object.
 
@@ -24,16 +25,18 @@ synchronously (20.19+, 22.12+).
 ```ts
 const wire = await packTrustTask(document, {
   senderVid, receiverVid,
-  keys: { senderSigningKey, senderEncryptionKey, receiverEncryptionKey },
+  keys: { senderSigningKey, receiverEncryptionKey },
 });
 ```
 
-The message is a **Direct** TSP message, HPKE-Auth sealed and signed. Its payload
+The message is a **Direct** TSP 1.0 message, HPKE-Base sealed and signed. Its payload
 is the envelope object `{"type": "https://trusttasks.org/binding/tsp/0.1/envelope",
 "document": …}`. A TSP VID **is** a framework VID, so nothing is transformed.
 
 `@openvtc/vti-tsp-js` is key-based and does no DID resolution: you pass the raw
-Ed25519 signing key and X25519 encryption keys for each party.
+Ed25519 signing key and X25519 encryption keys for each party. Under HPKE-Base the
+sender's own X25519 key takes no part in sealing or opening: the sender is
+authenticated by the Ed25519 signature over the message.
 
 ## Receiving
 
@@ -43,7 +46,8 @@ const consumer = new TspConsumer({
   recipientVid,
   decryptionKey,   // the recipient's X25519 private key
   signingKey,      // the recipient's Ed25519 private key, for sealed replies
-  resolveSender: (vid) => lookUp(vid),   // -> { encryptionKey, signingKey } (public)
+  resolveSender: (vid) => lookUp(vid),   // -> { encryptionKey, signingKey } (public);
+                                         //    encryptionKey is what a reply is sealed to
 });
 
 const received = await consumer.receive(wire, spec, async (doc, parties) =>
@@ -68,8 +72,9 @@ A handler **refuses** by returning an `ErrorResponse` (build it with the core's
 
 Before the pipeline, with no reply possible — TSP has no anonymous sender (§4).
 These throw `TspEnvelopeError` whose `failure` is `notForThisReceiver` (bad
-framing, wrong receiver, failed signature or HPKE authentication, an unresolvable
-or disallowed sender), `notFinalRecipient` (a routed/nested layer this VID only
+framing, wrong receiver, a failed signature or a payload that does not open, an
+unresolvable or disallowed sender), `unsupportedTspVersion` (see below),
+`notFinalRecipient` (a routed/nested layer this VID only
 relays), `wrongEnvelopeType` or `invalidBody`.
 
 Inside the pipeline, answered with a `trust-task-error` sealed back to the
@@ -90,6 +95,15 @@ TSP authenticates the sender end-to-end (§5.3), so a document may omit `proof`
 unless its specification requires one. Set `proofVerifier` (for example the
 `DataIntegrityProofVerifier` from `@openvtc/trust-tasks-proof`) to accept proofs;
 without one, a proof-bearing document is refused rather than ignored.
+
+### Peers on a TSP draft
+
+Only TSP 1.0 is read and written. A message from a peer still on a draft —
+Rev 2 (`YTSP-AAB`, which earlier releases of this package spoke) or Rev 3
+(`YTSP-AAC`) — is refused from its version marker, before any key is used, with
+`failure: "unsupportedTspVersion"` and a message naming the version it declared.
+TSP has no version negotiation, so such a peer has to upgrade; nothing is sent
+back.
 
 ## Scope
 
