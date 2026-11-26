@@ -6,19 +6,19 @@ registry = "https://trusttasks.org"
 slug = "hcp/entries/query"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/entries/query/0.1"
-digest = "sha256:a1ab03ad56d873522854c6faba352b01dd4ed2c574e4dded169d603bfac50a02"
+digest = "sha256:943c5ec216844d69073a52ed5705a40e0b504f91237d5bb4a3ac4b017c9f90aa"
 
 [[task]]
 slug = "hcp/grants/request"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/grants/request/0.1"
-digest = "sha256:ba5dff3591cc05e912d2f7d79774ca67b1044e4882a70f6f7bb9c7e00736a708"
+digest = "sha256:3ffde3ede8d6154c94714fcbb3bd17ae64e33bb79f7be16ee37517473610a33b"
 
 [[task]]
 slug = "hcp/grants/revoke"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/grants/revoke/0.1"
-digest = "sha256:ddca2550c6c7e7ec19ae5049a84174d3827afac4eab2c93dea3ef8f43df9f2f8"
+digest = "sha256:18157409a6f938fdcf1fd38a6d7a1973550f8b6d9b55945817cf219c75817052"
 
 [[task]]
 slug = "hcp/grants/revoked"

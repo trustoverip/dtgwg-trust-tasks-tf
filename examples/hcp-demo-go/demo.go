@@ -671,7 +671,7 @@ func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Docu
 
 // Step 4 — hcp/grants/revoke: only the person's Management Client may (HCP 6.1.9, 6.2.1).
 func handleRevoke(w *World, me *Party, doc *tt.Document[revoke.Payload]) (*tt.Document[json.RawMessage], error) {
-	if doc.Payload.AccessToken != ManagementToken {
+	if doc.Payload.AccessToken == nil || *doc.Payload.AccessToken != ManagementToken {
 		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	}
 	g := w.grantByID(doc.Payload.GrantID)
@@ -961,7 +961,8 @@ func StepQuery(w *World, grantID string) {
 func StepRevoke(w *World, grantID string) {
 	P, M := w.Provider, w.Management
 	w.step("4. Revoke (hcp/grants/revoke 0.1) from the Management Client")
-	if done := replyOf[json.RawMessage](w.Exchange(M, P, Request(w, M, P, revoke.TypeURI+"#request", revoke.Payload{GrantID: grantID, AccessToken: ManagementToken}, ""))); done.Type != revoke.ResponseTypeURI {
+	token := ManagementToken
+	if done := replyOf[json.RawMessage](w.Exchange(M, P, Request(w, M, P, revoke.TypeURI+"#request", revoke.Payload{GrantID: grantID, AccessToken: &token}, ""))); done.Type != revoke.ResponseTypeURI {
 		panic("expected the revocation")
 	}
 }

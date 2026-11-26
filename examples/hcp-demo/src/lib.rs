@@ -923,7 +923,7 @@ impl Shared {
             let mut state = self.state.lock().expect("state");
             let grant = state.grants.iter_mut().find(|g| g.grant_id == *p.grant_id);
             match grant {
-                Some(grant) if *p.access_token == MANAGEMENT_TOKEN => {
+                Some(grant) if p.access_token.as_deref().map(|t| t.as_str()) == Some(MANAGEMENT_TOKEN) => {
                     // Immediate (HCP 6.2.2); a second revoke is idempotent and
                     // keeps the first revokedAt.
                     if grant.active {
