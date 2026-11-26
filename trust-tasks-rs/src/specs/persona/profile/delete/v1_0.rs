@@ -207,9 +207,9 @@ pub struct Response {
     #[serde(
         rename = "unboundPersonas",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub unbound_personas: ::std::vec::Vec<ResponseUnboundPersonasItem>,
+    pub unbound_personas: ::std::option::Option<::std::vec::Vec<ResponseUnboundPersonasItem>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -449,7 +449,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
         unbound_personas: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseUnboundPersonasItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseUnboundPersonasItem>>,
             ::std::string::String,
         >,
     }
@@ -507,7 +507,9 @@ pub mod builder {
         }
         pub fn unbound_personas<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseUnboundPersonasItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseUnboundPersonasItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.unbound_personas = value

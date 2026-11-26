@@ -526,9 +526,10 @@ pub struct ResponseDisclosuresItem {
     #[serde(
         rename = "claimCurrency",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub claim_currency: ::std::vec::Vec<ResponseDisclosuresItemClaimCurrencyItem>,
+    pub claim_currency:
+        ::std::option::Option<::std::vec::Vec<ResponseDisclosuresItemClaimCurrencyItem>>,
     #[serde(rename = "claimTypes")]
     pub claim_types: ::std::vec::Vec<ClaimType>,
     #[serde(rename = "contextId")]
@@ -551,8 +552,8 @@ pub struct ResponseDisclosuresItem {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub renderer: ::std::option::Option<ResponseDisclosuresItemRenderer>,
     ///Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub rungs: ::std::vec::Vec<ProofRung>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub rungs: ::std::option::Option<::std::vec::Vec<ProofRung>>,
     ///The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<::std::string::String>,
@@ -1264,7 +1265,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ResponseDisclosuresItem {
         claim_currency: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseDisclosuresItemClaimCurrencyItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseDisclosuresItemClaimCurrencyItem>>,
             ::std::string::String,
         >,
         claim_types:
@@ -1288,7 +1289,10 @@ pub mod builder {
             ::std::option::Option<super::ResponseDisclosuresItemRenderer>,
             ::std::string::String,
         >,
-        rungs: ::std::result::Result<::std::vec::Vec<super::ProofRung>, ::std::string::String>,
+        rungs: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ProofRung>>,
+            ::std::string::String,
+        >,
         subject: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -1318,7 +1322,9 @@ pub mod builder {
         pub fn claim_currency<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::ResponseDisclosuresItemClaimCurrencyItem>,
+                ::std::option::Option<
+                    ::std::vec::Vec<super::ResponseDisclosuresItemClaimCurrencyItem>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1413,7 +1419,7 @@ pub mod builder {
         }
         pub fn rungs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ProofRung>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ProofRung>>>,
             T::Error: ::std::fmt::Display,
         {
             self.rungs = value

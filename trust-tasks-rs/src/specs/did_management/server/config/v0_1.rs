@@ -147,9 +147,9 @@ pub struct Response {
     #[serde(
         rename = "advertisedServices",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub advertised_services: ::std::vec::Vec<ResponseAdvertisedServicesItem>,
+    pub advertised_services: ::std::option::Option<::std::vec::Vec<ResponseAdvertisedServicesItem>>,
     ///Whether agent-name redirects (`/@name`) are served.
     #[serde(rename = "agentNames")]
     pub agent_names: bool,
@@ -649,7 +649,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         advertised_services: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseAdvertisedServicesItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseAdvertisedServicesItem>>,
             ::std::string::String,
         >,
         agent_names: ::std::result::Result<bool, ::std::string::String>,
@@ -725,7 +725,9 @@ pub mod builder {
     impl Response {
         pub fn advertised_services<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseAdvertisedServicesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseAdvertisedServicesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.advertised_services = value.try_into().map_err(|e| {

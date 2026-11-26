@@ -122,8 +122,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub buckets: ::std::vec::Vec<PayloadBucketsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub buckets: ::std::option::Option<::std::vec::Vec<PayloadBucketsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "instanceId")]
@@ -366,7 +366,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         buckets: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadBucketsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadBucketsItem>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -389,7 +389,9 @@ pub mod builder {
     impl Payload {
         pub fn buckets<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadBucketsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadBucketsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.buckets = value

@@ -128,8 +128,8 @@ pub struct DirectoryEntry {
     pub listing_id: ::std::option::Option<DirectoryEntryListingId>,
     pub state: EntryState,
     ///Tags.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub tags: ::std::vec::Vec<DirectoryEntryTagsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub tags: ::std::option::Option<::std::vec::Vec<DirectoryEntryTagsItem>>,
     ///The party's public address.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
@@ -874,7 +874,7 @@ pub mod builder {
         >,
         state: ::std::result::Result<super::EntryState, ::std::string::String>,
         tags: ::std::result::Result<
-            ::std::vec::Vec<super::DirectoryEntryTagsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DirectoryEntryTagsItem>>,
             ::std::string::String,
         >,
         url: ::std::result::Result<
@@ -981,7 +981,9 @@ pub mod builder {
         }
         pub fn tags<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DirectoryEntryTagsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DirectoryEntryTagsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.tags = value

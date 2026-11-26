@@ -1249,23 +1249,22 @@ pub struct Payload {
     #[serde(
         rename = "groupAudience",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub group_audience: ::std::option::Option<Vec<GroupId>>,
+    pub group_audience: ::std::option::Option<::std::option::Option<Vec<GroupId>>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub introductions: ::std::option::Option<Introductions>,
     ///Values to set, keyed by field; `null` clears one. Fields not named are unchanged. Only `member`-sourced fields.
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub values: ::std::collections::HashMap<FieldKey, ::std::option::Option<FieldValue>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub values: ::std::option::Option<
+        ::std::collections::HashMap<FieldKey, ::std::option::Option<FieldValue>>,
+    >,
     ///Visibilities to set, keyed by field; `null` returns a field to its default. Applies to any non-derived field on the card, whoever wrote its value, and to the derived fields the community lets a member widen (`did`).
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub visibility: ::std::collections::HashMap<FieldKey, ::std::option::Option<Audience>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub visibility: ::std::option::Option<
+        ::std::collections::HashMap<FieldKey, ::std::option::Option<Audience>>,
+    >,
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
@@ -2027,7 +2026,7 @@ pub mod builder {
         expected_revision: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         group_audience: ::std::result::Result<
-            ::std::option::Option<Vec<super::GroupId>>,
+            ::std::option::Option<::std::option::Option<Vec<super::GroupId>>>,
             ::std::string::String,
         >,
         introductions: ::std::result::Result<
@@ -2035,11 +2034,21 @@ pub mod builder {
             ::std::string::String,
         >,
         values: ::std::result::Result<
-            ::std::collections::HashMap<super::FieldKey, ::std::option::Option<super::FieldValue>>,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::FieldKey,
+                    ::std::option::Option<super::FieldValue>,
+                >,
+            >,
             ::std::string::String,
         >,
         visibility: ::std::result::Result<
-            ::std::collections::HashMap<super::FieldKey, ::std::option::Option<super::Audience>>,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::FieldKey,
+                    ::std::option::Option<super::Audience>,
+                >,
+            >,
             ::std::string::String,
         >,
     }
@@ -2089,7 +2098,9 @@ pub mod builder {
         }
         pub fn group_audience<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<Vec<super::GroupId>>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<Vec<super::GroupId>>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.group_audience = value
@@ -2110,9 +2121,11 @@ pub mod builder {
         pub fn values<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::FieldKey,
-                    ::std::option::Option<super::FieldValue>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::FieldKey,
+                        ::std::option::Option<super::FieldValue>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -2125,9 +2138,11 @@ pub mod builder {
         pub fn visibility<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::FieldKey,
-                    ::std::option::Option<super::Audience>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::FieldKey,
+                        ::std::option::Option<super::Audience>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,

@@ -51,10 +51,11 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "consentClass",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub consent_class:
+    pub consent_class: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, CapabilityManifestConsentClassValue>,
+    >,
     ///One-paragraph description for management surfaces.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<CapabilityManifestDescription>,
@@ -64,23 +65,22 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "externalAdapters",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub external_adapters: ::std::vec::Vec<CapabilityManifestExternalAdaptersItem>,
+    pub external_adapters:
+        ::std::option::Option<::std::vec::Vec<CapabilityManifestExternalAdaptersItem>>,
     ///Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.
     #[serde(
         rename = "lifecycleHooks",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub lifecycle_hooks: ::std::vec::Vec<::std::string::String>,
+    pub lifecycle_hooks: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub roles:
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub roles: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, ::std::vec::Vec<::std::string::String>>,
+    >,
     ///Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.
     pub specs: ::std::vec::Vec<::std::string::String>,
     ///Human-readable capability name for management surfaces.
@@ -532,8 +532,9 @@ pub struct Payload {
     ///Namespace slug of the capability to enable, e.g. `git-trust`.
     pub capability: PayloadCapability,
     ///Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub config: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub config:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub delegate: ::std::option::Option<::std::string::String>,
@@ -771,9 +772,11 @@ pub mod builder {
             ::std::string::String,
         >,
         consent_class: ::std::result::Result<
-            ::std::collections::HashMap<
-                ::std::string::String,
-                super::CapabilityManifestConsentClassValue,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    ::std::string::String,
+                    super::CapabilityManifestConsentClassValue,
+                >,
             >,
             ::std::string::String,
         >,
@@ -783,15 +786,19 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         external_adapters: ::std::result::Result<
-            ::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>,
+            ::std::option::Option<::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>>,
             ::std::string::String,
         >,
-        lifecycle_hooks:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        lifecycle_hooks: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         roles: ::std::result::Result<
-            ::std::collections::HashMap<
-                ::std::string::String,
-                ::std::vec::Vec<::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    ::std::string::String,
+                    ::std::vec::Vec<::std::string::String>,
+                >,
             >,
             ::std::string::String,
         >,
@@ -848,9 +855,11 @@ pub mod builder {
         pub fn consent_class<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    ::std::string::String,
-                    super::CapabilityManifestConsentClassValue,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        ::std::string::String,
+                        super::CapabilityManifestConsentClassValue,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -883,7 +892,9 @@ pub mod builder {
         pub fn external_adapters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>,
+                ::std::option::Option<
+                    ::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -894,7 +905,9 @@ pub mod builder {
         }
         pub fn lifecycle_hooks<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.lifecycle_hooks = value
@@ -905,9 +918,11 @@ pub mod builder {
         pub fn roles<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    ::std::string::String,
-                    ::std::vec::Vec<::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        ::std::string::String,
+                        ::std::vec::Vec<::std::string::String>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -1117,7 +1132,7 @@ pub mod builder {
     pub struct Payload {
         capability: ::std::result::Result<super::PayloadCapability, ::std::string::String>,
         config: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         delegate: ::std::result::Result<
@@ -1157,7 +1172,9 @@ pub mod builder {
         pub fn config<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

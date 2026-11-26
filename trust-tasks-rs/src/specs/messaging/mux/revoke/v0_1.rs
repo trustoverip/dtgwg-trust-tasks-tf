@@ -375,16 +375,16 @@ pub struct Response {
     #[serde(
         rename = "unmatchedDids",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub unmatched_dids: ::std::vec::Vec<MuxDid>,
+    pub unmatched_dids: ::std::option::Option<::std::vec::Vec<MuxDid>>,
     ///Requested grant identifiers that name no stored grant the requester may revoke in the role it named.
     #[serde(
         rename = "unmatchedGrantIds",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub unmatched_grant_ids: ::std::vec::Vec<GrantId>,
+    pub unmatched_grant_ids: ::std::option::Option<::std::vec::Vec<GrantId>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -561,10 +561,14 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         revoked: ::std::result::Result<::std::vec::Vec<super::GrantRef>, ::std::string::String>,
-        unmatched_dids:
-            ::std::result::Result<::std::vec::Vec<super::MuxDid>, ::std::string::String>,
-        unmatched_grant_ids:
-            ::std::result::Result<::std::vec::Vec<super::GrantId>, ::std::string::String>,
+        unmatched_dids: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::MuxDid>>,
+            ::std::string::String,
+        >,
+        unmatched_grant_ids: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::GrantId>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -599,7 +603,7 @@ pub mod builder {
         }
         pub fn unmatched_dids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::MuxDid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::MuxDid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.unmatched_dids = value
@@ -609,7 +613,7 @@ pub mod builder {
         }
         pub fn unmatched_grant_ids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::GrantId>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::GrantId>>>,
             T::Error: ::std::fmt::Display,
         {
             self.unmatched_grant_ids = value.try_into().map_err(|e| {

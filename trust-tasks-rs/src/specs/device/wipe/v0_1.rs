@@ -381,16 +381,16 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "osHooksInvoked",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub os_hooks_invoked: ::std::vec::Vec<::std::string::String>,
+    pub os_hooks_invoked: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Free-form reasons why the wipe was partial (e.g. "os-keychain-unavailable", "extension-storage-quota-exceeded").
     #[serde(
         rename = "partialReasons",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub partial_reasons: ::std::vec::Vec<::std::string::String>,
+    pub partial_reasons: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl ::std::default::Default for ResponseDiagnostics {
     fn default() -> Self {
@@ -675,10 +675,14 @@ pub mod builder {
     pub struct ResponseDiagnostics {
         cache_bytes_wiped: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         keys_wiped: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
-        os_hooks_invoked:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        partial_reasons:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        os_hooks_invoked: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+        partial_reasons: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for ResponseDiagnostics {
         fn default() -> Self {
@@ -713,7 +717,9 @@ pub mod builder {
         }
         pub fn os_hooks_invoked<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.os_hooks_invoked = value
@@ -723,7 +729,9 @@ pub mod builder {
         }
         pub fn partial_reasons<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.partial_reasons = value

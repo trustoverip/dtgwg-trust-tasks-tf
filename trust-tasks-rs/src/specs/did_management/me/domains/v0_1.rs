@@ -249,8 +249,12 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub default: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub default: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub domains: ::std::vec::Vec<DomainEntry>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -451,7 +455,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         default: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         domains: ::std::result::Result<::std::vec::Vec<super::DomainEntry>, ::std::string::String>,
@@ -469,7 +473,9 @@ pub mod builder {
     impl Response {
         pub fn default<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.default = value

@@ -222,8 +222,8 @@ impl ::std::default::Default for PayloadContinuation {
 #[non_exhaustive]
 pub struct PayloadExpectsItem {
     ///Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub hint: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub hint: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadExpectsItemReason>,
@@ -539,7 +539,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct PayloadExpectsItem {
         hint: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         reason: ::std::result::Result<
@@ -561,7 +561,9 @@ pub mod builder {
         pub fn hint<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

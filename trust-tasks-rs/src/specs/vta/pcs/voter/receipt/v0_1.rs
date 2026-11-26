@@ -302,8 +302,9 @@ impl ::std::convert::From<::std::vec::Vec<DigestMultibase>> for MerklePath {
 #[non_exhaustive]
 pub struct Payload {
     ///A signed voting/board/head/0.1 #response document, whole and exactly as received — typically the head the community kept at close (vtc/elections/show checkpoints).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub checkpoint: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub checkpoint:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The community's DID.
     pub community: PayloadCommunity,
     ///The context the voter belongs to.
@@ -620,7 +621,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         checkpoint: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         community: ::std::result::Result<super::PayloadCommunity, ::std::string::String>,
@@ -651,7 +652,9 @@ pub mod builder {
         pub fn checkpoint<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

@@ -344,8 +344,8 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Queried DIDs that have no account at this mediator and were therefore omitted from `entries`.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub unknown: ::std::vec::Vec<Vid>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub unknown: ::std::option::Option<::std::vec::Vec<Vid>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -749,7 +749,10 @@ pub mod builder {
     pub struct Response {
         entries: ::std::result::Result<::std::vec::Vec<super::Entry>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        unknown: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        unknown: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Vid>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -783,7 +786,7 @@ pub mod builder {
         }
         pub fn unknown<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Vid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.unknown = value

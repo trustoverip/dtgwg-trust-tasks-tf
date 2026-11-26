@@ -587,8 +587,8 @@ pub struct FieldConstraints {
     )]
     pub min_length: ::std::option::Option<i64>,
     ///The permitted values of an `enum` or `multiEnum` field.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub options: ::std::vec::Vec<EnumOption>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub options: ::std::option::Option<::std::vec::Vec<EnumOption>>,
     ///ECMA-262 regular expression a text value MUST match.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub pattern: ::std::option::Option<FieldConstraintsPattern>,
@@ -1504,7 +1504,10 @@ pub mod builder {
             ::std::string::String,
         >,
         min_length: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
-        options: ::std::result::Result<::std::vec::Vec<super::EnumOption>, ::std::string::String>,
+        options: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EnumOption>>,
+            ::std::string::String,
+        >,
         pattern: ::std::result::Result<
             ::std::option::Option<super::FieldConstraintsPattern>,
             ::std::string::String,
@@ -1587,7 +1590,7 @@ pub mod builder {
         }
         pub fn options<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EnumOption>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EnumOption>>>,
             T::Error: ::std::fmt::Display,
         {
             self.options = value

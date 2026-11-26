@@ -210,9 +210,9 @@ pub struct Response {
     #[serde(
         rename = "daemonCleanupErrors",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub daemon_cleanup_errors: ::std::vec::Vec<::std::string::String>,
+    pub daemon_cleanup_errors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.
     pub deleted: bool,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -308,8 +308,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        daemon_cleanup_errors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        daemon_cleanup_errors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         deleted: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -327,7 +329,9 @@ pub mod builder {
     impl Response {
         pub fn daemon_cleanup_errors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.daemon_cleanup_errors = value.try_into().map_err(|e| {
