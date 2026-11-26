@@ -1,9 +1,5 @@
 [
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": {}
-  },
-  {
     "note": "Unknown top-level request member — HCP's `GET /v2/rules` takes no parameters (HCP 9.4.14), so there is no filter.",
     "payload": { "accessToken": "hcp_mt_x", "categories": ["health_context"] }
   },

@@ -16,10 +16,6 @@
     "payload": { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19", "action": "sign", "effect": "ask-first", "text": "Ask me before you sign anything.", "accessToken": "hcp_mt_x" }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "action": "sign", "effect": "ask-first", "text": "Ask me before you sign anything." }
-  },
-  {
     "note": "Empty `categories` — absent means every category; an empty array names none (minItems 1).",
     "payload": { "action": "share", "effect": "deny", "text": "Never pass my health context to another agent.", "categories": [], "accessToken": "hcp_mt_x" }
   },

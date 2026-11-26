@@ -4,10 +4,6 @@
     "payload": { "directiveId": "directive-7", "accessToken": "hcp_mt_x" }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19" }
-  },
-  {
     "note": "Missing `directiveId` — a removal names the directive it removes.",
     "payload": { "accessToken": "hcp_mt_x" }
   },

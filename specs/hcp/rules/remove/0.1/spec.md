@@ -81,11 +81,11 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 ## Authorization
 
-The authority is **the Context Subject's own authority over their standing rules**, which a Management Client exercises for them (HCP 6.3, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Removing a standing rule is a governance operation: any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
+The authority is **the Context Subject's own authority over their standing rules**, which a Management Client exercises for them (HCP 6.3, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. `accessToken` is OPTIONAL. Where the request carries none, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), acting for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). Removing a standing rule is a governance operation: any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 Under the Delegated Authorization Profile, the Context Subject can remove any standing rule, and a delegate can remove only the rules they set (HCP 6.3, 9.4.14); the provider checks the rule's `setBy` against the caller. A delegate's attempt to remove any other rule is refused with `permissionDenied`.
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). Where the request carries `accessToken`, the proof is not the authorization: the token is. Where it carries none, the proof is the Management Client's authentication (see above). A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -114,7 +114,7 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a prov
 
 ## Request
 
-The Management Client sends the removal to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `ruleId`, the rule to remove, and `accessToken`, the Management Client's token. Both are REQUIRED.
+The Management Client sends the removal to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `ruleId`, the rule to remove, and `accessToken`, the Management Client's token. `ruleId` is REQUIRED; `accessToken` is OPTIONAL; where it is absent, the request's `proof` authenticates an enrolled Management Client (see [Authorization](#authorization)).
 
 ### Removing a rule that kept health context from an advertising network
 
@@ -197,6 +197,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 27 — unknown and already-removed rules.** Refused with `permissionDenied`, with the same text as every other not-authorized refusal (see [Repeated requests](#repeated-requests)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 56 — a Management Client authenticated without a token.** `accessToken` is OPTIONAL. Where it is absent, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose, reading HCP 3.2.3's "credentials" as including an enrolled key proved by a signature on each request, and refuses any other issuer with `permissionDenied`, with the one fixed `message`. Where a token is present, the token rules apply unchanged, including the binding of question 22. The request `proof` stays REQUIRED whether or not a token is present (question 53), and a provider keeps a record of the Management Clients each person enrolled. This is not question 37, which asks whether governance may travel off the HTTP Binding at all; it asks how the caller is authenticated once it does (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
@@ -209,11 +210,11 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 ### Data carried
 
-The request carries a rule identifier and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. It carries no context. The response carries nothing. A producer **MUST NOT** put the token or any context in `ext`.
+The request carries a rule identifier and the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider. It carries no context. The response carries nothing. A producer **MUST NOT** put the token or any context in `ext`.
 
 ### The access token
 
-`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+`accessToken`, where a request carries it, is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

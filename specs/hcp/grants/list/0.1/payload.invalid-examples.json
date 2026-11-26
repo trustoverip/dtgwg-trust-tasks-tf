@@ -21,12 +21,6 @@
     }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-    "payload": {
-      "status": "revoked"
-    }
-  },
-  {
     "note": "Unknown top-level request member — the list is filtered only by status (HCP 9.4.6).",
     "payload": {
       "client": "booking-agent",

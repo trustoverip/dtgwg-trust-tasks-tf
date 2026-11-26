@@ -1,9 +1,5 @@
 [
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9, 9.3).",
-    "payload": { "category": "health_context" }
-  },
-  {
     "note": "`limit` above the carriage's ceiling of 1000 — a framework bound (question 3).",
     "payload": { "accessToken": "hcp_mt_x", "limit": 1001 }
   },
