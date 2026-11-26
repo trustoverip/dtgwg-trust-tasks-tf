@@ -1,5 +1,14 @@
 import type { TransportContext, TransportHandler } from "@openvtc/trust-tasks/runtime";
-import { pack, unpack, decodeEnvelope, isRevisionError, peekRevision, type PackKeys, type UnpackKeys } from "@openvtc/vti-tsp-js";
+import {
+  pack,
+  unpack,
+  decodeEnvelope,
+  isRevisionError,
+  peekRevision,
+  SUPPORTED_MAJOR,
+  type PackKeys,
+  type UnpackKeys,
+} from "@openvtc/vti-tsp-js";
 
 /** The TSP version this binding speaks: TSP 1.0 (`YTSP-BAA`), the released
  * specification, as `@openvtc/vti-tsp-js` 0.4 and `affinidi-tsp` 0.5 do. A
@@ -132,8 +141,11 @@ export function unsupportedVersion(wire: Uint8Array): TspEnvelopeError | undefin
 
 function versionRefusal(cause: unknown): TspEnvelopeError | undefined {
   // A revision error with no MAJOR is bytes that are not a TSP frame at all,
-  // which is not a version question.
-  if (!isRevisionError(cause) || cause.major === undefined) return undefined;
+  // which is not a version question. One at MAJOR 1 is vti-tsp-js reporting a
+  // 1.x frame with a MINOR it does not know that also failed to open: MINOR
+  // never gates a message (TSP §9.1), so that is an unreadable message, not a
+  // peer on another version.
+  if (!isRevisionError(cause) || cause.major === undefined || cause.major === SUPPORTED_MAJOR) return undefined;
   return new TspEnvelopeError(
     "unsupportedTspVersion",
     `${cause.message.replace(/^tsp: /, "")} (the sender must move to TSP ${TSP_VERSION}; there is no version negotiation)`,

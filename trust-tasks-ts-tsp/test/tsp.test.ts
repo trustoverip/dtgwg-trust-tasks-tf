@@ -221,6 +221,20 @@ test("consumer: a Rev 2 message from an old peer is refused before sender resolu
   assert.equal(resolved, false);
 });
 
+// MINOR never gates a message (TSP §9.1): a 1.x frame that does not open is an
+// unreadable message, not a peer on another version. Bytes 6..8 are the
+// version count code, `f8 10 00` for 1.0; the last byte carries MINOR's low bits.
+test("a TSP 1.x message with an unknown MINOR that does not open is notForThisReceiver", async () => {
+  const h = harness();
+  const bumped = Uint8Array.from(await h.seal(echoDoc()));
+  bumped[8] = 0x05; // TSP 1.5: the signature over the header no longer verifies
+  assert.deepEqual(peekRevision(bumped), { major: 1, minor: 5, recognised: false });
+  const unreadable = (e: unknown) =>
+    e instanceof TspEnvelopeError && e.failure === "notForThisReceiver" && e.message.includes("MAJOR 1, MINOR 5");
+  await assert.rejects(unpackTrustTask(bumped, { recipientVid: h.bob.vid, keys: unpackKeys(h.bob, h.alice) }), unreadable);
+  await assert.rejects(h.receive(bumped), unreadable);
+});
+
 test("bytes that are not TSP at all stay notForThisReceiver", async () => {
   const h = harness();
   await assert.rejects(

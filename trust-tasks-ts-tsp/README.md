@@ -6,7 +6,8 @@ for TypeScript, on
 [`@openvtc/vti-tsp-js`](https://www.npmjs.com/package/@openvtc/vti-tsp-js) — the
 pure-TypeScript TSP the VTA browser plugin uses (browser, Node, React Native, no
 WASM). It speaks **TSP 1.0** (`YTSP-BAA`), the released specification, which is
-byte-compatible with the Rust `affinidi-tsp` the VTA and Keyring use. The counterpart of the Rust `trust-tasks-tsp` crate, the Dart
+byte-compatible with the Rust `affinidi-tsp` the VTA and Keyring use. The
+counterpart of the Rust `trust-tasks-tsp` crate, the Dart
 `trust_tasks_tsp` package and the Go `trust-tasks-go/tsp` module: all seal the
 same envelope object.
 
@@ -103,7 +104,9 @@ Rev 2 (`YTSP-AAB`, which earlier releases of this package spoke) or Rev 3
 (`YTSP-AAC`) — is refused from its version marker, before any key is used, with
 `failure: "unsupportedTspVersion"` and a message naming the version it declared.
 TSP has no version negotiation, so such a peer has to upgrade; nothing is sent
-back.
+back. MINOR never gates a message: a TSP 1.x message with a MINOR this package
+does not know is opened like any other, and one that then fails to open is
+`notForThisReceiver`.
 
 ## Scope
 
