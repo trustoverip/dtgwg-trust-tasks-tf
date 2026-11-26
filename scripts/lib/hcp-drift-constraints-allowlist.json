@@ -1,0 +1,59 @@
+{
+  "$comment": "Differences in what the first mode of scripts/check-hcp-drift.mjs does not compare (bounds, `pattern`, `format`, closed objects, merged unions), made on purpose, for its second mode (scripts/lib/hcp-drift-constraints.mjs). Each entry names the mapped object (scripts/lib/hcp-drift-map.json id), the member path as the check prints it and the kind (a bound keyword, `pattern`, `format`, `closed` or `union`); `detail`, when present, must match the finding's detail too; `object`, `path` and `detail` may use `*`. `patternEquivalences` lists pattern pairs, exact text, that accept the same strings. Every entry has a `reason` and a `ref` to the spec's field-mapping section or the editors' question (`Q<n>`). The first matching entry takes a finding, and an entry or equivalence that matches nothing is stale and fails the check. Never add an entry for a difference that is a mistake: fix the schema.",
+  "patternEquivalences": [
+    {
+      "ours": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+      "hcp": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "reason": "The same language: the character classes list the same ranges in another order, and `\\S` is `[^\\s]`.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Uri)"
+    },
+    {
+      "ours": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "hcp": "^urn:uuid:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+      "reason": "The same language: the hexadecimal character classes list the same ranges in another order.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Urn)"
+    }
+  ],
+  "entries": [
+    {
+      "object": "hcp/import:request",
+      "path": "export.*",
+      "kind": "maxItems",
+      "detail": "ours 16777216, HCP none",
+      "reason": "A nominal bound equal to the request's 16 MiB `maxDocumentBytes`, which the framework's lints ask for (the schema-bounds lint of a request-side array, `checkFreeTextBounds` of a free-text string): it refuses nothing a document of acceptable size could carry, so the imported shapes keep only HCP's own constraints (question 42).",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.*",
+      "kind": "maxLength",
+      "detail": "ours 16777216, HCP none",
+      "reason": "A nominal bound equal to the request's 16 MiB `maxDocumentBytes`, which the framework's lints ask for (the schema-bounds lint of a request-side array, `checkFreeTextBounds` of a free-text string): it refuses nothing a document of acceptable size could carry, so the imported shapes keep only HCP's own constraints (question 42).",
+      "ref": "Q42"
+    },
+    {
+      "object": "*",
+      "path": "*",
+      "kind": "maxLength",
+      "detail": "ours *, HCP none",
+      "reason": "An upper size bound HCP does not set: a Trust Tasks framework bound on what an hcp/* party writes (SPEC §7.3 item 19 and the schema-bounds lint), not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph). Only a cap ours adds is allowed here; a cap HCP sets that ours lacks or loosens is reported.",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (the \"Where this payload is stricter than HCP's shapes\" paragraph every carried spec has)"
+    },
+    {
+      "object": "*",
+      "path": "*",
+      "kind": "maxItems",
+      "detail": "ours *, HCP none",
+      "reason": "An upper size bound HCP does not set: a Trust Tasks framework bound on what an hcp/* party writes (SPEC §7.3 item 19 and the schema-bounds lint), not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph). Only a cap ours adds is allowed here; a cap HCP sets that ours lacks or loosens is reported.",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (the \"Where this payload is stricter than HCP's shapes\" paragraph every carried spec has)"
+    },
+    {
+      "object": "*",
+      "path": "*",
+      "kind": "maxProperties",
+      "detail": "ours *, HCP none",
+      "reason": "An upper size bound HCP does not set: a Trust Tasks framework bound on what an hcp/* party writes (SPEC §7.3 item 19 and the schema-bounds lint), not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph). Only a cap ours adds is allowed here; a cap HCP sets that ours lacks or loosens is reported.",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (the \"Where this payload is stricter than HCP's shapes\" paragraph every carried spec has)"
+    }
+  ]
+}
