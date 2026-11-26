@@ -123,17 +123,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///`true` asks for each entry's personal label (rooms/keys/label) in `personal` and read marker (rooms/keys/read-marker/set) in `readMarker`. Absent or `false`: no entry carries either. A request option, not a filter — it changes which members of an entry are returned, never which entries — and off by default so that a caller that has no use for the member's own names, or will pass the list on, never receives them. 0.2 asked for the label alone with it; 0.3 adds the read marker, which has the same audience.
     #[serde(
         rename = "includePersonal",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_personal: ::std::option::Option<bool>,
@@ -157,29 +152,13 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct PersonalLabel {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<PersonalLabelDescription>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PersonalLabelName>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub tags: ::std::option::Option<PersonalLabelTags>,
     ///When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.
     #[serde(rename = "updatedAt")]
@@ -505,7 +484,6 @@ pub struct ReadMarker {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -523,11 +501,7 @@ impl ReadMarker {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per room and member, in no guaranteed order. A room held as two members the caller may act as appears twice, once per member.
     pub rooms: ::std::vec::Vec<ResponseRoomsItem>,
@@ -551,17 +525,12 @@ pub struct ResponseRoomsItem {
     ///The member this entry's group state is held for: the DID the room admitted. What a client names as `member` to rooms/keys/label, and as `issuer` to rooms/keys/act, to act on this entry rather than on the same room held as another member.
     pub member: ResponseRoomsItemMember,
     ///The member's own label for the room (rooms/keys/label). Present only when the request set `includePersonal: true` and the member has one. Private to the member: a caller MUST NOT pass it to the room's host, its owner, a community or a website the member has not chosen to show it to.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub personal: ::std::option::Option<PersonalLabel>,
     ///Where the member has seen the room's conversation up to (rooms/keys/read-marker/set), which a client counts unread messages against. Present only when the request set `includePersonal: true` and the key holder holds a marker for the room and member; absent, the client counts against its own. Private to the member: a caller MUST NOT pass it, or a read state derived from it, to the room's host, its owner, another member, a community or a website.
     #[serde(
         rename = "readMarker",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub read_marker: ::std::option::Option<ReadMarker>,

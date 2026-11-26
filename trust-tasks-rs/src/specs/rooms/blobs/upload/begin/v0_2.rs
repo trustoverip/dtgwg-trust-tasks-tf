@@ -51,7 +51,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -517,15 +516,10 @@ pub struct Payload {
     #[serde(
         rename = "directParts",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub direct_parts: ::std::option::Option<PartPlan>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The ciphertext manifest. Its digest is the BlobRef the blob will have once committed.
     pub manifest: BlobManifest,
@@ -538,7 +532,6 @@ pub struct Payload {
     #[serde(
         rename = "uploadKey",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub upload_key: ::std::option::Option<PayloadUploadKey>,
@@ -683,28 +676,19 @@ pub struct Response {
     #[serde(
         rename = "alreadyCommitted",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub already_committed: ::std::option::Option<bool>,
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The indices the host does not yet hold, in ascending order: chunk indices in proxied mode, part indices in direct mode. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed.
     pub missing: Vec<ChunkIndex>,
     ///How this upload's bytes move: `direct` to the room's storage over `targets`, or `proxied` through the host as rooms/blobs/upload/chunk documents signed by `uploadKey`.
     pub mode: TransferMode,
     ///Direct mode only: a PUT target for each of some or all of the `missing` parts. A host MAY issue targets for only some of them; the producer begins again, with the identical manifest and plan, for the rest and for any whose target lapsed. Absent in proxied mode.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub targets: ::std::option::Option<::std::vec::Vec<TransferTarget>>,
     #[serde(rename = "uploadId")]
     pub upload_id: TransferId,
@@ -854,11 +838,7 @@ pub struct TransferTarget {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub headers: ::std::option::Option<
         ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
     >,

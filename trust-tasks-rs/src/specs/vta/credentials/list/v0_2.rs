@@ -317,7 +317,6 @@ pub struct IssuedCredentialSummary {
     #[serde(
         rename = "credentialType",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<IssuedCredentialSummaryCredentialType>,
@@ -331,7 +330,6 @@ pub struct IssuedCredentialSummary {
     #[serde(
         rename = "revocationReason",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revocation_reason: ::std::option::Option<IssuedCredentialSummaryRevocationReason>,
@@ -339,7 +337,6 @@ pub struct IssuedCredentialSummary {
     #[serde(
         rename = "revokedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -481,44 +478,23 @@ pub struct Payload {
     #[serde(
         rename = "credentialType",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<PayloadCredentialType>,
     ///An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue. Opaque — consumers must not construct or parse one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Only credentials issued to this DID.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub holder: ::std::option::Option<Did>,
     ///The most records to return; the responder chooses a default and MAY return fewer. The agent caps this value.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only credentials in this state. Derived by the agent at read time, never stored.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<IssuedCredentialStatus>,
 }
 impl ::std::default::Default for Payload {
@@ -671,17 +647,12 @@ pub struct Response {
     ///One summary per matching credential. Empty when nothing matched — a successful answer, not an error.
     pub credentials: ::std::vec::Vec<IssuedCredentialSummary>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Pass to the next request as `cursor` to continue. Present when more matching credentials remain; absent when the page is the last. A consumer must not read a page that carries a `nextCursor` as a complete account of what was issued.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

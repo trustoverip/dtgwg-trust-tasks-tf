@@ -123,17 +123,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The opaque handle the account's push gateway issued at push/register, with the gateway that acts on it. Present: replaces whatever handle the mediator held for this account. Absent: the mediator drops the handle it held, and the account is no longer wakeable through this mediator.
     #[serde(
         rename = "wakeHandle",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub wake_handle: ::std::option::Option<WakeHandle>,
@@ -158,11 +153,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///true when the mediator now holds a handle for the account and will ask the handle's gateway to ring on a qualifying messaging/wake/request. false when it holds none — the request cleared it, or the mediator does not ring for this account (its operator does not offer waking, or it cannot reach the named gateway over any transport it speaks).
     #[serde(rename = "wakeCapable")]

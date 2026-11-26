@@ -124,18 +124,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub enum Payload {
     Variant0 {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         header:
             ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
         ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
@@ -146,18 +138,10 @@ pub enum Payload {
     },
     Variant1 {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         header:
             ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
         ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
@@ -358,11 +342,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1PayloadBase64Url {
 pub struct Response {
     ///The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.
     pub alg: ResponseAlg,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.
     pub jws: ResponseJws,

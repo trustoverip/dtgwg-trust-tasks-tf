@@ -126,15 +126,10 @@ pub struct Payload {
     #[serde(
         rename = "expectedExisting",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_existing: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub record: TrustRecord,
 }
@@ -210,18 +205,10 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable detail.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<ResponseMessage>,
     ///Whether the record was stored.
     pub ok: bool,
@@ -303,28 +290,16 @@ pub struct TrustRecord {
     #[serde(rename = "authorityId")]
     pub authority_id: ::std::string::String,
     ///Present on authorization records: whether the action+resource authorization is confirmed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub authorized: ::std::option::Option<bool>,
     ///Opaque governance context attached to the record.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub context:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(rename = "entityId")]
     pub entity_id: ::std::string::String,
     ///Present on recognition records: whether the action+resource is recognised.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub recognized: ::std::option::Option<bool>,
     #[serde(rename = "recordType")]
     pub record_type: RecordType,
@@ -333,7 +308,6 @@ pub struct TrustRecord {
     #[serde(
         rename = "validFrom",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -341,7 +315,6 @@ pub struct TrustRecord {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

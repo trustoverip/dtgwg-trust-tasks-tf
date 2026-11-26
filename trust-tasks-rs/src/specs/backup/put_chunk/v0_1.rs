@@ -429,11 +429,7 @@ pub struct Payload {
     #[serde(rename = "digestMultibase")]
     pub digest_multibase: DigestMultibase,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Which chunk. Zero-based, below the manifest's chunkCount.
     pub index: ChunkIndex,
@@ -456,11 +452,7 @@ pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Echoed, so an acknowledgement arriving out of order is attributable to its write.
     pub index: ChunkIndex,

@@ -128,29 +128,19 @@ pub struct Payload {
     #[serde(
         rename = "changedSince",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Narrow to contacts known by this persona. Omitting it lists the context's contacts across every persona in it, which a producer SHOULD offer deliberately rather than by default — the unfiltered view is the one that shows the holder's personas side by side.
     #[serde(
         rename = "knownByPersona",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub known_by_persona: ::std::option::Option<PayloadKnownByPersona>,
@@ -347,16 +337,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKnownByPersona {
 #[deprecated(note = "superseded by persona/contact/list/1.1")]
 pub struct Response {
     pub contacts: ::std::vec::Vec<ResponseContactsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -375,7 +360,6 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "claimCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_count: ::std::option::Option<u64>,
@@ -385,7 +369,6 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "displayName",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<ResponseContactsItemDisplayName>,
@@ -393,7 +376,6 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "hasUnreviewedChange",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub has_unreviewed_change: ::std::option::Option<bool>,

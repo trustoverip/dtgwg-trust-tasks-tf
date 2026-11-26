@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The setup-session JWT (aud=vtc-install-session) minted by install/claim/finish.
     #[serde(rename = "setupSessionToken")]
@@ -208,11 +204,7 @@ pub struct Response {
     ///event_id of the persisted CommunityInstalled audit envelope (a UUID).
     #[serde(rename = "eventId")]
     pub event_id: ResponseEventId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

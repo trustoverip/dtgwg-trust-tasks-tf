@@ -149,11 +149,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vta/witness/present/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The witness/session/0.1 #response the witness returned, exactly as received, under the witness's proof.
     pub response: CarriedDocument,
@@ -174,11 +170,7 @@ impl Payload {
 pub struct Response {
     ///The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.
     pub document: CarriedDocument,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "sessionId")]
     pub session_id: SessionId,

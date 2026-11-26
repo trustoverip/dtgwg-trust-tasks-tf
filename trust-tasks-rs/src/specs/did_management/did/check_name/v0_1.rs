@@ -45,7 +45,6 @@ pub struct DidRecord {
     #[serde(
         rename = "didId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_id: ::std::option::Option<::std::string::String>,
@@ -53,37 +52,20 @@ pub struct DidRecord {
     #[serde(
         rename = "didUrl",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_url: ::std::option::Option<::std::string::String>,
     ///When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub disabled: ::std::option::Option<bool>,
     ///Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub method: ::std::option::Option<::std::string::String>,
     ///Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
     pub mnemonic: ::std::string::String,
@@ -93,7 +75,6 @@ pub struct DidRecord {
     #[serde(
         rename = "totalResolves",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub total_resolves: ::std::option::Option<u64>,
@@ -200,24 +181,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional explicit hosting domain for the reservation. Honored only when `reserve: true`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub path: ::std::option::Option<PayloadPath>,
     ///When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign).
     #[serde(default)]
@@ -305,18 +274,10 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPath {
 pub struct Response {
     ///True iff the path is currently free to register.
     pub available: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub record: ::std::option::Option<DidRecord>,
     ///True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.
     pub reserved: bool,

@@ -213,11 +213,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The HTTPS URL at which the network delivers broadcasts for the group.
     pub endpoint: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The group: a DID of the member's, or for a network its network group `<networkDid>#role-<localRole>`.
     pub group: PayloadGroup,
@@ -384,11 +380,7 @@ impl<'de> ::serde::Deserialize<'de> for RegisteredGroupGroup {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub group: RegisteredGroup,
 }

@@ -109,11 +109,7 @@ impl<'de> ::serde::Deserialize<'de> for Capability {
 pub struct CapabilityRef {
     pub capability: Capability,
     ///Optional qualifier. Absent covers every resource of the capability's kind.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub resource: ::std::option::Option<ResourceQualifier>,
 }
 impl CapabilityRef {
@@ -217,34 +213,18 @@ pub struct Payload {
     ///The role's capability ceiling, stated in full (it replaces any previous ceiling wholesale). Every capability MUST be in the VTC's registry, MUST NOT be one the registry classes as additive, and MUST be held — at a qualifier at least as wide — by the administrators whose authority defines the role. An empty array defines a role that admits no capability.
     pub ceiling: ::std::vec::Vec<CapabilityRef>,
     ///Optional human-readable description of the role.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<PayloadDescription>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Name of the custom role. MUST NOT be a built-in role name.
     pub name: RoleName,
     ///Optional human-readable rationale, recorded with the change and shown to approvers.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///`true` to replace an existing custom role of this name; `false` or absent to create one. A create against an existing name is refused with `exists`, and a replace against a missing one with `notFound`, so neither intent can be mistaken for the other.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub replaces: ::std::option::Option<bool>,
 }
 impl Payload {
@@ -439,11 +419,7 @@ impl<'de> ::serde::Deserialize<'de> for ResourceQualifier {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The role record the VTC now holds, with `builtIn: false` and its provenance.
     pub role: RoleDefinition,
@@ -486,7 +462,6 @@ pub struct RoleDefinition {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -494,29 +469,19 @@ pub struct RoleDefinition {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<RoleDefinitionCreatedBy>,
     ///Optional human-readable description. Confers nothing.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RoleDefinitionDescription>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub name: RoleName,
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -524,7 +489,6 @@ pub struct RoleDefinition {
     #[serde(
         rename = "updatedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<RoleDefinitionUpdatedBy>,

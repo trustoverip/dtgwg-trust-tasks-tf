@@ -188,7 +188,6 @@ pub struct JustifyDocument {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -419,11 +418,7 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub recipient: TrusteeIndex,
     ///The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.
@@ -628,11 +623,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTrustee {
 #[deprecated(note = "retired; use vta/pcs/trustee/justify/0.2")]
 pub struct Response {
     pub document: JustifyDocument,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

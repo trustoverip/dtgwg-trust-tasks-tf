@@ -276,11 +276,7 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberState {
 #[deprecated(note = "superseded by vtc/rooms/community/members/add/0.2")]
 pub struct Payload {
     pub actions: MemberActions,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The member to admit: an active member of this community.
     pub member: PayloadMember,
@@ -492,11 +488,7 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/rooms/community/members/add/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub member: RoomMember,
 }
@@ -515,7 +507,6 @@ pub struct RoomMember {
     #[serde(
         rename = "admittedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -525,7 +516,6 @@ pub struct RoomMember {
     #[serde(
         rename = "removedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

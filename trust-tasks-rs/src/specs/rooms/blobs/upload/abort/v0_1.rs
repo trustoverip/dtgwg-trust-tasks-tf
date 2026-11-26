@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by rooms/blobs/upload/abort/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "uploadId")]
     pub upload_id: TransferId,
@@ -147,11 +143,7 @@ impl Payload {
 pub struct Response {
     ///Whether this request ended the upload. False means it was already aborted — a success, and why abort can be retried safely.
     pub aborted: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "uploadId")]
     pub upload_id: TransferId,

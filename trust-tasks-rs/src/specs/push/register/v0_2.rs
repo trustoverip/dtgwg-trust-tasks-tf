@@ -127,11 +127,7 @@ pub struct Payload {
     ///The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.
     #[serde(rename = "controllerVtaDid")]
     pub controller_vta_did: PayloadControllerVtaDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The platform push channel (token). Held by the gateway only — never disclosed to any other party.
     pub registration: PushRegistration,
@@ -210,11 +206,7 @@ pub enum PushRegistration {
     #[serde(rename = "apns")]
     Apns {
         ///Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         environment: ::std::option::Option<PushRegistrationEnvironment>,
         ///APNs device token (hex string issued by Apple Push Notification service).
         token: PushRegistrationToken,
@@ -555,11 +547,7 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationTopic {
 #[non_exhaustive]
 #[deprecated(note = "superseded by push/register/0.3")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.
     #[serde(rename = "wakeHandle")]

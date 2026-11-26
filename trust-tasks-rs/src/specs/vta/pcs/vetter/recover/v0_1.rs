@@ -193,11 +193,7 @@ pub struct Payload {
     ///The context the engine belongs to. Only keys derived from this context's base are searched.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The vetter's member DID in the community.
     #[serde(rename = "memberDid")]
@@ -454,11 +450,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMemberDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///True when the engine's key was replaced by the bound one; false when the engine already held it.
     pub recovered: bool,

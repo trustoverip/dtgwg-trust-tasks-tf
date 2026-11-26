@@ -199,11 +199,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by witness/session/submit/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A W3C Verifiable Presentation of the submitting party's own relationship credential material (opaque here), bound to the session's challenge and domain. A presentation not bound to this session is rejected with witness/session/submit:challengeMismatch.
     pub vp: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -220,11 +216,7 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by witness/session/submit/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A signed Verifiable Witness Credential: a DTG Verifiable Statement Credential (`type` including `StatementCredential`) under the predicate `https://registry.trustoverip.org/dtg/vsc/witnessed/1` (opaque here; its schema belongs to the DTG Credentials Core Specification). Its issuer is the witness, with `issuerScope` `directed` or `public`; its `credentialSubject.id` is the submitting party, the issuer of the relationship credential the witness observed; and its `credentialSubject.object.digestMultibase` is that credential's digest. Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1) — and its taskDigestMultibase MUST be that document's task digest (SPEC.md §4.9.3). The id locates the session document; the digest binds it, because an id is a name anyone can reuse on a counterfeit.
     pub vwc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,

@@ -129,11 +129,7 @@ pub struct Payload {
     ///The DIDs to remove from the account's access list. Entries not present are ignored.
     pub entries: ::std::vec::Vec<Vid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -154,11 +150,7 @@ pub struct Response {
     ///The account whose access list was modified.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The entries actually removed (those that were present in the access list).
     pub removed: ::std::vec::Vec<Vid>,

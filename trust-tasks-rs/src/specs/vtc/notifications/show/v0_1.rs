@@ -343,7 +343,6 @@ pub struct Notification {
     #[serde(
         rename = "validFrom",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -351,7 +350,6 @@ pub struct Notification {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -434,11 +432,7 @@ impl<'de> ::serde::Deserialize<'de> for NotificationId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "recordId")]
     pub record_id: RecordId,
@@ -473,7 +467,6 @@ pub struct ReceivedNotification {
     #[serde(
         rename = "relayDisclosure",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relay_disclosure: ::std::option::Option<ReceivedNotificationRelayDisclosure>,
@@ -623,16 +616,11 @@ pub struct Recipients {
     #[serde(
         rename = "groupId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub group_id: ::std::option::Option<GroupId>,
     ///The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<RecipientsRole>,
     pub scope: RecipientScope,
 }

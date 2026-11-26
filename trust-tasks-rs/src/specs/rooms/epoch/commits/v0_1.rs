@@ -51,7 +51,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -152,18 +151,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Page size to ask for. Commits are large and a member far behind may have many; a caller reads to the end by asking again from the epoch it reached.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Must confer `read` at this room's scope. A commit is opaque to whoever holds it without the group state, so this authorises the *fetch* rather than the contents — and on a `private` room requires no host session, exactly as a record read does.
     pub presentation: AuthorityPresentation,
@@ -190,11 +181,7 @@ impl Payload {
 pub struct Response {
     ///The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.
     pub commits: ::std::vec::Vec<ResponseCommitsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     /**
     The epoch the room is at now.
@@ -203,7 +190,6 @@ pub struct Response {
     #[serde(
         rename = "roomEpoch",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_epoch: ::std::option::Option<::std::num::NonZeroU64>,

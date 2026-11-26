@@ -328,7 +328,6 @@ pub struct Payload {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<PayloadCredentialRefsItem>>,
@@ -337,15 +336,10 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The holder's name for the profile — "Work", "Gaming". Never disclosed to a verifier; it is how the holder finds it again.
     pub name: PayloadName,
@@ -353,16 +347,11 @@ pub struct Payload {
     #[serde(
         rename = "profileId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
     ///Where this face may be worn. Omit to keep the face's current reach — anywhere, for a new face. Unlike the rest of a put, omission does not reset it: a reach is a restriction the holder set, and a producer that predates this member must not widen a face to anywhere by saving an unrelated edit. To widen, send `{"kind": "anywhere"}`. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reach: ::std::option::Option<FaceReach>,
 }
 impl Payload {
@@ -513,11 +502,7 @@ pub enum ProfileEntry {
     Variant0 {
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant1 {
@@ -525,11 +510,7 @@ pub enum ProfileEntry {
         pin_version: Version,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant2 {
@@ -537,20 +518,12 @@ pub enum ProfileEntry {
         override_: ProfileEntryVariant2Override,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant3 {
         inline: ProfileEntryVariant3Inline,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
 }
@@ -560,11 +533,7 @@ pub enum ProfileEntry {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant2Override {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ProfileEntryVariant2OverrideLabel>,
     pub value: ::serde_json::Value,
 }
@@ -638,11 +607,7 @@ impl<'de> ::serde::Deserialize<'de> for ProfileEntryVariant2OverrideLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant3Inline {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ProfileEntryVariant3InlineLabel>,
     pub provenance: Provenance,
     #[serde(rename = "type")]
@@ -818,17 +783,12 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -1165,25 +1125,16 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant3Source {
 #[non_exhaustive]
 #[deprecated(note = "superseded by persona/profile/put/1.1")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
     pub created: bool,
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
@@ -1207,7 +1158,6 @@ pub struct ResponseCorrelation {
     #[serde(
         rename = "sharedAttributeCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_attribute_count: ::std::option::Option<u64>,

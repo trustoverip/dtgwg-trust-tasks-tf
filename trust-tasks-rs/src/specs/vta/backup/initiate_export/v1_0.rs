@@ -411,24 +411,15 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vta/backup/initiate-export/1.1")]
 pub struct Payload {
     ///Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum: a recipient offering more must be askable for it without a specification revision, and one that does not implement the request refuses with unsupportedAlgorithm.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub algorithm: ::std::option::Option<PayloadAlgorithm>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Serialize the audit trail alongside the operational state. Absent means false — stated in prose rather than as a schema `default`, because a materialised default turns an omitted member into an asserted one in generated bindings, which is a different document.
     #[serde(
         rename = "includeAudit",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_audit: ::std::option::Option<bool>,
@@ -575,18 +566,13 @@ pub struct Response {
     #[serde(
         rename = "completionHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub completion_hint: ::std::option::Option<ResponseCompletionHint>,
     ///Where the bytes are, what they should be, and until when.
     pub descriptor: BundleDescriptor,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

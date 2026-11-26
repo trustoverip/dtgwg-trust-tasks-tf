@@ -126,7 +126,6 @@ pub struct Payload {
     #[serde(
         rename = "allFailed",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub all_failed: ::std::option::Option<bool>,
@@ -134,21 +133,15 @@ pub struct Payload {
     #[serde(
         rename = "allWaiting",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub all_waiting: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.
     #[serde(
         rename = "jobId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub job_id: ::std::option::Option<PayloadJobId>,
@@ -233,11 +226,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJobId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Requeued {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.
     pub from: RequeuedFrom,
@@ -247,7 +236,6 @@ pub struct Requeued {
     #[serde(
         rename = "memberDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<RequeuedMemberDid>,
@@ -442,11 +430,7 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedMemberDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.
     pub requeued: ::std::vec::Vec<Requeued>,
@@ -464,11 +448,7 @@ impl Response {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Skipped {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "jobId")]
     pub job_id: SkippedJobId,

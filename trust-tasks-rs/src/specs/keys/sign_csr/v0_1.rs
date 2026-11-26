@@ -123,11 +123,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.
     #[serde(rename = "keyId")]
@@ -137,7 +133,6 @@ pub struct Payload {
     #[serde(
         rename = "subjectAltNames",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_alt_names: ::std::option::Option<PayloadSubjectAltNames>,
@@ -213,25 +208,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 #[non_exhaustive]
 pub struct PayloadSubjectAltNames {
     ///dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub dns: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesDnsItem>>,
     ///rfc822Name entries: ASCII mailbox addresses.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub email: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesEmailItem>>,
     ///uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub uri: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesUriItem>>,
 }
 impl ::std::default::Default for PayloadSubjectAltNames {
@@ -635,11 +618,7 @@ impl<'de> ::serde::Deserialize<'de> for RdnAttributeValue {
 pub struct Response {
     ///The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.
     pub csr: ResponseCsr,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The key the request is for. Echoed so a response separated from its request is still attributable.
     #[serde(rename = "keyId")]

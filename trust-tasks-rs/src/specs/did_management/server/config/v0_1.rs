@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -151,7 +147,6 @@ pub struct Response {
     #[serde(
         rename = "advertisedServices",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub advertised_services: ::std::option::Option<::std::vec::Vec<ResponseAdvertisedServicesItem>>,
@@ -165,38 +160,27 @@ pub struct Response {
     #[serde(
         rename = "didHostingUrl",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_hosting_url: ::std::option::Option<::std::string::String>,
     ///DID methods this build can host.
     #[serde(rename = "enabledMethods")]
     pub enabled_methods: ::std::vec::Vec<ResponseEnabledMethodsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The address the service's HTTP listener is bound to.
     #[serde(
         rename = "listenAddress",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listen_address: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub logging: ::std::option::Option<ResponseLogging>,
     ///The messaging mediator the service is reached through. Absent when it runs without one.
     #[serde(
         rename = "mediatorDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mediator_did: ::std::option::Option<::std::string::String>,
@@ -204,40 +188,23 @@ pub struct Response {
     #[serde(
         rename = "publicUrl",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub registry: ::std::option::Option<ResponseRegistry>,
     ///The service's own DID — the issuer of its replies.
     #[serde(rename = "serviceDid")]
     pub service_did: ResponseServiceDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub sessions: ::std::option::Option<ResponseSessions>,
     ///The running implementation's version string.
     #[serde(rename = "softwareVersion")]
     pub software_version: ResponseSoftwareVersion,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub storage: ::std::option::Option<ResponseStorage>,
     pub transports: ResponseTransports,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub vta: ::std::option::Option<ResponseVta>,
 }
 impl Response {
@@ -625,17 +592,9 @@ impl ResponseTransports {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ResponseVta {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl ::std::default::Default for ResponseVta {

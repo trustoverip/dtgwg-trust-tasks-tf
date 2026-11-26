@@ -165,17 +165,12 @@ impl OutcomeEvidence {
 pub struct Payload {
     ///The member asserting personhood; MUST equal the presentation's holder.
     pub did: PayloadDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. The outcome evidence of the witnessing sessions that the Verifiable Witness Credentials in presentation cite: one entry per VWC the member wants counted, each the witness/session document the VWC's taskContext names and the witness/session/submit #response that delivered it, exactly as stored, never re-serialised. A VWC with no paired entry counts for nothing; an entry pairing with no VWC in presentation is ignored.
     #[serde(
         rename = "outcomeEvidence",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub outcome_evidence: ::std::option::Option<::std::vec::Vec<OutcomeEvidence>>,
@@ -253,11 +248,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[non_exhaustive]
 pub struct Response {
     pub did: ResponseDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Always true on success — the flag flipped or stayed asserted.
     pub personhood: bool,

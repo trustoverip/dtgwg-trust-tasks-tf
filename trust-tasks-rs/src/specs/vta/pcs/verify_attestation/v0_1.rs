@@ -721,11 +721,7 @@ pub struct Payload {
     #[serde(rename = "applicationId")]
     pub application_id: PayloadApplicationId,
     pub attestation: Attestation,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The community's published hidden-vetting parameters, copied verbatim from its join manifest.
     pub parameters: CommunityParameters,
@@ -1210,11 +1206,7 @@ pub struct Response {
     ///The metadata of the attestation taken.
     pub accepted: AttestationMeta,
     pub application: ApplicationSummary,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

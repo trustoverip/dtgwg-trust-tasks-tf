@@ -119,11 +119,7 @@ pub struct Payload {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub note: ::std::option::Option<PayloadNote>,
     ///What the asker wants confirmed, in one short sentence, for example "Did you just ask me to send you a one-time code?". It is asker-authored text the responder's device displays attributed to the asker, never as a statement the device itself vouches for.
     pub question: PayloadQuestion,
@@ -332,7 +328,6 @@ pub struct Response {
     #[serde(
         rename = "notConfirmedReason",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub not_confirmed_reason: ::std::option::Option<ResponseNotConfirmedReason>,

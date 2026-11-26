@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///DID the name is bound to.
     pub did: PayloadDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The name, without the host — the full form is `<host>/@<name>`.
     pub name: PayloadName,
@@ -266,11 +262,7 @@ pub struct Response {
     pub available: bool,
     ///Host the name would live under. A name is only unique within its host.
     pub domain: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub name: ::std::string::String,
     ///Whether the name is withheld by the host's own policy rather than taken by a DID. A reserved name is not available and will not become so by waiting.

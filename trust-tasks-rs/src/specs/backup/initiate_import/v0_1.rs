@@ -625,18 +625,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub algorithm: ::std::option::Option<PayloadAlgorithm>,
     ///The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub chunks: ::std::option::Option<ChunkManifest>,
     ///Lowercase hex SHA-256 of the whole bundle about to be uploaded, committed before the upload begins. The recipient refuses bytes that hash differently, which is what bounds the damage from a leaked write token or a substituted chunk. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.
     #[serde(rename = "expectedSha256")]
@@ -645,11 +637,7 @@ pub struct Payload {
     #[serde(rename = "expectedSizeBytes")]
     pub expected_size_bytes: ExpectedSizeBytes,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -729,18 +717,13 @@ pub struct Response {
     #[serde(
         rename = "completionHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub completion_hint: ::std::option::Option<ResponseCompletionHint>,
     ///Where or how to write the bytes, on what terms, and until when.
     pub descriptor: BundleDescriptor,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

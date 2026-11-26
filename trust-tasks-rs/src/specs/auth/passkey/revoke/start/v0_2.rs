@@ -40,11 +40,7 @@ pub mod error {
 pub struct CredentialDescriptor {
     ///base64url-encoded credential id.
     pub id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
@@ -136,7 +132,6 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -148,30 +143,20 @@ pub struct CredentialRequestOptions {
     This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
 
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub extensions:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "rpId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "userVerification",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
@@ -399,18 +384,10 @@ pub struct Payload {
     #[serde(rename = "credentialId")]
     pub credential_id: PayloadCredentialId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///New in 0.2. Whose credential it is, when the producer is not its owner: an administrator revoking another subject's credential. Absent: the producer's own. The user-verification ceremony is always over the PRODUCER's credentials — the person acting proves they are present, whoever owns the credential.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
 impl Payload {
@@ -543,11 +520,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim. The consumer binds it to the target credentialId server-side, so the finish carries no target of its own.
     #[serde(rename = "revocationId")]

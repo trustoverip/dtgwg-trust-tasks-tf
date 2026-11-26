@@ -45,7 +45,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -55,7 +54,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "deletedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -75,7 +73,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "valueBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,
@@ -376,17 +373,12 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Defaults to false. When true, a tombstone at this address is returned as a record with `deleted: true` instead of being reported as absent. Lets a consumer distinguish "deleted, and here is the version that deleted it" from "never existed, or deleted so long ago the tombstone was reaped" — a distinction a repair path needs and a normal read does not.
     #[serde(
         rename = "includeDeleted",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -464,11 +456,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The record at the requested address, with its `value` populated (unless it is a tombstone returned under `includeDeleted`).
     pub record: AppStateRecord,

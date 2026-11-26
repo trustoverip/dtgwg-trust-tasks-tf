@@ -126,11 +126,7 @@ pub struct JoinRequest {
     #[serde(rename = "applicantDid")]
     pub applicant_did: JoinRequestApplicantDid,
     ///What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub attributes: ::std::option::Option<::std::vec::Vec<JoinRequestAttributesItem>>,
     /**
     Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.
@@ -143,11 +139,7 @@ pub struct JoinRequest {
     )]
     pub decision: ::std::option::Option<::std::option::Option<JoinRequestDecision>>,
     ///Opaque community-defined extension bag.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub extensions:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Stable id of this join request (a UUID).
@@ -156,7 +148,6 @@ pub struct JoinRequest {
     #[serde(
         rename = "policyDecision",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub policy_decision:
@@ -165,7 +156,6 @@ pub struct JoinRequest {
     #[serde(
         rename = "registryConsent",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_consent: ::std::option::Option<bool>,
@@ -561,11 +551,7 @@ impl ::std::convert::TryFrom<::std::string::String> for JoinRequestStatus {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The join request to fetch.
     pub id: PayloadId,
@@ -640,11 +626,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub request: JoinRequest,
 }

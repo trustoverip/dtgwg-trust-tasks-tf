@@ -263,11 +263,7 @@ impl OutcomeEvidence {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The witness/session/submit/0.2 #response the witness returned, exactly as received, under the witness's proof. It carries the VWC and its vwcDigestMultibase.
     pub response: CarriedDocument,
@@ -290,11 +286,7 @@ pub struct Response {
     pub credential_id: ResponseCredentialId,
     ///The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it: `session`, the witness/session/0.2 document as the VTA built it, and `outcome`, the witness/session/submit/0.2 #response as received, which carries the VWC. Each is carried exactly as sent or received, never re-serialised.
     pub evidence: OutcomeEvidence,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "sessionId")]
     pub session_id: SessionId,

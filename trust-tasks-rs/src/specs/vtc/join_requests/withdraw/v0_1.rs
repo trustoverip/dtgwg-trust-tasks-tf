@@ -122,24 +122,15 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Free text for the humans who will read the community's record of this withdrawal — a vetter who attested, or a maintainer mid-review. A consumer MUST NOT interpret it or branch on its content. A producer MUST NOT put credentials, secrets, or personal data about anyone other than the applicant into it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The request to withdraw. Optional: an applicant whose submit response was lost never received an id, and the id-less form — resolved from the authenticated applicant's own identifier — is the only one available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.
     #[serde(
         rename = "requestId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<PayloadRequestId>,
@@ -282,11 +273,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The request that was withdrawn. Returned even when the request omitted it, so an applicant who used the id-less form learns which request they closed.
     #[serde(rename = "requestId")]

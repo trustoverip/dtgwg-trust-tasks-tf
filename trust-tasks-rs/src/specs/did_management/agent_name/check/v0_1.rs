@@ -123,17 +123,9 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional explicit hosting domain to probe against. Availability is domain-scoped — the same name may be free on one domain and taken on another. When omitted, resolves via caller ACL default → system default. See category CONVENTIONS §1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The agent name's local part to probe, without the leading `@` (the `alice` in `/@alice`). A leading `@` submitted by a lenient client is stripped by the consumer before evaluation.
     pub name: PayloadName,
@@ -212,11 +204,7 @@ pub struct Response {
     pub available: bool,
     ///The hosting domain the probe was evaluated against, after domain resolution.
     pub domain: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The probed name's local part, echoed in canonical bare form (leading `@` stripped).
     pub name: ::std::string::String,

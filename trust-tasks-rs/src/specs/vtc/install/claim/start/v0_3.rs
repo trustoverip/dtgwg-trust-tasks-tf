@@ -125,11 +125,7 @@ pub struct Payload {
     ///The claim code the operator received out of band, through a different channel from the install URL. Required in 0.3. Compared with its stored hash; never logged.
     #[serde(rename = "claimCode")]
     pub claim_code: PayloadClaimCode,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup. In 0.3 it names the founder's DID.
     pub token: PayloadToken,
@@ -282,11 +278,7 @@ pub struct Response {
     ///When this claim ceremony lapses (not the install token).
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

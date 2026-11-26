@@ -39,25 +39,13 @@ pub mod error {
 #[non_exhaustive]
 pub struct DriftItem {
     ///Whose role differs, for the three role types.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub observed: ::std::option::Option<DriftItemObserved>,
     pub resource: RepoResource,
     ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
@@ -470,11 +458,7 @@ pub enum ForgeEvent {
         forge_id: ForgeId,
         resource: RepoResource,
         ///The role the account now holds. Absent: the account holds no role now.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         role: ::std::option::Option<ForgeRole>,
     },
     ///ProtectionChanged
@@ -508,11 +492,7 @@ pub enum ForgeEvent {
         #[serde(rename = "ownerId")]
         owner_id: ForgeId,
         ///The namespace ids under which the bridge held the same owner before this binding, whose forge-side state the binding took over. Each is retired on the bridge.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         supersedes: ::std::option::Option<Vec<NamespaceId>>,
     },
     ///RoleMapReported
@@ -521,20 +501,12 @@ pub enum ForgeEvent {
         ///The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.
         ladder: Vec<MappedRole>,
         ///Repositories whose own map differs from `roleMap`, each at most once. Absent or empty: every repository uses `roleMap`.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         repos: ::std::option::Option<::std::vec::Vec<ForgeEventReposItem>>,
         #[serde(rename = "roleMap")]
         role_map: RoleMap,
         ///Repositories whose forge roles the bridge last projected under a different map from the one it now applies to them. Absent or empty: none.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         stale: ::std::option::Option<Vec<RepoResource>>,
     },
     ///PullRequestOpened
@@ -547,11 +519,7 @@ pub enum ForgeEvent {
         ///The account that opened the pull request.
         author: ForgeAccount,
         ///Whether the pull request is a draft. Absent: the bridge does not know, or the forge has no drafts.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         draft: ::std::option::Option<bool>,
         ///The forge's id for the repository the pull request targets.
         #[serde(rename = "forgeId")]
@@ -560,7 +528,6 @@ pub enum ForgeEvent {
         #[serde(
             rename = "fromFork",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         from_fork: ::std::option::Option<bool>,
@@ -1053,18 +1020,10 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[non_exhaustive]
 pub struct Payload {
     ///The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub drift: ::std::option::Option<::std::vec::Vec<DriftItem>>,
     pub event: ForgeEvent,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The namespace the event happened in.
     pub namespace: NamespaceId,
@@ -1214,11 +1173,7 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Response {

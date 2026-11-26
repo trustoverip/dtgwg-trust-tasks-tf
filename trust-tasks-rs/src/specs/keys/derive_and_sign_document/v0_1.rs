@@ -201,11 +201,7 @@ pub struct Payload {
     ///The JSON document to sign. Any `proof` member present is stripped before canonicalization — the custodian signs the document's content, never a previous signature over it.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Algorithm to derive. MUST be one that can sign.
     #[serde(rename = "keyType")]
@@ -286,11 +282,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDerivationPath {
 pub struct Response {
     ///The document with the Data Integrity `proof` grafted on.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The `did:key` of the derived signer — the identity the document was signed as, and the DID a verifier resolves the proof's verification method against.
     #[serde(rename = "signerDid")]

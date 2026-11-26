@@ -52,47 +52,32 @@ pub struct AuditEnvelope {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<AuditEnvelopeContextId>,
     ///Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub detail:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.
     #[serde(
         rename = "entryHash",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub entry_hash: ::std::option::Option<DigestMultibase>,
     ///Stable identifier for this event. Also the tie-breaker component of a cursor's position key.
     #[serde(rename = "eventId")]
     pub event_id: AuditEnvelopeEventId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub outcome: ::std::option::Option<::std::string::String>,
     ///Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.
     #[serde(
         rename = "prevHash",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prev_hash: ::std::option::Option<DigestMultibase>,
@@ -103,7 +88,6 @@ pub struct AuditEnvelope {
     #[serde(
         rename = "schemaVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub schema_version: ::std::option::Option<u64>,
@@ -464,68 +448,38 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by audit/list/0.2")]
 pub struct Payload {
     ///Return only entries whose `action` equals this value.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub action: ::std::option::Option<PayloadAction>,
     ///Return only entries whose `actor` DID equals this value. Matches on the plaintext; redacted entries are not returned by an actor filter.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub actor: ::std::option::Option<PayloadActor>,
     ///Return only entries in this trust context.
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
     ///Opaque continuation token from a previous response's `cursor`. Encodes the position to resume from; a maintainer SHOULD sign it so it cannot be forged to skip entries. Treated as invalid (see errorCodes) if it fails to verify — e.g. minted before an audit-key rotation. A consumer that supplies a `cursor` MUST NOT also change the filters, which are bound into the cursor's position.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Return only entries recorded at or after this time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Return only entries whose `outcome` equals this value.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub outcome: ::std::option::Option<PayloadOutcome>,
     ///Maximum entries to return in this page.
     #[serde(
         rename = "pageSize",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Return only entries recorded strictly before this time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub to: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl ::std::default::Default for Payload {
@@ -792,19 +746,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadOutcome {
 #[deprecated(note = "superseded by audit/list/0.2")]
 pub struct Response {
     ///Opaque continuation token for the next page. Present iff `truncated` is true.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///The matching audit entries, newest first.
     pub entries: ::std::vec::Vec<AuditEnvelope>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///True when more entries match beyond this page — `cursor` is then present to fetch them.
     pub truncated: bool,

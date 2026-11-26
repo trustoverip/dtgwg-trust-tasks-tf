@@ -43,17 +43,12 @@ pub struct AgentNameEntry {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<u64>,
     ///Whether the name currently resolves. A disabled name is still held — it is not available for anyone else to take.
     pub enabled: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The name, without the host — the full form is `<host>/@<name>`.
     pub name: ::std::string::String,
@@ -156,11 +151,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///DID the name is bound to.
     pub did: PayloadDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -235,11 +226,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[deprecated(note = "superseded by vta/webvh/agent-name/list/1.1")]
 pub struct Response {
     pub did: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Names held for the DID, including disabled ones — a disabled name is still held and cannot be taken by anyone else.
     pub names: ::std::vec::Vec<AgentNameEntry>,

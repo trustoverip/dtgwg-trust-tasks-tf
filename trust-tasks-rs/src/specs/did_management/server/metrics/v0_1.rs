@@ -127,11 +127,7 @@ pub struct Histogram {
     ///Total number of observations.
     pub count: u64,
     ///Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub labels: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, ::std::string::String>,
     >,
@@ -227,11 +223,7 @@ impl<'de> ::serde::Deserialize<'de> for HistogramName {
 #[non_exhaustive]
 pub struct Metric {
     ///Dimensions the value is broken down by (e.g. `{"method": "resolve"}`). Absent or empty when the metric carries none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub labels: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, ::std::string::String>,
     >,
@@ -312,11 +304,7 @@ impl<'de> ::serde::Deserialize<'de> for MetricName {
 pub struct MetricsSnapshot {
     ///Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell "no counters" from "the field was dropped".
     pub counters: ::std::vec::Vec<Metric>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.
     pub gauges: ::std::vec::Vec<Metric>,
@@ -337,11 +325,7 @@ impl MetricsSnapshot {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -362,11 +346,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub snapshot: MetricsSnapshot,
 }

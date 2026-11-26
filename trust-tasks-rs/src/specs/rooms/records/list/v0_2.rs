@@ -52,7 +52,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -392,32 +391,16 @@ impl ::std::fmt::Display for HeadVersion {
 #[deprecated(note = "superseded by rooms/records/list/0.8")]
 pub struct Payload {
     ///Opaque continuation token from a previous response. A host MUST NOT accept a cursor it did not issue.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum records to return. A host MAY return fewer.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Return only records whose key starts with this. On an `attributed` or `private` room keys are opaque, so a prefix is only useful where the client assigned structure to them.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub prefix: ::std::option::Option<PayloadPrefix>,
     ///Must confer the `read` action at this room's scope.
     pub presentation: AuthorityPresentation,
@@ -428,7 +411,6 @@ pub struct Payload {
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -614,48 +596,24 @@ impl ::std::fmt::Display for RecordCount {
 #[non_exhaustive]
 pub struct RecordMetadataV2 {
     ///The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub author: ::std::option::Option<::std::string::String>,
     ///The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write, so a listing discloses which records carry files, never anything about the files beyond the blobs' sizes.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
     ///Present only on an `open` room; sealed with the body otherwise.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RecordMetadataV2Description>,
     ///The epoch the record was sealed under. Absent on an `open` room.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
     ///The record's key within the room. On `attributed` and `private` rooms this MUST be opaque — a random identifier, never a descriptive slug. A key reading `decision/acquire-northwind` defeats the encryption sitting beside it; structured naming belongs inside the sealed body.
     pub key: ::std::string::String,
     ///Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<RecordMetadataV2Status>,
     ///Present only on an `open` room; sealed with the body otherwise.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<RecordMetadataV2Title>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -858,31 +816,21 @@ impl<'de> ::serde::Deserialize<'de> for RecordMetadataV2Title {
 #[deprecated(note = "superseded by rooms/records/list/0.8")]
 pub struct Response {
     ///Present when more records remain.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<ResponseCursor>,
     ///The room's data commitment at the moment this listing was taken. OPTIONAL because a host that does not maintain the tree cannot honestly assert one, and a fabricated root is worse than an absent one — its absence says 'this host offers no completeness guarantee', which is true and useful. Present, it is signed along with the rest of the response, which is what makes it evidence rather than a claim.
     #[serde(
         rename = "dataCommitment",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub data_commitment: ::std::option::Option<DataCommitment>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The room's highest assigned record version, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. Without it two roots are not comparable at all: a host shown to have served two different ones answers that the room moved, and nothing contradicts it.
     #[serde(
         rename = "headVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head_version: ::std::option::Option<HeadVersion>,
@@ -890,7 +838,6 @@ pub struct Response {
     #[serde(
         rename = "recordCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_count: ::std::option::Option<RecordCount>,

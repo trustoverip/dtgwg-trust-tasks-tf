@@ -39,20 +39,12 @@ pub mod error {
 #[non_exhaustive]
 pub struct BroadcastRecord {
     ///For a sent message, the administrator that sent it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub actor: ::std::option::Option<Did>,
     ///Whether this network sent it or received it to relay.
     pub direction: BroadcastRecordDirection,
     ///For a received message, the network that delivered it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub from: ::std::option::Option<Did>,
     ///The message id.
     pub id: BroadcastRecordId,
@@ -445,11 +437,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The broadcast's message id.
     pub id: PayloadId,
@@ -528,29 +516,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[non_exhaustive]
 pub struct Receipt {
     ///Why, for anything but `delivered`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub detail: ::std::option::Option<ReceiptDetail>,
     ///The group delivered to.
     pub group: ReceiptGroup,
     ///The member that owns it.
     pub member: Did,
     ///Whether the group is a network group, which relays further.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
     pub status: DeliveryStatus,
 }
@@ -684,11 +660,7 @@ impl<'de> ::serde::Deserialize<'de> for ReceiptGroup {
 #[non_exhaustive]
 pub struct Response {
     pub broadcast: BroadcastRecord,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

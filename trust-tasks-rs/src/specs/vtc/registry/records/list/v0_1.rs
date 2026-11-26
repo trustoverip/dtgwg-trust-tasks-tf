@@ -125,61 +125,35 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vtc/registry/records/list/0.2")]
 pub struct Payload {
     ///Filter to records for this action.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub action: ::std::option::Option<PayloadAction>,
     ///Filter to records asserted by this authority.
     #[serde(
         rename = "authorityId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authority_id: ::std::option::Option<PayloadAuthorityId>,
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Filter to records about this entity.
     #[serde(
         rename = "entityId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub entity_id: ::std::option::Option<PayloadEntityId>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Page size; the maintainer clamps to 1..=200 (default 50).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Filter to records for this resource.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub resource: ::std::option::Option<PayloadResource>,
     ///Which view to enumerate. Defaults to `registry`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub source: ::std::option::Option<Source>,
 }
 impl ::std::default::Default for Payload {
@@ -458,11 +432,7 @@ pub struct Record {
     ///The entity the record is about.
     #[serde(rename = "entityId")]
     pub entity_id: RecordEntityId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.
     #[serde(
@@ -784,11 +754,7 @@ impl<'de> ::serde::Deserialize<'de> for RecordResource {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/registry/records/list/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The matching records, in the maintainer's stable enumeration order.
     pub items: ::std::vec::Vec<Record>,

@@ -307,17 +307,12 @@ pub struct MonitorEvent {
     pub channel: TrafficChannel,
     pub direction: TrafficDirection,
     ///The sender, where the mediator knows it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub from: ::std::option::Option<Vid>,
     ///For `delivered` and `forwarded`: milliseconds since the message was stored.
     #[serde(
         rename = "latencyMs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub latency_ms: ::std::option::Option<u64>,
@@ -325,7 +320,6 @@ pub struct MonitorEvent {
     #[serde(
         rename = "messageType",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message_type: ::std::option::Option<MonitorEventMessageType>,
@@ -333,7 +327,6 @@ pub struct MonitorEvent {
     #[serde(
         rename = "msgId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub msg_id: ::std::option::Option<MonitorEventMsgId>,
@@ -341,27 +334,15 @@ pub struct MonitorEvent {
     #[serde(rename = "occurredAt")]
     pub occurred_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Present when stage is `refused`, and on any other stage that failed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub outcome: ::std::option::Option<TrafficOutcome>,
     pub protocol: WireProtocol,
     ///Frame size in bytes.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub size: ::std::option::Option<u64>,
     pub stage: TrafficStage,
     ///The recipient, where the mediator knows it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub to: ::std::option::Option<Vid>,
 }
 impl MonitorEvent {
@@ -513,7 +494,6 @@ pub struct MonitorMembershipEvent {
     #[serde(
         rename = "sessionId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<SessionId>,
@@ -662,24 +642,15 @@ pub struct Payload {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Mux membership events, in the order the mediator observed them. Present only on a subscription that opted in to them with messaging/monitor/subscribe `membership`, and then on every batch, empty when there is nothing to report.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub membership: ::std::option::Option<::std::vec::Vec<MonitorMembershipEvent>>,
     ///Membership events that matched the subscription's membership filter but were discarded since the previous batch. Present exactly when `membership` is.
     #[serde(
         rename = "membershipDropped",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_dropped: ::std::option::Option<u64>,
@@ -957,11 +928,7 @@ pub struct TrafficOutcome {
     ///The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).
     pub code: TrafficOutcomeCode,
     ///Short human-readable explanation. Not machine-parsed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub detail: ::std::option::Option<TrafficOutcomeDetail>,
 }
 impl TrafficOutcome {

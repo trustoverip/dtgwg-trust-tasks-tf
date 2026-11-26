@@ -197,11 +197,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged.
     pub vrc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -209,7 +205,6 @@ pub struct Payload {
     #[serde(
         rename = "vrcDigestMultibase",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vrc_digest_multibase: ::std::option::Option<DigestMultibase>,
@@ -228,11 +223,7 @@ The receipt names the stored artifact rather than merely asserting that somethin
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.
     #[serde(rename = "vrcDigestMultibase")]

@@ -45,11 +45,7 @@ pub struct DidTemplateRecord {
     ///DID of the admin who last wrote the template.
     #[serde(rename = "createdBy")]
     pub created_by: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub defaults:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
@@ -60,17 +56,12 @@ pub struct DidTemplateRecord {
     pub description: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub kind: DidTemplateRecordKind,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     pub name: DidTemplateRecordName,
     #[serde(
         rename = "optionalVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_vars:
@@ -78,7 +69,6 @@ pub struct DidTemplateRecord {
     #[serde(
         rename = "requiredVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -313,11 +303,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "retired; use vta/did-templates/list/2.0")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -340,11 +326,7 @@ impl Payload {
 #[deprecated(note = "retired; use vta/did-templates/list/2.0")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every stored global template, sorted by name; empty when none exist.
     pub templates: ::std::vec::Vec<DidTemplateRecord>,

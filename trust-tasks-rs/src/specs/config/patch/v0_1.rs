@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A key -> value map of overrides to write. Keys are configuration keys; values are the desired new values. Wrapped in an object (rather than being the top-level payload) so the payload keeps a fixed, additionalProperties:false envelope. Each entry is validated independently — an invalid or unknown key is reported under `rejected` and does not block the rest.
     pub overrides: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -280,11 +276,7 @@ impl<'de> ::serde::Deserialize<'de> for RejectedKeyReason {
 pub struct Response {
     ///Keys whose new value is now in effect.
     pub applied: Vec<ResponseAppliedItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true).
     #[serde(rename = "pendingRestart")]

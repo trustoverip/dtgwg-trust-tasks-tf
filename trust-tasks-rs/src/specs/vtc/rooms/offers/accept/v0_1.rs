@@ -122,17 +122,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.
     #[serde(
         rename = "keyPackage",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_package: ::std::option::Option<PayloadKeyPackage>,
@@ -282,17 +277,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 pub struct Response {
     ///The room epoch the caller joins at.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.
     #[serde(
         rename = "ratchetTree",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratchet_tree: ::std::option::Option<ResponseRatchetTree>,
@@ -301,11 +291,7 @@ pub struct Response {
     pub room_id: ResponseRoomId,
     pub state: ::serde_json::Value,
     ///On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub welcome: ::std::option::Option<ResponseWelcome>,
 }
 impl Response {

@@ -192,11 +192,7 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -339,11 +335,7 @@ pub struct Response {
     pub ballot_box: ResponseBallotBox,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every receipt the engine keeps for the election, in the order it kept them: one per cast the ballot box admitted, a revote's beside the cast it replaced. Each is the ballot box's signed voting/ballot/cast/0.1 or voting/ballot/cast-encrypted/0.1 #response document, whole and exactly as received — its `receiptToken` included, which on a private board is what authorizes the inclusion read. Empty when no receipt was kept.
     pub receipts: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,

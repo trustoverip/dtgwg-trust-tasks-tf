@@ -201,11 +201,7 @@ pub struct GitNamespace {
     pub forge: ForgeHost,
     pub id: NamespaceId,
     ///Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub kind: ::std::option::Option<GitNamespaceKind>,
     ///`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
     pub mode: GitNamespaceMode,
@@ -471,11 +467,7 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/namespace/bind/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The forge's host, lowercased.
     pub forge: ForgeHost,
@@ -557,18 +549,10 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadMode {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/namespace/bind/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub namespace: GitNamespace,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub next: ::std::option::Option<ResponseNext>,
 }
 impl Response {

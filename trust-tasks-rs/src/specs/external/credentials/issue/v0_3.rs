@@ -234,32 +234,19 @@ impl<'de> ::serde::Deserialize<'de> for ChecksumSha256 {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct CredentialScope {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub actions: ::std::option::Option<Vec<ProviderObjectAction>>,
     ///`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.
     #[serde(
         rename = "objectKey",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub object_key: ::std::option::Option<CredentialScopeObjectKey>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub prefix: ::std::option::Option<ProviderObjectPrefix>,
     ///`oauth2-private-key-jwt` only: the OAuth scopes requested.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub scopes: ::std::option::Option<Vec<CredentialScopeScopesItem>>,
 }
 impl ::std::default::Default for CredentialScope {
@@ -501,11 +488,7 @@ pub enum Payload {
     Variant0 {
         account: AccountId,
         context: AccountContextId,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///For every brokered model but `s3-static-presign`: the prefix and actions, or the OAuth scopes, the session or token is downscoped to. `objectKey` is not used in this version.
         scope: CredentialScope,
@@ -516,11 +499,7 @@ pub enum Payload {
     Variant1 {
         account: AccountId,
         context: AccountContextId,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         presign: PresignBatch,
         ///Requested lifetime; never more than the binding's `maxTtlSeconds`. For `presign`, the lifetime of every URL in the batch.
@@ -544,7 +523,6 @@ pub struct PresignBatch {
     #[serde(
         rename = "uploadId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub upload_id: ::std::option::Option<PresignBatchUploadId>,
@@ -738,7 +716,6 @@ pub enum PresignRequest {
         #[serde(
             rename = "partNumberMarker",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         part_number_marker: ::std::option::Option<i64>,
@@ -900,11 +877,7 @@ pub enum Response {
         ///The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.
         #[serde(rename = "expiresAt")]
         expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///The scope actually granted, which equals the requested one.
         scope: CredentialScope,
@@ -916,11 +889,7 @@ pub enum Response {
         ///The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.
         #[serde(rename = "expiresAt")]
         expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///The batch actually presigned, which equals the requested one.
         presign: PresignBatch,

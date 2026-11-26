@@ -135,18 +135,10 @@ pub struct Payload {
     pub did: PayloadDid,
     ///`enrolled` — a step-up passkey (auth/passkey/enroll/invite or auth/passkey/enroll/finish, purpose stepUp) is now bound to the member. `revoked` — one was unbound (auth/passkey/revoke/finish).
     pub event: PayloadEvent,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The acting administrator's stated reason, verbatim, when one was given. Absent rather than empty when none was: a community that chose not to explain is itself information. Never populated for a member acting on their own credential — they already know why.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {

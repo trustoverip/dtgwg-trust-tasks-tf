@@ -127,22 +127,13 @@ pub struct Payload {
     #[serde(
         rename = "dryRun",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub scope: ::std::option::Option<PayloadScope>,
 }
 impl Payload {
@@ -160,7 +151,6 @@ pub struct PayloadCause {
     #[serde(
         rename = "rotationId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rotation_id: ::std::option::Option<PayloadCauseRotationId>,
@@ -362,11 +352,7 @@ pub struct Progress {
     pub failed: u64,
     pub total: u64,
     ///Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub undeliverable: ::std::option::Option<u64>,
 }
 impl Progress {
@@ -383,11 +369,7 @@ pub struct Response {
     pub artefacts: Progress,
     #[serde(rename = "dryRun")]
     pub dry_run: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The job this cause started. The same cause always names the same job.
     #[serde(rename = "jobId")]
@@ -396,7 +378,6 @@ pub struct Response {
     #[serde(
         rename = "signedWith",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signed_with: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

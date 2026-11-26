@@ -51,7 +51,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -154,33 +153,20 @@ pub struct Payload {
     ///The DID the host sends the signal to, over a transport that DID's document advertises and the host speaks. Chosen by the member. It identifies the watch: a request naming the same room and address re-arms or cancels that watch, and one naming another address is another watch. On a `private` room it MUST be a DID the member uses for nothing else (*Security & Privacy*).
     pub address: PayloadAddress,
     ///End the watch on this room and address, one-shot or live. Only `true` is meaningful, so only `true` is accepted. A producer sends neither `sinceVersion`, `leaseSeconds` nor `live` with it, and a host ignores them on a cancel. A cancel of a watch the host does not hold succeeds and says `armed: false`, so a retry is harmless.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cancel: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`; for a live watch it grants at most 120 seconds whatever is asked. Absent means the host's default.
     #[serde(
         rename = "leaseSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lease_seconds: ::std::option::Option<i64>,
     ///Arm, or renew, a live watch: a signal each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 120 seconds. Only `true` is meaningful, so only `true` is accepted; a one-shot watch omits the member. Permitted only on a room whose signal delay is `none` — refused otherwise with `rooms/watch:liveNotPermitted`. A member renews a live watch by sending the same room and address with `live: true` before `expiresAt`, and asks for one only while the room is on its person's screen. A host ignores it on a cancel.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub live: ::std::option::Option<bool>,
     ///Must confer `read` at this room's scope — the grant a listing takes, since a signal says no more than a listing would.
     pub presentation: AuthorityPresentation,
@@ -191,7 +177,6 @@ pub struct Payload {
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -338,22 +323,13 @@ pub struct Response {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present when the watch armed is live. Absent when it is one-shot — including when a live watch was asked of a host that implements only 0.1, which arms a one-shot watch: a member treats a watch as live only when this says so.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub live: ::std::option::Option<bool>,
     #[serde(rename = "roomId")]
     pub room_id: ResponseRoomId,

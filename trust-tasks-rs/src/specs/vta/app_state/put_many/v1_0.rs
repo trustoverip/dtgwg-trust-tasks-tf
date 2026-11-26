@@ -308,11 +308,7 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.
     #[serde(default = "defaults::payload_mode")]
@@ -460,17 +456,12 @@ impl ::std::default::Default for PayloadMode {
 #[deprecated(note = "superseded by vta/app-state/put-many/1.1")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.
     #[serde(
         rename = "highWatermark",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub high_watermark: ::std::option::Option<Version>,
@@ -600,7 +591,6 @@ pub enum Write {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
@@ -613,7 +603,6 @@ pub enum Write {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
@@ -633,22 +622,16 @@ pub struct WriteResult {
     #[serde(
         rename = "actualBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actual_bytes: ::std::option::Option<u64>,
     ///On `written`: true when no live record existed at the address beforehand.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<bool>,
     ///On `conflict`: true when the address holds a tombstone rather than a live record.
     #[serde(
         rename = "currentDeleted",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_deleted: ::std::option::Option<bool>,
@@ -664,7 +647,6 @@ pub struct WriteResult {
     #[serde(
         rename = "currentVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_version: ::std::option::Option<Version>,
@@ -673,18 +655,13 @@ pub struct WriteResult {
     #[serde(
         rename = "limitBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit_bytes: ::std::option::Option<u64>,
     ///`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.
     pub outcome: WriteResultOutcome,
     ///The new version, on `written`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<Version>,
 }
 impl WriteResult {

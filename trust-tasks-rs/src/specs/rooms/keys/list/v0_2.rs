@@ -125,17 +125,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/keys/list/0.3")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///`true` asks for each entry's personal label (rooms/keys/label) in `personal`. Absent or `false`: no entry carries one. A request option, not a filter — it changes which members of an entry are returned, never which entries — and off by default so that a caller that has no use for the member's own names, or will pass the list on, never receives them.
     #[serde(
         rename = "includePersonal",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_personal: ::std::option::Option<bool>,
@@ -159,29 +154,13 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct PersonalLabel {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<PersonalLabelDescription>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PersonalLabelName>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub tags: ::std::option::Option<PersonalLabelTags>,
     ///When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.
     #[serde(rename = "updatedAt")]
@@ -504,11 +483,7 @@ impl ::std::convert::From<Vec<PersonalLabelTag>> for PersonalLabelTags {
 #[non_exhaustive]
 #[deprecated(note = "superseded by rooms/keys/list/0.3")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per room and member, in no guaranteed order. A room held as two members the caller may act as appears twice, once per member.
     pub rooms: ::std::vec::Vec<ResponseRoomsItem>,
@@ -532,11 +507,7 @@ pub struct ResponseRoomsItem {
     ///The member this entry's group state is held for: the DID the room admitted. What a client names as `member` to rooms/keys/label, and as `issuer` to rooms/keys/act, to act on this entry rather than on the same room held as another member.
     pub member: ResponseRoomsItemMember,
     ///The member's own label for the room (rooms/keys/label). Present only when the request set `includePersonal: true` and the member has one. Private to the member: a caller MUST NOT pass it to the room's host, its owner, a community or a website the member has not chosen to show it to.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub personal: ::std::option::Option<PersonalLabel>,
     ///The room's identifier.
     #[serde(rename = "roomId")]

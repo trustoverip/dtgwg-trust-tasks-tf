@@ -253,11 +253,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     pub account: AccountId,
     pub context: AccountContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The unsigned transaction: BCS-encoded Sui `TransactionData`, standard base64 as Sui tooling emits it. Bounded at 128 KiB decoded, Sui's own transaction size limit.
     #[serde(rename = "txBytes")]
@@ -343,11 +339,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTxBytes {
 pub struct Response {
     ///The transaction digest the custodian computed, base58 as Sui displays it, so the caller can match it to the transaction it submits.
     pub digest: ResponseDigest,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Sui serialized signature, base64: the scheme flag (0x02 for secp256r1), the 64-byte signature and the 33-byte compressed public key.
     pub signature: ResponseSignature,

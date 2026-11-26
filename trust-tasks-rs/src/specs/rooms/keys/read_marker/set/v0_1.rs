@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The member whose marker this is: the DID the room admitted, as rooms/keys/list 0.3 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a marker for each.
     pub member: PayloadMember,
@@ -134,11 +130,7 @@ pub struct Payload {
     #[serde(rename = "readMarker")]
     pub read_marker: ReadMarker,
     ///Take `readMarker` even when it is behind the marker held: "mark as unread". Only `true` is meaningful, so only `true` is accepted; absent, the marker only moves forward.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub rewind: ::std::option::Option<bool>,
     ///The room's identifier: its DID, as rooms/keys/list returns it.
     #[serde(rename = "roomId")]
@@ -285,7 +277,6 @@ pub struct ReadMarker {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -303,11 +294,7 @@ impl ReadMarker {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Repeated from the request.
     pub member: ResponseMember,

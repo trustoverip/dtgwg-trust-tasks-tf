@@ -301,11 +301,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     pub envelope: Envelope,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///This network's local role whose network group the delivery addresses.
     pub role: RoleName,
@@ -322,29 +318,17 @@ impl Payload {
 #[non_exhaustive]
 pub struct Receipt {
     ///Why, for anything but `delivered`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub detail: ::std::option::Option<ReceiptDetail>,
     ///The group delivered to.
     pub group: ReceiptGroup,
     ///The member that owns it.
     pub member: Did,
     ///Whether the group is a network group, which relays further.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
     pub status: DeliveryStatus,
 }
@@ -477,11 +461,7 @@ impl<'de> ::serde::Deserialize<'de> for ReceiptGroup {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One receipt per group this network delivered to; empty for a duplicate.
     pub relayed: ::std::vec::Vec<Receipt>,

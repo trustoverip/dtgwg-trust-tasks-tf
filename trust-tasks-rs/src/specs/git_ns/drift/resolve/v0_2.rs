@@ -113,25 +113,13 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 #[non_exhaustive]
 pub struct DriftItem {
     ///Whose role differs, for the three role types.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub observed: ::std::option::Option<DriftItemObserved>,
     pub resource: RepoResource,
     ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
@@ -345,18 +333,10 @@ impl ::std::convert::TryFrom<::std::string::String> for DriftItemType {
 #[non_exhaustive]
 pub struct DriftSelector {
     ///The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub account: ::std::option::Option<ForgeAccount>,
     ///The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub observed: ::std::option::Option<DriftSelectorObserved>,
     #[serde(rename = "type")]
     pub type_: DriftType,
@@ -811,18 +791,10 @@ pub struct Payload {
     ///`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.
     pub action: PayloadAction,
     pub drift: DriftSelector,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The repository whose drift is resolved.
     pub resource: RepoResource,
@@ -1107,18 +1079,10 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     ///The action taken, as requested.
     pub action: ResponseAction,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub right: ::std::option::Option<RightRecord>,
     ///The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.
     pub sync: Sync,
@@ -1272,7 +1236,6 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1282,11 +1245,7 @@ pub struct RightRecord {
     #[serde(rename = "grantedBy")]
     pub granted_by: Did,
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<RightRecordReason>,
     pub resource: Resource,
     pub right: Right,
@@ -1367,7 +1326,6 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

@@ -254,11 +254,7 @@ pub struct MethodInfo {
     pub classes: ::std::vec::Vec<DidClass>,
     ///Whether the VTA will create an identity of this method now: its build supports the method and its configuration has it switched on.
     pub creatable: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Whether `vta/dids/list` summarises the method's identities (CONVENTIONS.md §20.1).
     pub listed: bool,
@@ -278,11 +274,7 @@ impl MethodInfo {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -303,11 +295,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per DID method the VTA holds a profile for.
     pub methods: ::std::vec::Vec<MethodInfo>,

@@ -127,22 +127,14 @@ pub struct Payload {
     ///The names of the subject claims to disclose. Nothing outside them is disclosed; a credential that cannot disclose less than all its claims is refused unless they are all named.
     pub claims: Vec<PayloadClaimsItem>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
     pub id: PayloadId,
     ///The value the verifier binds the presentation to: the `nonce` of a Data Integrity presentation or of an SD-JWT key-binding JWT.
     pub nonce: PayloadNonce,
     ///Optional: why the holder is presenting, recorded with the maintainer's record of the disclosure. Never sent to the verifier.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub purpose: ::std::option::Option<PayloadPurpose>,
 }
 impl Payload {
@@ -474,11 +466,7 @@ pub struct Response {
     ///The names of the subject claims the presentation discloses.
     pub disclosed: Vec<ResponseDisclosedItem>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The presentation, to be carried to the verifier unchanged.
     pub presentation: ResponsePresentation,

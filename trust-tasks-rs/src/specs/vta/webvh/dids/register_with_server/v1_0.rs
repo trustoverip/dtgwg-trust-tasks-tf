@@ -124,17 +124,9 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     pub did: PayloadDid,
     ///Domain to publish under, when the server serves more than one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Overwrite a registration the server already holds at this location. Default false: the location may be somebody else's identity.
     #[serde(default)]
@@ -273,11 +265,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 #[non_exhaustive]
 pub struct Response {
     pub did: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Entries the server accepted. Compare it with the DID's own log length: a shorter count means the server holds a truncated history and will resolve to an older document.
     #[serde(rename = "logEntryCount")]

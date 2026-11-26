@@ -247,23 +247,11 @@ impl ::std::convert::TryFrom<::std::string::String> for EntryKind {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct EntryProfile {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<Description>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub tags: ::std::option::Option<Tags>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<Url>,
 }
 impl ::std::default::Default for EntryProfile {
@@ -450,38 +438,22 @@ pub struct IndexEntry {
     ///Whether the party acknowledged: true only for a member. Every published entry states it (VTI-VTN-013).
     pub acknowledged: bool,
     ///The party's acknowledgement.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub acknowledgement: ::std::option::Option<Credential>,
     ///The listed party's DID.
     pub did: Did,
     ///The membership grant, once acknowledged.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub grant: ::std::option::Option<Credential>,
     pub kind: EntryKind,
     ///The name the directory shows.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<IndexEntryLabel>,
     ///The listing credential.
     pub listing: Credential,
     pub profile: EntryProfile,
     ///The party's repudiation.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub repudiation: ::std::option::Option<Credential>,
     pub state: EntryState,
 }
@@ -555,11 +527,7 @@ impl<'de> ::serde::Deserialize<'de> for IndexEntryLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The party's `repudiates/1` statement, issued by the requester about the network, whose `credentialSubject.object.digestMultibase` names the listing or the grant.
     pub repudiation: Credential,
@@ -576,11 +544,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     pub entry: IndexEntry,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

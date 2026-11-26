@@ -202,33 +202,20 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
     ///Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(default = "defaults::default_nzu64::<::std::num::NonZeroU64, 100>")]
     pub limit: ::std::num::NonZeroU64,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
     ///Only events at or after this time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Payload {
@@ -361,17 +348,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[non_exhaustive]
 pub struct Response {
     pub events: ::std::vec::Vec<TimelineEvent>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -451,14 +433,12 @@ pub struct TimelineEvent {
     #[serde(
         rename = "claimTypes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_types: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<TimelineEventContextId>,
@@ -469,22 +449,16 @@ pub struct TimelineEvent {
     #[serde(
         rename = "personaDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub persona_did: ::std::option::Option<TimelineEventPersonaDid>,
     #[serde(
         rename = "verifierDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verifier_did: ::std::option::Option<TimelineEventVerifierDid>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<Version>,
 }
 impl TimelineEvent {

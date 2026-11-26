@@ -214,17 +214,12 @@ pub struct Payload {
     pub definition_digest: DigestMultibase,
     ///The enactment this receipt reports on — the value every enumerated step carries in its `ceremony.enactment` member. Globally unique and never reused (SPEC §4.11).
     pub enactment: PayloadEnactment,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The enactment containing this one, where the ceremony was conducted as a step of another. Present so a receipt used as a parent's step evidence names its own place in the tree; one level, as on the envelope member.
     #[serde(
         rename = "parentEnactment",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub parent_enactment: ::std::option::Option<PayloadParentEnactment>,
@@ -234,11 +229,7 @@ pub struct Payload {
     REQUIRED whenever any step of the enactment carried `ceremony.prev`, because without it the chain cannot be recomputed and the recorder's ordering claim rests on nothing — which is the whole reason `receipt` implies `chained`.
 
     Revealing it here is deliberate. The salt defends against a party who observes a document or a bare digest in transit, which is the threat `task-consent` names for its own salted digest; it is not intended to defend against a party holding this receipt, who is by construction entitled to know the enactment happened and in what order. A ceremony whose step CONTENT must stay hidden from receipt holders wants `enactmentPrivacy: blinded`, not a withheld salt.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub salt: ::std::option::Option<PayloadSalt>,
     ///Every step of the enactment, in the order the recorder observed them. A set containing no step marked `terminal` is a PREFIX, not a completed enactment — which is what makes truncation detectable, since the marker cannot be minted without the terminal step issuer's key.
     pub steps: ::std::vec::Vec<PayloadStepsItem>,
@@ -444,20 +435,12 @@ pub struct PayloadStepsItem {
     ///The VID that issued the step document. For a step whose multiplicity is `perRole`, this is what distinguishes one instance from another — N approvers each performing one step are N entries differing only here.
     pub issuer: PayloadStepsItemIssuer,
     ///The document's `ceremony.round`, where the definition permits bounded repetition. Absent means 1. Enumerating rounds separately is what lets a verifier check the repetition bound.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub round: ::std::option::Option<::std::num::NonZeroU64>,
     ///The step name from the definition, as carried in the document's `ceremony.step`.
     pub step: PayloadStepsItemStep,
     ///Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub terminal: ::std::option::Option<bool>,
     ///The Type URI the step enacted, including any fragment. Checked against the definition's declared type for that step.
     #[serde(rename = "typeUri")]

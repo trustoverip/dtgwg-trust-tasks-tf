@@ -39,17 +39,12 @@ pub mod error {
 #[non_exhaustive]
 pub struct AttachOutcome {
     ///Present exactly when `status` is `refused`: the first check the member failed, in the order the specification lists them.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<AttachOutcomeCode>,
     ///Present exactly when `status` is `attached`. False when the member DID has its own direct connection, which takes precedence: the attach is held, and becomes active when that connection ends.
     #[serde(
         rename = "deliveryActive",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivery_active: ::std::option::Option<bool>,
@@ -59,16 +54,11 @@ pub struct AttachOutcome {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Present exactly when `status` is `attached`: the scope in force.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub scope: ::std::option::Option<MuxScope>,
     pub status: AttachOutcomeStatus,
 }
@@ -371,11 +361,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct MuxDataIntegrityProof {
     ///OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The W3C Data Integrity EdDSA cryptosuite used.
     pub cryptosuite: MuxDataIntegrityProofCryptosuite,
@@ -882,11 +868,7 @@ pub struct Payload {
     ///The members to attach, one attach statement each; the member DID is the statement's `issuer`. Each is checked and answered on its own; the batch is never all-or-nothing. A member DID appears at most once.
     pub attachments: ::std::vec::Vec<AttachStatement>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -901,11 +883,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub results: ::std::vec::Vec<AttachOutcome>,
 }

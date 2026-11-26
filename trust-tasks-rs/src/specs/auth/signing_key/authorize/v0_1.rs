@@ -187,7 +187,6 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
@@ -195,25 +194,16 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The identity authorizing the delegation. Equal to the document's `issuer`: the identity signs for itself.
     #[serde(rename = "identityDid")]
     pub identity_did: PayloadIdentityDid,
     ///The identity's active key the enrolment replaces, as in auth/signing-key/enroll/0.2. Signed here so an authorization to add a key cannot be reused to remove one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub replaces: ::std::option::Option<SigningKeyDid>,
     pub scope: SigningKeyScope,
     #[serde(rename = "signingKeyDid")]

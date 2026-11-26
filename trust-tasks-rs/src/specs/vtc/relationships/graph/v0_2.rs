@@ -557,11 +557,7 @@ impl<'de> ::serde::Deserialize<'de> for GraphNodeDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -584,11 +580,7 @@ impl Payload {
 pub struct Response {
     ///One per **pair** of identifiers with at least one live credential between them, not one per credential.
     pub edges: ::std::vec::Vec<GraphEdge>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One per distinct DID appearing in a live edge. No isolated nodes.
     pub nodes: ::std::vec::Vec<GraphNode>,

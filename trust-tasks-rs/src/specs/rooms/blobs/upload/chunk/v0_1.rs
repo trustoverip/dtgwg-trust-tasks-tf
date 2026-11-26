@@ -358,11 +358,7 @@ pub struct Payload {
     ///The digest of this chunk's raw bytes, restated from the manifest, so a chunk sent to the wrong index is refused on arrival.
     #[serde(rename = "digestMultibase")]
     pub digest_multibase: DigestMultibase,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
     #[serde(rename = "uploadId")]
@@ -382,11 +378,7 @@ impl Payload {
 pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
     ///Indices still missing after this write.

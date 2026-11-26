@@ -42,7 +42,6 @@ pub struct CollectionSetting {
     #[serde(
         rename = "changedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -50,7 +49,6 @@ pub struct CollectionSetting {
     #[serde(
         rename = "changedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_by: ::std::option::Option<Did>,
@@ -291,11 +289,7 @@ pub struct Payload {
     ///The trust context whose setting to read.
     #[serde(rename = "contextId")]
     pub context_id: ContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {

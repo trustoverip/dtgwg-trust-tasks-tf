@@ -250,11 +250,7 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/namespace/reseat/0.4")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The headless namespace.
     pub namespace: NamespaceId,
@@ -410,11 +406,7 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/namespace/reseat/0.4")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The git.ns.admin record the reseat created. It never carries `expiresAt`.
     pub right: RightRecord,
@@ -507,7 +499,6 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -517,11 +508,7 @@ pub struct RightRecord {
     #[serde(rename = "grantedBy")]
     pub granted_by: Did,
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<RightRecordReason>,
     pub resource: Resource,
     pub right: Right,

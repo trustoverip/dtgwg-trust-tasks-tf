@@ -46,16 +46,11 @@ pub struct AdminRotationAsk {
     #[serde(
         rename = "contextHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_hint: ::std::option::Option<AdminRotationAskContextHint>,
     ///Free-form operator note carried into the maintainer's audit log.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub note: ::std::option::Option<AdminRotationAskNote>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
@@ -221,11 +216,7 @@ pub struct BootstrapRequest {
     ///URN-shaped identifier for this presentation. `urn:uuid:<v4>` is RECOMMENDED.
     pub id: BootstrapRequestId,
     ///Optional human-readable label carried into the maintainer's audit log.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<BootstrapRequestLabel>,
     ///16 random bytes encoded as base64url-no-pad (22 characters). The maintainer treats this as the sealed bundle's `bundleId` (decoded to hex, exposed in `summary.bundleIdHex`) and SHOULD enforce one-shot semantics — a second provisioning with the same nonce MUST be refused as a replay.
     pub nonce: BootstrapRequestNonce,
@@ -555,11 +546,7 @@ impl<'de> ::serde::Deserialize<'de> for BootstrapRequestTypeItem {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct DataIntegrityProof {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///This version pins `eddsa-jcs-2022`. Maintainers MUST reject other values until a future minor extends the allowlist.
     pub cryptosuite: DataIntegrityProofCryptosuite,
@@ -765,11 +752,7 @@ pub struct DidTemplateRef {
     ///Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.
     pub name: DidTemplateRefName,
     ///Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub vars: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl DidTemplateRef {
@@ -934,21 +917,13 @@ pub struct Payload {
     #[serde(default = "defaults::payload_assertion")]
     pub assertion: PayloadAssertion,
     ///The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:contextRequired`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub context: ::std::option::Option<PayloadContext>,
     ///When `true`, the maintainer provisions the target context inline if it does not already exist. Requires super-admin role on the maintainer; context-admin callers MUST receive `provision/integration:forbidden` against a missing context. Idempotent when the context already exists.
     #[serde(rename = "createContext", default)]
     pub create_context: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///VP-framed bootstrap request signed by the holder's ephemeral did:key. The proof here is independent of, and additional to, the outer Trust Task envelope's proof — it authenticates the holder (the party the sealed bundle is encrypted for), whereas the envelope's proof authenticates the relayer (the party making the call). The two MAY be the same DID in the common case.
     pub request: BootstrapRequest,
@@ -956,7 +931,6 @@ pub struct Payload {
     #[serde(
         rename = "vcValiditySeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vc_validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1101,7 +1075,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "adminDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admin_did: ::std::option::Option<ProvisionSummaryAdminDid>,
@@ -1112,7 +1085,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "adminTemplateName",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admin_template_name: ::std::option::Option<ProvisionSummaryAdminTemplateName>,
@@ -1129,7 +1101,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "integrationDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub integration_did: ::std::option::Option<ProvisionSummaryIntegrationDid>,
@@ -1143,7 +1114,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "templateKind",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_kind: ::std::option::Option<ProvisionSummaryTemplateKind>,
@@ -1151,7 +1121,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "templateName",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_name: ::std::option::Option<ProvisionSummaryTemplateName>,
@@ -1159,7 +1128,6 @@ pub struct ProvisionSummary {
     #[serde(
         rename = "webvhServerId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webvh_server_id: ::std::option::Option<ProvisionSummaryWebvhServerId>,
@@ -1654,11 +1622,7 @@ pub struct Response {
     pub bundle: ResponseBundle,
     ///SHA-256 of the armored ciphertext, lowercase hex. Used by holders that pin the bundle out-of-band.
     pub digest: ResponseDigest,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
     pub summary: ProvisionSummary,
@@ -1798,7 +1762,6 @@ pub struct TemplateBootstrapAsk {
     #[serde(
         rename = "adminTemplate",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admin_template: ::std::option::Option<DidTemplateRef>,
@@ -1806,16 +1769,11 @@ pub struct TemplateBootstrapAsk {
     #[serde(
         rename = "contextHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_hint: ::std::option::Option<TemplateBootstrapAskContextHint>,
     ///Free-form operator note carried into the maintainer's audit log.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub note: ::std::option::Option<TemplateBootstrapAskNote>,
     ///Integration template. MUST be registered at the maintainer; MUST declare a `kind` other than `"admin"`.
     pub template: DidTemplateRef,

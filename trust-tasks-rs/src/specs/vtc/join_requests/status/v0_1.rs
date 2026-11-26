@@ -122,17 +122,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.
     #[serde(
         rename = "requestId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<PayloadRequestId>,
@@ -140,7 +135,6 @@ pub struct Payload {
     #[serde(
         rename = "resendCredentials",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resend_credentials: ::std::option::Option<bool>,
@@ -225,17 +219,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 #[non_exhaustive]
 pub struct Response {
     ///Stable refusal code, safe to branch on. Present only when `status` is `rejected`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<::std::string::String>,
     ///The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.
     #[serde(
         rename = "credentialResend",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_resend: ::std::option::Option<ResponseCredentialResend>,
@@ -243,7 +232,6 @@ pub struct Response {
     #[serde(
         rename = "credentialsDelivered",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credentials_delivered: ::std::option::Option<bool>,
@@ -251,28 +239,18 @@ pub struct Response {
     #[serde(
         rename = "decidedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///When deferred, what the applicant must supply next.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub needs: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///When more evidence is needed, the presentation-definition to satisfy (opaque here).
     #[serde(
         rename = "presentationDefinition",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentation_definition:
@@ -290,7 +268,6 @@ pub struct Response {
     #[serde(
         rename = "retryAfter",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retry_after: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

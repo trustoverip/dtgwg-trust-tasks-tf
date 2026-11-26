@@ -39,11 +39,7 @@ pub mod error {
 #[non_exhaustive]
 pub struct EntryResult {
     ///Present if and only if `status` is `refused`: the webvh/sync/update/0.2 error code the entry would have received on its own (e.g. `webvh/sync/update:historyRewrite`).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<EntryResultCode>,
     pub mnemonic: EntryResultMnemonic,
     ///`applied` and `unchanged` as in webvh/sync/update/0.2. `refused` — the entry was permanently refused; see `code`.
@@ -327,11 +323,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Complete slot states, each applied exactly as a webvh/sync/update/0.2 carrying it would be. A mnemonic appears at most once.
     pub updates: ::std::vec::Vec<SyncUpdate>,
@@ -347,11 +339,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One result per entry of `updates`, in request order.
     pub results: ::std::vec::Vec<EntryResult>,
@@ -372,11 +360,7 @@ pub struct SyncUpdate {
     pub did_id: SyncUpdateDidId,
     ///Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.
     pub disabled: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The slot's complete did.jsonl — one log entry per line — not a delta.
     #[serde(rename = "logContent")]
@@ -390,7 +374,6 @@ pub struct SyncUpdate {
     #[serde(
         rename = "witnessContent",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<SyncUpdateWitnessContent>,

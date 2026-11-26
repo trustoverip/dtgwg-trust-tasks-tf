@@ -381,62 +381,30 @@ impl<'de> ::serde::Deserialize<'de> for MuxDid {
 #[non_exhaustive]
 pub struct Payload {
     ///`grantsPresent` only, REQUIRED: grants on the member DID the mediator holds, in every state.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub count: ::std::option::Option<u64>,
     ///`grantsPresent` only, REQUIRED: the member DID the recipient authenticated as.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<MuxDid>,
     ///`grantsPresent` only, REQUIRED: the member DID's epoch now in force.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub epoch: ::std::option::Option<u64>,
     ///`grantsExpiring` only, REQUIRED: grants delegated to the recipient that have passed about three quarters of their lifetime.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub expiring: ::std::option::Option<::std::vec::Vec<ExpiringGrant>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Which notice this is. Each kind carries the members the specification lists for it, and no others.
     pub notice: PayloadNotice,
     ///`grantsRevoked` only, REQUIRED: the recipient's grants that were revoked by someone other than the recipient.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub revocations: ::std::option::Option<::std::vec::Vec<Revocation>>,
     ///`grantsPresent` only, REQUIRED: how many of them this authentication just suspended under the unknown-key rule.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub suspended: ::std::option::Option<u64>,
     ///`grantsSuspended` only, REQUIRED: the recipient's grants that were suspended. They must be recreated by a fresh messaging/mux/grant signed by the member DID under its current epoch.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub suspensions: ::std::option::Option<::std::vec::Vec<Suspension>>,
 }
 impl Payload {

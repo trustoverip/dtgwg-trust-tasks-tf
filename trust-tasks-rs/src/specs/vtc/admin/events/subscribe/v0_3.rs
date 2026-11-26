@@ -124,18 +124,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/admin/events/subscribe/0.6")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The last `resumeToken` the console received on an earlier stream, to resume from. A token the community does not recognise, has expired, or minted for another caller is not an error: the stream starts fresh and the response says `resumed: false`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub since: ::std::option::Option<ResumeToken>,
     ///The topics the console renders. The community narrows this to the topics the caller may read and reports the result as the response's `topics`.
     pub topics: Vec<Topic>,
@@ -152,11 +144,7 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/admin/events/subscribe/0.6")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.
     #[serde(rename = "heartbeatSeconds")]

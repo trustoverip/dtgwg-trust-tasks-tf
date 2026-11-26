@@ -571,15 +571,10 @@ pub struct Payload {
     #[serde(
         rename = "desiredRoles",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub desired_roles: ::std::option::Option<Vec<DesiredRole>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The VTC's identifier for this job. The bridge reports on it with git-ns/bridge/result.
     #[serde(rename = "jobId")]
@@ -592,44 +587,23 @@ pub struct Payload {
     #[serde(
         rename = "removeAccounts",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_accounts: ::std::option::Option<Vec<ForgeAccount>>,
     ///The repository. Required for `projectRoles`, `createRepo`, `bootstrap` and `archive`: there is no namespace-level `projectRoles`, because no right projects to an organisation's own roles. For `inspect`, absent means a sweep of every repository in the namespace.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub repo: ::std::option::Option<RepoResource>,
     ///How to create the repository. `createRepo` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub spec: ::std::option::Option<RepoSpec>,
     ///Run only these steps of the adapter's bootstrap plan, in the plan's order. Absent: the whole plan. `bootstrap` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub steps: ::std::option::Option<Vec<StepName>>,
     ///The member whose forge account is being linked. `beginAccountLink` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<Did>,
     ///`beginBind` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub target: ::std::option::Option<BindTarget>,
 }
 impl Payload {
@@ -797,11 +771,7 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RepoSpec {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RepoSpecDescription>,
     pub visibility: RepoVisibility,
 }
@@ -939,19 +909,11 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoVisibility {
 pub struct Response {
     ///`true` — the job is durably queued, or was already queued or running under this `jobId`; a git-ns/bridge/result follows. `false` — the bridge already finished this `jobId`; it does not run it again, and sends its git-ns/bridge/result again.
     pub accepted: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "jobId")]
     pub job_id: JobId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub next: ::std::option::Option<ResponseNext>,
 }
 impl Response {
@@ -972,7 +934,6 @@ pub struct ResponseNext {
     #[serde(
         rename = "userCode",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_code: ::std::option::Option<ResponseNextUserCode>,

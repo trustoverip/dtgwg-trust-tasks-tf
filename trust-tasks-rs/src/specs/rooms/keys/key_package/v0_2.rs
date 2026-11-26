@@ -123,11 +123,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.
     pub invitation: PayloadInvitation,
@@ -276,11 +272,7 @@ pub struct Response {
     ///When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.
     #[serde(rename = "keyPackage")]

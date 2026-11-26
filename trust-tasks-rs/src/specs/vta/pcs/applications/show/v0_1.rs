@@ -519,11 +519,7 @@ pub struct Payload {
     ///The handle vta/pcs/applications/create returned.
     #[serde(rename = "applicationId")]
     pub application_id: PayloadApplicationId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -600,11 +596,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadApplicationId {
 #[non_exhaustive]
 pub struct Response {
     pub application: ApplicationSummary,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

@@ -49,7 +49,6 @@ pub struct AdminNote {
     #[serde(
         rename = "followUp",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -59,23 +58,14 @@ pub struct AdminNote {
     #[serde(
         rename = "redactedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacted_by: ::std::option::Option<NoteId>,
     ///Present on a redaction: the earlier note this one withdraws.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub redacts: ::std::option::Option<NoteId>,
     ///The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<NoteText>,
 }
 impl AdminNote {
@@ -426,26 +416,14 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/directory/notes/list/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Page size; clamped to 1..=100 (default 50).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -522,11 +500,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/directory/notes/list/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Newest first. A redacted note appears without `text`, with `redactedBy`.
     pub items: ::std::vec::Vec<AdminNote>,

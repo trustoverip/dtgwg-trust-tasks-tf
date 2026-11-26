@@ -128,38 +128,21 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<PayloadDeviceLabel>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<::std::string::String>,
     ///Optional scopes to attach on enrollment.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub scopes: ::std::option::Option<::std::vec::Vec<PayloadScopesItem>>,
     ///The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.
     pub subject: PayloadSubject,
     ///Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -353,11 +336,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub invite: ResponseInvite,
     ///Echo of the invitee's VID.

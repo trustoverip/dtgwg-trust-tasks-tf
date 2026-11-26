@@ -125,18 +125,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/keys/watch/0.2")]
 pub struct Payload {
     ///End the watches on the named rooms. Only `true` is meaningful, so only `true` is accepted. A cancel of a watch the recipient does not hold succeeds with `armed: false`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cancel: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The host to arm the watches at, as a DID. Named by the caller for the reason it is on rooms/keys/browse: nothing maps a room to its host.
     pub host: PayloadHost,
@@ -144,7 +136,6 @@ pub struct Payload {
     #[serde(
         rename = "leaseSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lease_seconds: ::std::option::Option<i64>,
@@ -293,11 +284,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 #[non_exhaustive]
 #[deprecated(note = "superseded by rooms/keys/watch/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The host, echoed.
     pub host: ResponseHost,
@@ -450,7 +437,6 @@ pub struct RoomWatchOutcome {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -458,16 +444,11 @@ pub struct RoomWatchOutcome {
     #[serde(
         rename = "hostCode",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub host_code: ::std::option::Option<RoomWatchOutcomeHostCode>,
     ///Present when this room's watch was not armed or cancelled because of a refusal. `notAMember`: the recipient holds no credential the room issued to `member`. `actionNotHeld`: the member's credentials do not confer `read`. `limitReached`: the recipient holds as many watches as it allows — the caller polls this room. `hostUnreachable`: the host could not be resolved, advertises no transport the recipient speaks, or did not answer — a retry may succeed. `hostRefused`: the host answered with a trust-task-error, whose code is in `hostCode`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub refused: ::std::option::Option<RoomWatchOutcomeRefused>,
     ///The room, echoed.
     #[serde(rename = "roomId")]
@@ -685,7 +666,6 @@ pub struct RoomWatchRequest {
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,

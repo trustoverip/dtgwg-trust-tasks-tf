@@ -123,18 +123,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The DID the owner's leaf identifies — the subject of the owner's membership and authority credentials. Absent means the caller.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub member: ::std::option::Option<PayloadMember>,
     ///The room whose group is formed. Its identity exists already; the recipient MUST hold a signing key for it.
     #[serde(rename = "roomId")]
@@ -344,11 +336,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSigningKeyId {
 pub struct Response {
     ///The room epoch the group is at: 1, the epoch a host records when a room is registered.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The room whose group was formed.
     #[serde(rename = "roomId")]

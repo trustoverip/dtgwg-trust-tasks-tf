@@ -123,11 +123,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
     pub id: PayloadId,
@@ -209,11 +205,7 @@ pub enum Response {
         ///The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.
         credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.
         format: ResponseVariant0Format,
@@ -223,11 +215,7 @@ pub enum Response {
         #[serde(rename = "credentialBase64")]
         credential_base64: ResponseVariant1CredentialBase64,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.
         format: ResponseVariant1Format,

@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestedAttributes")]
     pub requested_attributes: RequestedAttributes,
@@ -143,11 +139,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct RequestedAttribute {
     ///Why the community asks, in words shown to the applicant before they disclose.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub purpose: ::std::option::Option<RequestedAttributePurpose>,
     ///False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.
     #[serde(default = "defaults::default_bool::<true>")]
@@ -318,11 +310,7 @@ impl ::std::convert::From<::std::vec::Vec<RequestedAttribute>> for RequestedAttr
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestedAttributes")]
     pub requested_attributes: RequestedAttributes,

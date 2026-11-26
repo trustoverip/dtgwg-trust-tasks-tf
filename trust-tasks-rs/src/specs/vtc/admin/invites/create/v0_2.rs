@@ -184,30 +184,17 @@ impl ::std::convert::TryFrom<::std::string::String> for InviteKind {
 #[non_exhaustive]
 pub struct Payload {
     ///The DID a **wallet** invitation is for: the invitee claims it by signing as this DID (vtc/install/claim/start and finish 0.3). Absent, the invitation is a **passkey** invitation, and the administrator's DID is derived from the passkey the invitee registers (vtc/install/claim/passkey/start and finish 0.1).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<PayloadDid>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing note, recorded as the label of the administrator entry the invitation writes.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Invite lifetime. Capped at 24 hours.
     #[serde(
         rename = "ttlSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -368,11 +355,7 @@ pub struct Response {
     ///When the invite lapses.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One-shot enrolment URL. Returned once and never retrievable again.
     #[serde(rename = "installUrl")]

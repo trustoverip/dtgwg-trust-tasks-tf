@@ -38,11 +38,7 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ContactList {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub colour: ::std::option::Option<ListColour>,
     ///How many of the context's contacts are on the list now.
     #[serde(rename = "contactCount")]
@@ -391,11 +387,7 @@ impl ::std::fmt::Display for ListOrder {
 pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "listId")]
     pub list_id: ListId,
@@ -470,11 +462,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub list: ContactList,
 }

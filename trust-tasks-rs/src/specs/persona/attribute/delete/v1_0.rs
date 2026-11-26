@@ -175,15 +175,10 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -201,17 +196,12 @@ pub struct Response {
     pub attribute_id: Ulid,
     ///False when no live attribute was present. A repeat delete returns false and deliberately does NOT take a new counter value — had it done so, every consumer watching the store would see a change that did not happen, and delete could not be safely retried.
     pub existed: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Profiles whose entries were removed by a cascading delete. Present only when `cascade` was true and something was removed; a holder is owed the list of what their one action changed.
     #[serde(
         rename = "removedFromProfiles",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_from_profiles: ::std::option::Option<::std::vec::Vec<Ulid>>,

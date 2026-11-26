@@ -122,24 +122,15 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Updated platform descriptor if it changed since registration (e.g. browser updated).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub platform: ::std::option::Option<::std::string::String>,
     ///Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.
     #[serde(
         rename = "vaultSeq",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vault_seq: ::std::option::Option<u64>,
@@ -245,17 +236,12 @@ impl ::std::convert::TryFrom<::std::string::String> for QueuedOperationKind {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.
     #[serde(
         rename = "queuedOperations",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queued_operations: ::std::option::Option<::std::vec::Vec<QueuedOperation>>,
@@ -266,7 +252,6 @@ pub struct Response {
     #[serde(
         rename = "syncHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sync_hint: ::std::option::Option<ResponseSyncHint>,

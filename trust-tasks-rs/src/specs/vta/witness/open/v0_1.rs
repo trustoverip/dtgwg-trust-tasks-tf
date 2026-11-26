@@ -155,7 +155,6 @@ pub struct Membership {
     #[serde(
         rename = "memberDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<MembershipMemberDid>,
@@ -298,18 +297,10 @@ pub struct Payload {
     ///The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.
     #[serde(rename = "counterpartyDid")]
     pub counterparty_did: PayloadCounterpartyDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented. Bound to the session here.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub membership: ::std::option::Option<Membership>,
     ///The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.
     #[serde(rename = "relationshipCredentialId")]
@@ -324,7 +315,6 @@ pub struct Payload {
     #[serde(
         rename = "storeAs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub store_as: ::std::option::Option<PayloadStoreAs>,
@@ -717,11 +707,7 @@ pub struct Response {
     ///When the VTA's record of the session expires. The client must hand back the witness's answers before then.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "sessionId")]
     pub session_id: SessionId,

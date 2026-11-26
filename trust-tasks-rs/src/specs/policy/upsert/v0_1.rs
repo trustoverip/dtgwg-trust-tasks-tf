@@ -127,45 +127,27 @@ pub struct Payload {
     #[serde(
         rename = "appliesTo",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub applies_to: ::std::option::Option<Vec<::std::string::String>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<PayloadDescription>,
     #[serde(default = "defaults::default_bool::<true>")]
     pub enabled: bool,
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<u64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub id: ::std::option::Option<PayloadId>,
     ///Rego source. The maintainer parses and validates against its evaluator before persisting; a syntactically invalid module is rejected.
     pub module: PayloadModule,
     pub name: PayloadName,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub priority: ::std::option::Option<i64>,
 }
 impl Payload {
@@ -422,25 +404,16 @@ pub struct PolicyModule {
     #[serde(
         rename = "appliesTo",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub applies_to: ::std::option::Option<Vec<::std::string::String>>,
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<PolicyModuleDescription>,
     #[serde(default = "defaults::default_bool::<true>")]
     pub enabled: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub id: PolicyModuleId,
     ///Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
@@ -448,11 +421,7 @@ pub struct PolicyModule {
     ///Human-readable name (e.g. "default vault policy", "bank-site step-up").
     pub name: PolicyModuleName,
     ///When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub priority: ::std::option::Option<i64>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -710,11 +679,7 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleName {
 #[deprecated(note = "superseded by policy/upsert/0.3")]
 pub struct Response {
     pub created: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub policy: PolicyModule,
 }

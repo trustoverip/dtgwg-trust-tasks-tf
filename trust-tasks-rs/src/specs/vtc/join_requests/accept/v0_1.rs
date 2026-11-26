@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/members/vmc/0.1")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The approved join request being reciprocated.
     #[serde(rename = "requestId")]
@@ -269,17 +265,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVmcId {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/members/vmc/0.1")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Id the community assigned to the stored reciprocal credential.
     #[serde(
         rename = "reciprocalVcId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reciprocal_vc_id: ::std::option::Option<::std::string::String>,

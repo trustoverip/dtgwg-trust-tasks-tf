@@ -127,20 +127,12 @@ pub struct Payload {
     ///Identifier of the authority being queried to recognise the entity.
     #[serde(rename = "authorityId")]
     pub authority_id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub context: ::std::option::Option<QueryContext>,
     ///Identifier of the entity being tested for recognition.
     #[serde(rename = "entityId")]
     pub entity_id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The resource the query is checking recognition for.
     pub resource: ::std::string::String,
@@ -156,18 +148,10 @@ impl Payload {
 #[non_exhaustive]
 pub struct QueryContext {
     ///Optional hint for systems that need extra information to locate the records in question (authorization queries).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub locator: ::std::option::Option<::std::string::String>,
     ///Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub time: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(flatten)]
     pub extra: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
@@ -188,35 +172,22 @@ pub struct Response {
     #[serde(
         rename = "asOf",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub as_of: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(rename = "authorityId")]
     pub authority_id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub context: ::std::option::Option<QueryContext>,
     #[serde(rename = "entityId")]
     pub entity_id: ::std::string::String,
     ///Server time the query was evaluated at, per the endpoint clock.
     #[serde(rename = "evaluatedAt")]
     pub evaluated_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Additional human-readable detail about the recognition response.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<ResponseMessage>,
     ///True if the action+resource has been recognised, false otherwise.
     pub recognized: bool,

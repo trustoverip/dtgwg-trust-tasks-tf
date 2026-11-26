@@ -206,15 +206,10 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
@@ -289,20 +284,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
     ///The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reach: ::std::option::Option<FaceReach>,
     pub usage: ::std::vec::Vec<ResponseUsageItem>,
 }
@@ -324,11 +311,7 @@ pub struct ResponseUsageItem {
     #[serde(rename = "personaDid")]
     pub persona_did: ResponseUsageItemPersonaDid,
     ///When wearing it here ends on its own. Absent when it lasts until changed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl ResponseUsageItem {

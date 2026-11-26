@@ -117,7 +117,6 @@ pub struct CredentialReference {
     #[serde(
         rename = "issuedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -134,11 +133,7 @@ impl CredentialReference {
 #[non_exhaustive]
 pub struct Endorsement {
     ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub claim: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
     #[serde(rename = "endorsementId")]
@@ -443,11 +438,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one. Under `vetted/1` it MUST validate against the registry's vetting schema (`https://registry.trustoverip.org/dtg/vsc/vetted/1/vetting.schema.json`), its `community` MUST be this community's DID, and it MUST NOT carry the vetter-only members `identityCommitment`, `cardDigestMultibase` or `declaredRelationship`.
     pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///DID of the statement's subject (becomes credentialSubject.id).
     #[serde(rename = "subjectDid")]
@@ -459,7 +450,6 @@ pub struct Payload {
     #[serde(
         rename = "validitySeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -601,11 +591,7 @@ pub struct Response {
     ///The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub endorsement: Endorsement,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

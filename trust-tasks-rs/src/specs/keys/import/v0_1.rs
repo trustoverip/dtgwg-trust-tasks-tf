@@ -196,7 +196,6 @@ pub struct KeyRecord {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
@@ -207,22 +206,13 @@ pub struct KeyRecord {
     #[serde(
         rename = "derivationPath",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub derivation_path: ::std::option::Option<::std::string::String>,
     ///Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub exportable: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
     #[serde(rename = "keyId")]
@@ -230,17 +220,9 @@ pub struct KeyRecord {
     #[serde(rename = "keyType")]
     pub key_type: KeyType,
     ///Optional human-readable label. Operator-facing only; carries no authorization meaning.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<KeyRecordLabel>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub origin: ::std::option::Option<KeyOrigin>,
     ///The public half, multibase-encoded. The private half is never carried by any keys/* response.
     #[serde(rename = "publicKey")]
@@ -249,7 +231,6 @@ pub struct KeyRecord {
     #[serde(
         rename = "seedId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub seed_id: ::std::option::Option<u64>,
@@ -258,7 +239,6 @@ pub struct KeyRecord {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -590,26 +570,17 @@ pub enum Payload {
         #[serde(
             rename = "contextId",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         context_id: ::std::option::Option<::std::string::String>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.
         #[serde(rename = "keyType")]
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         label: ::std::option::Option<PayloadVariant0Label>,
         ///The private key inside an armored sealed-transfer bundle, encrypted to the custodian's own public key. The only carrier that keeps the key confidential from every intermediary, including a transport terminator, so it is the one to prefer.
         #[serde(rename = "privateKeySealed")]
@@ -620,26 +591,17 @@ pub enum Payload {
         #[serde(
             rename = "contextId",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         context_id: ::std::option::Option<::std::string::String>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.
         #[serde(rename = "keyType")]
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         label: ::std::option::Option<PayloadVariant1Label>,
         ///The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE.
         #[serde(rename = "privateKeyJwe")]
@@ -650,26 +612,17 @@ pub enum Payload {
         #[serde(
             rename = "contextId",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         context_id: ::std::option::Option<::std::string::String>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.
         #[serde(rename = "keyType")]
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         label: ::std::option::Option<PayloadVariant2Label>,
         ///The raw private key, multibase-encoded and NOT encrypted to the custodian. Admissible **only** where the transport itself provides end-to-end confidentiality between producer and custodian. A custodian reachable over a transport that terminates anywhere in between (TLS at a load balancer, for instance) MUST refuse this member — see the specification's Security section.
         #[serde(rename = "privateKeyMultibase")]
@@ -859,11 +812,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant2Label {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.
     pub key: KeyRecord,

@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The DIDs whose served names are wanted.
     pub dids: Vec<PayloadDidsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -206,11 +202,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDidsItem {
 pub struct Response {
     ///One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.
     pub entries: ::std::vec::Vec<ResponseEntriesItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

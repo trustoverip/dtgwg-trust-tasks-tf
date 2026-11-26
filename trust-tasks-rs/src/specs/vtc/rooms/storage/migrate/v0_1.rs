@@ -124,17 +124,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/rooms/storage/migrate/0.3")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Upper bound on the copy rate. The community applies its own lower bound when absent or larger.
     #[serde(
         rename = "maxBytesPerSecond",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes_per_second: ::std::option::Option<i64>,
@@ -284,11 +279,7 @@ pub struct Response {
     pub done_bytes: u64,
     #[serde(rename = "doneFiles")]
     pub done_files: u64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "fromConfigs")]
     pub from_configs: ::std::vec::Vec<StorageConfigId>,

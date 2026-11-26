@@ -111,11 +111,7 @@ pub struct ElectionListItem {
     #[serde(rename = "ticketHeld")]
     pub ticket_held: bool,
     ///The manifest's `title`, when it has one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<ElectionListItemTitle>,
     #[serde(rename = "votingCloses")]
     pub voting_closes: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -278,30 +274,14 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vtc/elections/list/0.5")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `next`, bound to the caller and to `state`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Page size. The community chooses when absent.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub state: ::std::option::Option<RegistrarState>,
 }
 impl ::std::default::Default for Payload {
@@ -474,18 +454,10 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrarState {
 #[deprecated(note = "superseded by vtc/elections/list/0.5")]
 pub struct Response {
     pub elections: ::std::vec::Vec<ElectionListItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Continuation token for the next page. Absent on the last page.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub next: ::std::option::Option<ResponseNext>,
 }
 impl Response {

@@ -128,11 +128,7 @@ pub struct PasskeyVerificationMethod {
     ///The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
     pub id: PasskeyVerificationMethodId,
     ///Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PasskeyVerificationMethodLabel>,
     ///W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).
     #[serde(rename = "publicKeyMultibase")]
@@ -147,7 +143,6 @@ pub struct PasskeyVerificationMethod {
     #[serde(
         rename = "webauthnTransports",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webauthn_transports: ::std::option::Option<Vec<::std::string::String>>,
@@ -491,28 +486,16 @@ pub struct Payload {
     ///The DID the new verificationMethod is to be added to. MUST match the DID bound to `ceremonyId` at challenge time — a mismatch is rejected as a cross-DID replay.
     pub did: PayloadDid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Optional operator-supplied label (e.g. "MacBook Touch ID"), carried through to the published verificationMethod.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Browser-computed W3C Multikey for the credential public key. ADVISORY: the VTA re-derives the Multikey from `attestationObject.authData` and rejects this submission if the values differ (anti-tamper gate). The re-derived key — not this one — is what gets published.
     #[serde(rename = "publicKeyMultibase")]
     pub public_key_multibase: PayloadPublicKeyMultibase,
     ///Transport hints reported by the authenticator (e.g. `internal`, `hybrid`). Advisory; carried through to the published verificationMethod's `webauthnTransports`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<Vec<::std::string::String>>,
 }
 impl Payload {
@@ -1003,11 +986,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPublicKeyMultibase {
 #[deprecated(note = "superseded by vta/passkey-vms/enroll-submit/0.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative.
     #[serde(rename = "verificationMethod")]

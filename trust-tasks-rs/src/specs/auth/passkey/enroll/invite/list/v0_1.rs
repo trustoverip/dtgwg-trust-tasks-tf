@@ -134,11 +134,7 @@ pub struct InviteSummary {
     ///What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.
     pub purpose: InviteSummaryPurpose,
     ///The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<::std::string::String>,
     ///The VID the invite binds a passkey to.
     pub subject: InviteSummarySubject,
@@ -336,17 +332,12 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///When true, invites whose expiry has passed are listed too. Absent or false means only unexpired invites are listed.
     #[serde(
         rename = "includeExpired",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_expired: ::std::option::Option<bool>,
@@ -370,11 +361,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every unredeemed invite within the administrator's authority, newest first.
     pub invites: ::std::vec::Vec<InviteSummary>,

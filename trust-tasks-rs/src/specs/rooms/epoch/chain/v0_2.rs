@@ -51,7 +51,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -231,26 +230,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Return only links whose `epoch` is at or below this. The chain is walked downwards, so this is how a member who already holds the top of it asks for the rest. Absent means from the room's current epoch down.
     #[serde(
         rename = "fromEpoch",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from_epoch: ::std::option::Option<i64>,
     ///Maximum links to return, highest `epoch` first. A host MAY return fewer.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Must confer the `read` action at this room's scope. Reading the room and reading the parts of it written earlier are the same act, so they take the same grant; a separate one would be a grant nobody could explain.
     pub presentation: AuthorityPresentation,
@@ -273,15 +263,10 @@ pub struct Response {
     #[serde(
         rename = "epochFloor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_floor: ::std::option::Option<EpochFloor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The links, highest `epoch` first. Contiguous within the range returned: a host MUST NOT omit a rung it holds while returning a lower one, because a member cannot walk past a gap and would read the omission as history that had been severed.
     pub links: ::std::vec::Vec<EpochLink>,

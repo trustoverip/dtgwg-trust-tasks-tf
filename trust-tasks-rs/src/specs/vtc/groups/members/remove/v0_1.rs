@@ -250,20 +250,12 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 pub struct Payload {
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
     ///Why, recorded with the change and shown to anyone who must approve it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {
@@ -350,11 +342,7 @@ pub struct Response {
         ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,

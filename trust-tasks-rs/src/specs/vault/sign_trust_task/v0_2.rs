@@ -42,7 +42,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "deviceId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<ConsumerContextDeviceId>,
@@ -50,7 +49,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "lastUserVerificationAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -58,7 +56,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "networkClass",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
@@ -303,24 +300,18 @@ pub struct Payload {
     #[serde(
         rename = "consumerContext",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consumer_context: ::std::option::Option<ConsumerContext>,
     ///Identifier of the vault entry whose principal will sign. The maintainer rejects with `notSignable` when `entry.secretKind` is not `didSelfIssued` or `didcommPeer` (other kinds have no DID-based signing identity).
     #[serde(rename = "entryId")]
     pub entry_id: PayloadEntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Step-up proof on retry after `stepUpRequired`.
     #[serde(
         rename = "stepUpProof",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up_proof: ::std::option::Option<StepUpProof>,
@@ -398,11 +389,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "signedEnvelope")]
     pub signed_envelope: ResponseSignedEnvelope,
@@ -583,15 +570,10 @@ pub struct UnsignedTrustTaskEnvelope {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Envelope identifier. Set by the producer of the inner task.
     pub id: UnsignedTrustTaskEnvelopeId,
@@ -608,7 +590,6 @@ pub struct UnsignedTrustTaskEnvelope {
     #[serde(
         rename = "threadId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub thread_id: ::std::option::Option<UnsignedTrustTaskEnvelopeThreadId>,

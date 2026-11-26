@@ -186,11 +186,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -214,32 +210,19 @@ pub struct Response {
     pub actions: ResponseActions,
     pub authority: Did,
     pub connected: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "lastSync",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_sync: ::std::option::Option<Sync>,
     pub publishes: ResponsePublishes,
     pub reachable: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<ResponseReason>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub records: ::std::option::Option<::std::vec::Vec<Row>>,
     pub registry: Did,
     pub resource: ResponseResource,
@@ -628,18 +611,10 @@ impl<'de> ::serde::Deserialize<'de> for ResponseWriter {
 pub struct Row {
     pub did: Did,
     ///The action the registry holds, if any.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub held: ::std::option::Option<::std::string::String>,
     ///The action the entries project, if any.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub projected: ::std::option::Option<::std::string::String>,
     pub result: RowResult,
 }
@@ -724,11 +699,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RowResult {
 #[non_exhaustive]
 pub struct Sync {
     ///Why nothing could be written at all, when so.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blocked: ::std::option::Option<::std::string::String>,
     ///Records deleted, as `party action`.
     pub deleted: ::std::vec::Vec<::std::string::String>,
@@ -742,7 +713,6 @@ pub struct Sync {
     #[serde(
         rename = "reconciledAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reconciled_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

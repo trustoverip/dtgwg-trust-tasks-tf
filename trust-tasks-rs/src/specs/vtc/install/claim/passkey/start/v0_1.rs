@@ -131,15 +131,10 @@ pub struct Payload {
     #[serde(
         rename = "claimSecret",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_secret: ::std::option::Option<PayloadClaimSecret>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
     #[serde(rename = "installToken")]
@@ -282,11 +277,7 @@ pub struct Response {
     ///WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned.
     #[serde(rename = "assertionOptions")]
     pub assertion_options: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.
     pub options: ::serde_json::Map<::std::string::String, ::serde_json::Value>,

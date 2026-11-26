@@ -44,7 +44,6 @@ pub struct AccountRow {
     #[serde(
         rename = "linkedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub linked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -438,38 +437,18 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `member` or `forge` from the request that produced it — start a fresh query instead.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Only accounts linked on this forge. Absent: every forge.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub forge: ::std::option::Option<ForgeHost>,
     ///Maximum accounts to return in this page. A VTC clamps to 1..=500 (default 100).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only this member's linked accounts. Absent: every member.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub member: ::std::option::Option<Did>,
 }
 impl ::std::default::Default for Payload {
@@ -496,17 +475,12 @@ impl Payload {
 pub struct Response {
     ///Links matching `member` and `forge`, ordered by `member` then `account.forge`. At most one per member per forge.
     pub accounts: ::std::vec::Vec<AccountRow>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page — never `null`.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,

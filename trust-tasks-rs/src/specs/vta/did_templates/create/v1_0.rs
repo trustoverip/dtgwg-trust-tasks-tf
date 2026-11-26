@@ -40,11 +40,7 @@ pub mod error {
 #[non_exhaustive]
 pub struct DidTemplate {
     ///Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub defaults:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable description of what the template provisions.
@@ -59,11 +55,7 @@ pub struct DidTemplate {
     ///Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
     pub kind: DidTemplateKind,
     ///DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Template id within its scope. Lowercase alphanumeric and hyphen only.
     pub name: DidTemplateName,
@@ -71,7 +63,6 @@ pub struct DidTemplate {
     #[serde(
         rename = "optionalVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_vars:
@@ -80,7 +71,6 @@ pub struct DidTemplate {
     #[serde(
         rename = "requiredVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -311,11 +301,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "retired; use vta/did-templates/create/2.0")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Full template document to store. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`.
     pub template: DidTemplate,
@@ -338,11 +324,7 @@ pub struct Response {
     ///DID of the admin who last wrote the template.
     #[serde(rename = "createdBy")]
     pub created_by: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub defaults:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
@@ -353,17 +335,12 @@ pub struct Response {
     pub description: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub kind: ResponseKind,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     pub name: ResponseName,
     #[serde(
         rename = "optionalVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_vars:
@@ -371,7 +348,6 @@ pub struct Response {
     #[serde(
         rename = "requiredVars",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

@@ -198,11 +198,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The host to register with, as a DID. Named by the caller because a room has no host until this call succeeds, and because a room may be registered with more than one (a mirror serves reads while its primary takes writes).
     pub host: ::std::string::String,
@@ -210,7 +206,6 @@ pub struct Payload {
     #[serde(
         rename = "ownerDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_did: ::std::option::Option<::std::string::String>,
@@ -218,7 +213,6 @@ pub struct Payload {
     #[serde(
         rename = "recordRetention",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_retention: ::std::option::Option<RecordRetention>,
@@ -226,7 +220,6 @@ pub struct Payload {
     #[serde(
         rename = "retentionDays",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -234,7 +227,6 @@ pub struct Payload {
     #[serde(
         rename = "retentionPolicy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -245,7 +237,6 @@ pub struct Payload {
     #[serde(
         rename = "signalDelay",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signal_delay: ::std::option::Option<SignalDelay>,
@@ -271,17 +262,12 @@ How long a room keeps its records, by age: the room's **record retention**. Reco
 #[non_exhaustive]
 pub struct RecordRetention {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Days a record is kept after it last changed, whatever its standing. A record — `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is eligible, **unless it is pinned**: pinning says what matters in the room, and a room that wants a pinned record gone unpins it first. Absent means records are never eligible by age.
     #[serde(
         rename = "recordDays",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -289,7 +275,6 @@ pub struct RecordRetention {
     #[serde(
         rename = "tombstoneDays",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -316,19 +301,11 @@ impl RecordRetention {
 pub struct Response {
     ///The epoch the room now stands at, as the host reports it. `1` for a room registered for the first time.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The host that accepted it, echoed so a caller recording where its room lives records what the recipient actually reached rather than what it asked for.
     pub host: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub revocation: ::std::option::Option<ResponseRevocation>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
@@ -345,11 +322,7 @@ impl Response {
 #[non_exhaustive]
 pub struct ResponseRevocation {
     ///The host's error code. Present exactly when `status` is `refused`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<ResponseRevocationCode>,
     ///The list the recipient delivered.
     pub head: RevocationHead,

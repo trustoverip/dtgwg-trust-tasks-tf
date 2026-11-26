@@ -197,18 +197,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///Digest over the RFC 8785 canonicalization of the withdrawn statement exactly as issued, `proof` included (SHA-256 RECOMMENDED). Pins the notice to one credential, so it cannot be aimed at a different statement that reuses the id.
     #[serde(rename = "statementDigestMultibase")]
@@ -366,11 +358,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStatementId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///When the community recorded the notice. A repeated notice for the same statement returns the time the first was recorded: revocation converges, and a vetter retrying cannot move it.
     #[serde(rename = "recordedAt")]

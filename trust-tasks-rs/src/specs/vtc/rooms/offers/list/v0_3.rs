@@ -416,11 +416,7 @@ pub struct OfferV2 {
     pub actions: MemberActions,
     pub credentials: OfferCredentials,
     ///Absent when the room has none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RoomDescription>,
     ///The room's host: this community.
     pub host: OfferV2Host,
@@ -635,24 +631,12 @@ impl ::std::convert::TryFrom<::std::string::String> for OfferV2State {
 #[deprecated(note = "superseded by vtc/rooms/offers/list/0.4")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Page size. The community chooses when absent (50 in the reference implementation).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl ::std::default::Default for Payload {
@@ -740,11 +724,7 @@ pub struct Renewal {
     pub actions: MemberActions,
     pub credentials: RenewalCredentials,
     ///Absent when the room has none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RoomDescription>,
     ///The room's host: this community.
     pub host: RenewalHost,
@@ -1038,27 +1018,18 @@ impl<'de> ::serde::Deserialize<'de> for RenewalRoomId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/rooms/offers/list/0.4")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<OfferV2>,
     ///Present when more remain; pass it as `cursor`.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
     ///Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub renewals: ::std::option::Option<::std::vec::Vec<Renewal>>,
 }
 impl Response {

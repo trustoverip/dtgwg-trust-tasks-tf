@@ -193,22 +193,16 @@ pub struct GrantOutcome {
     #[serde(
         rename = "attachedNow",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attached_now: ::std::option::Option<bool>,
     ///Present exactly when `status` is `refused`: the first check the grant failed, in the order the specification lists them.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<GrantOutcomeCode>,
     ///Present exactly when `code` is `messaging/mux/grant:epochMismatch`: the member DID's current epoch, under which the member re-signs.
     #[serde(
         rename = "currentEpoch",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_epoch: ::std::option::Option<u64>,
@@ -223,7 +217,6 @@ pub struct GrantOutcome {
     #[serde(
         rename = "replacedGrantId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub replaced_grant_id: ::std::option::Option<GrantId>,
@@ -231,7 +224,6 @@ pub struct GrantOutcome {
     #[serde(
         rename = "replayFloorAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub replay_floor_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -472,11 +464,7 @@ impl GrantStatement {
 #[non_exhaustive]
 pub struct MuxDataIntegrityProof {
     ///OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The W3C Data Integrity EdDSA cryptosuite used.
     pub cryptosuite: MuxDataIntegrityProofCryptosuite,
@@ -899,11 +887,7 @@ impl ::std::convert::TryFrom<::std::string::String> for MuxScopeValue {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The grant statements to store; the member DID is each statement's `issuer`. Each is checked and answered on its own; the batch is never all-or-nothing.
     pub grants: ::std::vec::Vec<GrantStatement>,
@@ -920,11 +904,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub results: ::std::vec::Vec<GrantOutcome>,
 }

@@ -198,38 +198,21 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub attributes: ::std::option::Option<::std::vec::Vec<PayloadAttributesItem>>,
     ///The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest (0.3 or later) published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub criterion: ::std::option::Option<DigestMultibase>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque applicant-supplied extension bag.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub extensions:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Whether the applicant consents to trust-registry publication.
     #[serde(
         rename = "registryConsent",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_consent: ::std::option::Option<bool>,
@@ -335,11 +318,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAttributesItemType {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Id of the created join request (a UUID).
     #[serde(rename = "requestId")]
@@ -515,48 +494,30 @@ pub struct VerdictWith {
     #[serde(
         rename = "bundleRef",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bundle_ref:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Stable refusal code, safe to branch on. `deny` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<VerdictWithCode>,
     ///What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub needs: ::std::option::Option<::std::vec::Vec<VerdictWithNeedsItem>>,
     ///Conditions attached to the grant. `allow` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub obligations:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
     #[serde(
         rename = "presentationDefinition",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentation_definition:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub queue: ::std::option::Option<VerdictWithQueue>,
     ///Elaboration in prose, when the decider gave one. `deny` and `refer`.
     #[serde(
@@ -566,11 +527,7 @@ pub struct VerdictWith {
     )]
     pub reason: ::std::option::Option<::std::option::Option<VerdictWithReason>>,
     ///The granted local role. `allow` only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<VerdictWithRole>,
 }
 impl ::std::default::Default for VerdictWith {

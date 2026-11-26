@@ -48,7 +48,6 @@ pub struct AdminNote {
     #[serde(
         rename = "followUp",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -58,23 +57,14 @@ pub struct AdminNote {
     #[serde(
         rename = "redactedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacted_by: ::std::option::Option<NoteId>,
     ///Present on a redaction: the earlier note this one withdraws.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub redacts: ::std::option::Option<NoteId>,
     ///The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<NoteText>,
 }
 impl AdminNote {
@@ -426,11 +416,7 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 pub struct Payload {
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Why, recorded with the change and shown to anyone who must approve it.
     pub reason: PayloadReason,
@@ -512,11 +498,7 @@ pub struct Response {
     pub entry_id: EntryId,
     #[serde(rename = "exportedAt")]
     pub exported_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every note about the entry, oldest first, with the text of redacted notes included.
     pub notes: ::std::vec::Vec<AdminNote>,

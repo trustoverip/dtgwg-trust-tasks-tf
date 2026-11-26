@@ -396,11 +396,7 @@ pub struct GcsSettings {
     ///The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.
     pub bucket: GcsSettingsBucket,
     pub kind: ::serde_json::Value,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub prefix: ::std::option::Option<ObjectPrefix>,
 }
 impl GcsSettings {
@@ -634,32 +630,22 @@ impl<'de> ::serde::Deserialize<'de> for ObjectPrefix {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub auth: ::std::option::Option<StorageAuth>,
     ///Total ciphertext bytes the community will store on this config across every room. Absent means none set.
     #[serde(
         rename = "capacityBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub id: StorageConfigId,
     ///Make this the config rooms are assigned to when neither policy nor creator names one.
     #[serde(
         rename = "isDefault",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_default: ::std::option::Option<bool>,
@@ -805,11 +791,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[non_exhaustive]
 pub struct Response {
     pub config: StorageConfig,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -826,26 +808,17 @@ pub struct S3Settings {
     ///The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.
     pub bucket: S3SettingsBucket,
     ///The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub endpoint: ::std::option::Option<::std::string::String>,
     pub kind: ::serde_json::Value,
     ///Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.
     #[serde(
         rename = "pathStyle",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path_style: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub prefix: ::std::option::Option<ObjectPrefix>,
     ///The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).
     pub region: S3SettingsRegion,
@@ -1017,7 +990,6 @@ pub enum StorageAuth {
         #[serde(
             rename = "roleArn",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         role_arn: ::std::option::Option<AwsRoleArn>,
@@ -1031,17 +1003,12 @@ pub enum StorageAuth {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct StorageConfig {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub auth: ::std::option::Option<StorageAuth>,
     ///Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
     #[serde(
         rename = "capacityBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
@@ -1054,7 +1021,6 @@ pub struct StorageConfig {
     #[serde(
         rename = "isDefault",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_default: ::std::option::Option<bool>,
@@ -1065,14 +1031,12 @@ pub struct StorageConfig {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "updatedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<StorageConfigUpdatedBy>,

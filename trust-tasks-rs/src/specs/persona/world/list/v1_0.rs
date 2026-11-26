@@ -123,17 +123,9 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The page size to ask for — never a cap on the result. A consumer that wants every world follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture.
     #[serde(default = "defaults::default_nzu64::<::std::num::NonZeroU64, 100>")]
@@ -218,17 +210,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present when more worlds remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -418,18 +405,13 @@ pub struct World {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Profiles belonging to this world. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.
     #[serde(rename = "faceIds")]
     pub face_ids: Vec<Ulid>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub icon: ::std::option::Option<WorldIcon>,
     pub name: WorldName,
     #[serde(rename = "updatedAt")]

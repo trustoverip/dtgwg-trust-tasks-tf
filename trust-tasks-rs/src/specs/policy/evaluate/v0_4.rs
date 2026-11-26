@@ -350,7 +350,6 @@ pub struct Payload {
     #[serde(
         rename = "candidateModule",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub candidate_module: ::std::option::Option<::std::string::String>,
@@ -359,11 +358,7 @@ pub struct Payload {
         default = "defaults::default_u64::<i64, 1000>"
     )]
     pub candidate_priority: i64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "includeTrace", default)]
     pub include_trace: bool,
@@ -382,30 +377,20 @@ impl Payload {
 pub struct PolicyDecision {
     pub decision: PolicyDecisionDecision,
     ///Human-readable explanation for diagnostic display.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub explanation: ::std::option::Option<PolicyDecisionExplanation>,
     ///Vault-flow-specific. When decision == "allow" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub mode: ::std::option::Option<PolicyDecisionMode>,
     #[serde(
         rename = "requireConsent",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require_consent: ::std::option::Option<PolicyDecisionRequireConsent>,
     #[serde(
         rename = "stepUp",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up: ::std::option::Option<PolicyDecisionStepUp>,
@@ -413,7 +398,6 @@ pub struct PolicyDecision {
     #[serde(
         rename = "ttlSecondsCap",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_cap: ::std::option::Option<::std::num::NonZeroU64>,
@@ -643,7 +627,6 @@ pub struct PolicyDecisionStepUp {
     #[serde(
         rename = "ttlSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -744,28 +727,21 @@ pub struct PolicyInputConsumer {
     #[serde(
         rename = "deviceId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<::std::string::String>,
     pub did: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub kind: ::std::option::Option<ConsumerKind>,
     #[serde(
         rename = "lastUserVerificationAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "networkClass",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<PolicyInputConsumerNetworkClass>,
@@ -915,17 +891,12 @@ impl<'de> ::serde::Deserialize<'de> for PolicyInputContextId {
 pub struct PolicyInputRequest {
     pub exposure: PolicyInputRequestExposure,
     ///Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub kind: ::std::option::Option<::std::string::String>,
     ///Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.
     #[serde(
         rename = "payloadDigest",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub payload_digest: ::std::option::Option<DigestMultibase>,
@@ -933,11 +904,7 @@ pub struct PolicyInputRequest {
     #[serde(rename = "sideEffects")]
     pub side_effects: PolicyInputRequestSideEffects,
     ///The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<::std::string::String>,
     ///Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).
     #[serde(rename = "typeUri")]
@@ -1100,26 +1067,17 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputRequestSideEf
 #[non_exhaustive]
 pub struct Response {
     pub decision: PolicyDecision,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.
     #[serde(
         rename = "matchedPolicies",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub matched_policies: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub trace: ::std::option::Option<::std::vec::Vec<ResponseTraceItem>>,
 }
 impl Response {
@@ -1214,7 +1172,6 @@ pub enum SiteTarget {
         #[serde(
             rename = "teamId",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         team_id: ::std::option::Option<SiteTargetTeamId>,

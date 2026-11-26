@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.
     pub id: PayloadId,
@@ -271,20 +267,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 #[non_exhaustive]
 pub struct PayloadRequest {
     ///The issuance encoding the suite carries.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub encoding: ::std::option::Option<PayloadRequestEncoding>,
     ///The proof that the commitment is well formed and the requester holds its secret.
     pub proof: PayloadRequestProof,
     ///The request's tag under the root context.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub t0: ::std::option::Option<PayloadRequestT0>,
 }
 impl PayloadRequest {
@@ -487,11 +475,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestT0 {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The label signed under — the one asked for.
     pub label: ResponseLabel,

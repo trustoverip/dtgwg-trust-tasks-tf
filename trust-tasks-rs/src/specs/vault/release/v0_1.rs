@@ -43,7 +43,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "deviceId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<ConsumerContextDeviceId>,
@@ -51,7 +50,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "lastUserVerificationAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -59,7 +57,6 @@ pub struct ConsumerContext {
     #[serde(
         rename = "networkClass",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
@@ -597,38 +594,27 @@ pub struct Payload {
     #[serde(
         rename = "consumerContext",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consumer_context: ::std::option::Option<ConsumerContext>,
     #[serde(rename = "entryId")]
     pub entry_id: PayloadEntryId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Step-up proof on retry after step_up_required.
     #[serde(
         rename = "stepUpProof",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up_proof: ::std::option::Option<StepUpProof>,
     ///Optional — for entries with multiple targets, indicates which one the consumer is acting against. The maintainer's policy may decide release based on the target (e.g. release for web origin allowed, release for iOS app denied).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub target: ::std::option::Option<SiteTarget>,
     ///Consumer's requested cache TTL for the released secret. The maintainer MAY cap this; the consumer MUST honour the maintainer's decision.
     #[serde(
         rename = "ttlSecondsHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_hint: ::std::option::Option<::std::num::NonZeroU64>,
@@ -704,11 +690,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vault/release/0.2")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.
     #[serde(rename = "sealedSecret")]
@@ -871,7 +853,6 @@ pub enum SiteTarget {
         #[serde(
             rename = "teamId",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         team_id: ::std::option::Option<SiteTargetTeamId>,

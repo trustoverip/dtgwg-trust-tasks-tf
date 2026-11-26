@@ -298,43 +298,29 @@ impl<'de> ::serde::Deserialize<'de> for LanguageTag {
 pub struct Payload {
     #[serde(rename = "acceptsDocumentation")]
     pub accepts_documentation: VetterAcceptsDocumentation,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub availability: ::std::option::Option<VetterAvailability>,
     #[serde(
         rename = "contactHint",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_hint: ::std::option::Option<VetterContactHint>,
     #[serde(
         rename = "displayName",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<VetterDisplayName>,
     ///Events the vetter will attend and vet at. May be empty. Events that have ended stay stored but are not listed.
     pub events: ::std::vec::Vec<VetterEvent>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///BCP 47 tags of the languages the vetter can hold a session in, most preferred first. May be empty.
     pub languages: Vec<LanguageTag>,
     ///Whether the profile appears in vtc/vetting/vetters/list. `false` keeps it stored and hidden.
     pub listed: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub location: ::std::option::Option<VetterLocation>,
     pub methods: VetterMethods,
 }
@@ -637,22 +623,14 @@ impl<'de> ::serde::Deserialize<'de> for VetterDisplayName {
 pub struct VetterEvent {
     #[serde(rename = "endDate")]
     pub end_date: CalendarDate,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub location: ::std::option::Option<VetterLocation>,
     ///The event's name, e.g. `Linux Plumbers Conference 2026`.
     pub name: VetterEventName,
     #[serde(rename = "startDate")]
     pub start_date: CalendarDate,
     ///OPTIONAL. The event's own https page.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl VetterEvent {
@@ -728,18 +706,10 @@ impl<'de> ::serde::Deserialize<'de> for VetterEventName {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct VetterLocation {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub city: ::std::option::Option<PlaceName>,
     pub country: CountryCode,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub region: ::std::option::Option<PlaceName>,
 }
 impl VetterLocation {

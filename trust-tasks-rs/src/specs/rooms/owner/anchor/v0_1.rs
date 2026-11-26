@@ -186,7 +186,6 @@ pub struct EpochAnchor {
     #[serde(
         rename = "dataCommitment",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub data_commitment: ::std::option::Option<DataCommitment>,
@@ -202,7 +201,6 @@ pub struct EpochAnchor {
     #[serde(
         rename = "recordCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_count: ::std::option::Option<RecordCount>,
@@ -360,11 +358,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     /**
     The host to read the room's head from, as a DID.
@@ -442,21 +436,13 @@ impl ::std::fmt::Display for RecordCount {
 pub struct Response {
     ///What was written — returned so an owner can see it without resolving their own room, and so an operator can compare it with what a member later reads.
     pub anchored: EpochAnchor,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     /**
     Whether the host's own listing reconciled with the `recordCount` it committed to, at the moment this was read.
 
     `false` is a host contradicting itself, and the anchor was still written — deliberately. An owner that refused to anchor a suspect room would leave it with no witnessed statement at all, which is the position the host benefits from. What is published is *what the host claimed*, and this member records that the owner had already caught it claiming something inconsistent.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reconciled: ::std::option::Option<bool>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,

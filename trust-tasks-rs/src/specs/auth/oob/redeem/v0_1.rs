@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "retired; use auth/oob/redeem/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestId")]
     pub request_id: RequestId,
@@ -217,11 +213,7 @@ pub struct Response {
     ///A name for the signed-in identity, for the confirmation step. Untrusted wherever rendered.
     #[serde(rename = "displayName")]
     pub display_name: ResponseDisplayName,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///When the session ends, as integer UTC epoch seconds: the earlier of the grant's `notAfter` and the service's session limit.
     #[serde(rename = "notAfter")]

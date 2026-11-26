@@ -284,17 +284,9 @@ pub struct Payload {
     ///From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.
     #[serde(rename = "claimId")]
     pub claim_id: PayloadClaimId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ApproverLabel>,
     ///The approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, `boundTo` equal to `claimId`, over the start's `challenge`. Verified as received.
     pub statement: AttestStatement,
@@ -375,11 +367,7 @@ pub struct Response {
     ///The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.
     #[serde(rename = "adminDid")]
     pub admin_did: ResponseAdminDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.
     #[serde(rename = "setupSessionToken")]

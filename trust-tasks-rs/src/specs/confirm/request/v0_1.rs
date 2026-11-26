@@ -128,7 +128,6 @@ pub struct Payload {
     #[serde(
         rename = "actionDetails",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_details:
@@ -137,28 +136,19 @@ pub struct Payload {
     #[serde(
         rename = "actionType",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_type: ::std::option::Option<::std::string::String>,
     ///base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.
     pub challenge: PayloadChallenge,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Human-readable action description shown to the user verbatim. SHOULD be specific ("Confirm transfer of $100 to bob.example" — not "Approve action").
     pub reason: PayloadReason,
     ///The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.
     pub subject: PayloadSubject,
     ///Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -350,18 +340,10 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[non_exhaustive]
 #[deprecated(note = "retired; use task-consent/request/0.1")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Required when status is `refused`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
     pub status: ResponseStatus,
 }

@@ -39,11 +39,7 @@ pub mod error {
 #[non_exhaustive]
 pub struct CeremonyManifest {
     ///One-line explanation shown beside the label.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blurb: ::std::option::Option<CeremonyManifestBlurb>,
     /**
     A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.
@@ -52,17 +48,12 @@ pub struct CeremonyManifest {
     #[serde(
         rename = "factsTemplate",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub facts_template:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub fields: ::std::option::Option<
         ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     >,
@@ -71,20 +62,12 @@ pub struct CeremonyManifest {
     ///Whether the ceremony is automatic, operator-driven, or advisory.
     pub nature: CeremonyManifestNature,
     ///Policy package backing the decision.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub pkg: ::std::option::Option<CeremonyManifestPkg>,
     ///Governance purpose this ceremony decides, e.g. join, removal.
     pub purpose: CeremonyManifestPurpose,
     ///Whether the ceremony is actually reachable in this deployment.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub wired: ::std::option::Option<CeremonyManifestWired>,
 }
 impl CeremonyManifest {
@@ -542,11 +525,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -569,11 +548,7 @@ impl Payload {
 pub struct Response {
     ///Every ceremony this maintainer implements.
     pub ceremonies: ::std::vec::Vec<CeremonyManifest>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

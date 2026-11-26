@@ -278,11 +278,7 @@ impl<'de> ::serde::Deserialize<'de> for FaceReachContextIdsItem {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
@@ -304,7 +300,6 @@ pub struct Profile {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -312,7 +307,6 @@ pub struct Profile {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<ProfileCredentialRefsItem>>,
@@ -321,17 +315,12 @@ pub struct Profile {
     pub name: ProfileName,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reach: ::std::option::Option<FaceReach>,
     ///When the face was retired. Present exactly when `status` is `retired`.
     #[serde(
         rename = "retiredAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retired_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -428,11 +417,7 @@ pub enum ProfileEntry {
     Variant0 {
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant1 {
@@ -440,11 +425,7 @@ pub enum ProfileEntry {
         pin_version: Version,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant2 {
@@ -452,20 +433,12 @@ pub enum ProfileEntry {
         override_: ProfileEntryVariant2Override,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
     Variant3 {
         inline: ProfileEntryVariant3Inline,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         slot: ::std::option::Option<Slot>,
     },
 }
@@ -475,11 +448,7 @@ pub enum ProfileEntry {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant2Override {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ProfileEntryVariant2OverrideLabel>,
     pub value: ::serde_json::Value,
 }
@@ -553,11 +522,7 @@ impl<'de> ::serde::Deserialize<'de> for ProfileEntryVariant2OverrideLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant3Inline {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ProfileEntryVariant3InlineLabel>,
     pub provenance: Provenance,
     #[serde(rename = "type")]
@@ -861,17 +826,12 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -1216,37 +1176,23 @@ pub struct ResolvedClaim {
     #[serde(
         rename = "attributeId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_id: ::std::option::Option<Ulid>,
     ///The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ResolvedClaimLabel>,
     pub provenance: Provenance,
     ///The slot of the entry this claim resolved from, where it has one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub slot: ::std::option::Option<Slot>,
     ///Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub stale: ::std::option::Option<bool>,
     ///Why the entry cannot be presented. Present only alongside `stale`.
     #[serde(
         rename = "staleReason",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stale_reason: ::std::option::Option<ResolvedClaimStaleReason>,
@@ -1256,7 +1202,6 @@ pub struct ResolvedClaim {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1270,11 +1215,7 @@ pub struct ResolvedClaim {
     #[serde(rename = "valueType")]
     pub value_type: ValueType,
     ///The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<Version>,
 }
 impl ResolvedClaim {
@@ -1423,26 +1364,17 @@ pub struct Response {
     #[serde(
         rename = "disclosedTo",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub disclosed_to: ::std::option::Option<ResponseDisclosedTo>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub profile: Profile,
     /**
     Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
 
     Typed as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub resolved: ::std::option::Option<::std::vec::Vec<ResolvedClaim>>,
 }
 impl Response {

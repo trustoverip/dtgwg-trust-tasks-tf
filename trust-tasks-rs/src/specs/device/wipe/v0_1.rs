@@ -126,17 +126,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "deviceId")]
     pub device_id: PayloadDeviceId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.
     #[serde(
         rename = "issuedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -353,17 +348,9 @@ pub struct Response {
     pub completed_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "deviceId")]
     pub device_id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub diagnostics: ::std::option::Option<ResponseDiagnostics>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub scope: ResponseScope,
 }
@@ -381,14 +368,12 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "cacheBytesWiped",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cache_bytes_wiped: ::std::option::Option<u64>,
     #[serde(
         rename = "keysWiped",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub keys_wiped: ::std::option::Option<u64>,
@@ -396,7 +381,6 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "osHooksInvoked",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub os_hooks_invoked: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -404,7 +388,6 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "partialReasons",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub partial_reasons: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

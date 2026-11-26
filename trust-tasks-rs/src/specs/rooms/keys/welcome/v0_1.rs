@@ -123,24 +123,15 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The invitation credential (VIC) the room issued to the joining party, serialized per the governing profile. This is what makes the Welcome acceptable: joining is a two-party act, and a recipient with no matching invitation MUST refuse.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub invitation: ::std::option::Option<::std::string::String>,
     ///The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. A joiner needs the tree to derive the group's secrets; omit it only where the group uses the ratchet-tree extension.
     #[serde(
         rename = "ratchetTree",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratchet_tree: ::std::option::Option<::std::string::String>,
@@ -163,11 +154,7 @@ impl Payload {
 pub struct Response {
     ///The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.
     pub epoch: u64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The attestation itself, multibase base58btc: a tag, a shown class credential and a proof. It carries no identifier of the vetter — the tag is deterministic for this (vetter, applicant) pair and unlinkable across applicants.
     pub attestation: PayloadAttestation,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The facts the community will count. Bound into the attestation, so changing one here invalidates it.
     pub meta: StatementMeta,
@@ -480,17 +476,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTokenShown {
 pub struct Response {
     ///Whether the attestation verified against the community's published parameters and the card the applicant showed.
     pub accepted: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done.
     #[serde(
         rename = "heldCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub held_count: ::std::option::Option<u64>,

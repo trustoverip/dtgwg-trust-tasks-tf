@@ -174,25 +174,16 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Profiles belonging to this world. A profile belongs to at most one world — see `persona/world/put:faceAlreadyPlaced` — because the world is where a consumer reads a profile's colour from, and two answers is no answer. Omission on a replace means an empty list, not 'leave as they were': this is a replace, and a member whose absence meant 'keep' would make it impossible to empty one.
     #[serde(rename = "faceIds", default = "defaults::payload_face_ids")]
     pub face_ids: Vec<Ulid>,
     ///One or two emoji, as a decorative mark beside the name. Bounded at 8 bytes because it is a mark and not a field: anything longer is text, and text belongs in `name` where a consumer will lay it out. A maintainer stores it opaquely and MUST NOT parse it; a consumer that cannot render emoji omits it and shows the name, which is why it is OPTIONAL and carries no meaning of its own.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub icon: ::std::option::Option<PayloadIcon>,
     ///The holder's name for this part of their life — "Work", "Home", "Play". Never disclosed to a verifier; it is how the holder finds it again. A maintainer MUST NOT interpret it: it is not a scope, a policy input, or a name a counterparty ever sees.
     pub name: PayloadName,
@@ -200,7 +191,6 @@ pub struct Payload {
     #[serde(
         rename = "worldId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub world_id: ::std::option::Option<Ulid>,
@@ -343,15 +333,10 @@ pub struct Response {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,

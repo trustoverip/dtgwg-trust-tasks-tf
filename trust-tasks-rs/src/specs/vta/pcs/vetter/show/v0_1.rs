@@ -190,11 +190,7 @@ pub struct Payload {
     ///The context the engine belongs to. Its key is derived from this context's base.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -326,11 +322,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub vetter: VetterSummary,
 }

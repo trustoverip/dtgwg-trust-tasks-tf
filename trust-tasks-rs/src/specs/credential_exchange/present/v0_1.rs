@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by credential-exchange/present/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field.
     pub vp_token: PayloadVpToken,

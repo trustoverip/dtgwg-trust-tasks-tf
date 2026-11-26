@@ -239,39 +239,22 @@ impl OutcomeEvidence {
 #[non_exhaustive]
 pub struct Payload {
     ///An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue. Opaque: a consumer MUST NOT construct or parse one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The most entries to return; the responder chooses a default and MAY return fewer. The VTA caps this value.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only VWCs whose credentialSubject.id is this relationship DID.
     #[serde(
         rename = "relationshipDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationship_did: ::std::option::Option<PayloadRelationshipDid>,
     ///Only VWCs issued by this witness.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witness: ::std::option::Option<PayloadWitness>,
 }
 impl ::std::default::Default for Payload {
@@ -486,17 +469,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitness {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Pass to the next request as `cursor` to continue. Present when the VTA stopped before the last match; absent when the page is the last. A consumer MUST NOT read a page carrying a `nextCursor` as a complete account of what is stored.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -584,11 +562,7 @@ pub struct StoredWitnessing {
     pub credential_id: StoredWitnessingCredentialId,
     ///The outcome evidence stored with the VWC, each document exactly as stored, never re-serialised: `session`, the witness/session document as the VTA built it, and `outcome`, the witness/session/submit #response as received, which carries the VWC. Of whichever version the session was conducted under.
     pub evidence: OutcomeEvidence,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The relationship DID the VWC names as its credentialSubject.id.
     #[serde(rename = "relationshipDid")]

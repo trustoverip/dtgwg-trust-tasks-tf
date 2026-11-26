@@ -310,16 +310,11 @@ pub enum Payload {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         key: Key,
         namespace: Namespace,
@@ -334,16 +329,11 @@ pub enum Payload {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         key: Key,
         ///An RFC 7386 JSON Merge Patch applied to the record's current value. Cuts payload, and more usefully cuts conflicts: two instances editing different members of one record stop colliding entirely rather than serialising behind `expectedVersion`. Requires a live record at the address. Note RFC 7386's one sharp edge — a member set to `null` in the patch DELETES that member from the value, and there is no way to set a member to the JSON literal null through a patch; a writer that needs to do so must send a whole `value`. Mutually exclusive with `value`.
@@ -480,11 +470,7 @@ pub struct Response {
     #[serde(rename = "contextId")]
     pub context_id: ResponseContextId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub key: Key,
     pub namespace: Namespace,
@@ -495,7 +481,6 @@ pub struct Response {
     #[serde(
         rename = "valueBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,

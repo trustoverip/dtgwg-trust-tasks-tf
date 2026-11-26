@@ -327,28 +327,19 @@ pub struct FederatedEntry {
     ///Whether the party is a member. Every result states it (VTI-VTN-013).
     pub acknowledged: bool,
     ///What the party is.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<FederatedEntryDescription>,
     pub did: Did,
     ///The grant's `id`, once acknowledged.
     #[serde(
         rename = "grantId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_id: ::std::option::Option<FederatedEntryGrantId>,
     pub kind: EntryKind,
     ///The name shown.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<FederatedEntryLabel>,
     ///The network whose set the result is in.
     #[serde(rename = "listedBy")]
@@ -357,7 +348,6 @@ pub struct FederatedEntry {
     #[serde(
         rename = "listingId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listing_id: ::std::option::Option<FederatedEntryListingId>,
@@ -365,18 +355,10 @@ pub struct FederatedEntry {
     pub path: ::std::vec::Vec<PathHop>,
     pub state: EntryState,
     ///Tags.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub tags: ::std::option::Option<::std::vec::Vec<FederatedEntryTagsItem>>,
     ///The party's public address.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl FederatedEntry {
@@ -760,11 +742,7 @@ pub struct PathHop {
     ///Whether that entry is a membership.
     pub acknowledged: bool,
     ///Its name.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub name: ::std::option::Option<PathHopName>,
     ///A network on the path.
     pub network: Did,
@@ -841,45 +819,24 @@ impl<'de> ::serde::Deserialize<'de> for PathHopName {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Only entries of this kind.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub kind: ::std::option::Option<EntryKind>,
     #[serde(
         rename = "membersOnly",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub members_only: ::std::option::Option<MembersOnly>,
     ///A person's membership credential from a member community, holder-bound to the signer; admits the person to a `members` directory.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub membership: ::std::option::Option<Membership>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub q: ::std::option::Option<SearchText>,
     ///Only entries in this state.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub state: ::std::option::Option<EntryState>,
 }
 impl ::std::default::Default for Payload {
@@ -908,11 +865,7 @@ pub struct Response {
     ///When the network assembled the answer.
     #[serde(rename = "determinedAt")]
     pub determined_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The matches, this network's own first (empty `path`), each stating its own state and whether it is a member of `listedBy`.
     pub results: ::std::vec::Vec<FederatedEntry>,

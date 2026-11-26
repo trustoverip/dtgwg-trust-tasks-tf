@@ -39,16 +39,11 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct CredentialCreationOptions {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub attestation: ::std::option::Option<CredentialCreationOptionsAttestation>,
     #[serde(
         rename = "authenticatorSelection",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_selection:
@@ -58,7 +53,6 @@ pub struct CredentialCreationOptions {
     #[serde(
         rename = "excludeCredentials",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub exclude_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -68,21 +62,13 @@ pub struct CredentialCreationOptions {
     This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
 
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub extensions:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(rename = "pubKeyCredParams")]
     pub pub_key_cred_params: ::std::vec::Vec<CredentialCreationOptionsPubKeyCredParamsItem>,
     pub rp: CredentialCreationOptionsRp,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     pub user: CredentialCreationOptionsUser,
 }
@@ -169,7 +155,6 @@ pub struct CredentialCreationOptionsAuthenticatorSelection {
     #[serde(
         rename = "authenticatorAttachment",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<
@@ -178,14 +163,12 @@ pub struct CredentialCreationOptionsAuthenticatorSelection {
     #[serde(
         rename = "requireResidentKey",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require_resident_key: ::std::option::Option<bool>,
     #[serde(
         rename = "residentKey",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resident_key:
@@ -193,7 +176,6 @@ pub struct CredentialCreationOptionsAuthenticatorSelection {
     #[serde(
         rename = "userVerification",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification:
@@ -722,11 +704,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsUserName {
 pub struct CredentialDescriptor {
     ///base64url-encoded credential id.
     pub id: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
@@ -904,16 +882,11 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<PayloadDeviceLabel>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -999,11 +972,7 @@ pub struct Response {
     #[serde(rename = "enrollmentId")]
     pub enrollment_id: ResponseEnrollmentId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///PublicKeyCredentialCreationOptions for navigator.credentials.create.
     pub options: CredentialCreationOptions,

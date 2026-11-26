@@ -260,11 +260,7 @@ impl<'de> ::serde::Deserialize<'de> for Origin {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/oob/prove/0.3")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving DID and signed by its VTA for `authentication`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.
     pub identify: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -617,11 +613,7 @@ pub struct Response {
     ///Unchanged from step 1 (integer UTC epoch seconds).
     #[serde(rename = "decisionDeadline")]
     pub decision_deadline: u64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The DID that issued the verified identify document. A grant must come from this DID.
     #[serde(rename = "identifiedAs")]

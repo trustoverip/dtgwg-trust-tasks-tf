@@ -328,21 +328,13 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 pub struct Payload {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The digest of the manifest the requester read (vtc/elections/show) and its agent bound the request to. A ticket is only ever asked for under the manifest the voter saw.
     #[serde(rename = "manifestDigest")]
     pub manifest_digest: DigestMultibase,
     ///Under a `credential` roll (voting/_shared/0.4 `RollRule`), and only then: the requester's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-025). Required when the election's roll rule is `credential`, refused under any other rule. The community verifies it before, and without reference to, the election the request names, so an outage of a status list or a verification method it depends on is answered `indeterminate` whatever the election; it checks it as it stands at the moment of issuance and discards it once it has decided.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub presentation: ::std::option::Option<PayloadPresentation>,
     pub request: TicketRequest,
 }
@@ -442,11 +434,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPresentationString {
 pub struct Response {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The label signed under — the one asked for.
     pub label: ResponseLabel,
@@ -532,20 +520,12 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 #[non_exhaustive]
 pub struct RootRequest {
     ///The issuance encoding the suite carries.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub encoding: ::std::option::Option<RootRequestEncoding>,
     ///The proof that the commitment is well formed and the requester holds its secret.
     pub proof: RootRequestProof,
     ///The request's tag under the root context.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub t0: ::std::option::Option<RootRequestT0>,
 }
 impl RootRequest {

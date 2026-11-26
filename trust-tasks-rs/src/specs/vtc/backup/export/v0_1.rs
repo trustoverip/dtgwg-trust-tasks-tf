@@ -613,11 +613,7 @@ impl<'de> ::serde::Deserialize<'de> for KdfParamsSalt {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Include the audit log and its signed checkpoints. Off by default: the log is large and carries plaintext DIDs.
     #[serde(rename = "includeAudit", default)]
@@ -697,11 +693,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 pub struct Response {
     ///The encrypted full-state backup.
     pub envelope: BackupEnvelope,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

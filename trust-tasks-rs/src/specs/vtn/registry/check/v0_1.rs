@@ -322,11 +322,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The party asked about.
     pub did: Did,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -342,45 +338,25 @@ impl Payload {
 pub struct Response {
     pub actions: Actions,
     ///The registry's answer document, verbatim and signed by the registry.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub answer:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The network's DID: the authority of its records.
     pub authority: Did,
     ///The party asked about.
     pub did: Did,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Whether the registry holds an authorised listed record for the party. Absent when not reachable.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub listed: ::std::option::Option<bool>,
     ///Whether the registry holds an authorised member record for the party. Absent when not reachable.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub member: ::std::option::Option<bool>,
     ///Whether the registry answered. `false` is indeterminate, never "not a member".
     pub reachable: bool,
     ///Why the registry could not be asked, when not reachable.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<ResponseReason>,
     ///The trust registry asked.
     pub registry: Did,

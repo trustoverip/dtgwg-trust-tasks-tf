@@ -42,7 +42,6 @@ pub struct AgentOnlyDid {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<AgentOnlyDidContextId>,
@@ -325,21 +324,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct HostOnlyDid {
     ///The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<HostOnlyDidDid>,
     ///Whether the hosting server currently has the slot disabled. A disabled slot is still unreconciled — the agent holds no key for it either way.
     #[serde(default)]
     pub disabled: bool,
     ///Hosting domain the slot belongs to, as the server reported it. Absent where the server reports none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<HostOnlyDidDomain>,
     ///The hosting server's identifier for the slot — what the server's own management API addresses it by. This is the comparison key, not `did`: a slot that was reserved but never published to has no DID at all, and is as unreconciled as one that was.
     #[serde(rename = "slotId")]
@@ -534,11 +525,7 @@ impl<'de> ::serde::Deserialize<'de> for HostOnlyDidSlotId {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Identifier of the registered hosting server to compare against. Required for the same reason as on `vta/webvh/servers/domains/0.1`: an agent may hold registrations with several servers, and a comparison that merged them would place every DID in a report without saying which host it was — or was not — on.
     #[serde(rename = "serverId")]
@@ -617,11 +604,7 @@ pub struct Response {
     ///DIDs the agent records as hosted on this server, which the server does not have.
     #[serde(rename = "agentOnly")]
     pub agent_only: ::std::vec::Vec<AgentOnlyDid>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Slots the hosting server serves that the agent has no record of. The agent holds no update key for these, so no further version of them can be signed by it.
     #[serde(rename = "hostOnly")]

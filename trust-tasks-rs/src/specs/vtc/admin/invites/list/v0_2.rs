@@ -252,7 +252,6 @@ pub struct InviteSummary {
     #[serde(
         rename = "consumedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consumed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -260,7 +259,6 @@ pub struct InviteSummary {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -272,7 +270,6 @@ pub struct InviteSummary {
     #[serde(
         rename = "targetDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target_did: ::std::option::Option<InviteSummaryTargetDid>,
@@ -406,11 +403,7 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummaryTargetDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -431,11 +424,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every invite the community holds, outstanding and terminal.
     pub invites: ::std::vec::Vec<InviteSummary>,

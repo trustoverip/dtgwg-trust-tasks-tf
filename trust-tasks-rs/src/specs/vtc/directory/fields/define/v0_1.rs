@@ -121,11 +121,7 @@ pub struct ClaimSelector {
     #[serde(rename = "credentialType")]
     pub credential_type: ClaimSelectorCredentialType,
     ///Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub issuers: ::std::option::Option<Vec<ClaimSelectorIssuersItem>>,
 }
 impl ClaimSelector {
@@ -558,60 +554,43 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct FieldConstraints {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub claim: ::std::option::Option<ClaimSelector>,
     #[serde(
         rename = "maxDate",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_date: ::std::option::Option<::chrono::naive::NaiveDate>,
     #[serde(
         rename = "maxItems",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_items: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "maxLength",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_length: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "minDate",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_date: ::std::option::Option<::chrono::naive::NaiveDate>,
     #[serde(
         rename = "minLength",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_length: ::std::option::Option<i64>,
     ///The permitted values of an `enum` or `multiEnum` field.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub options: ::std::option::Option<::std::vec::Vec<EnumOption>>,
     ///ECMA-262 regular expression a text value MUST match.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub pattern: ::std::option::Option<FieldConstraintsPattern>,
 }
 impl ::std::default::Default for FieldConstraints {
@@ -704,33 +683,20 @@ pub struct FieldDefinition {
     ///`true` for a base field, present in every community; `false` for a field this community defined.
     pub base: bool,
     pub ceiling: Audience,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub constraints: ::std::option::Option<FieldConstraints>,
     #[serde(rename = "defaultVisibility")]
     pub default_visibility: Audience,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<FieldDescription>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub facet: bool,
     ///Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.
     #[serde(
         rename = "jsContactPath",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub js_contact_path: ::std::option::Option<FieldDefinitionJsContactPath>,
@@ -741,7 +707,6 @@ pub struct FieldDefinition {
     #[serde(
         rename = "purgeAfter",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_after: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -750,7 +715,6 @@ pub struct FieldDefinition {
     #[serde(
         rename = "retiredAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retired_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -762,7 +726,6 @@ pub struct FieldDefinition {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -903,50 +866,26 @@ impl<'de> ::serde::Deserialize<'de> for FieldDescription {
 #[non_exhaustive]
 pub struct FieldInput {
     pub ceiling: Audience,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub constraints: ::std::option::Option<FieldConstraints>,
     ///The audience a card gives the field until its member chooses. MUST NOT be wider than `ceiling`.
     #[serde(rename = "defaultVisibility")]
     pub default_visibility: Audience,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<FieldDescription>,
     ///Whether the field may be filtered on and counted. Only `enum`, `multiEnum` and `country` fields may be facets. Absent: false.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub facet: ::std::option::Option<bool>,
     pub key: FieldKey,
     pub label: FieldLabel,
     ///Display order, ascending.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub order: ::std::option::Option<i64>,
     ///Whether a card must hold a value for its entry to be listed. Never a condition of membership. Absent: false.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub required: ::std::option::Option<bool>,
     ///Whether a member's search may match the field, within what the searcher may see. Absent: false.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub searchable: ::std::option::Option<bool>,
     ///As `FieldSource`, less `derived`, which only base fields carry.
     pub source: FieldInputSource,
@@ -1397,19 +1336,11 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldType {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub field: FieldInput,
     ///Why, recorded with the change and shown to anyone who must approve it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {
@@ -1485,11 +1416,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub field: FieldDefinition,
 }

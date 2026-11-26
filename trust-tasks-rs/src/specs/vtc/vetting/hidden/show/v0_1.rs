@@ -208,11 +208,7 @@ pub struct Payload {
     ///The Accepts criterion to read.
     #[serde(rename = "criterionId")]
     pub criterion_id: PayloadCriterionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -698,7 +694,6 @@ pub struct Response {
     #[serde(
         rename = "enrolledVetters",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enrolled_vetters:
@@ -707,30 +702,17 @@ pub struct Response {
     #[serde(
         rename = "eventStatus",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub event_status: ::std::option::Option<::std::vec::Vec<EventStatus>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub published: ::std::option::Option<PublishedConfig>,
     ///The criterion's current requirementsDigest. Null only when its manifest entry carries none.
     #[serde(rename = "requirementsDigest")]
     pub requirements_digest: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub stored: ::std::option::Option<StoredConfig>,
 }
 impl Response {

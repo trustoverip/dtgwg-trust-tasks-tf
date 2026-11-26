@@ -618,11 +618,7 @@ pub struct Payload {
     ///`false` (default) previews: row counts, no mutation. `true` clears the backed-up keyspaces and applies the backup.
     #[serde(default)]
     pub confirm: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The passphrase the envelope was encrypted under.
     pub password: PayloadPassword,
@@ -699,11 +695,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 pub struct Response {
     ///Per-keyspace row counts written, or that would be written on a preview.
     pub counts: ::std::collections::HashMap<::std::string::String, u64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Human-readable summary for the operator.
     pub message: ResponseMessage,

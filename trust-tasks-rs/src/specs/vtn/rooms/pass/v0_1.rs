@@ -254,11 +254,7 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 pub struct Payload {
     ///The registrations from the person's group up to a group registered with this network, nearest first. Empty when the group is registered here directly.
     pub chain: ::std::vec::Vec<ChainLink>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The person's membership credential from their group, naming the requester's identity.
     pub membership: Membership,
@@ -339,11 +335,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoom {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub pass: RoomPass,
 }
@@ -420,11 +412,7 @@ impl<'de> ::serde::Deserialize<'de> for RoleName {
 #[non_exhaustive]
 pub struct RoomDef {
     ///What it is for.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<RoomDefDescription>,
     ///The room's id.
     pub id: RoomDefId,
@@ -436,11 +424,7 @@ pub struct RoomDef {
     ///The role whose groups' members may enter.
     pub role: RoleName,
     ///Where the room is.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl RoomDef {

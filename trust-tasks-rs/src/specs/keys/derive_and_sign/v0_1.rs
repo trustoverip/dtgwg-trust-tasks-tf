@@ -201,11 +201,7 @@ pub struct Payload {
     #[serde(rename = "derivationPath")]
     pub derivation_path: PayloadDerivationPath,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Algorithm to derive. MUST be one that can sign.
     #[serde(rename = "keyType")]
@@ -284,11 +280,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDerivationPath {
 #[non_exhaustive]
 pub struct Response {
     pub algorithm: SignAlgorithm,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.
     #[serde(rename = "publicKey")]

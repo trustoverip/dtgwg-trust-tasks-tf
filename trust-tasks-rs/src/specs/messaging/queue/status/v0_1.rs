@@ -192,24 +192,15 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The account whose queues to report. Omitted = the requester's own account. A requester without administrative standing may name only itself.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<Vid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Also return the top N counterparties of each queue by message count. Omitted = no per-peer breakdown.
     #[serde(
         rename = "includePeers",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_peers: ::std::option::Option<::std::num::NonZeroU64>,
@@ -239,7 +230,6 @@ pub struct PeerDepth {
     #[serde(
         rename = "oldestAgeSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_age_seconds: ::std::option::Option<u64>,
@@ -265,31 +255,21 @@ pub struct QueueDepth {
     #[serde(
         rename = "deliveredUnacked",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivered_unacked: ::std::option::Option<u64>,
     ///The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<i64>,
     ///Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.
     #[serde(
         rename = "oldestAgeSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_age_seconds: ::std::option::Option<u64>,
     ///count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub saturation: ::std::option::Option<f64>,
 }
 impl QueueDepth {
@@ -306,7 +286,6 @@ pub struct QueueSummary {
     #[serde(
         rename = "accountType",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account_type: ::std::option::Option<AccountType>,
@@ -326,18 +305,13 @@ impl QueueSummary {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub queues: QueueSummary,
     ///Top senders into the receive queue. Present only when includePeers was requested.
     #[serde(
         rename = "receivePeers",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_peers: ::std::option::Option<::std::vec::Vec<PeerDepth>>,
@@ -345,7 +319,6 @@ pub struct Response {
     #[serde(
         rename = "sendPeers",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_peers: ::std::option::Option<::std::vec::Vec<PeerDepth>>,

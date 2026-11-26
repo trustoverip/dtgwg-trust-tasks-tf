@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -158,11 +154,7 @@ pub struct RegistryTransport {
     )]
     pub active: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub advertised: ::std::option::Option<::std::vec::Vec<RegistryTransportAdvertisedItem>>,
     ///The registry's DID, when addressed by one.
     #[serde(
@@ -326,11 +318,7 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportError {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Terminal-failure rows awaiting operator triage.
     #[serde(rename = "failedCount")]
@@ -379,7 +367,6 @@ pub struct Response {
     #[serde(
         rename = "messagingStatus",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub messaging_status: ::std::option::Option<ResponseMessagingStatus>,
@@ -401,7 +388,6 @@ pub struct Response {
     #[serde(
         rename = "registryTransport",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_transport: ::std::option::Option<RegistryTransport>,
@@ -412,7 +398,6 @@ pub struct Response {
     #[serde(
         rename = "syncerEnabled",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_enabled: ::std::option::Option<bool>,
@@ -420,7 +405,6 @@ pub struct Response {
     #[serde(
         rename = "syncerRestarts",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_restarts: ::std::option::Option<u64>,
@@ -428,7 +412,6 @@ pub struct Response {
     #[serde(
         rename = "syncerRunning",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_running: ::std::option::Option<bool>,
@@ -436,17 +419,12 @@ pub struct Response {
     Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.
 
     Reports all protocols rather than only the advertised ones, so a client can tell "not advertised" from "absent from an older response".*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<::std::vec::Vec<TransportStatus>>,
     ///The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.
     #[serde(
         rename = "vtaDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<ResponseVtaDid>,

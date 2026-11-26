@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The member's own decision on trust-registry publication: `true` consents to the community publishing their membership in its trust registry, `false` withdraws that consent. Applies to the member who signed the document, and to no one else.
     #[serde(rename = "publishConsent")]
@@ -150,11 +146,7 @@ pub struct Response {
     ///When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.
     #[serde(rename = "effectiveAt")]
     pub effective_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The consent now recorded on the member record.
     #[serde(rename = "publishConsent")]

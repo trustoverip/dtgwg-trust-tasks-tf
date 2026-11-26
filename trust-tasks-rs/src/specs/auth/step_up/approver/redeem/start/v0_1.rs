@@ -125,11 +125,7 @@ pub struct Payload {
     ///The claim code the administrator delivered separately. Never logged; compared with its stored hash.
     #[serde(rename = "claimCode")]
     pub claim_code: PayloadClaimCode,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The invite token, as carried in the invite URL.
     pub token: PayloadToken,
@@ -279,11 +275,7 @@ pub struct Response {
     ///When this ceremony lapses (not the invite). No later than the invite's own expiry.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

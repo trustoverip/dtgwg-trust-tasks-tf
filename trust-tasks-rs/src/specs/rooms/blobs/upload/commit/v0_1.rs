@@ -243,11 +243,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by rooms/blobs/upload/commit/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "uploadId")]
     pub upload_id: TransferId,
@@ -267,11 +263,7 @@ pub struct Response {
     ///The committed blob's name in this room: the digest of the manifest. What a record names in its `blobs` member.
     #[serde(rename = "blobRef")]
     pub blob_ref: BlobRef,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The stored blob's size in ciphertext bytes, as committed in the manifest; what now counts against the member's and the room's usage.
     pub size: ::std::num::NonZeroU64,

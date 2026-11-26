@@ -45,17 +45,12 @@ pub struct Approver {
     pub enrolled_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "enrolledVia")]
     pub enrolled_via: EnrolledVia,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ApproverLabel>,
     ///When a statement by this approver last satisfied a step-up. Absent when it never has.
     #[serde(
         rename = "lastUsedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -427,25 +422,13 @@ pub struct Payload {
     ///The approver to revoke.
     #[serde(rename = "approverDid")]
     pub approver_did: ApproverDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Why the approver is revoked, for the audit record. Free text authored by the caller, untrusted, never published beyond the subject and the administrators over them.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The subject the approver is bound to. Absent means the caller; an administrator revoking on someone's behalf names it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
 impl Payload {
@@ -588,11 +571,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The subject's live approvers after the revocation. Zero is legitimate and recoverable.
     #[serde(rename = "remainingApprovers")]

@@ -51,7 +51,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -219,20 +218,12 @@ pub struct Payload {
     #[serde(rename = "beforeEpoch")]
     pub before_epoch: i64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Must confer `admin` at this room's scope. Not `curate`, and not `write`: pruning is not a statement about any record, and every member who can write can curate. It ends the room's ability to open a span of its own history, for everyone, which is the same class of act as advancing the epoch.
     pub presentation: AuthorityPresentation,
     ///Why, for the room's audit trail. A prune is irreversible and unattributable after the fact — the rungs are simply gone — so the only record of intent is the one made at the time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room to prune.
     #[serde(rename = "roomId")]
@@ -314,11 +305,7 @@ pub struct Response {
     ///The room's epoch floor after this prune: the higher of the floor the host held and `beforeEpoch − 1`. What every member's key holder discards below once it learns it (`EpochFloor`), and what `rooms/epoch/chain` 0.2 serves from now on. Unlike `earliestRung`, a statement of intent rather than of reach: a chain with a gap already reached less far, but the floor is what the owner decided.
     #[serde(rename = "epochFloor")]
     pub epoch_floor: EpochFloor,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///How many rungs were dropped. `0` is a success: the chain already went back no further, and a caller that read it as a failure would retry an operation that has nothing left to do.
     pub pruned: u64,

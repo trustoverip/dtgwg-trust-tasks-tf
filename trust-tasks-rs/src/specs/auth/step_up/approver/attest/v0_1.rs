@@ -129,11 +129,7 @@ pub struct Payload {
     pub bound_to: PayloadBoundTo,
     ///The relying party's challenge for this ceremony, copied verbatim: the approve-request's challenge for `stepUp`, the decision's `challenge` for `decision`, the enrolment start's challenge for `enrol`.
     pub challenge: PayloadChallenge,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.7). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another.
     pub purpose: PayloadPurpose,

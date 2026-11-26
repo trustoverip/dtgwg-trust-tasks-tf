@@ -253,11 +253,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: ContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The identifier whose claim to release.
     pub identifier: Did,
@@ -277,7 +273,6 @@ pub struct Response {
     #[serde(
         rename = "endsAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

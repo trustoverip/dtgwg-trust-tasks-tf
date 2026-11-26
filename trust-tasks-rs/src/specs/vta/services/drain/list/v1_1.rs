@@ -43,11 +43,7 @@ pub struct DrainEntry {
     pub drain_ends_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Where it is still reachable for the remainder of the drain.
     pub endpoint: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The mediator being drained.
     #[serde(rename = "mediatorDid")]
@@ -207,11 +203,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -234,11 +226,7 @@ impl Payload {
 pub struct Response {
     ///Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.
     pub entries: ::std::vec::Vec<DrainEntry>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

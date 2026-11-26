@@ -127,11 +127,7 @@ pub struct Payload {
     ///The MLS epoch this commit produces — the recipient's epoch after applying it. Stated so a recipient can tell a replay from a gap without parsing the commit: equal to its current epoch is a replay, more than one ahead is a gap.
     pub epoch: ::std::num::NonZeroU64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The room whose group is advancing.
     #[serde(rename = "roomId")]
@@ -150,11 +146,7 @@ impl Payload {
 pub struct Response {
     ///The recipient's epoch after the operation. On a replay this is unchanged, which is how a sender distinguishes 'applied' from 'already had it' without either being an error.
     pub epoch: u64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

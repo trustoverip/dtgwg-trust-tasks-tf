@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Context to preview the deletion of.
     pub id: PayloadId,
@@ -211,17 +207,12 @@ pub struct Response {
     #[serde(
         rename = "didTemplates",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_templates: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Every identity the deletion would delete, of every method — did:webvh and did:scid:vh:1 logs that stop being served, did:webs DIDs whose key event logs are ended, did:key identities forgotten — as vta/dids/list summarises them. Anything that recorded one as an issuer or subject is left pointing at nothing, or at a deactivated identity.
     pub dids: ::std::vec::Vec<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The context previewed.
     pub id: ::std::string::String,
@@ -231,7 +222,6 @@ pub struct Response {
     #[serde(
         rename = "subContexts",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sub_contexts: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

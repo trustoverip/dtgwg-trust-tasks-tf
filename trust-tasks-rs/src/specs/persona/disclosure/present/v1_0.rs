@@ -123,25 +123,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub challenge: ::std::option::Option<PayloadChallenge>,
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub mint: ::std::option::Option<PayloadMint>,
     ///From a prior preview. Single-use: presenting consumes it. A producer that wants to disclose twice previews twice, which is correct — the second disclosure is a second decision.
     #[serde(rename = "previewId")]
@@ -281,7 +269,6 @@ pub struct PayloadMint {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -311,7 +298,6 @@ pub struct Response {
     #[serde(
         rename = "credentialId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<ResponseCredentialId>,
@@ -320,11 +306,7 @@ pub struct Response {
     ///Names the append-only record this disclosure wrote, so the holder can find it again in their history.
     #[serde(rename = "disclosureId")]
     pub disclosure_id: Ulid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.
     pub subject: ResponseSubject,

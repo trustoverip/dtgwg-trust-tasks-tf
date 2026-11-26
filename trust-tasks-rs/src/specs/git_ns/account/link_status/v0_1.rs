@@ -337,11 +337,7 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///From git-ns/account/link.
     #[serde(rename = "linkId")]
@@ -421,17 +417,9 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLinkId {
 #[non_exhaustive]
 pub struct Response {
     ///The linked account. Present only when `state` is `linked`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub account: ::std::option::Option<ForgeAccount>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///`pending` — waiting for the member to authorise. `linked` — the account is bound to the member's DID. `expired` — not authorised in time. `failed` — the forge refused, or the account is already linked to another member.
     pub state: ResponseState,

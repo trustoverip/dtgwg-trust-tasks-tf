@@ -127,7 +127,6 @@ pub struct Floor {
     #[serde(
         rename = "allowAal1IfNonEscalating",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_aal1_if_non_escalating: ::std::option::Option<bool>,
@@ -220,11 +219,7 @@ pub struct Payload {
     ///Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced.
     pub enabled: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).
     pub floors: ::std::vec::Vec<Floor>,
@@ -243,11 +238,7 @@ impl Payload {
 pub struct Response {
     ///The effective master switch the maintainer now holds.
     pub enabled: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).
     pub floors: ::std::vec::Vec<Floor>,

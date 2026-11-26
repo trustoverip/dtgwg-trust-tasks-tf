@@ -190,7 +190,6 @@ pub struct AccountProbeReportStepsItem {
     #[serde(
         rename = "durationMs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub duration_ms: ::std::option::Option<u64>,
@@ -199,14 +198,12 @@ pub struct AccountProbeReportStepsItem {
     #[serde(
         rename = "providerError",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub provider_error: ::std::option::Option<AccountProbeReportStepsItemProviderError>,
     #[serde(
         rename = "providerRequestId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub provider_request_id: ::std::option::Option<AccountProbeReportStepsItemProviderRequestId>,
@@ -512,11 +509,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     pub context: AccountContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub id: AccountId,
 }
@@ -531,11 +524,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub report: AccountProbeReport,
 }

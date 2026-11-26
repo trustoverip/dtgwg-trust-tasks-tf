@@ -48,28 +48,16 @@ This specification declares no response anchor. An acknowledgement is not answer
 #[deprecated(note = "retired")]
 pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<PayloadMessage>,
     /**
     Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.
 
     A consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub refs: ::std::option::Option<::std::vec::Vec<PayloadRefsItem>>,
 }
 impl ::std::default::Default for Payload {

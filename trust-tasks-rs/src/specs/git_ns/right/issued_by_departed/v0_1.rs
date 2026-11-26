@@ -43,7 +43,6 @@ pub struct AdminRightRow {
     #[serde(
         rename = "breakGlass",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub break_glass: ::std::option::Option<BreakGlass>,
@@ -51,7 +50,6 @@ pub struct AdminRightRow {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -59,7 +57,6 @@ pub struct AdminRightRow {
     #[serde(
         rename = "grantedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -67,7 +64,6 @@ pub struct AdminRightRow {
     #[serde(
         rename = "grantedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_by: ::std::option::Option<Did>,
@@ -76,11 +72,7 @@ pub struct AdminRightRow {
     pub granter_departed: bool,
     pub origin: RightOrigin,
     ///The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<AdminRightRowReason>,
     pub resource: Resource,
     pub right: Right,
@@ -168,7 +160,6 @@ pub struct BreakGlass {
     #[serde(
         rename = "effectiveAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -178,7 +169,6 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -186,7 +176,6 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_by: ::std::option::Option<Did>,
@@ -444,24 +433,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by git-ns/right/issued-by-departed/0.3")]
 pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum granters to return in this page. A VTC clamps to 1..=500 (default 100).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl ::std::default::Default for Payload {
@@ -561,11 +538,7 @@ pub struct Response {
     ///The community's active `cascade_on_departure` policy setting. `true` means a departure revokes these rights automatically and this list is normally empty; `false` means they stay, for an administrator to review and act on individually.
     #[serde(rename = "cascadeOnDeparture")]
     pub cascade_on_departure: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Departed granters with at least one surviving right they issued, ordered by `granter`.
     pub granters: ::std::vec::Vec<DepartedGranter>,

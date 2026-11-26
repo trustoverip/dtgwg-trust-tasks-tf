@@ -261,11 +261,7 @@ impl<'de> ::serde::Deserialize<'de> for MessageId {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Ids of frames delivered on this connection that the principal has handled. An id appears at most once.
     #[serde(rename = "messageIds")]
@@ -285,11 +281,7 @@ pub struct Response {
     ///Ids whose messages were deleted.
     pub acked: ::std::vec::Vec<MessageId>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Ids that were not deleted, each with its reason. Those messages are left as they were.
     pub refused: ::std::vec::Vec<AckRefusal>,

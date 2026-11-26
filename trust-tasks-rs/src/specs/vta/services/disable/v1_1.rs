@@ -126,15 +126,10 @@ pub struct Payload {
     #[serde(
         rename = "drainTtlSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drain_ttl_seconds: ::std::option::Option<u64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub service: ServiceKind,
 }
@@ -149,11 +144,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub result: ServiceMutationResult,
 }
@@ -241,7 +232,6 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "drainEndsAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drain_ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -249,18 +239,13 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "drainingMediator",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub draining_mediator: ::std::option::Option<::std::string::String>,
     ///RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
     #[serde(rename = "effectiveAt")]
     pub effective_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
     #[serde(rename = "logEntryVersionId")]
@@ -272,7 +257,6 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "vtaDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<::std::string::String>,

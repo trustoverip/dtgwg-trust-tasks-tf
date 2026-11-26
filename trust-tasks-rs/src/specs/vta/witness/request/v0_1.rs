@@ -221,7 +221,6 @@ pub struct Membership {
     #[serde(
         rename = "memberDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<MembershipMemberDid>,
@@ -364,18 +363,10 @@ pub struct Payload {
     ///The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.
     #[serde(rename = "counterpartyDid")]
     pub counterparty_did: PayloadCounterpartyDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub membership: ::std::option::Option<Membership>,
     ///The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.
     #[serde(rename = "relationshipCredentialId")]
@@ -390,7 +381,6 @@ pub struct Payload {
     #[serde(
         rename = "storeAs",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub store_as: ::std::option::Option<PayloadStoreAs>,
@@ -782,11 +772,7 @@ pub struct Response {
     #[serde(rename = "credentialId")]
     pub credential_id: ResponseCredentialId,
     pub evidence: Evidence,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.
     #[serde(rename = "vwcDigestMultibase")]

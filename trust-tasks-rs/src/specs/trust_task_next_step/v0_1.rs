@@ -132,25 +132,16 @@ pub struct Payload {
     pub continuation: PayloadContinuation,
     ///The continuations the recipient will accept, in the producer's order of preference where the recipient has one. More than one entry means ALTERNATIVES — satisfying any single entry unblocks the exchange, never all of them. A recipient that needs several things done first names the one it wants next and issues a further next step afterwards; expressing a conjunction here would be a flow definition, which belongs to a ceremony rather than to a single response.
     pub expects: ::std::vec::Vec<PayloadExpectsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "inResponseTo",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub in_response_to: ::std::option::Option<PayloadInResponseTo>,
     ///Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<PayloadMessage>,
 }
 impl Payload {
@@ -231,18 +222,10 @@ impl ::std::default::Default for PayloadContinuation {
 #[non_exhaustive]
 pub struct PayloadExpectsItem {
     ///Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub hint: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadExpectsItemReason>,
     ///The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).
     #[serde(rename = "typeUri")]
@@ -319,11 +302,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadExpectsItemReason {
 #[non_exhaustive]
 pub struct PayloadInResponseTo {
     ///The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub id: ::std::option::Option<PayloadInResponseToId>,
     ///The Type URI of the document being answered, including any fragment it carried.
     #[serde(rename = "typeUri")]

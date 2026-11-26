@@ -241,23 +241,14 @@ impl OutcomeEvidence {
 #[deprecated(note = "superseded by vta/witness/list/0.2")]
 pub struct Payload {
     ///Continue a previous page. Opaque: a consumer MUST NOT construct or parse one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum entries to return. The VTA MAY return fewer and caps this value.
     #[serde(
         rename = "pageSize",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
@@ -265,16 +256,11 @@ pub struct Payload {
     #[serde(
         rename = "relationshipDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationship_did: ::std::option::Option<PayloadRelationshipDid>,
     ///Only VWCs issued by this witness.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witness: ::std::option::Option<PayloadWitness>,
 }
 impl ::std::default::Default for Payload {
@@ -491,17 +477,9 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitness {
 #[deprecated(note = "superseded by vta/witness/list/0.2")]
 pub struct Response {
     ///Pass to the next request to continue. Absent when the page is the last.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<ResponseCursor>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The VTA stopped early. A consumer MUST NOT read a truncated page as a complete account of what is stored.
     pub truncated: bool,
@@ -589,11 +567,7 @@ pub struct StoredWitnessing {
     pub credential_id: StoredWitnessingCredentialId,
     ///The outcome evidence stored with the VWC, each document exactly as stored, never re-serialised: `session`, the witness/session document as the VTA built it, and `outcome`, the witness/session/submit #response as received, which carries the VWC. Of whichever version the session was conducted under.
     pub evidence: OutcomeEvidence,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The relationship DID the VWC names as its credentialSubject.id.
     #[serde(rename = "relationshipDid")]

@@ -134,27 +134,18 @@ pub struct Payload {
     pub decided_by: PayloadDecidedBy,
     ///The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.
     pub did: PayloadDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The role the subject held before the change.
     #[serde(rename = "previousRole")]
     pub previous_role: PayloadPreviousRole,
     ///The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The role the subject holds after the change. Absent exactly when `code` is `revoked`.
     #[serde(
         rename = "resultingRole",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resulting_role: ::std::option::Option<PayloadResultingRole>,

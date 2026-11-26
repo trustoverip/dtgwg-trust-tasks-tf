@@ -46,7 +46,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -56,7 +55,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "deletedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -76,7 +74,6 @@ pub struct AppStateRecord {
     #[serde(
         rename = "valueBytes",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,
@@ -378,24 +375,15 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
     ///Opaque continuation token from a previous response. Consumers MUST treat it as opaque: never construct, decode, mutate, or infer meaning from one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Snapshot mode only: when true, tombstones still inside the retention window are returned alongside live records. Defaults to false. In change-feed mode tombstones are always returned and this member MUST NOT be set to false — a change feed that omits deletions cannot converge, so asking for one is a contradiction rather than a preference.
     #[serde(
         rename = "includeDeleted",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -403,37 +391,26 @@ pub struct Payload {
     #[serde(
         rename = "includeValues",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_values: ::std::option::Option<bool>,
     ///Restrict to one namespace. Optional in snapshot mode, where omitting it enumerates every namespace the caller can read in the context. REQUIRED in change-feed mode, because the version counter `sinceVersion` is compared against is maintained per (contextId, namespace) and a watermark spanning namespaces would name no single point in time.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub namespace: ::std::option::Option<Namespace>,
     ///Caller's upper bound on records per page. The maintainer applies its own ceiling and MAY return fewer — notably when `includeValues` is set and the values are large.
     #[serde(
         rename = "pageSize",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Restrict to records whose `key` begins with this byte prefix, compared over the UTF-8 encoding. Lets a consumer read one record family — `community/`, `contact/` — without dragging every record in the namespace through the response.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub prefix: ::std::option::Option<PayloadPrefix>,
     ///Watermark. Selects change-feed mode: only records whose `version` is strictly greater are returned, tombstones included. Supply the `highWatermark` from the previous sync, or 0 for a first full pull in change-feed form. Requires `namespace`.
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -569,24 +546,15 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPrefix {
 #[deprecated(note = "superseded by vta/app-state/list/1.1")]
 pub struct Response {
     ///Opaque continuation token for the next page. Present only when `truncated` is true.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The namespace's current counter value. Present whenever `namespace` was supplied. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `records`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page, because the pages of one feed share this value and adopting it early would skip the records still to come.
     #[serde(
         rename = "highWatermark",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub high_watermark: ::std::option::Option<Version>,
@@ -596,7 +564,6 @@ pub struct Response {
     #[serde(
         rename = "tombstoneRetentionSeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_retention_seconds: ::std::option::Option<u64>,

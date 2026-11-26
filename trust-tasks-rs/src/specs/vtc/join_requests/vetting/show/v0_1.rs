@@ -197,11 +197,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The join request, as vtc/join-requests/list returns it.
     pub id: PayloadId,
@@ -286,20 +282,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Echoed.
     #[serde(rename = "requestId")]
     pub request_id: ResponseRequestId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub vetting: ::std::option::Option<VettingFacts>,
 }
 impl Response {
@@ -692,7 +680,6 @@ pub struct VettingStatementFacts {
     #[serde(
         rename = "declaredRelationship",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub declared_relationship: ::std::option::Option<VettingRelationship>,
@@ -701,24 +688,12 @@ pub struct VettingStatementFacts {
     ///Why it did not count, as machine codes in the `vetting:*` grammar the join policy reads. Empty when it counted.
     pub failures: ::std::vec::Vec<VettingStatementFactsFailuresItem>,
     ///The statement's `id`, when it had one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub id: ::std::option::Option<VettingStatementFactsId>,
     ///The vetter who issued it, when it could be read.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub issuer: ::std::option::Option<VettingStatementFactsIssuer>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub method: ::std::option::Option<VettingMethod>,
     ///Withdrawn by its vetter before the decision.
     pub revoked: bool,

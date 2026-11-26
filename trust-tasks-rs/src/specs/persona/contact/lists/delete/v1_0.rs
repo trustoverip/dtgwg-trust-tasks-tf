@@ -187,11 +187,7 @@ impl<'de> ::serde::Deserialize<'de> for ListId {
 pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "listId")]
     pub list_id: ListId,
@@ -270,11 +266,7 @@ pub struct Response {
     #[serde(rename = "contactsUpdated")]
     pub contacts_updated: u64,
     pub existed: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "listId")]
     pub list_id: ListId,

@@ -39,36 +39,16 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Answer {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub abstain: ::std::option::Option<::serde_json::Value>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub choice: ::std::option::Option<Vec<Key>>,
     pub question: Key,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ranking: ::std::option::Option<Vec<Key>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub scores: ::std::option::Option<::std::collections::HashMap<Key, i64>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<AnswerText>,
 }
 impl Answer {
@@ -222,7 +202,6 @@ pub struct CastDocument {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -743,11 +722,7 @@ pub struct Manifest {
     pub board: ManifestBoard,
     ///The community's DID.
     pub community: ManifestCommunity,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<ManifestDescription>,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
@@ -763,17 +738,9 @@ pub struct Manifest {
     ///Counted ballots required before any text answer is disclosed (VTI-VOT-065).
     #[serde(rename = "textReleaseThreshold")]
     pub text_release_threshold: i64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<ManifestTitle>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub trustees: ::std::option::Option<Trustees>,
     #[serde(rename = "votingClosesAt")]
     pub voting_closes_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -1183,11 +1150,7 @@ pub struct Payload {
     ///The context the voter belongs to.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The election's manifest, exactly as registered. The engine recomputes its digest and checks it against the one it recorded at voter/register.
     pub manifest: Manifest,
@@ -1342,11 +1305,7 @@ pub enum Question {
         min_selections: u64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1359,11 +1318,7 @@ pub enum Question {
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
         partial: bool,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1377,11 +1332,7 @@ pub enum Question {
         min: i64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1394,11 +1345,7 @@ pub enum Question {
         #[serde(rename = "maxLength")]
         max_length: ::std::num::NonZeroU64,
         optional: bool,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
 }
@@ -1410,11 +1357,7 @@ pub enum Question {
 pub struct QuestionOption {
     pub key: Key,
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<QuestionOptionLabel>,
 }
 impl QuestionOption {
@@ -1549,11 +1492,7 @@ impl<'de> ::serde::Deserialize<'de> for QuestionText {
 pub struct Response {
     #[serde(rename = "castDocument")]
     pub cast_document: CastDocument,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The cast's tag (the election's nullifier for this ticket), as the cast carries it. The same for every cast this ticket makes in this election.
     pub tag: ResponseTag,
@@ -1696,11 +1635,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Revote {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RollRule {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub listed: ::std::option::Option<Vec<RollRuleListedItem>>,
     pub rule: RollRuleRule,
 }

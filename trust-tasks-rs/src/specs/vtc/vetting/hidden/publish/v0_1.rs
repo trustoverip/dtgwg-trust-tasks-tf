@@ -129,28 +129,18 @@ pub struct Payload {
     #[serde(
         rename = "dripPerTick",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drip_per_tick: ::std::option::Option<::std::num::NonZeroU64>,
     ///Events this community is running, replacing whatever was there. Absent or empty removes every event.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub events: ::std::option::Option<::std::vec::Vec<RequestEvent>>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Live vetter class periods, current first (e.g. ["2026-10", "2026-09"]). Defaults to the current month.
     #[serde(
         rename = "livePeriods",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub live_periods: ::std::option::Option<::std::vec::Vec<PayloadLivePeriodsItem>>,
@@ -158,14 +148,12 @@ pub struct Payload {
     #[serde(
         rename = "liveTokenLabels",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub live_token_labels: ::std::option::Option<::std::vec::Vec<PayloadLiveTokenLabelsItem>>,
     #[serde(
         rename = "tickLength",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tick_length: ::std::option::Option<TickLength>,
@@ -770,7 +758,6 @@ pub struct RequestEvent {
     #[serde(
         rename = "approvedBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approved_by: ::std::option::Option<RequestEventApprovedBy>,
@@ -784,7 +771,6 @@ pub struct RequestEvent {
     #[serde(
         rename = "graceDays",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grace_days: ::std::option::Option<u64>,
@@ -792,7 +778,6 @@ pub struct RequestEvent {
     #[serde(
         rename = "groupFloor",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub group_floor: ::std::option::Option<::std::num::NonZeroU64>,
@@ -934,11 +919,7 @@ pub struct Response {
     ///The criterion that now accepts a hidden proof.
     #[serde(rename = "criterionId")]
     pub criterion_id: ResponseCriterionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub published: PublishedConfig,
     ///The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none.

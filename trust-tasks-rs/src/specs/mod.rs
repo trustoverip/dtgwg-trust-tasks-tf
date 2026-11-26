@@ -61,14 +61,19 @@
 // such member for no reader's benefit.
 #![allow(clippy::type_complexity)]
 
-/// The member-presence helpers every generated module here reads its optional
-/// members through (`#[serde(deserialize_with = "crate::specs::__presence::…")]`;
-/// see `trust-tasks-build`'s `presence` pass). One crate-private copy instead
-/// of one per module: nothing here is public API. An application's modules,
+/// The member-presence helper every generated module here reads an optional
+/// member that admits `null` through
+/// (`#[serde(deserialize_with = "crate::specs::__presence::present")]`; see
+/// `trust-tasks-build`'s `presence` pass). One crate-private copy instead of
+/// one per module: nothing here is public API. An application's modules,
 /// generated against `::trust_tasks_rs`, carry their own copy instead, so they
 /// need nothing new from the runtime. The leading underscores keep the name
 /// out of the generated family modules' namespace: a slug segment starts with
 /// a letter, so no family can be called `__presence`.
+///
+/// There is no helper that refuses a `null`: on a member whose schema has no
+/// null form, serde's own `Option` reads a `null` as absent, and refusing it
+/// is payload-schema validation's job (`PayloadPolicy::Validate`).
 // Unused when no specification family is enabled.
 #[allow(dead_code)]
 pub(crate) mod __presence {
@@ -83,37 +88,17 @@ pub(crate) mod __presence {
         T::deserialize(deserializer).map(Some)
     }
 
-    /// Reads a present member as `Some` and refuses a `null`: the member's
-    /// schema has no null form, so `null` is not "absent".
-    pub(crate) fn not_null<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        match <Option<T> as serde::Deserialize<'de>>::deserialize(deserializer)? {
-            Some(value) => Ok(Some(value)),
-            None => Err(<D::Error as serde::de::Error>::invalid_type(
-                serde::de::Unexpected::Unit,
-                &"a value (this optional member has no null form: leave it out instead)",
-            )),
-        }
-    }
-
     #[cfg(test)]
     mod tests {
-        //! The helpers on the field shapes the generator gives each kind of
+        //! The helper on the field shapes the generator gives each kind of
         //! optional member, spelled as the generated code spells them.
         use serde::{Deserialize, Serialize};
         use serde_json::{json, Map, Value};
 
         #[derive(Deserialize, Serialize, Debug, PartialEq)]
         struct Shapes {
-            // An array or map: `Option<Vec<T>>` / `Option<Map>`, `not_null`.
-            #[serde(
-                default,
-                deserialize_with = "super::not_null",
-                skip_serializing_if = "Option::is_none"
-            )]
+            // An array or map: `Option<Vec<T>>` / `Option<Map>`, no helper.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
             map: Option<Map<String, Value>>,
             // `{"type": "null"}`: `Option<()>`, `present`.
             #[serde(
@@ -129,12 +114,9 @@ pub(crate) mod __presence {
                 skip_serializing_if = "Option::is_none"
             )]
             nullable: Option<Option<String>>,
-            // Has no null form, any `T` (here one that would read `null`).
-            #[serde(
-                default,
-                deserialize_with = "super::not_null",
-                skip_serializing_if = "Option::is_none"
-            )]
+            // Has no null form, any `T` (here one that would read `null`):
+            // left as typify renders it.
+            #[serde(default, skip_serializing_if = "Option::is_none")]
             value: Option<Value>,
         }
 
@@ -161,12 +143,11 @@ pub(crate) mod __presence {
         }
 
         #[test]
-        fn a_null_without_a_null_form_is_refused() {
+        fn a_null_without_a_null_form_reads_as_absent() {
+            // Refusing it is payload-schema validation's job, not decoding's.
             for member in ["map", "value"] {
-                let err = serde_json::from_value::<Shapes>(json!({ member: null }))
-                    .expect_err(member)
-                    .to_string();
-                assert!(err.contains("no null form"), "{member}: {err}");
+                let parsed: Shapes = serde_json::from_value(json!({ member: null })).expect(member);
+                assert_eq!((parsed.map, parsed.value), (None, None), "{member}");
             }
             // `()` reads only `null`.
             assert!(serde_json::from_value::<Shapes>(json!({"unit": 1})).is_err());

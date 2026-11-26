@@ -52,7 +52,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -495,11 +494,7 @@ pub struct Payload {
     ///The blob to fetch, as the record's `blobs` member names it.
     #[serde(rename = "blobRef")]
     pub blob_ref: BlobRef,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Must confer the `read` action at this room's scope. Its leaf's subject must be the party the host authenticated for this request.
     pub presentation: AuthorityPresentation,
@@ -582,11 +577,7 @@ pub struct Response {
     pub download_id: TransferId,
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The ciphertext manifest committed at upload. A reader MUST check that its digest equals the requested BlobRef before relying on it, and every chunk against it on arrival.
     pub manifest: BlobManifest,

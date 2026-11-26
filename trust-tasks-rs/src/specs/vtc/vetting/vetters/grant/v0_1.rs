@@ -122,11 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.
     #[serde(rename = "memberDid")]
@@ -135,7 +131,6 @@ pub struct Payload {
     #[serde(
         rename = "validitySeconds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub validity_seconds: ::std::option::Option<i64>,
@@ -218,11 +213,7 @@ pub struct Response {
     ///The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.
     #[serde(rename = "endorsementId")]
     pub endorsement_id: ResponseEndorsementId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The role credential's `validFrom`.
     #[serde(rename = "validFrom")]

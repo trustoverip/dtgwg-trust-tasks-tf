@@ -125,22 +125,14 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/owner/group/remove/0.4")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The room's host, as a DID: where the room's epoch advances.
     pub host: PayloadHost,
     ///The DID whose leaf is removed. Never the recipient's own leaf.
     pub member: PayloadMember,
     ///Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room whose group loses a member. The recipient MUST hold its group.
     #[serde(rename = "roomId")]
@@ -412,11 +404,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 pub struct Response {
     ///The room epoch after the removal, as the host recorded it.
     pub epoch: i64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Who was removed.
     pub member: ResponseMember,

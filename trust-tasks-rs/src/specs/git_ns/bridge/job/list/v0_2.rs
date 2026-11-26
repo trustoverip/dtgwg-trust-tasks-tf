@@ -347,7 +347,6 @@ pub struct JobRow {
     #[serde(
         rename = "acceptedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -366,24 +365,15 @@ pub struct JobRow {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<JobRowLastError>,
     pub namespace: NamespaceId,
     ///The pull request a `closePullRequest` job closes, in `repo` — the job's own `number`. Present for a `closePullRequest` job and absent for every other kind.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub number: ::std::option::Option<::std::num::NonZeroU64>,
     ///The repository the job acts on. Absent for a namespace-wide `inspect` sweep or a job with no repository (`beginBind`, `beginAccountLink`).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub repo: ::std::option::Option<RepoResource>,
     pub state: JobState,
 }
@@ -598,37 +588,17 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[deprecated(note = "superseded by git-ns/bridge/job/list/0.4")]
 pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `namespace` or `state` from the request that produced it — start a fresh query instead.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum jobs to return in this page. A VTC clamps to 1..=500 (default 100).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only jobs in this namespace. Absent: every administered namespace.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub namespace: ::std::option::Option<NamespaceId>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub state: ::std::option::Option<JobState>,
 }
 impl ::std::default::Default for Payload {
@@ -727,11 +697,7 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/bridge/job/list/0.4")]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Jobs matching `namespace` and `state`, newest (`createdAt`) first.
     pub jobs: ::std::vec::Vec<JobRow>,

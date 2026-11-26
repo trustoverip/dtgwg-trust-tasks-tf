@@ -279,11 +279,7 @@ pub struct LogoRef {
     ///The length of the stored bytes.
     pub size: ::std::num::NonZeroU64,
     ///The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
     ///The stored image's width in pixels.
     pub width: ::std::num::NonZeroU64,
@@ -361,21 +357,13 @@ impl<'de> ::serde::Deserialize<'de> for LogoRefSha256 {
 #[non_exhaustive]
 pub enum Payload {
     Variant0 {
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///The new logo as sent. Absent when the request removes the stored logo.
         image: LogoImage,
     },
     Variant1 {
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Remove the stored logo. Only `true` is meaningful, so only `true` is accepted; a request that sets a logo omits the member. Removal is a member of its own rather than `image: null`, so that a request whose `image` was never set fails validation instead of deleting the logo.
         remove: bool,
@@ -387,11 +375,7 @@ pub enum Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The logo the community now holds, or `null` when it holds none.
     pub logo: ::std::option::Option<LogoRef>,
@@ -401,7 +385,6 @@ pub struct Response {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

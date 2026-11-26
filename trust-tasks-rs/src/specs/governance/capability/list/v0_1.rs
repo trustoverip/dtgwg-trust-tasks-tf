@@ -44,7 +44,6 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "configSchema",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub config_schema: ::std::option::Option<::std::string::String>,
@@ -52,30 +51,20 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "consentClass",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consent_class: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, CapabilityManifestConsentClassValue>,
     >,
     ///One-paragraph description for management surfaces.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<CapabilityManifestDescription>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Out-of-stack components that consume this capability's trust decisions.
     #[serde(
         rename = "externalAdapters",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub external_adapters:
@@ -84,35 +73,22 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "lifecycleHooks",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lifecycle_hooks: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub roles: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, ::std::vec::Vec<::std::string::String>>,
     >,
     ///Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.
     pub specs: ::std::vec::Vec<::std::string::String>,
     ///Human-readable capability name for management surfaces.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<CapabilityManifestTitle>,
     ///Manifest/capability version, `MAJOR.MINOR`.
     pub version: CapabilityManifestVersion,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub vocabulary: ::std::option::Option<CapabilityManifestVocabulary>,
 }
 impl CapabilityManifest {
@@ -454,7 +430,6 @@ pub struct CapabilityManifestVocabulary {
     #[serde(
         rename = "resourcePattern",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource_pattern: ::std::option::Option<::std::string::String>,
@@ -554,18 +529,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Which capabilities to list: `enabled` (the default when absent), `available` (known to the host but not enabled), or `all`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<PayloadStatus>,
 }
 impl ::std::default::Default for Payload {
@@ -653,11 +620,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 #[non_exhaustive]
 pub struct Response {
     pub capabilities: ::std::vec::Vec<ResponseCapabilitiesItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -672,18 +635,13 @@ impl Response {
 #[non_exhaustive]
 pub struct ResponseCapabilitiesItem {
     ///DID of the companion serving this capability, when not built in.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub delegate: ::std::option::Option<::std::string::String>,
     pub enabled: bool,
     ///When the capability was enabled, for enabled entries.
     #[serde(
         rename = "enabledAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enabled_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

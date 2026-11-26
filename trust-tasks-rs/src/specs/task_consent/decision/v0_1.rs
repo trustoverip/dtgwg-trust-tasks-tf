@@ -263,21 +263,13 @@ pub struct Payload {
     ///Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.
     pub challenge: PayloadChallenge,
     pub decision: Decision,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
     #[serde(rename = "payloadDigest")]
     pub payload_digest: DigestMultibase,
     ///OPTIONAL human-facing note, most useful on a `deny`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {
@@ -411,24 +403,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[deprecated(note = "superseded by task-consent/decision/0.2")]
 pub struct Response {
     ///Distinct approvals recorded so far.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub approvals: ::std::option::Option<u64>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Distinct approvals required. Present when status is `pending`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub needed: ::std::option::Option<::std::num::NonZeroU64>,
     ///The digest this decision concerned, in the encoding `task-consent/request` carried it.
     #[serde(rename = "payloadDigest")]

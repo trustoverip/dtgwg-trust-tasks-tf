@@ -40,31 +40,18 @@ pub mod error {
 #[non_exhaustive]
 pub struct CredentialState {
     ///Present with `vta-account`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub account: ::std::option::Option<ExternalAccountId>,
     ///Present with `vta-account`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub context: ::std::option::Option<ExternalAccountContextId>,
     ///Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub fingerprint: ::std::option::Option<DigestMultibase>,
     ///Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.
     #[serde(
         rename = "roomsHoldingCredentials",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rooms_holding_credentials: ::std::option::Option<u64>,
@@ -72,7 +59,6 @@ pub struct CredentialState {
     #[serde(
         rename = "setAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub set_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -458,11 +444,7 @@ pub struct Payload {
     ///Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.
     #[serde(rename = "digestMultibase")]
     pub digest_multibase: DigestMultibase,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
     pub reason: PayloadReason,
@@ -616,17 +598,12 @@ pub struct Response {
     pub config_id: StorageConfigId,
     #[serde(rename = "credentialState")]
     pub credential_state: CredentialState,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present when the community probed the config with the new credential.
     #[serde(
         rename = "probeOk",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub probe_ok: ::std::option::Option<bool>,

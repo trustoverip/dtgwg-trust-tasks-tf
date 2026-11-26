@@ -45,17 +45,12 @@ pub struct Approver {
     pub enrolled_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "enrolledVia")]
     pub enrolled_via: EnrolledVia,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ApproverLabel>,
     ///When a statement by this approver last satisfied a step-up. Absent when it never has.
     #[serde(
         rename = "lastUsedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -452,31 +447,15 @@ pub struct Payload {
     ///The step-up approver to bind. MUST equal the statement's issuer.
     #[serde(rename = "approverDid")]
     pub approver_did: ApproverDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<ApproverLabel>,
     ///A live approver of the same subject to revoke in the same step. Part of the enrolment terms, so the authority evidence for adding an approver cannot be reused to remove one.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub replaces: ::std::option::Option<ApproverDid>,
     ///The new approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, over the challenge of the step-up authorizing this enrolment, with `boundTo` the terms digest defined by this specification. Not part of the enrolment terms. Absent only on a send made to obtain that challenge; an enrolment executes only with it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub statement: ::std::option::Option<AttestStatement>,
 }
 impl Payload {
@@ -491,11 +470,7 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     pub approver: Approver,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

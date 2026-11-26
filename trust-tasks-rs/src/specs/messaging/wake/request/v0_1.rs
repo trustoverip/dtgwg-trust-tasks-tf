@@ -125,21 +125,13 @@ pub struct Payload {
     ///The DID the queued messages are addressed to — an account at the mediator receiving this request.
     pub addressee: PayloadAddressee,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A mediator ignores every ext member when deciding whether to ring.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The messages the requester queued for the addressee, by the identifier the addressee's mediator stores each under (as messaging/message/status and messaging/message/list name them). Holding one is evidence of having held the stored message.
     #[serde(rename = "msgIds")]
     pub msg_ids: Vec<PayloadMsgIdsItem>,
     ///OPTIONAL. Passed to the gateway as push/wake's urgency hint. `interactive`: a person is expected to act now. `background`: the device may collect at its convenience. Absent: the mediator sends no urgency.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub urgency: ::std::option::Option<PayloadUrgency>,
 }
 impl Payload {

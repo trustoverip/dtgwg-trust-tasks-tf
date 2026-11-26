@@ -127,55 +127,33 @@ pub struct Payload {
     ///The did:webvh being updated. The agent MUST verify it speaks for this subject.
     pub did: PayloadDid,
     ///The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub document:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at.
     #[serde(
         rename = "expectedVersionId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version_id: ::std::option::Option<PayloadExpectedVersionId>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing audit label.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward.
     #[serde(
         rename = "preRotationCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pre_rotation_count: ::std::option::Option<u64>,
     ///New TTL in seconds. Omit to keep the current value.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<u64>,
     ///New watcher URLs. Omit to keep the current set; an empty array removes them.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub watchers: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///New witness configuration. Omit to keep the current one.
     #[serde(
@@ -375,24 +353,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 #[deprecated(note = "superseded by vta/webvh/dids/update/1.1")]
 pub struct Response {
     pub did: ::std::string::String,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The appended log entry, as JSON text.
     #[serde(
         rename = "newLogEntry",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub new_log_entry: ::std::option::Option<::std::string::String>,
     #[serde(
         rename = "newScid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub new_scid: ::std::option::Option<::std::string::String>,
@@ -403,22 +375,16 @@ pub struct Response {
     #[serde(
         rename = "preRotationKeyCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pre_rotation_key_count: ::std::option::Option<u64>,
     ///True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub serverless: ::std::option::Option<bool>,
     ///Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.
     #[serde(
         rename = "updateKeysCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub update_keys_count: ::std::option::Option<u64>,

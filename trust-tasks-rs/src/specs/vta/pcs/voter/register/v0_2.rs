@@ -393,11 +393,7 @@ pub struct Manifest {
     pub board: ManifestBoard,
     ///The community's DID.
     pub community: ManifestCommunity,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<ManifestDescription>,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
@@ -413,17 +409,9 @@ pub struct Manifest {
     ///Counted ballots required before any text answer is disclosed (VTI-VOT-065).
     #[serde(rename = "textReleaseThreshold")]
     pub text_release_threshold: i64,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<ManifestTitle>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub trustees: ::std::option::Option<Trustees>,
     #[serde(rename = "votingClosesAt")]
     pub voting_closes_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -831,20 +819,12 @@ pub struct Payload {
     ///The context the voter belongs to. The election's voter key is derived from a path allocated under this context's base.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The election's manifest, exactly as the community published it. The engine computes its digest itself.
     pub manifest: Manifest,
     ///The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub member: ::std::option::Option<PayloadMember>,
     ///The community's published voting parameters, copied verbatim from where the community publishes them.
     pub parameters: VotingParameters,
@@ -1130,11 +1110,7 @@ pub enum Question {
         min_selections: u64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1147,11 +1123,7 @@ pub enum Question {
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
         partial: bool,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1165,11 +1137,7 @@ pub enum Question {
         min: i64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1182,11 +1150,7 @@ pub enum Question {
         #[serde(rename = "maxLength")]
         max_length: ::std::num::NonZeroU64,
         optional: bool,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         text: ::std::option::Option<QuestionText>,
     },
 }
@@ -1198,11 +1162,7 @@ pub enum Question {
 pub struct QuestionOption {
     pub key: Key,
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<QuestionOptionLabel>,
 }
 impl QuestionOption {
@@ -1337,11 +1297,7 @@ impl<'de> ::serde::Deserialize<'de> for QuestionText {
 pub struct Response {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.
     #[serde(rename = "manifestDigest")]
@@ -1350,7 +1306,6 @@ pub struct Response {
     #[serde(
         rename = "ticketDocument",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ticket_document: ::std::option::Option<TicketDocument>,
@@ -1427,11 +1382,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Revote {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RollRule {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub listed: ::std::option::Option<Vec<RollRuleListedItem>>,
     pub rule: RollRuleRule,
 }
@@ -1640,7 +1591,6 @@ pub struct TicketDocument {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1945,19 +1895,11 @@ impl<'de> ::serde::Deserialize<'de> for TicketRequestLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct TicketRequestRequest {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub encoding: ::std::option::Option<PcsValue>,
     ///The proof that the commitment is well formed and the requester holds its secret.
     pub proof: TicketRequestRequestProof,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub t0: ::std::option::Option<PcsValue>,
 }
 impl TicketRequestRequest {

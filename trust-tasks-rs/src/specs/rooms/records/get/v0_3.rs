@@ -52,7 +52,6 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -392,11 +391,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[deprecated(note = "superseded by rooms/records/get/0.4")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The record to read.
     pub key: PayloadKey,
@@ -586,40 +581,26 @@ pub struct Response {
     The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.
 
     This member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub author: ::std::option::Option<::std::string::String>,
     ///The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
     ///When the host stored the body this version carries, unchanged by curation (`RecordMetadataV3.bodyStoredAt`). Every tier; absent for a version stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`.
     #[serde(
         rename = "bodyStoredAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Present on an `open` room.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cleartext:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the host stored the record's first version, unchanged by every later version and every curation (`RecordMetadataV3.createdAt`). Every tier; absent for a record stored before the host kept it. NOT committed: a reader removes it, with `blobs`, the verification members and `ext`, before hashing the leaf (see `trace`).
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -627,7 +608,6 @@ pub struct Response {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<ResponseCreatedBy>,
@@ -635,53 +615,34 @@ pub struct Response {
     #[serde(
         rename = "dataCommitment",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub data_commitment: ::std::option::Option<DataCommitment>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The room's highest assigned record version, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. Without it two roots are not comparable at all: a host shown to have served two different ones answers that the room moved, and nothing contradicts it.
     #[serde(
         rename = "headVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head_version: ::std::option::Option<HeadVersion>,
     pub key: ::std::string::String,
     ///Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub pinned: ::std::option::Option<bool>,
     ///How many records the room holds, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none.
     #[serde(
         rename = "recordCount",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_count: ::std::option::Option<RecordCount>,
     ///Present on an `attributed` or `private` room.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub sealed: ::std::option::Option<SealedRecord>,
     ///Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<ResponseStatus>,
     /**
     The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.
@@ -689,17 +650,12 @@ pub struct Response {
     **The leaf preimage is this response payload with its verification members — `dataCommitment`, `recordCount`, `headVersion` and `trace` — `ext` and `blobs` removed** — which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes members from what it already holds.
 
     OPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub trace: ::std::option::Option<RecordTrace>,
     ///RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is.
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -857,11 +813,7 @@ pub struct SealedRecord {
     A host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.
 
     A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.*/
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl SealedRecord {

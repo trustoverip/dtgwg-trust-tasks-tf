@@ -171,22 +171,13 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
     #[serde(rename = "personaDid")]
     pub persona_did: PayloadPersonaDid,
@@ -199,11 +190,7 @@ pub struct Payload {
     )]
     pub profile_id: ::std::option::Option<::std::option::Option<Ulid>>,
     ///When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Payload {
@@ -402,11 +389,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPersonaDid {
 pub struct Response {
     #[serde(rename = "contextId")]
     pub context_id: ResponseContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "personaDid")]
     pub persona_did: ResponsePersonaDid,

@@ -127,7 +127,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "accessListMode",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub access_list_mode: ::std::option::Option<MediatorAclAccessListMode>,
@@ -135,22 +134,16 @@ pub struct MediatorAcl {
     #[serde(
         rename = "anonReceive",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anon_receive: ::std::option::Option<bool>,
     ///The account is blocked from authenticating and transacting.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blocked: ::std::option::Option<bool>,
     ///May create out-of-band invitations.
     #[serde(
         rename = "createInvites",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub create_invites: ::std::option::Option<bool>,
@@ -158,22 +151,16 @@ pub struct MediatorAcl {
     #[serde(
         rename = "didcommEnabled",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub didcomm_enabled: ::std::option::Option<bool>,
     ///Messages for this account may be stored locally at this mediator for pickup.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub local: ::std::option::Option<bool>,
     ///May be the next hop of a forwarded message.
     #[serde(
         rename = "receiveForwarded",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_forwarded: ::std::option::Option<bool>,
@@ -181,7 +168,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "receiveMessages",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_messages: ::std::option::Option<bool>,
@@ -189,7 +175,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageList",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_list: ::std::option::Option<bool>,
@@ -197,7 +182,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageReceiveQueueLimit",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_receive_queue_limit: ::std::option::Option<bool>,
@@ -205,7 +189,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageSendQueueLimit",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_send_queue_limit: ::std::option::Option<bool>,
@@ -213,7 +196,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "sendForwarded",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_forwarded: ::std::option::Option<bool>,
@@ -221,7 +203,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "sendMessages",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_messages: ::std::option::Option<bool>,
@@ -229,7 +210,6 @@ pub struct MediatorAcl {
     #[serde(
         rename = "tspEnabled",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tsp_enabled: ::std::option::Option<bool>,
@@ -332,11 +312,7 @@ pub struct Payload {
     ///The target account's DID whose capabilities are being set.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -356,11 +332,7 @@ pub struct Response {
     ///The account whose ACL was set.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

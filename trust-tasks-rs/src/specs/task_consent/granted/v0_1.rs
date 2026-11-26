@@ -197,11 +197,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.
     #[serde(rename = "payloadDigest")]

@@ -122,28 +122,16 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.
     #[serde(rename = "relationshipDid")]
     pub relationship_did: PayloadRelationshipDid,
     ///Whether the proposing party asks that the exchange be witnessed. A request, not a fact: it is answered by the same member on the response, and which witness and on what terms is settled under the witness/* specifications, as a separate exchange nested via parentThreadId. Absent means unwitnessed.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witnessed: ::std::option::Option<bool>,
 }
 impl Payload {
@@ -282,21 +270,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipDid {
 pub struct Response {
     ///Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.
     pub accept: ::serde_json::Value,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.
     #[serde(rename = "relationshipDid")]
     pub relationship_did: ResponseRelationshipDid,
     ///The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witnessed: ::std::option::Option<bool>,
 }
 impl Response {

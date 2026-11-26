@@ -124,17 +124,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "configId")]
     pub config_id: StorageConfigId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///On a `walrus` config, register, read and let lapse a canary blob, which costs storage funds. Ignored on other kinds, which always write.
     #[serde(
         rename = "includeWrite",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_write: ::std::option::Option<bool>,
@@ -152,11 +147,7 @@ impl Payload {
 pub struct Response {
     #[serde(rename = "configId")]
     pub config_id: StorageConfigId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///True when every step attempted succeeded.
     pub ok: bool,
@@ -242,11 +233,7 @@ pub struct StepResult {
     #[serde(rename = "durationMs")]
     pub duration_ms: u64,
     ///On failure, the backend's error verbatim, truncated, with anything credential-like removed. Untrusted text: render it as text, never as markup or instructions.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub error: ::std::option::Option<StepResultError>,
     pub ok: bool,
     pub step: StepResultStep,

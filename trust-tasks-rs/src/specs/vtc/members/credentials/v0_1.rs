@@ -189,11 +189,7 @@ pub struct Payload {
     ///The member to read.
     pub did: Did,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -210,17 +206,12 @@ pub struct Response {
     ///The member these documents belong to.
     pub did: Did,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.
     #[serde(
         rename = "memberVmc",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_vmc:
@@ -232,7 +223,6 @@ pub struct Response {
     #[serde(
         rename = "memberVmcReceivedAt",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_vmc_received_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -240,7 +230,6 @@ pub struct Response {
     #[serde(
         rename = "membershipCredential",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_credential:
@@ -249,7 +238,6 @@ pub struct Response {
     #[serde(
         rename = "roleCredential",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role_credential:

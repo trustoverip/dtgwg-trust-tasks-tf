@@ -128,18 +128,10 @@ pub struct Payload {
     #[serde(rename = "clientDid")]
     pub client_did: PayloadClientDid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.
     pub nonce: PayloadNonce,
@@ -350,11 +342,7 @@ pub struct Response {
     ///SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.
     pub digest: ResponseDigest,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.
     #[serde(rename = "windowRemainingSecs")]

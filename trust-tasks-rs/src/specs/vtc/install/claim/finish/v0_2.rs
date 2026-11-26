@@ -124,11 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/install/claim/passkey/finish/0.1")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "installToken")]
     pub install_token: PayloadInstallToken,
@@ -272,11 +268,7 @@ pub struct Response {
     ///Candidate admin DID derived from the passkey's Ed25519 public key.
     #[serde(rename = "adminDid")]
     pub admin_did: ResponseAdminDid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.
     #[serde(rename = "setupSessionToken")]

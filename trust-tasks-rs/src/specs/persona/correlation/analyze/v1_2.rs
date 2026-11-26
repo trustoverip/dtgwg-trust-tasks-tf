@@ -202,27 +202,17 @@ pub struct Payload {
     #[serde(
         rename = "attributeId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_id: ::std::option::Option<Ulid>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub candidate: ::std::option::Option<PayloadCandidate>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Analyse one composition — what would this profile link if bound.
     #[serde(
         rename = "profileId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
@@ -265,11 +255,7 @@ impl PayloadCandidate {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub findings: ::std::vec::Vec<ResponseFindingsItem>,
 }
@@ -287,7 +273,6 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "attributeId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_id: ::std::option::Option<Ulid>,
@@ -295,7 +280,6 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "crossesWorlds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub crosses_worlds: ::std::option::Option<bool>,
@@ -308,7 +292,6 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "sharedWith",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_with: ::std::option::Option<::std::vec::Vec<ResponseFindingsItemSharedWithItem>>,
@@ -316,7 +299,6 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "worldIds",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub world_ids: ::std::option::Option<Vec<Ulid>>,
@@ -524,28 +506,24 @@ pub struct ResponseFindingsItemSharedWithItem {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
     #[serde(
         rename = "disclosedTo",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub disclosed_to: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(
         rename = "personaDid",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub persona_did: ::std::option::Option<::std::string::String>,
     #[serde(
         rename = "profileId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
@@ -553,7 +531,6 @@ pub struct ResponseFindingsItemSharedWithItem {
     #[serde(
         rename = "worldId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub world_id: ::std::option::Option<Ulid>,

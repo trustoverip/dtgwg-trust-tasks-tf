@@ -302,11 +302,7 @@ impl ::std::convert::From<::std::vec::Vec<DigestMultibase>> for MerklePath {
 #[non_exhaustive]
 pub struct Payload {
     ///A signed voting/board/head/0.1 #response document, whole and exactly as received — typically the head the community kept at close (vtc/elections/show checkpoints).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub checkpoint:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The community's DID.
@@ -316,17 +312,9 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub inclusion: ::std::option::Option<Inclusion>,
     ///The ballot box's signed voting/ballot/cast/0.1 #response document, whole and exactly as received.
     pub receipt: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -468,11 +456,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 pub struct Response {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The board position the receipt assigns to the cast.
     #[serde(rename = "leafIndex")]

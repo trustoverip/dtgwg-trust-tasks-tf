@@ -197,17 +197,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. A W3C Verifiable Presentation (opaque here) whose holder is the member DID — neither of the session's parties, and not the witness — under a proof by that DID for authentication covering the session's challenge and domain, as vp's does, and carrying the credentials that show the member eligible under the witness's policy, typically a membership credential naming the member DID. It links the pairwise relationship DID to the member DID at the witness, which must keep neither it nor the member DID. A witness that relies on it and finds it failing any check answers witness/session/submit:presentationInvalid.
     #[serde(
         rename = "memberPresentation",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_presentation:
@@ -226,11 +221,7 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A signed Verifiable Witness Credential: a DTG Verifiable Statement Credential (`type` including `StatementCredential`) under the predicate `https://registry.trustoverip.org/dtg/vsc/witnessed/1` (opaque here; its schema belongs to the DTG Credentials Core Specification). Its issuer is the witness, with `issuerScope` `directed` or `public`; its `credentialSubject.id` is the submitting party, the issuer of the relationship credential the witness observed; and its `credentialSubject.object.digestMultibase` is that credential's digest. Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1) — and its taskDigestMultibase MUST be that document's task digest (SPEC.md §4.9.3). The id locates the session document; the digest binds it, because an id is a name anyone can reuse on a counterfeit.
     pub vwc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,

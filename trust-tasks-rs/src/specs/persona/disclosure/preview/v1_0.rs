@@ -200,34 +200,21 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The persona that would present. Its binding supplies the profile.
     #[serde(rename = "personaDid")]
     pub persona_did: PayloadPersonaDid,
     ///The verifier's stated reason, carried through to the preview and the disclosure record so a holder deciding later has the same context as one deciding now.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub purpose: ::std::option::Option<PayloadPurpose>,
     ///Which output format to prepare for. Omit for the maintainer's canonical form. The choice matters to the preview because renderers differ in what they can carry, and a holder is owed that before deciding.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub renderer: ::std::option::Option<PayloadRenderer>,
     ///Claim types the verifier asked for. Omit to preview everything the bound profile would present. A maintainer MUST NOT return a claim that was not requested when this member is present — narrowing is the caller's to ask for and the maintainer's to honour.
     #[serde(
         rename = "requestedClaims",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requested_claims: ::std::option::Option<::std::vec::Vec<ClaimType>>,
@@ -620,35 +607,19 @@ impl ::std::convert::TryFrom<::std::string::String> for ProofRung {
 #[non_exhaustive]
 pub struct Response {
     ///Claim types unusual for this verifier's stated purpose. A preview that lists fourteen fields with fourteen equal weights is a notice-and-consent dialog, which is the pattern that trains people to click through; ranking by what is out of place is what makes the surfaced line the one worth reading.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub anomalous: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     pub claims: ::std::vec::Vec<ResponseClaimsItem>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Consumed by present. Single-use and short-lived: a preview a holder approved an hour ago is not evidence they approve it now, and one that could be replayed would let a second disclosure ride an earlier decision.
     #[serde(rename = "previewId")]
     pub preview_id: Ulid,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub renderer: ::std::option::Option<ResponseRenderer>,
     ///The identifier that would appear as the subject of the disclosure. Pairwise by default — a fresh per-relationship DID rather than the persona DID — so that two verifiers cannot recognise the holder as the same party. The persona DID is the account; this is the face.
     pub subject: ResponseSubject,
@@ -668,24 +639,15 @@ pub struct ResponseClaimsItem {
     #[serde(
         rename = "newToThisVerifier",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub new_to_this_verifier: ::std::option::Option<bool>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub predicate: ::std::option::Option<ResponseClaimsItemPredicate>,
     pub provenance: ResponseClaimsItemProvenance,
     pub rung: ProofRung,
     ///True when a credential-backed claim could not be re-derived. Such a claim MUST NOT be disclosed; it is shown in the preview so the holder learns why the disclosure will be short.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub stale: ::std::option::Option<bool>,
     #[serde(rename = "type")]
     pub type_: ClaimType,
@@ -710,11 +672,7 @@ impl ResponseClaimsItem {
 pub struct ResponseClaimsItemPredicate {
     pub arg: ::serde_json::Value,
     pub op: ResponseClaimsItemPredicateOp,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub over: ::std::option::Option<ClaimType>,
 }
 impl ResponseClaimsItemPredicate {
@@ -878,11 +836,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseClaimsItemProven
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ResponseCorrelation {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<ResponseCorrelationReason>,
     pub severity: ResponseCorrelationSeverity,
 }

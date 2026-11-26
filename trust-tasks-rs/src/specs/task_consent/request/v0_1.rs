@@ -128,21 +128,13 @@ pub struct Effect {
     )]
     pub before: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///OPTIONAL kind-specific structured extras (e.g. `{ "commitments": 2 }` for `preRotationRefresh`).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub detail:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.
     pub kind: EffectKind,
     ///OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub path: ::std::option::Option<::std::string::String>,
     ///REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.
     pub summary: EffectSummary,
@@ -453,11 +445,7 @@ pub struct Payload {
     ///Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.
     pub challenge: PayloadChallenge,
     ///Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub consequences: ::std::option::Option<::std::vec::Vec<PayloadConsequencesItem>>,
     ///What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.
     pub effects: ::std::vec::Vec<Effect>,
@@ -468,28 +456,16 @@ pub struct Payload {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub exposure: Exposure,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Distinct approvals from the set required before the task may execute.
     #[serde(rename = "minApprovals")]
     pub min_approvals: ::std::num::NonZeroU64,
     ///OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub note: ::std::option::Option<PayloadNote>,
     ///OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub origin: ::std::option::Option<::std::string::String>,
     ///The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.
     #[serde(rename = "payloadDigest")]
@@ -500,7 +476,6 @@ pub struct Payload {
     #[serde(
         rename = "requesterDeviceId",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requester_device_id: ::std::option::Option<::std::string::String>,
@@ -510,16 +485,11 @@ pub struct Payload {
     #[serde(
         rename = "statePin",
         default,
-        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub state_pin: ::std::option::Option<StatePin>,
     ///OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<::std::string::String>,
     ///Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.
     #[serde(rename = "taskType")]
@@ -784,18 +754,10 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadSideEffects {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///REQUIRED when status is `refused`.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<ResponseReason>,
     ///`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.
     pub status: ResponseStatus,

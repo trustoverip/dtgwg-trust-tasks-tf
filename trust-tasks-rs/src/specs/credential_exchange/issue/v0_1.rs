@@ -125,19 +125,11 @@ pub enum Payload {
     Variant0 {
         ///A cleartext OID4VCI Credential Response, carried verbatim. Format-agnostic: the `credential` within is a JSON string (SD-JWT-VC compact serialization) or a JSON object (a W3C Data-Integrity VC with its proof), and the holder infers the format from the value's shape rather than a separate discriminator. snake_case member names are OID4VCI's own.
         credential_response: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
     },
     Variant1 {
-        #[serde(
-            default,
-            deserialize_with = "crate::specs::__presence::not_null",
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///An armored sealed-transfer bundle encrypted to the holder. Used when the credential is secret-bearing or the holder is not yet known (invite / air-gap). Only the holder can open it, and an out-of-band digest pins integrity — there is no trust-on-first-use.
         sealed: PayloadVariant1Sealed,

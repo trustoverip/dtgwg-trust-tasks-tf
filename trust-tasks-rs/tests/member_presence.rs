@@ -10,11 +10,15 @@
 //! "clear the label" and an absent one as "leave it unchanged", and an
 //! `expiresAt: null` makes the entry permanent. `trust-tasks-build`'s
 //! `presence` pass rewrites those fields (`Option<Vec<T>>`,
-//! `Option<Option<T>>`), and reads every other optional member through a
-//! helper that refuses a `null` the schema has no form for, instead of reading
-//! it as absent. Its own tests cover the field shapes on a fixture schema
-//! (a `{"type": "null"}` member, an intrinsic `default`, `true`), and
-//! `specs::__presence`'s unit tests run the helpers on each shape.
+//! `Option<Option<T>>`). Its own tests cover the field shapes on a fixture
+//! schema (a `{"type": "null"}` member, an intrinsic `default`, `true`), and
+//! `specs::__presence`'s unit tests run the helper on each shape.
+//!
+//! A `null` on an optional member whose schema has no null form is **not**
+//! refused by decoding: it reads as absent, as in Go and Dart (TypeScript
+//! keeps it). Refusing it is payload-schema validation's job, in every
+//! runtime (`docs/runtime-parity.md`). The `schema_validation` module below
+//! pins where the Rust runtime does that, and where it does not.
 #![cfg(feature = "acl")]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
@@ -89,29 +93,43 @@ fn a_present_nullable_member_round_trips() {
     );
 }
 
-#[test]
-fn a_null_where_the_schema_forbids_it_is_still_refused() {
-    // `redactedFields` admits no `null`; reading one as absent would accept a
-    // document the schema refuses.
-    let err = serde_json::from_value::<show::Response>(json!({
-        "entry": null,
-        "redactedFields": null
-    }));
-    assert!(err.is_err());
+/// Decode `value` into `T` and return what it re-encodes to.
+fn re_encoded<T: DeserializeOwned + Serialize>(value: Value) -> Value {
+    let parsed: T = serde_json::from_value(value.clone())
+        .unwrap_or_else(|e| panic!("deserialize {value}: {e}"));
+    serde_json::to_value(&parsed).expect("re-serialize")
 }
 
 #[test]
-fn a_null_on_an_optional_member_without_a_null_form_is_refused() {
-    // acl/update 0.3 `purposes`: "There is no null form." Before, `null` was
-    // read as absent ("leave unchanged") and re-encoded without the member.
+fn a_null_on_an_optional_array_without_a_null_form_reads_as_absent() {
+    // `redactedFields` admits no `null`. Decoding reads it as absent; schema
+    // validation refuses it (`schema_validation` below).
+    let r: show::Response = serde_json::from_value(json!({
+        "entry": null,
+        "redactedFields": null
+    }))
+    .expect("decode");
+    assert!(r.redacted_fields.is_none());
+    assert_eq!(
+        re_encoded::<show::Response>(json!({ "entry": null, "redactedFields": null })),
+        json!({ "entry": null })
+    );
+}
+
+#[test]
+fn a_null_on_an_optional_member_without_a_null_form_reads_as_absent() {
+    // acl/update 0.3 `purposes`: "There is no null form." A `null` decodes
+    // as absent ("leave unchanged", the conservative reading) and re-encodes
+    // without the member.
     for member in ["purposes", "approve", "keys", "ext"] {
-        let err = serde_json::from_value::<update::Payload>(json!({
-            "subject": "did:example:alice",
-            member: null
-        }))
-        .expect_err(member)
-        .to_string();
-        assert!(err.contains("no null form"), "{member}: {err}");
+        assert_eq!(
+            re_encoded::<update::Payload>(json!({
+                "subject": "did:example:alice",
+                member: null
+            })),
+            json!({ "subject": "did:example:alice" }),
+            "{member}"
+        );
     }
 }
 
@@ -162,7 +180,7 @@ fn the_builder_writes_each_state() {
 }
 
 /// An optional map member: `{}` stays present and empty, absent stays absent,
-/// and `null` (no null form) is refused.
+/// and `null` (no null form) reads as absent.
 #[cfg(feature = "vta")]
 mod map_member {
     use super::*;
@@ -194,8 +212,181 @@ mod map_member {
     }
 
     #[test]
-    fn a_null_map_is_refused() {
-        let err = serde_json::from_value::<templates::Payload>(payload(Some(Value::Null)));
-        assert!(err.unwrap_err().to_string().contains("no null form"));
+    fn a_null_map_reads_as_absent() {
+        let p: templates::Payload =
+            serde_json::from_value(payload(Some(Value::Null))).expect("decode");
+        assert!(p.template.defaults.is_none());
+    }
+}
+
+/// Where the Rust runtime refuses a `null` the schema forbids: payload-schema
+/// validation of the payload **as received**.
+#[cfg(feature = "validate")]
+mod schema_validation {
+    use super::*;
+    use trust_tasks_rs::handlers::NoopHandler;
+    use trust_tasks_rs::validate::{SchemaValidator, ValidatedPayload};
+    use trust_tasks_rs::Payload as _;
+    use trust_tasks_rs::{
+        consume_dispatched, consume_inbound, AsyncDispatcher, ConsumeChecks, ConsumeOutcome,
+        ErrorResponse, PayloadPolicy, ProofPolicy, ProofVerifier, ResolvedParties, StandardCode,
+        TrustTask, VerificationError,
+    };
+
+    /// The documents carry no proof; this only names a verifier type.
+    struct NoVerifier;
+
+    #[async_trait::async_trait]
+    impl ProofVerifier for NoVerifier {
+        async fn verify<P>(&self, _doc: &TrustTask<P>) -> Result<(), VerificationError>
+        where
+            P: serde::Serialize + Send + Sync,
+        {
+            Ok(())
+        }
+    }
+
+    static VALIDATOR: SchemaValidator = SchemaValidator::new();
+    const CONSUMER: &str = "did:web:consumer.example";
+
+    /// Each `null` the acl/update 0.3 and acl/show 0.3 schemas forbid.
+    fn forbidden_nulls() -> Vec<(&'static str, Value)> {
+        let mut cases: Vec<(&'static str, Value)> = ["purposes", "approve", "keys", "ext"]
+            .into_iter()
+            .map(|member| {
+                (
+                    update::Payload::TYPE_URI,
+                    json!({ "subject": "did:example:alice", member: null }),
+                )
+            })
+            .collect();
+        cases.push((
+            show::Response::TYPE_URI,
+            json!({ "entry": null, "redactedFields": null }),
+        ));
+        cases
+    }
+
+    #[test]
+    fn validating_the_received_payload_refuses_a_forbidden_null() {
+        for (type_uri, value) in forbidden_nulls() {
+            let verdict = if type_uri == update::Payload::TYPE_URI {
+                update::Payload::validate_value(&value)
+            } else {
+                show::Response::validate_value(&value)
+            };
+            assert!(verdict.is_err(), "{value} passed validation");
+        }
+        // The same members' `null`, where the schema admits it, passes.
+        update::Payload::validate_value(&json!({
+            "subject": "did:example:alice",
+            "label": null,
+            "expiresAt": null
+        }))
+        .expect("nullable members");
+    }
+
+    fn document(payload: Value) -> Value {
+        json!({
+            "id": "urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-00000000a1c1",
+            "type": update::Payload::TYPE_URI,
+            "issuer": "did:web:producer.example",
+            "recipient": CONSUMER,
+            "issuedAt": "2026-11-01T00:00:00Z",
+            "payload": payload
+        })
+    }
+
+    fn now() -> chrono::DateTime<chrono::Utc> {
+        "2026-11-01T00:00:30Z".parse().unwrap()
+    }
+
+    /// The refusal code, or `"accepted"`.
+    fn verdict<R: std::fmt::Debug>(outcome: &ConsumeOutcome<R>) -> String {
+        match outcome {
+            ConsumeOutcome::Rejected(err) => format!("{:?}", err.payload.code),
+            ConsumeOutcome::Handled(_) => "accepted".into(),
+            other => format!("{other:?}"),
+        }
+    }
+
+    fn malformed() -> String {
+        format!(
+            "{:?}",
+            trust_tasks_rs::TrustTaskCode::from(StandardCode::MalformedRequest)
+        )
+    }
+
+    /// The document with the forbidden `null`, and the same document without
+    /// the member. acl/update requires a proof and these carry none, so a
+    /// document that clears schema validation is refused `proofRequired`.
+    fn with_and_without_the_null() -> [Value; 2] {
+        [
+            document(json!({ "subject": "did:example:alice", "purposes": null })),
+            document(json!({ "subject": "did:example:alice" })),
+        ]
+    }
+
+    async fn dispatched(document: Value) -> String {
+        let dispatcher =
+            AsyncDispatcher::<ResolvedParties, Result<TrustTask<Value>, ErrorResponse>>::new()
+                .on_async::<update::Payload, _, _>(|req, _| async move {
+                Ok(req.respond_with("resp-1", json!({})))
+            });
+        let doc: TrustTask<Value> = serde_json::from_value(document).unwrap();
+        let outcome = consume_dispatched(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::Validate(&VALIDATOR),
+            ConsumeChecks::not_consequential(),
+            &dispatcher,
+            doc,
+            CONSUMER,
+            now(),
+            || "err-1".to_string(),
+            |parties| parties,
+        )
+        .await;
+        verdict(&outcome)
+    }
+
+    async fn typed(document: Value) -> String {
+        let doc: TrustTask<update::Payload> = serde_json::from_value(document).unwrap();
+        let outcome = consume_inbound(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::Validate(&VALIDATOR),
+            ConsumeChecks::not_consequential(),
+            doc,
+            CONSUMER,
+            now(),
+            || "err-1".to_string(),
+            |req, _| async move { Ok::<_, ErrorResponse>(req.respond_with("resp-1", json!({}))) },
+        )
+        .await;
+        verdict(&outcome)
+    }
+
+    #[tokio::test]
+    async fn the_dispatched_path_refuses_a_forbidden_null() {
+        // `consume_dispatched` holds the payload as received (a `Value`) and
+        // validates it before anything reads its meaning.
+        let [with, without] = with_and_without_the_null();
+        assert_eq!(dispatched(with).await, malformed());
+        assert_ne!(dispatched(without).await, malformed());
+    }
+
+    #[tokio::test]
+    async fn the_typed_path_does_not_see_a_forbidden_null() {
+        // `consume_inbound::<P>` takes a document already decoded into `P`
+        // and validates `P` re-encoded, from which the forbidden `null`, read
+        // as absent, is gone: both documents get the same verdict. A typed
+        // consumer that must refuse it validates the received payload itself
+        // (`ValidatedPayload::validate_value`) before decoding, or consumes
+        // through `consume_dispatched`.
+        let [with, without] = with_and_without_the_null();
+        let verdict = typed(with).await;
+        assert_ne!(verdict, malformed());
+        assert_eq!(verdict, typed(without).await);
     }
 }

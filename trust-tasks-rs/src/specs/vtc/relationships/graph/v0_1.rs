@@ -397,11 +397,7 @@ impl<'de> ::serde::Deserialize<'de> for GraphNodeDid {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/relationships/graph/0.2")]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -425,11 +421,7 @@ impl Payload {
 pub struct Response {
     ///One per unrevoked relationship credential, directed issuer -> subject.
     pub edges: ::std::vec::Vec<GraphEdge>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One per distinct DID appearing in a live edge. No isolated nodes.
     pub nodes: ::std::vec::Vec<GraphNode>,

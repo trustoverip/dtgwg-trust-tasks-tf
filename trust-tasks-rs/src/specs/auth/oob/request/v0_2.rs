@@ -179,11 +179,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Mode {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub mode: Mode,
     pub purpose: Purpose,
@@ -326,11 +322,7 @@ pub struct Response {
     ///The instant by which the request must be claimed, as an RFC 3339 date-time. The trigger link's `_exp` carries the same instant in the link's own integer form: the starter converts this value into it when it builds the link. At most 180 s after the request was accepted; 120 s is RECOMMENDED.
     #[serde(rename = "claimClosesAt")]
     pub claim_closes_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestId")]
     pub request_id: RequestId,

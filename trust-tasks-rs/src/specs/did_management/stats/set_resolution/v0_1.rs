@@ -123,17 +123,9 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<PayloadDomain>,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The slot whose statistics resolution is set.
     pub mnemonic: PayloadMnemonic,
@@ -346,11 +338,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Resolution {
 pub struct Response {
     ///`false` when `previousResolution` already equalled the requested resolution.
     pub changed: bool,
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Echo of the slot.
     pub mnemonic: ::std::string::String,

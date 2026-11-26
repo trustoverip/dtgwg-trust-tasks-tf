@@ -219,11 +219,7 @@ impl<'de> ::serde::Deserialize<'de> for KeyedVpTokenKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(
-        default,
-        deserialize_with = "crate::specs::__presence::not_null",
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The OID4VP `vp_token`. Canonically the DCQL response object of OID4VP 1.0 §8.1: keyed by credential query `id`, each value an array of one or more presentations. A bare SD-JWT-VC presentation string, the shape credential-exchange/present/0.1 producers send, is still accepted for compatibility. snake_case is OID4VP's own name for this field.
     pub vp_token: PayloadVpToken,
