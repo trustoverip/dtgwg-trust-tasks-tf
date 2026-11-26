@@ -2,13 +2,15 @@
 //! and out of a TSP-sealed envelope.
 //!
 //! The TSP message payload is the JSON envelope object `{ "type":
-//! ENVELOPE_TYPE, "document": <TrustTask<P>> }` ([`Envelope`]); TSP seals it with HPKE
-//! authenticated encryption and signs it from the sender's VID. On unwrap the
+//! ENVELOPE_TYPE, "document": <TrustTask<P>> }` ([`Envelope`]); TSP 1.0 seals
+//! it to the recipient with HPKE-Base, the sender's VID inside the sealed
+//! payload (ESSR), and signs it from the sender's VID. On unwrap the
 //! authenticated `VID_sndr` is surfaced verbatim as the binding's
 //! transport-authenticated peer (a TSP VID is a framework VID — no
 //! transformation).
 
 use affinidi_tsp::message::direct::{self, PackedMessage};
+use affinidi_tsp::message::envelope::Envelope as TspFrame;
 use affinidi_tsp::message::routed;
 use affinidi_tsp::{MessageType, PrivateVid, ResolvedVid};
 use serde::de::DeserializeOwned;
@@ -18,6 +20,56 @@ use trust_tasks_rs::TrustTask;
 use crate::envelope::Envelope;
 use crate::error::TspError;
 use crate::handler::TspHandler;
+
+/// The one TSP version this binding seals and opens: TSP 1.0 (`YTSP-BAA`),
+/// through `affinidi-tsp` 0.5 (binding `tsp/0.3` §2.2).
+///
+/// A message in a TSP MAJOR other than 1 — the drafts Rev 3 (`YTSP-AAC`) and
+/// Rev 2 (`YTSP-AAB`) among them — is refused as
+/// [`TspError::UnsupportedTspVersion`]; an unknown 1.x MINOR is not a version
+/// refusal (TSP 1.0 §3). TSP has no version negotiation, so a peer on a draft
+/// has to upgrade.
+pub const TSP_VERSION: &str = "1.0";
+
+/// The sender VID a TSP message names in its cleartext envelope, read without
+/// any key and without verifying anything — what a consumer receiving from
+/// unknown senders resolves before calling [`unpack_trust_task`] or
+/// [`TspConsumer`](crate::TspConsumer).
+///
+/// It is unauthenticated until the message is opened: use it only to decide
+/// whether to open the message and to resolve the sender's keys.
+///
+/// A message in a TSP version this binding does not speak is refused here as
+/// [`TspError::UnsupportedTspVersion`], before the sender is resolved (binding
+/// `tsp/0.3` §2.2). Prefer this to `affinidi_tsp::MetaEnvelope::parse`, which
+/// reads any version because a relay has to. Bytes that are not a TSP message
+/// are [`TspError::Upstream`].
+pub fn advertised_sender(wire: &[u8]) -> Result<String, TspError> {
+    match TspFrame::decode_full(wire) {
+        Ok(decoded) => Ok(decoded.envelope.sender),
+        Err(e) => Err(version_refusal(&e).unwrap_or(TspError::Upstream(e))),
+    }
+}
+
+/// [`TspError::UnsupportedTspVersion`] for a message whose version marker
+/// declares a TSP MAJOR other than 1, read before any key is used.
+fn refuse_unsupported_version(wire: &[u8]) -> Result<(), TspError> {
+    match TspFrame::decode_full(wire) {
+        Err(e) => version_refusal(&e).map_or(Ok(()), Err),
+        Ok(_) => Ok(()),
+    }
+}
+
+/// `affinidi-tsp` gates the MAJOR at the envelope and carries the MINOR, so
+/// only its `VersionMismatch` is a version refusal.
+fn version_refusal(e: &affinidi_tsp::TspError) -> Option<TspError> {
+    match e {
+        affinidi_tsp::TspError::VersionMismatch { found, .. } => {
+            Some(TspError::UnsupportedTspVersion { major: *found })
+        }
+        _ => None,
+    }
+}
 
 /// Wrap a Trust Task document in the binding envelope and TSP-seal it
 /// (`Direct`) from `sender` to `recipient`.
@@ -130,13 +182,17 @@ where
 /// [`TrustTask<P>`] plus a [`TspHandler`] populated with the authenticated peer
 /// VID.
 ///
-/// `recipient` is the consumer's own [`PrivateVid`]; `sender` is the
-/// [`ResolvedVid`] of the VID the message is expected from (its public keys
-/// verify the signature and authenticate the HPKE seal). A server receiving from
-/// unknown senders reads the cleartext `VID_sndr` first (via
-/// [`affinidi_tsp::MetaEnvelope::parse`]), resolves it, then calls this.
+/// `recipient` is the consumer's own [`PrivateVid`], whose X25519 key opens the
+/// HPKE-Base seal; `sender` is the [`ResolvedVid`] of the VID the message is
+/// expected from, whose Ed25519 key verifies the signature — under TSP 1.0 that
+/// signature, with the ESSR sender field inside the sealed payload, is what
+/// authenticates the sender. A server receiving from unknown senders reads the
+/// cleartext `VID_sndr` first with [`advertised_sender`], resolves it, then
+/// calls this.
 ///
-/// Rejects non-`Direct` carriage, any envelope whose cleartext sender does
+/// Refuses a message in a TSP MAJOR other than 1 (a peer on a TSP draft) as
+/// [`TspError::UnsupportedTspVersion`], from its version marker and before any
+/// key is used, whatever `sender` is passed. Rejects non-`Direct` carriage, any envelope whose cleartext sender does
 /// not match the verified `sender` or whose cleartext receiver names a VID
 /// other than `recipient`'s, and verifies the envelope `type`.
 ///
@@ -165,6 +221,11 @@ pub(crate) fn open(
     recipient: &PrivateVid,
     sender: &ResolvedVid,
 ) -> Result<(serde_json::Value, TspHandler), TspError> {
+    // Binding `tsp/0.3` §2.2: a TSP draft is told apart from its version marker
+    // before any key is used, so an operator sees "upgrade the peer" rather
+    // than a failed decryption.
+    refuse_unsupported_version(wire)?;
+
     let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
     if unpacked.message_type != MessageType::Direct {

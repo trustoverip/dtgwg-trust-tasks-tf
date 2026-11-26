@@ -16,6 +16,26 @@ pub enum TspError {
     #[error("TSP error: {0}")]
     Upstream(#[from] affinidi_tsp::TspError),
 
+    /// The message is framed in a TSP MAJOR version other than 1 — a peer still
+    /// on a TSP draft (Rev 3 `YTSP-AAC` or Rev 2 `YTSP-AAB`, both MAJOR 0) or
+    /// on a later MAJOR. Binding `tsp/0.3` §2.2: it is told apart from the
+    /// version marker alone, before any key is used or the sender is resolved
+    /// (see [`advertised_sender`](crate::advertised_sender)), and must not be
+    /// answered — nothing in it is authenticated. Report it to the operator as
+    /// a version mismatch: TSP has no version negotiation, so the peer has to
+    /// upgrade.
+    ///
+    /// A TSP MINOR never gates a message (TSP 1.0 §3): a 1.x message that then
+    /// fails to open is [`Self::Upstream`], as any other unopenable one is.
+    #[error(
+        "unsupported TSP version: the message is TSP MAJOR {major}, this binding speaks TSP {} only (the sender must upgrade; TSP has no version negotiation)",
+        crate::TSP_VERSION
+    )]
+    UnsupportedTspVersion {
+        /// The TSP MAJOR version the message's version marker declares.
+        major: u16,
+    },
+
     /// The message opened as a non-`Direct` carriage. Routed/Nested relaying is
     /// the mediator's job; the consumer only ever opens the innermost `Direct`
     /// message, so anything else here is unexpected.
@@ -69,7 +89,8 @@ impl TspError {
     /// leaves no transport-authenticated sender the consumer can name, so only
     /// an in-band `proof` could still attribute the document. Binding §4 puts
     /// an authentication failure outside the framework pipeline altogether, so
-    /// a consumer should normally drop such a message rather than answer it.
+    /// a consumer should normally drop such a message rather than answer it —
+    /// and [`Self::UnsupportedTspVersion`] must never be answered at all.
     ///
     /// The reason is a category, never this error's `Display`: that names
     /// VIDs, upstream failures and the deserializer's offsets, which SPEC §10.4
@@ -134,6 +155,16 @@ mod tests {
             !other.contains("internal/type"),
             "envelope detail on the wire: {other}"
         );
+    }
+
+    #[test]
+    fn a_draft_version_is_its_own_failure_and_names_the_version() {
+        let draft = TspError::UnsupportedTspVersion { major: 0 };
+        let shown = draft.to_string();
+        assert!(shown.contains("MAJOR 0"), "{shown}");
+        assert!(shown.contains("TSP 1.0"), "{shown}");
+        // Never answered, but if a caller folds it anyway nothing leaks.
+        assert!(!reason(draft).contains("MAJOR"));
     }
 
     #[test]
