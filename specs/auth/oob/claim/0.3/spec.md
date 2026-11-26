@@ -1,6 +1,6 @@
 ---
 slug: auth/oob/claim
-version: "0.2"
+version: "0.3"
 title: "Auth — OOB Claim"
 summary: "An approver's wallet claims a pending out-of-band request with a throwaway key, locking the request to that key, and gets back the service-signed step 1: which community, at which portal origin, for what purpose, and until when."
 status: draft
@@ -68,31 +68,30 @@ related:
 
 ## Abstract
 
-A member's wallet reads a `sign-in` trigger link ([`TRIGGER-LINK.md`](../../_shared/0.1/TRIGGER-LINK.md)), checks the community against its own records, and once the member chooses to continue, generates a throwaway Ed25519 key `K_a` and sends this claim. The first claim wins: the request is locked to `K_a`, the starter's page shows that it was claimed, and every later step by the approver must be signed by `K_a`.
+A member's wallet reads a `sign-in` trigger link ([`TRIGGER-LINK.md`](../../_shared/0.2/TRIGGER-LINK.md)), checks the community (for `deviceEnrol`, the VTA it administers) against its own records, and once the member chooses to continue, generates a throwaway Ed25519 key `K_a` and sends this claim. The first claim wins: the request is locked to `K_a`, the starter's page shows that it was claimed, and every later step by the approver must be signed by `K_a`.
 
-The service answers with **step 1** of the disclosure ladder ([`CONVENTIONS.md`](../../_shared/0.1/CONVENTIONS.md) §5): the community, the portal origin, the purpose and the decision deadline. Nothing about the starter is revealed until the approver has proved membership and entered the number shown on the starter's screen (`auth/oob/prove`).
+The service answers with **step 1** of the disclosure ladder ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §5): the community, the portal origin (for `deviceEnrol`, the VTA it administers and that VTA's Trust Task endpoint origin), the purpose and the decision deadline. Nothing about the starter is revealed until the approver has proved membership and entered the number shown on the starter's screen (`auth/oob/prove`).
 
 ## Status of this Document
 
 This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
-## Changes from 0.1
+## Changes from 0.2
 
-- Step 1's **`decisionDeadline`** (integer UTC epoch seconds) is renamed
-  **`decisionClosesAt`** and becomes an RFC 3339 date-time (`type: "string"`,
-  `format: "date-time"`). The instant it names is unchanged: when the decision
-  window, started by the claim, closes. `1791626560` in 0.1 is
-  `"2026-10-10T10:02:40Z"` here.
+- Step 1's **`purpose`** is now the `Purpose` of
+  [`oob.schema.json` 0.2](../../_shared/0.2/oob.schema.json), which adds
+  `deviceEnrol` ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §3). For
+  `deviceEnrol` the service is the person's VTA and `origin` is the origin of its
+  `TrustTaskHTTPS` service endpoint (CONVENTIONS §7 A6), and the match number the
+  service chooses at claim has four digits (CONVENTIONS §7 A12); `login` keeps two.
 
-The reason is the registry-wide convention that an instant on the wire is an
-RFC 3339 string whose member name ends in `At`, so every specification states
-time one way. The request payload is unchanged. Step 1's members are repeated in
-step 2, so [`auth/oob/prove/0.3`](../../prove/0.3/spec.md) carries the same
-rename.
-
-Breaking on the wire, released as a `MINOR` increment under
-[§5.2](/SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.1` remains
-published.
+Nothing else changes: the request payload and every other response member are
+0.2's, and a `login` claim is handled exactly as in 0.2. This is a new version
+only because the closed purpose list it references is new
+([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §3: adding a purpose is a
+new version of every task that references it). This version cannot declare
+`extends: "0.2"` (CONVENTIONS §7 A10).
+`0.2` remains published.
 
 ## Conformance
 
@@ -106,16 +105,17 @@ A conforming **approver** (the wallet):
 2. **MUST** follow VTI-LNK-054: set `issuer` to `K_a` as a `did:key`, `recipient` to the service DID (the link's `_from`), a unique `id`, and `parentThreadId` to the handle (the link's `_id`), and sign with `K_a` for `authentication`.
 3. **MUST** set `payload.requestId` to the same handle as `parentThreadId`.
 4. **MUST** take the endpoint from the service's verified DID document, never from the link: the `serviceEndpoint` of its `TrustTaskHTTPS` service is the Trust-Task base, composed into the request URL as [HTTPS binding 0.2 §6](../../../../../bindings/https/0.2/spec.md#6-endpoint-discovery) requires.
-5. **MUST** verify the response's proof against a key the service DID lists under `assertionMethod`, and **MUST** check that `requestId` equals the handle, `service.did` equals the link's `_from`, `purpose` is one it implements, `origin` is the origin of the service's `SignInPortal` service, and `decisionClosesAt` is in the future. Any failure ends the exchange on the approver's side.
+5. **MUST** verify the response's proof against a key the service DID lists under `assertionMethod`, and **MUST** check that `requestId` equals the handle, `service.did` equals the link's `_from`, `purpose` is one it implements, `origin` is the origin of the service's `SignInPortal` service (for `deviceEnrol`, of its `TrustTaskHTTPS` service), and `decisionClosesAt` is in the future. Any failure ends the exchange on the approver's side. For `deviceEnrol`, it **MUST** also stop unless `service.did` is a VTA it administers ([`TRIGGER-LINK.md`](../../_shared/0.2/TRIGGER-LINK.md) §6).
 6. **MUST** show the community's name from its own records and flag a difference from `service.name` (VTI-LNK-104).
 
 A conforming **service**:
 
 1. **MUST** refuse an issuer that is not an Ed25519 `did:key` with `auth/oob:keyUnsupported`.
 2. **MUST** refuse a document whose `parentThreadId` is absent or not equal to `payload.requestId` with `malformedRequest`. This compares two members of one document; it is not a check on `parentThreadId` alone.
-3. **MUST** move the request from `pending` to `claimed` in one compare-and-set, only inside its claim window, recording `K_a` as the lock, choosing a two-digit match number uniformly at random and starting the decision window. A request that is not `pending` is refused with `auth/oob/claim:alreadyClaimed` (if claimed or later) or `auth/oob:requestExpired` (if ended), with no details.
+3. **MUST** move the request from `pending` to `claimed` in one compare-and-set, only inside its claim window, recording `K_a` as the lock, choosing a match number uniformly at random — two digits for `login`, four for `deviceEnrol` ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §7, A12) — and starting the decision window. A request that is not `pending` is refused with `auth/oob/claim:alreadyClaimed` (if claimed or later) or `auth/oob:requestExpired` (if ended), with no details.
 4. **MUST** answer with step 1, signed by its `assertionMethod` key, and **MUST NOT** put anything about the starter in it.
 5. **MUST** leave the request unchanged when a claim fails.
+6. **MUST** answer a claim sent as an earlier version of this task — `auth/oob/claim/0.2` or before — of a request opened as `deviceEnrol` with `auth/oob:requestNotFound`: such a request is handled only by the versions that define its purpose ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §5 rule 3c).
 
 ## Authorization
 
@@ -125,7 +125,7 @@ Possession of the handle entitles a party to *claim* the request and to nothing 
 
 - **Lock**, **`K_a`** — the approver's throwaway Ed25519 key. The request's `approverKey` from this claim on.
 - **`requestId`** — the handle from the trigger link's `_id`, also carried as `parentThreadId`.
-- **Step 1** (response) — `requestId`, `service{did, name}`, `origin` (the portal origin), `purpose` and `decisionClosesAt` (when the decision window closes, an RFC 3339 date-time).
+- **Step 1** (response) — `requestId`, `service{did, name}`, `origin` (the portal origin; for `deviceEnrol`, the VTA's Trust Task endpoint origin), `purpose` and `decisionClosesAt` (when the decision window closes, an RFC 3339 date-time).
 
 ## Request
 
@@ -136,7 +136,7 @@ The approver (`issuer`, its lock key) claims the request at the service (`recipi
 ```json
 {
   "id": "urn:uuid:5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c01",
-  "type": "https://trusttasks.org/spec/auth/oob/claim/0.2",
+  "type": "https://trusttasks.org/spec/auth/oob/claim/0.3",
   "parentThreadId": "q3Vt7mXo9LwA2bR5cJ8kNg",
   "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
   "recipient": "did:web:community.example",
@@ -164,7 +164,7 @@ The service answers with step 1, signed by its `assertionMethod` key. The payloa
 ```json
 {
   "id": "urn:uuid:5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c02",
-  "type": "https://trusttasks.org/spec/auth/oob/claim/0.2#response",
+  "type": "https://trusttasks.org/spec/auth/oob/claim/0.3#response",
   "threadId": "urn:uuid:5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c01",
   "parentThreadId": "q3Vt7mXo9LwA2bR5cJ8kNg",
   "issuer": "did:web:community.example",

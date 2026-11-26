@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/auth/oob/claim/0.2",
+  "$id": "https://trusttasks.org/spec/auth/oob/claim/0.3",
   "title": "Auth — OOB Claim — payload",
   "description": "An approver claims a pending out-of-band request, locking it to a throwaway Ed25519 key (`K_a`) generated for this one exchange. The document is the first request of a trigger-link exchange (VTI-LNK-054): issued and signed by `K_a`, addressed to the service, and carrying the request's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "requestId": {
-      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId",
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/RequestId",
       "description": "The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`."
     },
     "ext": {
@@ -33,16 +33,16 @@
       ],
       "properties": {
         "requestId": {
-          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+          "$ref": "../../_shared/0.2/oob.schema.json#/$defs/RequestId"
         },
         "service": {
-          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Service"
+          "$ref": "../../_shared/0.2/oob.schema.json#/$defs/Service"
         },
         "origin": {
-          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Origin"
+          "$ref": "../../_shared/0.2/oob.schema.json#/$defs/Origin"
         },
         "purpose": {
-          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Purpose"
+          "$ref": "../../_shared/0.2/oob.schema.json#/$defs/OobPurpose"
         },
         "decisionClosesAt": {
           "type": "string",

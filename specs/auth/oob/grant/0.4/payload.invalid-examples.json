@@ -3,6 +3,7 @@
     "note": "An `ext` member is refused — the grant is closed, so a user-verified signature covers exactly these members.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -20,6 +21,7 @@
     "note": "Unknown decision value — only approve and decline are defined.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approveForever",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -32,6 +34,7 @@
     "note": "contextDigest as bare hex is non-conforming — DigestMultibase requires a multibase header.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -44,6 +47,7 @@
     "note": "Missing contextDigest — a grant not bound to what the member saw is refused.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -55,6 +59,7 @@
     "note": "An empty signingScope is refused — a grant delegating no signing leaves the member out, so no signed scope can be read as unbounded.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -68,6 +73,7 @@
     "note": "signingScope is a list of families, not one string — a bare string would be a scope a consumer could split or glob differently from the member who signed it.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -81,6 +87,7 @@
     "note": "A wildcard is not a family — the scope names slug prefixes of whole segments, and a pattern is refused.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -96,6 +103,7 @@
     "note": "sessionEndsAt is an RFC 3339 date-time; an integer count of seconds (the 0.2 `notAfter` form) is rejected.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
@@ -108,12 +116,527 @@
     "note": "The 0.2 member name `notAfter` is gone — sessionEndsAt is required, and additionalProperties: false rejects notAfter.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
       "decision": "approve",
       "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
       "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
       "origin": "https://members.community.example",
       "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
       "notAfter": "2026-10-10T18:00:00Z"
+    }
+  },
+  {
+    "note": "Missing purpose — from 0.4 the signed grant states what it authorizes, so a grant that could be read as either purpose is refused.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "sessionEndsAt": "2026-10-10T18:00:00Z"
+    }
+  },
+  {
+    "note": "A login grant without sessionEndsAt — a session always has a stated end.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+    }
+  },
+  {
+    "note": "A login grant carrying aclScope — an enrolment scope MUST be absent for login, so a sign-in can never also create an ACL entry.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "login",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "sessionEndsAt": "2026-10-10T18:00:00Z",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "A deviceEnrol grant carrying sessionEndsAt — an enrolment arms no session; its expiry is aclScope.expiresAt.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      },
+      "sessionEndsAt": "2026-10-10T18:00:00Z"
+    }
+  },
+  {
+    "note": "A deviceEnrol grant carrying signingScope — an enrolment never delegates signing as the approver.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      },
+      "signingScope": [
+        "vtc/directory"
+      ]
+    }
+  },
+  {
+    "note": "aclScope naming two contexts — this version enrols a client in exactly one context (CONVENTIONS §7 A1).",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal",
+          "work"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "aclScope with no contexts — `all` is not expressible and an empty list is not `none`.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "aclScope without expiresAt — an enrolment never lasts indefinitely.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "aclScope without consumerKind — the signed grant states what kind of client was enrolled.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z"
+      }
+    }
+  },
+  {
+    "note": "aclScope granting approve authority — an enrolled client never ratifies anything, and AclScope has no approve member.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "approve": {
+          "scope": "all"
+        }
+      }
+    }
+  },
+  {
+    "note": "aclScope.capabilities of `ceiling` — the role, not the approver, would decide every capability; the schema refuses it (CONVENTIONS §7 A8).",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "An additive capability grant — an enrolled client never holds a capability beside its role; the schema refuses `additive: true` (CONVENTIONS §7 A8).",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read",
+              "additive": true
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "aclScope.keys of `all` — an enrolled client never reaches the signing oracle on every key in its context (CONVENTIONS §7 A14).",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
+    }
+  },
+  {
+    "note": "A deviceEnrol approve without aclScope — an approval always states the scope the person chose.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+    }
+  },
+  {
+    "note": "A deviceEnrol decline carrying aclScope — a decline grants nothing, so it carries no scope.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "purpose": "deviceEnrol",
+      "decision": "decline",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://vta.alice.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "aclScope": {
+        "contexts": [
+          "personal"
+        ],
+        "role": "application",
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "memory.read"
+            }
+          ]
+        },
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "expiresAt": "2026-11-09T10:01:30Z",
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        }
+      }
     }
   }
 ]

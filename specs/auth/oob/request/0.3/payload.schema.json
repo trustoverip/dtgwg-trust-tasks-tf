@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/auth/oob/request/0.2",
+  "$id": "https://trusttasks.org/spec/auth/oob/request/0.3",
   "title": "Auth — OOB Request — payload",
-  "description": "A starter asks a service to open an out-of-band request that an approver will decide on another device. The document is issued and signed by the starter's fresh Ed25519 key, which is fixed for the life of the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "A starter asks a service to open an out-of-band request that an approver will decide on another device. The document is issued and signed by the starter's fresh Ed25519 key, which is fixed for the life of the request. For `deviceEnrol` it also names the client and the scope ceiling it asks for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,15 +11,59 @@
   ],
   "properties": {
     "purpose": {
-      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Purpose"
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/OobPurpose"
     },
     "mode": {
-      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Mode"
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/Mode"
+    },
+    "client": {
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/EnrolClient",
+      "description": "For `deviceEnrol` only, and then REQUIRED: who asks to be enrolled. MUST be absent for `login`."
+    },
+    "requestedScope": {
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/RequestedScope",
+      "description": "For `deviceEnrol` only, and then REQUIRED: the ceiling the client asks to be enrolled under. MUST be absent for `login`."
     },
     "ext": {
       "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
     }
   },
+  "oneOf": [
+    {
+      "properties": {
+        "purpose": {
+          "const": "login",
+          "description": "Selects the `login` shape."
+        }
+      },
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "client"
+            ]
+          },
+          {
+            "required": [
+              "requestedScope"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "properties": {
+        "purpose": {
+          "const": "deviceEnrol",
+          "description": "Selects the `deviceEnrol` shape."
+        }
+      },
+      "required": [
+        "client",
+        "requestedScope"
+      ]
+    }
+  ],
   "$defs": {
     "Response": {
       "$anchor": "response",
@@ -33,7 +77,7 @@
       ],
       "properties": {
         "requestId": {
-          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+          "$ref": "../../_shared/0.2/oob.schema.json#/$defs/RequestId"
         },
         "claimClosesAt": {
           "type": "string",

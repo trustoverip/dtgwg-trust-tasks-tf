@@ -164,5 +164,118 @@
       },
       "identifiedAs": "did:web:alice.example"
     }
+  },
+  {
+    "variant": "response",
+    "note": "A deviceEnrol step 2 without client and requestedScope — the approver must be shown who asks and for how much before it can decide.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "deviceEnrol",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A deviceEnrol step 2 offering a signingScope — a signing scope is login only; an enrolment is never also a delegation to sign as the approver.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "deviceEnrol",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 90
+      },
+      "signingScope": [
+        "vtc/directory"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A login step 2 carrying requestedScope — the enrolment members MUST be absent for login.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example",
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 90
+      }
+    }
   }
 ]

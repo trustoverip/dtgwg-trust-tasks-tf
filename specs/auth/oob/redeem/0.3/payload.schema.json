@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/auth/oob/redeem/0.2",
+  "$id": "https://trusttasks.org/spec/auth/oob/redeem/0.3",
   "title": "Auth — OOB Redeem — payload",
-  "description": "The starter turns an approved out-of-band request into the outcome its purpose defines — for `login`, a session bound to the starter key. Issued and signed by the starter key; held as a long poll until the request is approved. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The starter turns an approved out-of-band request into the outcome its purpose defines — for `login`, a session bound to the starter key; for `deviceEnrol`, an ACL entry whose subject is the starter key. Issued and signed by the starter key; held as a long poll until the request is approved. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "requestId": {
-      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+      "$ref": "../../_shared/0.2/oob.schema.json#/$defs/RequestId"
     },
     "ext": {
       "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
@@ -20,33 +20,27 @@
     "Response": {
       "$anchor": "response",
       "title": "Auth — OOB Redeem — response payload",
-      "description": "For `login`: who is now signed in, for the starter's \"Continue as …?\" confirmation. Never tokens: over HTTPS the session itself is delivered as HttpOnly cookies.",
+      "description": "For `login`: who is now signed in, for the starter's \"Continue as …?\" confirmation. Never tokens: over HTTPS the session itself is delivered as HttpOnly cookies. For `deviceEnrol`: the VTA, the ACL entry it created for the starter key, and when that key must be swapped out. Exactly one of the two shapes.",
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "subject",
-        "displayName",
-        "sessionEndsAt",
-        "amr"
-      ],
       "properties": {
         "subject": {
           "type": "string",
           "pattern": "^did:",
           "minLength": 5,
           "maxLength": 2048,
-          "description": "The approving DID — the grant's issuer — now the session's subject."
+          "description": "`login` only. The approving DID — the grant's issuer — now the session's subject."
         },
         "displayName": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "description": "A name for the signed-in identity, for the confirmation step. Untrusted wherever rendered."
+          "description": "`login` only. A name for the signed-in identity, for the confirmation step. Untrusted wherever rendered."
         },
         "sessionEndsAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the session ends, as an RFC 3339 date-time: the earlier of the grant's `sessionEndsAt` and the service's session limit."
+          "description": "`login` only. When the session ends, as an RFC 3339 date-time: the earlier of the grant's `sessionEndsAt` and the service's session limit."
         },
         "amr": {
           "type": "array",
@@ -55,12 +49,88 @@
             "type": "string",
             "minLength": 1
           },
-          "description": "Authentication Methods References (RFC 8176) for the session. For this family: `[\"did\", \"oob\", \"uv\"]`."
+          "description": "`login` only. Authentication Methods References (RFC 8176) for the session. For this family: `[\"did\", \"oob\", \"uv\"]`."
+        },
+        "vtaDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "`deviceEnrol` only: the DID of the VTA the client is now enrolled at — the service, and the `issuer` of this response."
+        },
+        "aclEntry": {
+          "$ref": "../../../../acl/_shared/0.3/acl-entry.schema.json#/$defs/AclEntry",
+          "description": "`deviceEnrol` only: the ACL entry the VTA created, as acl/show would return it. Its `subject` is the starter key until the client swaps it; its scope is the grant's `aclScope`; its `delegatedBy` is the grant's issuer."
+        },
+        "swapClosesAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "`deviceEnrol` only: the instant by which the client must replace the starter key with its own DID through acl/swap-key, as an RFC 3339 date-time. At most 300 s after the redeem; the VTA removes the entry if it has not been swapped by then."
         },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
         }
-      }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "subject",
+            "displayName",
+            "sessionEndsAt",
+            "amr"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "vtaDid"
+                ]
+              },
+              {
+                "required": [
+                  "aclEntry"
+                ]
+              },
+              {
+                "required": [
+                  "swapClosesAt"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "required": [
+            "vtaDid",
+            "aclEntry",
+            "swapClosesAt"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "subject"
+                ]
+              },
+              {
+                "required": [
+                  "displayName"
+                ]
+              },
+              {
+                "required": [
+                  "sessionEndsAt"
+                ]
+              },
+              {
+                "required": [
+                  "amr"
+                ]
+              }
+            ]
+          }
+        }
+      ]
     }
   }
 }

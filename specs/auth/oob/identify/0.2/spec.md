@@ -1,6 +1,6 @@
 ---
 slug: auth/oob/identify
-version: "0.1"
+version: "0.2"
 title: "Auth — OOB Identify"
 summary: "A member's DID states that it holds the lock on one out-of-band request and has entered the number shown on the starter's screen; signed by the member's VTA for authentication and carried only inside auth/oob/prove."
 status: draft
@@ -33,7 +33,7 @@ exposure:
   ingests: metadata
   actsAsSubject: false
   rationale: >-
-    Reveals which DID the member chose for this sign-in, to the service the member is signing in to, together with a handle, a throwaway key and two digits. It grants no authority.
+    Reveals which DID the member chose for this sign-in, to the service the member is signing in to, together with a handle, a throwaway key and the two or four digits entered. It grants no authority.
 retention:
   class: durable
   rationale: >-
@@ -53,6 +53,20 @@ Its payload is closed — three members, `additionalProperties: false`, no `ext`
 ## Status of this Document
 
 This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+## Changes from 0.1
+
+- `enteredNumber` is the `MatchNumber` of
+  [`oob.schema.json` 0.2](../../_shared/0.2/oob.schema.json): two digits for
+  `login`, as before, and **four** for `deviceEnrol`, which 0.2 of the family
+  adds. The proposed length for `deviceEnrol` awaits the family authors'
+  confirmation ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §7, A12).
+- For `deviceEnrol`, the service checks that the issuer administers the VTA,
+  not that it is a member of a community
+  ([`auth/oob/prove/0.4`](../../prove/0.4/spec.md) service item 3).
+
+A `login` identify is the same document as in 0.1, apart from its `type`. This
+version cannot declare `extends: "0.1"` ([`CONVENTIONS.md`](../../_shared/0.2/CONVENTIONS.md) §7 A10). `0.1` remains published.
 
 ## Conformance
 
@@ -76,13 +90,13 @@ A conforming **consumer** (the service, executing `auth/oob/prove`):
 
 ## Authorization
 
-Membership of the community is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the entered number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.4/spec.md).
+Membership of the community — for `deviceEnrol`, administration of the VTA — is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the entered number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.4/spec.md).
 
 ## Definitions
 
 - **`requestId`** — the request this proof is for.
 - **`approverKey`** — the lock key `K_a` from the claim.
-- **`enteredNumber`** — the two digits shown on the starter's screen, as the member typed them or, for a reader on the same device that received the link from the member's activation on the verified portal ([VTI-LNK-056, VTI-LNK-105](https://github.com/trustoverip/dtgwg-vti-spec/blob/main/spec/07a-links.md)), as the reader read them from that page (VTI-LNK-106).
+- **`enteredNumber`** — the digits shown on the starter's screen (two for `login`, four for `deviceEnrol`), as the member typed them or, for a reader on the same device that received the link from the member's activation on the verified portal ([VTI-LNK-056, VTI-LNK-105](https://github.com/trustoverip/dtgwg-vti-spec/blob/main/spec/07a-links.md)), as the reader read them from that page (VTI-LNK-106).
 
 ## Request
 
@@ -93,7 +107,7 @@ The approving identity (`issuer`) addresses the service (`recipient`); the walle
 ```json
 {
   "id": "urn:uuid:6b2c3d4e-5f60-4a7b-8c9d-0e1f2a3b4c01",
-  "type": "https://trusttasks.org/spec/auth/oob/identify/0.1",
+  "type": "https://trusttasks.org/spec/auth/oob/identify/0.2",
   "issuer": "did:web:alice.example",
   "recipient": "did:web:community.example",
   "issuedAt": "2026-10-10T10:01:00Z",
@@ -117,7 +131,7 @@ The approving identity (`issuer`) addresses the service (`recipient`); the walle
 
 ### Data carried
 
-The member's chosen DID, the handle, the lock key and two digits. Nothing secret; the DID's private key stays in the VTA.
+The member's chosen DID, the handle, the lock key and two or four digits. Nothing secret; the DID's private key stays in the VTA.
 
 ### Correlation
 

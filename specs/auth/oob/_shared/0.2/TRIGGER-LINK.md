@@ -13,7 +13,9 @@ design. That scheme is not defined and **MUST NOT** be emitted.
 
 ## 1. The link
 
-For `purpose: login` with `mode: scan`, the starter shows:
+For `purpose: login` with `mode: scan`, the starter shows the link below. A
+`deviceEnrol` request uses the same link and the same `sign-in` flow, with the
+differences in [§6](#6-deviceenrol).
 
 ```
 https://<link host>/t#_from=<service DID>&_id=<requestId>&_exp=<claimClosesAt, as epoch seconds>&_type=/vti/flow/sign-in/0.1
@@ -70,7 +72,7 @@ the page's origin with it (VTI-LNK-105).
 
 The reader follows VTI-LNK-050 to VTI-LNK-056 and the `sign-in` rules
 (VTI-LNK-100 to VTI-LNK-105). Only after the person continues does the approver
-generate its lock key `K_a` and send [`auth/oob/claim`](../../claim/0.2/spec.md),
+generate its lock key `K_a` and send [`auth/oob/claim`](../../claim/0.3/spec.md),
 which is the first request of VTI-LNK-054:
 
 - `issuer` is `K_a`, fresh for this exchange;
@@ -89,3 +91,25 @@ lets a party *claim* the request and nothing more: the first claim locks it to
 that party's `K_a`, the starter sees the claim at once, and only a member who
 can see the starter's screen can pass `prove`. Fetching or previewing the link
 spends nothing (VTI-LNK-072).
+
+## 6. `deviceEnrol`
+
+For `purpose: deviceEnrol` the starter is the client asking to be enrolled, and
+it shows the same link, as a QR code or, where it has no screen of its own (a
+command-line tool), as text the person opens on a device with their wallet:
+
+- `_from` is the DID of the person's **VTA**, which is the service. The client
+  learns it from its own configuration; this family does not say how.
+- The VTA has no `SignInPortal` service. The `origin` in step 1 and in the grant
+  is the origin of the `serviceEndpoint` of the VTA's `TrustTaskHTTPS` service
+  ([`CONVENTIONS.md`](CONVENTIONS.md) §7, A6).
+- A wallet **MUST NOT** claim a link whose `_from` is not a VTA it administers,
+  and **MUST** stop after step 1 when step 1 names `deviceEnrol` for any service
+  other than such a VTA. An attacker can open a request at a victim's public
+  VTA DID and relay both the code and the number; the wallet's own record of the
+  VTAs it administers, the `requester` and `sameNetwork` signals at step 2, and
+  words that say a program will get lasting access, are what the person decides
+  on.
+- The user verification and the windows are those of `login`. The match
+  number has four digits, not two ([`CONVENTIONS.md`](CONVENTIONS.md) §7, A12).
+  The client asks its own user for no confirmation (A13).
