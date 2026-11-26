@@ -4,10 +4,6 @@
     "payload": { "ruleId": "rule-7", "accessToken": "hcp_mt_x" }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b" }
-  },
-  {
     "note": "Missing `ruleId` — a removal names the rule it removes.",
     "payload": { "accessToken": "hcp_mt_x" }
   },

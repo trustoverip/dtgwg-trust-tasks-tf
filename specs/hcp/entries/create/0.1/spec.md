@@ -96,9 +96,9 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 ## Authorization
 
-The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). Each category in `classification.categories` **MUST** be one the grant authorizes the caller to write; a write naming any other fails with not authorized (HCP 5.2.3), carried as `permissionDenied`. An `issuer-attested` write is accepted only from a client authenticated as the issuer, or authorized by it, and a write whose content is a credential is `issuer-attested`; any other is refused with `permissionDenied` (HCP 3.7, 5.2.3).
+The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). `accessToken` is OPTIONAL. Where the request carries none, the write is not made under a grant: the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), writing for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal; the category check below then applies to what that Authorizing Principal may write, not to a grant. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). Each category in `classification.categories` **MUST** be one the grant authorizes the caller to write; a write naming any other fails with not authorized (HCP 5.2.3), carried as `permissionDenied`. An `issuer-attested` write is accepted only from a client authenticated as the issuer, or authorized by it, and a write whose content is a credential is `issuer-attested`; any other is refused with `permissionDenied` (HCP 3.7, 5.2.3).
 
-The REQUIRED `proof` establishes which client VID sent the assertion and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization, and it does not replace the provenance the provider records (HCP 3.5): `submittedByClient` and `authorizedUnder` are still taken from the grant. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
+The REQUIRED `proof` establishes which client VID sent the assertion and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). Where the request carries `accessToken`, the proof is not the authorization, and it does not replace the provenance the provider records (HCP 3.5): `submittedByClient` and `authorizedUnder` are still taken from the grant. Where it carries none, the proof is the Management Client's authentication (see above). A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -127,7 +127,7 @@ The request payload's root is closed: a top-level entry member that HCP does not
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1), and a client **MUST** check that binding before it sends a token or an assertion to a VID.
+As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client **MUST** send a token or an assertion only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the client **MUST** check that binding before it sends a token or an assertion to the VID.
 
 ## Request
 
@@ -140,7 +140,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
 - `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
 - `schema` is `https://hcp.example/spec/entry/2.0`, compared as an exact string, the one value HCP 2.0-draft-3's create request takes: v1 entry forms are accepted through [`hcp/import`](../../../import/0.1/spec.md) only (HCP 4.2, 4.3). Any other `schema`, or a category the provider does not hold, is refused with `malformedRequest` (HCP 5.2.3).
 - The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and a proposal's `proposedBy` and `proposedAt`, and never takes them from a request (HCP 5.2.3, 4.7.4). The entry returned, like every stored entry, carries each proposal with all six of its members (the shared `RecordedProposal`).
-- `accessToken` (REQUIRED) is the HCP access token for the grant.
+- `accessToken` (OPTIONAL) is the HCP access token for the grant. Where it is absent, the request's `proof` authenticates an enrolled Management Client writing for the person (see [Authorization](#authorization)).
 
 ### A booking agent records an inferred preference
 
@@ -223,7 +223,7 @@ The provider answers with the created entry. The payload is the sub-schema reach
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5JmR8tXq2WvL6nB3dKcY9pHf1sZa7eU4oGiN2xT8wV5bM3rE6kP9gS1jA4hD7yC2uF8lO5zQ3nX6mB9vT1kR4w"
   }
 }
@@ -257,31 +257,35 @@ HCP's HTTP binding makes a create idempotent under an `Idempotency-Key` header (
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
 - **Question 7 — `classification.permittedPurposes` on a create.** Refused with `malformedRequest`, since only a governance operation sets it (see [Request](#request)).
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 56 — a Management Client authenticated without a token.** `accessToken` is OPTIONAL. Where it is absent, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose, reading HCP 3.2.3's "credentials" as including an enrolled key proved by a signature on each request, and refuses any other issuer with `permissionDenied`, with the one fixed `message`. Where a token is present, the token rules apply unchanged, including the binding of question 22. The request `proof` stays REQUIRED whether or not a token is present (question 53), and a provider keeps a record of the Management Clients each person enrolled. A write with no token is a Management Client's, made for the person, and is under no grant (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
 - **The grant and write-scope checks**, and the issuer check on an `issuer-attested` write (HCP 3.7, 5.2.3).
 - **Provenance** (HCP 3.5): the provider records `assurance`, `submittedByClient`, `authorizedUnder`, `recordedByProvider` and `recordedAt` from what it knows, never from the request.
 - **Credential ingest** (HCP 14.6): verification of a credential that is the content, which the provider **MUST NOT** modify (HCP 4.2.2).
-- **Conflict detection** (HCP 4.7) and the `conflict.proposed` event for a proposal the client makes (HCP 4.7.4).
+- **Conflict detection** (HCP 4.7) and the `conflict.proposed` event for a proposal the client makes (HCP 4.7.4). A provider that accepts `model-inferred` entries conforms to the Memory Manager Profile and lists it (HCP 15.1, 18.1): it evaluates candidate conflicts on every write, whichever of the two entries is written second, and records a `contradicts` relationship where its declared method finds one (HCP 15.2).
+- **Health context** (HCP 16.2). A provider that accepts `issuer-attested` entries in `health_context` conforms to the Health Context Profile and lists it (HCP 16.1, 18.1). Such an entry carries a credential, as its content or in support of it, and at least one credential it carries passes verification at ingest; HCP rejects a write that does not, with invalid request where it carries no credential and credential invalid where none passes (HCP 16.2, 14.6).
 - **Encrypted storage** (HCP 4.8): content checks made within the Context Subject's trust domain.
 
 ## Security & Privacy
 
 ### Data carried
 
-The request carries an assertion about the person, which may be in a High-sensitivity category, a credential with its proof, and the access token, a bearer secret. The response discloses the stored entry back to the client. A producer **MUST NOT** put content or the token in `ext` or in any `message`, and an `hcp:credentialInvalid` `message` names the failed check without status-list internals (HCP 5.5).
+The request carries an assertion about the person, which may be in a High-sensitivity category, a credential with its proof, and, where present, the access token, a bearer secret. The response discloses the stored entry back to the client. A producer **MUST NOT** put content or the token in `ext` or in any `message`, and an `hcp:credentialInvalid` `message` names the failed check without status-list internals (HCP 5.5).
 
 ### The access token
 
-`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+`accessToken`, where a request carries it, is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

@@ -1,9 +1,5 @@
 [
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "operators": ["ads.example"], "categories": ["health_context"] }
-  },
-  {
     "note": "`ruleId` in the request — the provider sets the rule's identifier (HCP 6.3, 9.4.14); it is never taken from the request.",
     "payload": { "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b", "operators": ["ads.example"], "accessToken": "hcp_mt_x" }
   },

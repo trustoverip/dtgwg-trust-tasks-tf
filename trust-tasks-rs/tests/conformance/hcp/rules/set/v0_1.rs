@@ -35,10 +35,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"categories\": [\n    \"health_context\"\n  ],\n  \"operators\": [\n    \"ads.example\"\n  ]\n}",
-        ),
-        (
             "`ruleId` in the request — the provider sets the rule's identifier (HCP 6.3, 9.4.14); it is never taken from the request.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"operators\": [\n    \"ads.example\"\n  ],\n  \"ruleId\": \"urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b\"\n}",
         ),

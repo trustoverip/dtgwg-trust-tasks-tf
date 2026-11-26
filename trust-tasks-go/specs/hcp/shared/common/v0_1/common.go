@@ -18,7 +18,9 @@ type URI = string
 // a slug from HCP's category registry, such as `general_preferences` or `health_context`,
 // or a custom category written as an absolute URI under a domain its definer controls. A
 // custom category is not portable between providers without bilateral agreement (HCP
-// 4.5).
+// 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no
+// `format: uri`, which would refuse every slug, so checking that a custom value is a
+// well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 type Category = string
 
 // PurposeCode An HCP purpose code: an absolute URI naming the purpose for which context

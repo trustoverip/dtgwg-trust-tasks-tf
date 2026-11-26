@@ -137,7 +137,7 @@ The request payload's root is closed, as in `hcp/entries/create`: a top-level me
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1).
+As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client's anchor for the provider is the provider VID the client obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it.
 
 ## Request
 
@@ -220,7 +220,7 @@ The provider answers with the revised entry. The payload is the sub-schema reach
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6NqT2xWs8YmL4vRc1KbH9pGj3dZf7uAe5oSiM2xV6tD9kB1rN4yQ8gE3hJ7lP5aU2cW6nO1sF9eZ4vX8bR3mT7k"
   }
 }
@@ -268,7 +268,7 @@ As for [`hcp/entries/create`](../../create/0.1/spec.md#repeated-requests), the d
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
@@ -283,7 +283,8 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **The current-version check** (HCP 5.2.4): made against provider-held state, atomically with the write.
 - **The grant, write-scope and issuer checks** (HCP 3.7, 5.2.4), and the rejected-version rule (HCP 3.8).
 - **Provenance of the new version** (HCP 3.5), attributed to its own Context Asserter, and its empty confirmations (HCP 3.8).
-- **Credential ingest** (HCP 14.6) for a revised credential.
+- **Credential ingest** (HCP 14.6) for a revised credential, and for a revised `issuer-attested` entry in `health_context` the Health Context Profile's rule that it carries a credential at least one of which passes verification, as for create (HCP 16.2).
+- **Conflict detection on the revision** (HCP 15.2, 15.3). A provider conforming to the Memory Manager Profile (HCP 15.1, 18.1) evaluates detection on a revision as on every write; where the revision means its method no longer finds a conflict the provider asserted, it removes that `contradicts` relationship, and the resolution rule of HCP 4.7.3 applies.
 
 ## Security & Privacy
 
@@ -294,6 +295,8 @@ As for [`hcp/entries/create`](../../create/0.1/spec.md#data-carried): a revised 
 ### The access token
 
 `accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

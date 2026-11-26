@@ -39,10 +39,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"ruleId\": \"rule-7\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"ruleId\": \"urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b\"\n}",
-        ),
-        (
             "Missing `ruleId` — a removal names the rule it removes.",
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
         ),

@@ -162,7 +162,10 @@ class AuditParticipants {
 /// slug from HCP's category registry, such as `general_preferences` or
 /// `health_context`, or a custom category written as an absolute URI under a domain
 /// its definer controls. A custom category is not portable between providers without
-/// bilateral agreement (HCP 4.5).
+/// bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's
+/// outline only: it carries no `format: uri`, which would refuse every slug, so
+/// checking that a custom value is a well-formed absolute URI, as HCP's prose requires
+/// (HCP A.3), is the consumer's check.
 typedef Category = String;
 
 /// Where a credential was disclosed in derived form, the evidence item and the claims
@@ -326,9 +329,11 @@ class AuditEvent {
   /// requirement.
   final List<Category>? categories;
 
-  /// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required,
-  /// pending HCP confirmation (question 42). The maxLength is a framework bound, not an
-  /// HCP requirement.
+  /// The purpose code stated, an absolute URI with the same shape as `PurposeCode` in
+  /// common.schema.json (HCP's `anyOf \[purposeCode, null\]`), or null where none was (HCP
+  /// 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required,
+  /// pending HCP confirmation (question 42). The minLength and maxLength are framework
+  /// bounds, not HCP requirements.
   final String? purpose;
 
   /// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP

@@ -94,11 +94,11 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 ## Authorization
 
-The authority is **the Authorizing Principal's right to know what each client has received** (HCP 8.6, 18.4), which a Management Client exercises for them. It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. The disclosure summary is a governance operation (HCP 8.6, 6.1.9): any caller other than a Management Client acting for the Authorizing Principal receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
+The authority is **the Authorizing Principal's right to know what each client has received** (HCP 8.6, 18.4), which a Management Client exercises for them. It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. `accessToken` is OPTIONAL. Where the request carries none, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), acting for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). The disclosure summary is a governance operation (HCP 8.6, 6.1.9): any caller other than a Management Client acting for the Authorizing Principal receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 The summary discloses nothing the log does not hold (HCP 8.6), and so nothing the caller could not read in the log. Under the Delegated Authorization Profile, the Context Subject's summary is computed from the whole log. A delegate, while the delegation holds, is given a summary scoped as follows, *pending HCP confirmation* ([question 38](#pending-hcp-confirmation)): HCP 8.6 gives the summary to the Authorizing Principal, who may be a delegate (HCP 3.2.2), but neither 8.6 nor 17.7 says what a delegate's summary covers. Theirs is computed only from the events HCP 17.7 lets a delegate read ([`hcp/audit/read`](../../../audit/read/0.1/spec.md#authorization)): those of the grants they authorized under the delegation, and of the grants of sub-delegates they appointed (HCP 17.10). A delegate reads every member of those events, `disclosed` included, so `entries`, `retrievals` and `usableUntil` computed from them reveal nothing HCP 17.7 withholds from them; a client appears in their summary only for those grants, and `grants` lists only those grants. A former delegate is not given the summary: HCP 17.7 withholds `entryId` and `disclosed` from them, from which `entries` and `usableUntil` are computed, and they read the record of the grants they authorized through [`hcp/audit/read`](../../../audit/read/0.1/spec.md) instead. A Management Client acting for a former delegate, or for anyone else, receives `permissionDenied`.
 
-The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
+The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). Where the request carries `accessToken`, the proof is not the authorization: the token is. Where it carries none, the proof is the Management Client's authentication (see above). A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -125,13 +125,13 @@ The REQUIRED `proof` on the request establishes which Management Client VID sent
 | Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (its discovery document, HCP 19.1), and a Management Client **MUST** check that binding before it sends a token to a VID.
+As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a Management Client **MUST** send a token only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the Management Client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
 The Management Client asks for the summary. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-- `accessToken` (REQUIRED) is the Management Client's token.
+- `accessToken` (OPTIONAL) is the Management Client's token. Where it is absent, the request's `proof` authenticates an enrolled Management Client (see [Authorization](#authorization)).
 - `client`, `category`, `from` and `to` (each OPTIONAL) narrow the summary to one client, one category, and a date range (HCP 8.6, 9.4.12). Each summary is then computed only from the disclosures that match: `from` and `to` bound when each disclosure took place, both inclusive, *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
 - `cursor` and `limit` (OPTIONAL) page the result, which HCP lets a provider paginate (HCP 9.4.12, 9.5), *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). `limit` is the most client summaries to return, at most 1000; absent leaves the page size to the provider. Either way, a provider **MUST** paginate where the summaries within the filters would take the response past its `maxDocumentBytes`: it returns fewer, and `nextCursor` for the rest. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from, and a provider **MUST NOT** accept a cursor it did not issue.
 
@@ -238,7 +238,7 @@ An empty `clients` is a successful answer: no client received context within the
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6Lm9nB2vC5xZ8aS1dF4gH7jK0lQ3wE6rT9yU2iO5pA8sD1fG4hJ7kL0zX3cV6bN9mQ2wE5rT8yU1iO4pA7s"
   }
 }
@@ -272,7 +272,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 3 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
@@ -281,6 +281,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 38 — a delegate's summary.** A delegate, while the delegation holds, is given the summary, computed only from the events of the grants they authorized under the delegation and of their sub-delegates' grants (HCP 17.7, 17.10); a former delegate is not given it, because `entries` and `usableUntil` are computed from `disclosed`, which HCP 17.7 withholds from them.
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 56 — a Management Client authenticated without a token.** `accessToken` is OPTIONAL. Where it is absent, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose, reading HCP 3.2.3's "credentials" as including an enrolled key proved by a signature on each request, and refuses any other issuer with `permissionDenied`, with the one fixed `message`. Where a token is present, the token rules apply unchanged, including the binding of question 22. The request `proof` stays REQUIRED whether or not a token is present (question 53), and a provider keeps a record of the Management Clients each person enrolled. This is not question 37, which asks whether governance may travel off the HTTP Binding at all; it asks how the caller is authenticated once it does (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
@@ -293,11 +294,13 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 ### Data carried
 
-The request carries the Management Client's access token, a bearer secret that **MUST** travel only to the provider, and filters, which can say what the person is concerned about. The response is aggregate: it carries no entry, no entry identifier and no context. It does name each client and Client Operator that received the person's context, the categories and purposes, the grant identifiers, and any record a client keeps under a legal obligation; that a named clinic received `health_context` is itself confidential. A producer **MUST NOT** put the token, a filter, or any part of a summary in `ext` or in any `message`.
+The request carries the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider, and filters, which can say what the person is concerned about. The response is aggregate: it carries no entry, no entry identifier and no context. It does name each client and Client Operator that received the person's context, the categories and purposes, the grant identifiers, and any record a client keeps under a legal obligation; that a named clinic received `health_context` is itself confidential. A producer **MUST NOT** put the token, a filter, or any part of a summary in `ext` or in any `message`.
 
 ### The access token
 
-`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+`accessToken`, where a request carries it, is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../../entries/query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

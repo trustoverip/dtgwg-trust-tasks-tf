@@ -534,7 +534,7 @@ impl<'de> ::serde::Deserialize<'de> for BasisTask {
             })
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1589,9 +1589,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP `disposition`: whether the Context Subject confirms or rejects the entry's current version (HCP 3.8, 9.4.9). HCP's own values, carried verbatim.
     pub disposition: PayloadDisposition,
     ///HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
@@ -1606,7 +1610,7 @@ impl Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -4303,7 +4307,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         disposition: ::std::result::Result<super::PayloadDisposition, ::std::string::String>,
         entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
         expected_version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
@@ -4311,7 +4318,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 disposition: Err("no value supplied for disposition".to_string()),
                 entry_id: Err("no value supplied for entry_id".to_string()),
                 expected_version: Err("no value supplied for expected_version".to_string()),
@@ -4321,7 +4328,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -5337,7 +5344,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/confirm/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Confirm or reject operation (HCP 3.8, 4.7.3, 5.4; `POST /v2/entries/{entryId}/confirmation` in HCP 9.2, 9.4.9): a Management Client, acting for the Context Subject, appends a confirmation record to an entry's current version. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.9. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"disposition\":{\"description\":\"HCP `disposition`: whether the Context Subject confirms or rejects the entry's current version (HCP 3.8, 9.4.9). HCP's own values, carried verbatim.\",\"enum\":[\"confirmed\",\"rejected\"],\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).\"},\"expectedVersion\":{\"description\":\"HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"disposition\",\"expectedVersion\",\"accessToken\"],\"title\":\"HCP — Confirm or Reject Entry — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/confirm/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Confirm or reject operation (HCP 3.8, 4.7.3, 5.4; `POST /v2/entries/{entryId}/confirmation` in HCP 9.2, 9.4.9): a Management Client, acting for the Context Subject, appends a confirmation record to an entry's current version. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.9. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"disposition\":{\"description\":\"HCP `disposition`: whether the Context Subject confirms or rejects the entry's current version (HCP 3.8, 9.4.9). HCP's own values, carried verbatim.\",\"enum\":[\"confirmed\",\"rejected\"],\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).\"},\"expectedVersion\":{\"description\":\"HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"disposition\",\"expectedVersion\"],\"title\":\"HCP — Confirm or Reject Entry — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -5347,7 +5354,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(524288usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_facccb41!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_facccb41!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

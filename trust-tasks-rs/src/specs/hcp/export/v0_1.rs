@@ -159,8 +159,8 @@ pub struct AuditEvent {
     pub grant_id: ::std::option::Option<AuditEventGrantId>,
     ///Who took part (HCP 8.2, 3.9).
     pub participants: AuditParticipants,
-    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-    pub purpose: ::std::option::Option<AuditEventPurpose>,
+    ///The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements.
+    pub purpose: ::std::option::Option<::std::string::String>,
     ///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
     #[serde(rename = "purposeDescription")]
     pub purpose_description: ::std::option::Option<AuditEventPurposeDescription>,
@@ -366,72 +366,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AuditEventGrantId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for AuditEventGrantId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventPurpose(::std::string::String);
-impl ::std::ops::Deref for AuditEventPurpose {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventPurpose> for ::std::string::String {
-    fn from(value: AuditEventPurpose) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventPurpose {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventPurpose {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -838,7 +772,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditPartyId {
             })
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -930,7 +864,7 @@ pub struct Delegation {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub may_delegate: ::std::option::Option<bool>,
-    ///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+    ///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub relationship: DelegationRelationship,
     ///The categories and actions the delegate may authorize (HCP 17.4).
     pub scope: DelegationScope,
@@ -1405,7 +1339,7 @@ impl ::std::convert::TryFrom<::std::string::String> for DelegationEndedReason {
         value.parse()
     }
 }
-///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1654,7 +1588,7 @@ impl DelegationTerm {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct Directive {
-    ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
+    ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub action: DirectiveAction,
     ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -1681,7 +1615,7 @@ impl Directive {
         Default::default()
     }
 }
-///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
+///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -2558,9 +2492,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP's "excluding deleted entries" export option (HCP 5.4.1), `exclude=deleted` in HCP 9.4.8: omit entries whose `record.status` is `deleted`. Absent or false means deleted entries are exported, as HCP's default requires.
     #[serde(
         rename = "excludeDeleted",
@@ -2583,12 +2521,22 @@ pub struct Payload {
     )]
     pub include_versions: ::std::option::Option<bool>,
 }
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+            exclude_deleted: Default::default(),
+            include_audit: Default::default(),
+            include_versions: Default::default(),
+        }
+    }
+}
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -3161,7 +3109,7 @@ pub mod builder {
         >,
         participants: ::std::result::Result<super::AuditParticipants, ::std::string::String>,
         purpose: ::std::result::Result<
-            ::std::option::Option<super::AuditEventPurpose>,
+            ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
         purpose_description: ::std::result::Result<
@@ -3277,7 +3225,7 @@ pub mod builder {
         }
         pub fn purpose<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventPurpose>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
             T::Error: ::std::fmt::Display,
         {
             self.purpose = value
@@ -4737,7 +4685,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         exclude_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         include_audit: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         include_versions: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -4745,7 +4696,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 exclude_deleted: Ok(Default::default()),
                 include_audit: Ok(Default::default()),
                 include_versions: Ok(Default::default()),
@@ -4755,7 +4706,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -4987,7 +4938,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$id\":\"https://trusttasks.org/spec/hcp/export/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"excludeDeleted\":{\"description\":\"HCP's \\\"excluding deleted entries\\\" export option (HCP 5.4.1), `exclude=deleted` in HCP 9.4.8: omit entries whose `record.status` is `deleted`. Absent or false means deleted entries are exported, as HCP's default requires.\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"HCP's \\\"including the audit log\\\" export option (HCP 5.4.1, 8.3), `include=audit` in HCP 9.4.8: also return the Context Subject's audit log in the structure of HCP 8.2. Absent or false means no audit log.\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"HCP's \\\"including versions\\\" export option (HCP 5.4.1), `include=versions` in HCP 9.4.8: also return the superseded versions of each entry returned. Absent or false means the current version only.\",\"type\":\"boolean\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — Export — payload\",\"type\":\"object\"}\n",
+        "{\"$id\":\"https://trusttasks.org/spec/hcp/export/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"excludeDeleted\":{\"description\":\"HCP's \\\"excluding deleted entries\\\" export option (HCP 5.4.1), `exclude=deleted` in HCP 9.4.8: omit entries whose `record.status` is `deleted`. Absent or false means deleted entries are exported, as HCP's default requires.\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"HCP's \\\"including the audit log\\\" export option (HCP 5.4.1, 8.3), `include=audit` in HCP 9.4.8: also return the Context Subject's audit log in the structure of HCP 8.2. Absent or false means no audit log.\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"HCP's \\\"including versions\\\" export option (HCP 5.4.1), `include=versions` in HCP 9.4.8: also return the superseded versions of each entry returned. Absent or false means the current version only.\",\"type\":\"boolean\"}},\"title\":\"HCP — Export — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -4997,7 +4948,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(14680064usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AuditDisclosed_fc9343da!(), ",", crate::specs::shared_defs::d_AuditEvent_d4b2d021!(), ",", crate::specs::shared_defs::d_AuditParticipants_99e0fec3!(), ",", crate::specs::shared_defs::d_AuditParty_d60c0a20!(), ",", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Delegation_446bc4b2!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_Directive_1c3bbd1f!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Export\":{\"additionalProperties\":true,\"description\":\"An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an hcp/import request) is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp/export:tooLarge` (hcp/export), never cut short by an item count.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.\",\"maxItems\":16,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"maxItems\":1000000,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"maxItems\":1000000,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"maxItems\":1000000,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":100000,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ExportOptions\",\"description\":\"The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional, and hcp/import accepts an export without it; requiring it of an export the provider produces is pending HCP confirmation (question 42).\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3).\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"maxItems\":1000000,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":1000000,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"options\",\"entries\",\"rules\"],\"type\":\"object\"},\"ExportOptions\":{\"additionalProperties\":true,\"description\":\"The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Omit entries whose `record.status` is `deleted` (HCP 5.4.1).\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"Also return the Context Subject's audit log (HCP 5.4.1, 8.3).\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Also return superseded versions of each entry returned (HCP 5.4.1).\",\"type\":\"boolean\"}},\"required\":[\"includeVersions\",\"includeAudit\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The Context Subject's export (HCP 5.4.1). HCP's HTTP binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.\",\"properties\":{\"export\":{\"$ref\":\"#/$defs/Export\",\"description\":\"The HCP export document (HCP 5.4.1), unchanged: the current version of every entry not hard-deleted, whatever its status, unless `excludeDeleted` was asked; the standing rules, directives and delegations; and superseded versions and the audit log where asked. Its `options` records the options used.\"}},\"required\":[\"export\"],\"title\":\"HCP — Export — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AuditDisclosed_fc9343da!(), ",", crate::specs::shared_defs::d_AuditEvent_e48c2562!(), ",", crate::specs::shared_defs::d_AuditParticipants_99e0fec3!(), ",", crate::specs::shared_defs::d_AuditParty_d60c0a20!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Delegation_62ece95d!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Export\":{\"additionalProperties\":true,\"description\":\"An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an hcp/import request) is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp/export:tooLarge` (hcp/export), never cut short by an item count.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.\",\"maxItems\":16,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"maxItems\":1000000,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"maxItems\":1000000,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"maxItems\":1000000,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":100000,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ExportOptions\",\"description\":\"The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional, and hcp/import accepts an export without it; requiring it of an export the provider produces is pending HCP confirmation (question 42).\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3).\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"maxItems\":1000000,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":1000000,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"options\",\"entries\",\"rules\"],\"type\":\"object\"},\"ExportOptions\":{\"additionalProperties\":true,\"description\":\"The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Omit entries whose `record.status` is `deleted` (HCP 5.4.1).\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"Also return the Context Subject's audit log (HCP 5.4.1, 8.3).\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Also return superseded versions of each entry returned (HCP 5.4.1).\",\"type\":\"boolean\"}},\"required\":[\"includeVersions\",\"includeAudit\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The Context Subject's export (HCP 5.4.1). HCP's HTTP binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.\",\"properties\":{\"export\":{\"$ref\":\"#/$defs/Export\",\"description\":\"The HCP export document (HCP 5.4.1), unchanged: the current version of every entry not hard-deleted, whatever its status, unless `excludeDeleted` was asked; the standing rules, directives and delegations; and superseded versions and the audit log where asked. Its `options` records the options used.\"}},\"required\":[\"export\"],\"title\":\"HCP — Export — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

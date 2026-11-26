@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:72458ae8-ceb2-46c1-b955-417d0d4bb700\",\n  \"type\": \"https://trusttasks.org/spec/hcp/entries/hard-delete/0.1#response\",\n  \"issuer\": \"did:web:context.provider.example\",\n  \"recipient\": \"did:web:wallet.person.example\",\n  \"issuedAt\": \"2026-11-25T09:00:01Z\",\n  \"threadId\": \"urn:uuid:024298c2-5a31-4e81-af88-ba288b28730f\",\n  \"payload\": {\n    \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n    \"hardDeleted\": true,\n    \"respondedAt\": \"2026-11-25T09:00:01Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T09:00:01Z\",\n    \"verificationMethod\": \"did:web:context.provider.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2Rt5mK8vNcQ1wB7hX4pL9sY3dF6gJ0aZe5uT2oVnC8iM1kB4tH7yD3xS9wE6rA2jU5fG8lO4pK7vX1zN3bQ6cY8\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:72458ae8-ceb2-46c1-b955-417d0d4bb700\",\n  \"type\": \"https://trusttasks.org/spec/hcp/entries/hard-delete/0.1#response\",\n  \"issuer\": \"did:web:context.provider.example\",\n  \"recipient\": \"did:web:wallet.person.example\",\n  \"issuedAt\": \"2026-11-25T09:00:01Z\",\n  \"threadId\": \"urn:uuid:024298c2-5a31-4e81-af88-ba288b28730f\",\n  \"payload\": {\n    \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n    \"hardDeleted\": true,\n    \"respondedAt\": \"2026-11-25T09:00:01Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T09:00:01Z\",\n    \"verificationMethod\": \"did:web:context.provider.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2Rt5mK8vNcQ1wB7hX4pL9sY3dF6gJ0aZe5uT2oVnC8iM1kB4tH7yD3xS9wE6rA2jU5fG8lO4pK7vX1zN3bQ6cY8\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -41,10 +41,6 @@ fn rejects_invalid_examples() {
         (
             "Missing `entryId` — a hard deletion names the entry it removes.",
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
-        ),
-        (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\"\n}",
         ),
         (
             "A `hardDelete` flag in the payload — HCP's query parameter is carried by the Type URI, not a member; a withdraw is a different task.",

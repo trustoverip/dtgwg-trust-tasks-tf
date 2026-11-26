@@ -271,7 +271,7 @@ impl<'de> ::serde::Deserialize<'de> for AuthorizingPrincipalId {
             })
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1340,9 +1340,13 @@ impl<'de> ::serde::Deserialize<'de> for OnwardSharingNotToItem {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP's `cursor` query parameter (HCP 9.5): the opaque continuation token from a prior response's `nextCursor`. Absent means the first page. The maxLength is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<PayloadCursor>,
@@ -1353,12 +1357,22 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<PayloadStatus>,
 }
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+            cursor: Default::default(),
+            limit: Default::default(),
+            status: Default::default(),
+        }
+    }
+}
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -2733,7 +2747,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         cursor: ::std::result::Result<
             ::std::option::Option<super::PayloadCursor>,
             ::std::string::String,
@@ -2750,7 +2767,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 cursor: Ok(Default::default()),
                 limit: Ok(Default::default()),
                 status: Ok(Default::default()),
@@ -2760,7 +2777,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -3005,7 +3022,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$id\":\"https://trusttasks.org/spec/hcp/grants/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List grants operation (HCP 5.4, 6.1.5; `GET /v2/grants` with a Management Client's token in HCP 9.4.6): a Management Client, acting for the Authorizing Principal, enumerates the grants for the instance, filtered by status. HCP defines no request schema for this operation; the members come from HCP 9.4.6 (`status`) and 9.5 (`cursor`, `limit`). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP's `cursor` query parameter (HCP 9.5): the opaque continuation token from a prior response's `nextCursor`. Absent means the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"limit\":{\"description\":\"HCP's `limit` query parameter (HCP 9.5): the most grants in this page. Absent means the provider's own page size. The maximum of 1000 is a framework bound, not an HCP requirement.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"status\":{\"description\":\"HCP's `status` query parameter (HCP 9.4.6): list only grants with this status (HCP 6.1.5). Absent means `active`, HCP's default; HCP offers no value for every status. HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — List Grants — payload\",\"type\":\"object\"}\n",
+        "{\"$id\":\"https://trusttasks.org/spec/hcp/grants/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List grants operation (HCP 5.4, 6.1.5; `GET /v2/grants` with a Management Client's token in HCP 9.4.6): a Management Client, acting for the Authorizing Principal, enumerates the grants for the instance, filtered by status. HCP defines no request schema for this operation; the members come from HCP 9.4.6 (`status`) and 9.5 (`cursor`, `limit`). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP's `cursor` query parameter (HCP 9.5): the opaque continuation token from a prior response's `nextCursor`. Absent means the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"limit\":{\"description\":\"HCP's `limit` query parameter (HCP 9.5): the most grants in this page. Absent means the provider's own page size. The maximum of 1000 is a framework bound, not an HCP requirement.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"status\":{\"description\":\"HCP's `status` query parameter (HCP 9.4.6): list only grants with this status (HCP 6.1.5). Absent means `active`, HCP's default; HCP offers no value for every status. HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"title\":\"HCP — List Grants — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -3014,7 +3031,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(4194304usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccessDetail_770259fe!(), ",", crate::specs::shared_defs::d_AuthorizingPrincipal_97d80a94!(), ",", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Grant_b4ede789!(), ",", crate::specs::shared_defs::d_GrantClient_7a868e56!(), ",", crate::specs::shared_defs::d_GrantParty_b45d4dcb!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_LegalRetention_151b6ef2!(), ",", crate::specs::shared_defs::d_Named_e4fd4d7d!(), ",", crate::specs::shared_defs::d_OnwardSharing_e3f512bc!(), ",", crate::specs::shared_defs::d_Purpose_c6421fb4!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_RequestingParty_a0e934aa!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"A page of grant objects (HCP 6.1.5, 9.4.6), with the cursor for the next page where there is one (HCP 9.5). Failures use trust-task-error, not this shape.\",\"properties\":{\"grants\":{\"description\":\"The grants with the status asked for, `active` by default (HCP 9.4.6), each a grant object (HCP 6.1.5). Empty where there are none. The maxItems, the carriage's cap on `limit`, is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Grant\"},\"maxItems\":1000,\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP binding sends null. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"grants\"],\"title\":\"HCP — List Grants — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccessDetail_770259fe!(), ",", crate::specs::shared_defs::d_AuthorizingPrincipal_97d80a94!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Grant_b4ede789!(), ",", crate::specs::shared_defs::d_GrantClient_7a868e56!(), ",", crate::specs::shared_defs::d_GrantParty_b45d4dcb!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_LegalRetention_151b6ef2!(), ",", crate::specs::shared_defs::d_Named_e4fd4d7d!(), ",", crate::specs::shared_defs::d_OnwardSharing_e3f512bc!(), ",", crate::specs::shared_defs::d_Purpose_c6421fb4!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_RequestingParty_a0e934aa!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"A page of grant objects (HCP 6.1.5, 9.4.6), with the cursor for the next page where there is one (HCP 9.5). Failures use trust-task-error, not this shape.\",\"properties\":{\"grants\":{\"description\":\"The grants with the status asked for, `active` by default (HCP 9.4.6), each a grant object (HCP 6.1.5). Empty where there are none. The maxItems, the carriage's cap on `limit`, is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Grant\"},\"maxItems\":1000,\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP binding sends null. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"grants\"],\"title\":\"HCP — List Grants — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

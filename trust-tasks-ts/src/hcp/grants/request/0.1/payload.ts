@@ -248,11 +248,11 @@ export interface ProposedRequestingParty {
  */
 export interface HCPRequestGrantResponsePayload {
   /**
-   * The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.
+   * The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime is given by `tokenExpiresAt`, and is at most 24 hours (HCP 13.4). The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
   /**
-   * When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.
+   * When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`. This version issues no refresh token, so it SHOULD equal the grant's `expiresAt`, within HCP 13.4's 24-hour maximum (and HCP 16.2's 1 hour for a grant covering `health_context`).
    */
   tokenExpiresAt: Instant;
   /**
@@ -485,6 +485,23 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
+    "NextStepHint": {
+      "$anchor": "next-step-hint",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "retryAfter"
+      ],
+      "description": "The `hint` a provider puts in the `trust-task-next-step` entry that holds a request (the entry whose `typeUri` is this specification's request Type URI). trust-task-next-step leaves a hint's shape to the specification its `typeUri` names, and a client validates the hint against this definition, addressed by its anchor (`https://trusttasks.org/spec/hcp/grants/request/0.1#next-step-hint`), before it uses it; a hint that fails is ignored, as if absent. A carriage rule of the hcp/* family, not HCP's: HCP has no hold.",
+      "properties": {
+        "retryAfter": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "How long the client should wait before it resubmits, as a whole number of seconds counted from receipt of the next step; the client SHOULD NOT resubmit sooner. Unlike trust-task-error's `retryAfter`, which is an RFC 3339 instant, this is a count of seconds, as in HTTP's `Retry-After`. The minimum and maximum are framework bounds: a provider expecting a longer wait says 3600 and holds the resubmission again."
+        }
+      }
+    },
     "PurposeCode": {
       "type": "string",
       "format": "uri",
@@ -498,7 +515,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     }
   }
 };
@@ -524,11 +541,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 8192,
-          "description": "The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime is given by `tokenExpiresAt`, and is at most 24 hours (HCP 13.4). The maxLength is a framework bound, not an HCP requirement."
         },
         "tokenExpiresAt": {
           "$ref": "#/$defs/Instant",
-          "description": "When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`."
+          "description": "When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`. This version issues no refresh token, so it SHOULD equal the grant's `expiresAt`, within HCP 13.4's 24-hour maximum (and HCP 16.2's 1 hour for a grant covering `health_context`)."
         },
         "grant": {
           "$ref": "#/$defs/Grant",
@@ -739,7 +756,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     },
     "RequestingParty": {
       "type": "object",

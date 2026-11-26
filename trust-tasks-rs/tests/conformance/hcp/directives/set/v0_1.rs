@@ -51,10 +51,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"action\": \"sign\",\n  \"directiveId\": \"urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19\",\n  \"effect\": \"ask-first\",\n  \"text\": \"Ask me before you sign anything.\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"action\": \"sign\",\n  \"effect\": \"ask-first\",\n  \"text\": \"Ask me before you sign anything.\"\n}",
-        ),
-        (
             "Empty `categories` — absent means every category; an empty array names none (minItems 1).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"action\": \"share\",\n  \"categories\": [],\n  \"effect\": \"deny\",\n  \"text\": \"Never pass my health context to another agent.\"\n}",
         ),
