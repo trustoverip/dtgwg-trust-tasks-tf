@@ -221,7 +221,7 @@ test("consumer: a Rev 2 message from an old peer is refused before sender resolu
   assert.equal(resolved, false);
 });
 
-// MINOR never gates a message (TSP §9.1): a 1.x frame that does not open is an
+// MINOR never gates a message (TSP 1.0 §3.1): a 1.x frame that does not open is an
 // unreadable message, not a peer on another version. Bytes 6..8 are the
 // version count code, `f8 10 00` for 1.0; the last byte carries MINOR's low bits.
 test("a TSP 1.x message with an unknown MINOR that does not open is notForThisReceiver", async () => {

@@ -143,7 +143,7 @@ function versionRefusal(cause: unknown): TspEnvelopeError | undefined {
   // A revision error with no MAJOR is bytes that are not a TSP frame at all,
   // which is not a version question. One at MAJOR 1 is vti-tsp-js reporting a
   // 1.x frame with a MINOR it does not know that also failed to open: MINOR
-  // never gates a message (TSP §9.1), so that is an unreadable message, not a
+  // never gates a message (TSP 1.0 §3.1), so that is an unreadable message, not a
   // peer on another version.
   if (!isRevisionError(cause) || cause.major === undefined || cause.major === SUPPORTED_MAJOR) return undefined;
   return new TspEnvelopeError(
