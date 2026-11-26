@@ -10,4 +10,4 @@ const { transcript, postRevokeError } = await runDemo();
 process.stdout.write(transcript);
 const code = (postRevokeError.payload as { code: string }).code;
 if (code !== "hcp:invalidToken") throw new Error(`expected hcp:invalidToken after revoke, got ${code}`);
-console.log("\nhcp-demo-ts: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and timeout all OK");
+console.log("\nhcp-demo-ts: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and expired hold all OK");

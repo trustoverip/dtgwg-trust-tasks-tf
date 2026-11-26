@@ -596,7 +596,7 @@
   "type": "https://trusttasks.org/spec/trust-task-error/0.6"
 }
 
-=== 8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes ===
+=== 8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes ===
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000016",

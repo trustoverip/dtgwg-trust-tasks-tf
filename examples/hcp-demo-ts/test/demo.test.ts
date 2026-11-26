@@ -205,14 +205,14 @@ test("17. after a decline the next resubmission is refused with the fixed permis
 });
 
 test("18. once the hold's lifetime passes undecided the thread is refused with the fixed permissionDenied and never reopened; a new thread is put to the person again", async () => {
-  const { world, timedOut } = await afterDemo();
-  assert.equal(timedOut.refused.length, 2);
-  for (const refused of timedOut.refused) {
+  const { world, expiredHold } = await afterDemo();
+  assert.equal(expiredHold.refused.length, 2);
+  for (const refused of expiredHold.refused) {
     assert.equal(refused.type, ERROR);
     assert.deepEqual(refused.payload, { ...DENIAL, inResponseTo: refused.payload.inResponseTo });
   }
-  assert.equal(world.held.get(timedOut.threadId)!.state, "expired");
-  assert.equal(world.held.get(timedOut.newThreadId)!.state, "pending");
+  assert.equal(world.held.get(expiredHold.threadId)!.state, "expired");
+  assert.equal(world.held.get(expiredHold.newThreadId)!.state, "pending");
   assert.equal(world.grants.length, 1); // step 2's, revoked
 
   // The lifetime counts from the held request's issuedAt: still pending when it has not passed.

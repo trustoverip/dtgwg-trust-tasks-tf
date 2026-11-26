@@ -347,12 +347,12 @@ async fn t17_after_a_decline_the_resubmission_is_refused_the_thread_never_reopen
 async fn t18_once_the_holds_lifetime_passes_undecided_the_thread_is_refused_and_a_new_thread_is_held_again(
 ) {
     let (world, result) = after_demo().await;
-    let timed_out = &result.timed_out;
-    assert_eq!(timed_out.refused.len(), 2);
-    timed_out.refused.iter().for_each(assert_denial);
+    let expired_hold = &result.expired_hold;
+    assert_eq!(expired_hold.refused.len(), 2);
+    expired_hold.refused.iter().for_each(assert_denial);
     let state = |thread_id: &str| world.hold(thread_id).map(|(_, s)| s);
-    assert_eq!(state(&timed_out.thread_id), Some("expired"));
-    assert_eq!(state(&timed_out.new_thread_id), Some("pending"));
+    assert_eq!(state(&expired_hold.thread_id), Some("expired"));
+    assert_eq!(state(&expired_hold.new_thread_id), Some("pending"));
     assert_eq!(world.grant_count(), 1); // step 2's, revoked
 
     // The lifetime counts from the held request's issuedAt: still pending

@@ -20,7 +20,7 @@ Future<void> main() async {
   }
   print(
     '\nhcp-demo-dart: discover, grant request (held, then granted), query, '
-    'revoke, post-revoke refusal, revocation notice, decline and timeout all '
+    'revoke, post-revoke refusal, revocation notice, decline and expired hold all '
     'OK',
   );
 }

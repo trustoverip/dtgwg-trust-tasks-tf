@@ -349,7 +349,7 @@ void main() {
       'with the fixed permissionDenied and never reopened; a new thread is put '
       'to the person again', () async {
     final (world, result) = await afterDemo();
-    final (:threadId, :newThreadId, :refused) = result.timedOut;
+    final (:threadId, :newThreadId, :refused) = result.expiredHold;
     expect(refused, hasLength(2));
     for (final r in refused) {
       expect(r['type'], errorType);

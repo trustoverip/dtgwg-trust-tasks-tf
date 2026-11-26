@@ -402,16 +402,16 @@ func Test17AfterADeclineTheThreadIsRefusedNeverReopensAndNoGrantIsIssued(t *test
 
 func Test18OnceTheHoldsLifetimePassesTheThreadIsRefusedAndANewThreadIsHeldAgain(t *testing.T) {
 	w, r := afterDemo()
-	if len(r.TimedOut.Refused) != 2 {
-		t.Fatalf("%d refusals, want 2", len(r.TimedOut.Refused))
+	if len(r.ExpiredHold.Refused) != 2 {
+		t.Fatalf("%d refusals, want 2", len(r.ExpiredHold.Refused))
 	}
-	for _, refused := range r.TimedOut.Refused {
+	for _, refused := range r.ExpiredHold.Refused {
 		denied(t, refused)
 	}
-	if s := w.held[r.TimedOut.ThreadID].state; s != expired {
+	if s := w.held[r.ExpiredHold.ThreadID].state; s != expired {
 		t.Errorf("hold state %d, want expired", s)
 	}
-	if s := w.held[r.TimedOut.NewThreadID].state; s != pending {
+	if s := w.held[r.ExpiredHold.NewThreadID].state; s != pending {
 		t.Errorf("new thread's hold state %d, want pending", s)
 	}
 	if len(w.grants) != 1 { // step 2's, revoked

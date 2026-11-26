@@ -40,7 +40,7 @@ per key. Never reuse them.
 7. **Decline.** The client asks again on a new thread and the person declines (HCP 6.1.7). The
    client's next resubmission is refused with `permissionDenied`, the same fixed refusal an
    unknown person gets, and no grant is issued.
-8. **Timeout.** The client asks again and the person never decides. Once the hold's lifetime
+8. **Expired hold.** The client asks again and the person never decides. Once the hold's lifetime
    (300 s, provider policy) has passed, the policy denies: the next resubmission gets the same
    `permissionDenied`, the thread is never reopened (a late approval changes nothing), and a new
    request on a new thread is put to the person again.
@@ -64,7 +64,7 @@ go generate ./... && go run . && go test ./...
 it drifts). `go run .` runs the demo. `go test ./...` runs the tests listed in
 [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the golden transcript, the query
 after revoke, a tampered document, a schema-invalid document, the client's handling of the notice,
-and the provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and the hold's timeout. The golden transcript is
+and the provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and the hold's expiry. The golden transcript is
 shared with the other ports and owned by the TypeScript demo,
 [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt); this port compares
 its output with it and never writes it.
@@ -99,7 +99,7 @@ hcp-demo-go: discover, grant request (held, then granted), query, revoke, post-r
   minimization beyond category filtering, no audit log and no directives (every query result
   carries an empty `directives` list), and a registry of one client. It is not an HCP
   implementation.
-- **There is no consent UI.** The person's decision is one function call, which approves what
+- **There is no approval UI.** The person's decision is one function call, which approves what
   was asked (step 2) or declines (step 7); in step 8 the person never decides. The demo shows the
   shape of the hold: a next step first, then the grant or the refusal on resubmission.
 - **Keys and identities are fixed.** Every party knows the others' public keys up front, so there

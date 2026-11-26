@@ -72,7 +72,7 @@ Each key is 32 bytes, every byte the same value. Never use such keys for anythin
   equal to `issuedAt`. Ed25519 over JCS is deterministic, so `proofValue` matches across languages.
   Every document a party *builds* is signed: requests, responses, next steps and the handler's
   error responses.
-- **TSP.** Each document travels as a Direct TSP message (HPKE-Auth sealed, signed) carrying the
+- **TSP.** Each document travels as a Direct TSP message (sealed and signed) carrying the
   binding's envelope `{"type": "https://trusttasks.org/binding/tsp/0.1/envelope", "document": …}`,
   and each reply comes back the same way. The sealed bytes are random (HPKE ephemeral keys) and are
   never printed.
@@ -136,7 +136,7 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
    the bytes or a language's own serialisation: members in another order are the same payload.
 5. A `pending` hold whose lifetime has passed becomes `expired`. Then: `pending` → a further next
    step (same shape, `inResponseTo` the resubmission); `declined` or `expired` → `permissionDenied`
-   (the thread has ended; the same fixed message as every refusal, so a decline, a timeout and an
+   (the thread has ended; the same fixed message as every refusal, so a decline, an expired hold and an
    unknown person look alike).
 6. `approved` → issue the one grant (approved as asked), set the hold to `granted` with the
    `grantId` and the response time, and answer the response. `grant.expiresAt` is now plus the
@@ -246,7 +246,7 @@ The titles are exactly:
 5. `5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken`
 6. `6. Revocation notice (hcp/grants/revoked 0.1)`
 7. `7. Grant request declined (hcp/grants/request 0.1): the person says no`
-8. `8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes`
+8. `8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes`
 
 Then, for each document sent and each reply, in order:
 
@@ -332,8 +332,14 @@ reason.
 
 Differences that print nothing:
 
-- **Dart** (`hcp-demo-dart`): `trust_tasks_tsp` seals with HPKE in Base mode (the only mode
-  `affinidi_tsp` offers) and signs the message, rather than HPKE-Auth. Its `TspConsumer` mints the
+- **TSP version.** The Rust (`affinidi-tsp` 0.5), Go (`affinidi-tsp-go` v0.2.0) and Dart
+  (`affinidi_tsp` 0.2) ports speak TSP 1.0 (`YTSP-BAA`): HPKE-Base sealed and signed, the sender
+  authenticated by the signature and the ESSR sender field. The TypeScript port is still on TSP
+  Rev 2 (HPKE-Auth sealed, signed), through this checkout's `@openvtc/trust-tasks-tsp`, which
+  depends on `@openvtc/vti-tsp-js` ^0.2.0; it moves to TSP 1.0 when that package moves to
+  `vti-tsp-js` ^0.4 (#1387), and the demo then drops `senderEncryptionKey` from its pack and unpack
+  keys. The ports exchange no TSP bytes with each other, so the transcript is the same either way.
+- **Dart** (`hcp-demo-dart`): its `TspConsumer` mints the
   `id` of an error the library builds (tests 3 and 4) with a random `urn:uuid`, as it has no id
   hook; those tests check only the code.
 - **Go** (`hcp-demo-go`): `tsp.Consumer.Now` drives the pipeline's checks (so test 11's freshness

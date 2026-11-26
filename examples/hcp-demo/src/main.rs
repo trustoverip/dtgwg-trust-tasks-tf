@@ -22,7 +22,7 @@ async fn main() -> Result<(), Error> {
         return Err("the Context Client still holds the revoked grant".into());
     }
     println!(
-        "\nhcp-demo: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and timeout all OK"
+        "\nhcp-demo: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and expired hold all OK"
     );
     Ok(())
 }

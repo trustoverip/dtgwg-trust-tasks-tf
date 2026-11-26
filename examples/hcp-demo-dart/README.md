@@ -38,7 +38,7 @@ per key. Never reuse them.
 7. **Decline.** The client asks again on a new thread and the person declines (HCP 6.1.7). The
    client's next resubmission is refused with `permissionDenied`, the same fixed refusal an
    unknown person gets, and no grant is issued.
-8. **Timeout.** The client asks again and the person never decides. Once the hold's lifetime
+8. **Expired hold.** The client asks again and the person never decides. Once the hold's lifetime
    (300 s, provider policy) has passed, the policy denies: the next resubmission gets the same
    `permissionDenied`, the thread is never reopened (a late approval changes nothing), and a new
    request on a new thread is put to the person again.
@@ -52,7 +52,7 @@ and valid against its schema.
 
 ## Run it
 
-Dart 3.8 or later (`trust_tasks_tsp`'s floor). From this directory:
+Dart 3.10 or later (`affinidi_tsp` 0.2's floor). From this directory:
 
 ```sh
 dart pub get
@@ -100,7 +100,7 @@ The full run is in [transcript.golden.txt](../hcp-demo-ts/transcript.golden.txt)
   minimization beyond category filtering, no audit log and no directives (every query result
   carries an empty `directives` list), and a registry of one client. It is not an HCP
   implementation.
-- **There is no consent UI.** The person's decision is one function call, which approves what
+- **There is no approval UI.** The person's decision is one function call, which approves what
   was asked (step 2) or declines (step 7); in step 8 the person never decides. The demo shows the
   shape of the hold: a next step first, then the grant or the refusal on resubmission.
 - **Keys and identities are fixed.** Every party knows the others' public keys up front (a
@@ -117,8 +117,9 @@ The full run is in [transcript.golden.txt](../hcp-demo-ts/transcript.golden.txt)
 
 ## Where the Dart port differs (nothing printed)
 
-- `trust_tasks_tsp` seals with HPKE in Base mode and signs the message; the sender is authenticated
-  by the TSP signature rather than by HPKE-Auth. The sealed bytes are never printed.
+- TSP is version 1.0 (`affinidi_tsp` 0.2): `trust_tasks_tsp` seals with HPKE-Base and signs the
+  message; the sender is authenticated by the TSP signature and the ESSR sender field. The sealed
+  bytes are never printed.
 - `TspConsumer` mints the `id` of an error it builds itself (a refusal before the handler runs,
   such as `proofInvalid` or `malformedRequest`) with a random `urn:uuid`; it takes no id hook. Only
   the tampered and schema-invalid tests (3 and 4) meet such refusals, and they check only the

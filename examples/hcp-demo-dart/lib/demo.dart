@@ -9,8 +9,8 @@
 //   - a Management Client (the person's own app, which can revoke grants).
 //
 // Every document is built with the generated types, signed with
-// package:trust_tasks_proof, sealed with package:trust_tasks_tsp (a Direct TSP
-// message: HPKE-sealed, signed), opened, and run through the SPEC §7.2 pipeline
+// package:trust_tasks_proof, sealed with package:trust_tasks_tsp (a TSP 1.0 Direct
+// message: HPKE-Base, signed), opened, and run through the SPEC §7.2 pipeline
 // (proof verified over the document as received, payload validated against its
 // schema) before anything acts on it. Nothing touches the network.
 
@@ -1086,12 +1086,11 @@ Future<({String threadId, Json refused})> stepDecline(World w) async {
 /// too; a new request on a new thread is put to the person again
 /// (hcp/grants/request "Holding" rule 6). Returns both threads and the
 /// refusals.
-Future<({String threadId, String newThreadId, List<Json> refused})> stepTimeout(
-  World w,
-) async {
+Future<({String threadId, String newThreadId, List<Json> refused})>
+stepExpiredHold(World w) async {
   final (p, c) = (w.provider, w.contextClient);
   w.step(
-    "8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes",
+    "8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes",
   );
   const type = '${grant_request.typeUri}#request';
   final first = await w.request(c, p, type, ask);
@@ -1126,7 +1125,7 @@ final class DemoResult {
     required this.postRevokeError,
     required this.notice,
     required this.declined,
-    required this.timedOut,
+    required this.expiredHold,
   });
   final String transcript;
   final String threadId;
@@ -1134,7 +1133,7 @@ final class DemoResult {
   final Json postRevokeError;
   final Json notice;
   final ({String threadId, Json refused}) declined;
-  final ({String threadId, String newThreadId, List<Json> refused}) timedOut;
+  final ({String threadId, String newThreadId, List<Json> refused}) expiredHold;
 }
 
 /// The eight steps in order.
@@ -1147,7 +1146,7 @@ Future<DemoResult> runDemo([World? world]) async {
   final postRevokeError = await stepQueryAfterRevoke(w, grantId);
   final notice = await stepNotice(w, grantId);
   final declined = await stepDecline(w);
-  final timedOut = await stepTimeout(w);
+  final expiredHold = await stepExpiredHold(w);
   return DemoResult(
     transcript: w.transcript.toString(),
     threadId: threadId,
@@ -1155,6 +1154,6 @@ Future<DemoResult> runDemo([World? world]) async {
     postRevokeError: postRevokeError,
     notice: notice,
     declined: declined,
-    timedOut: timedOut,
+    expiredHold: expiredHold,
   );
 }

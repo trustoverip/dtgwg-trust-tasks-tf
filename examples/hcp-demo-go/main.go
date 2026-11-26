@@ -29,5 +29,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "hcp-demo-go: expected hcp:invalidToken after revoke, got %s\n", code)
 		os.Exit(1)
 	}
-	fmt.Println("\nhcp-demo-go: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and timeout all OK")
+	fmt.Println("\nhcp-demo-go: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and expired hold all OK")
 }

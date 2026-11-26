@@ -10,7 +10,7 @@
 //!   - a Management Client (the person's own app, which can revoke grants).
 //!
 //! Every document is signed with `trust_tasks::proof` (eddsa-jcs-2022), sealed
-//! with `trust_tasks::tsp` (a Direct TSP message: HPKE-Auth, signed), opened,
+//! with `trust_tasks::tsp` (a TSP 1.0 Direct message: HPKE-Base, signed), opened,
 //! and run through the SPEC §7.2 pipeline (proof verified over the document as
 //! received, payload validated against its schema with a JSON Schema 2020-12
 //! validator) before anything acts on it. Nothing touches the network.
@@ -1421,7 +1421,7 @@ pub async fn step_decline(world: &World) -> Result<Declined, Error> {
 }
 
 /// Step 8's first thread, the new thread, and the two refusals, as received.
-pub struct TimedOut {
+pub struct ExpiredHold {
     pub thread_id: String,
     pub new_thread_id: String,
     pub refused: Vec<Value>,
@@ -1432,9 +1432,9 @@ pub struct TimedOut {
 /// reopened, so a late approval changes nothing and a further resubmission is
 /// refused too; a new request on a new thread is put to the person again
 /// (hcp/grants/request "Holding" rule 6).
-pub async fn step_timeout(world: &World) -> Result<TimedOut, Error> {
+pub async fn step_expired_hold(world: &World) -> Result<ExpiredHold, Error> {
     let (p, c, _) = world.parties();
-    world.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes");
+    world.step("8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes");
     let grant_uri = request_uri(grant_request::Payload::TYPE_URI);
     let first = world.request(c, p, &grant_uri, ask(), None).await;
     if world.exchange(c, p, &first).await?["type"] != next_step::Payload::TYPE_URI {
@@ -1459,7 +1459,7 @@ pub async fn step_timeout(world: &World) -> Result<TimedOut, Error> {
     if world.exchange(c, p, &again).await?["type"] != next_step::Payload::TYPE_URI {
         return Err("expected a next step".into());
     }
-    Ok(TimedOut {
+    Ok(ExpiredHold {
         thread_id,
         new_thread_id: again.thread_id.clone().expect("threadId"),
         refused,
@@ -1477,7 +1477,7 @@ pub struct DemoResult {
     /// Step 7's thread and refusal.
     pub declined: Declined,
     /// Step 8's threads and refusals.
-    pub timed_out: TimedOut,
+    pub expired_hold: ExpiredHold,
 }
 
 /// The eight steps in order.
@@ -1492,7 +1492,7 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
     let post_revoke_error = step_query_after_revoke(world, &grant_id).await?;
     let notice = step_notice(world, &grant_id).await?;
     let declined = step_decline(world).await?;
-    let timed_out = step_timeout(world).await?;
+    let expired_hold = step_expired_hold(world).await?;
     Ok(DemoResult {
         transcript: world.transcript(),
         thread_id,
@@ -1500,6 +1500,6 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
         post_revoke_error,
         notice,
         declined,
-        timed_out,
+        expired_hold,
     })
 }

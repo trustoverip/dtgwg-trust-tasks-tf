@@ -9,8 +9,8 @@
 //   - a Management Client (the person's own app, which can revoke grants).
 //
 // Every document is built with the generated types, signed with the
-// trust-tasks-go/proof module, sealed with trust-tasks-go/tsp (a Direct TSP
-// message, signed and sealed), opened, and run through the SPEC §7.2 pipeline
+// trust-tasks-go/proof module, sealed with trust-tasks-go/tsp (a TSP 1.0 Direct
+// message: HPKE-Base, signed), opened, and run through the SPEC §7.2 pipeline
 // (proof verified over the document as received, payload validated against its
 // schema) before anything acts on it. Nothing touches the network.
 package main
@@ -1096,20 +1096,20 @@ func StepDecline(w *World) Declined {
 	return Declined{ThreadID: threadID, Refused: refused}
 }
 
-// TimedOut is what step 8 produces: both threads and the refusals.
-type TimedOut struct {
+// ExpiredHold is what step 8 produces: both threads and the refusals.
+type ExpiredHold struct {
 	ThreadID, NewThreadID string
 	Refused               []tt.Document[json.RawMessage]
 }
 
-// StepTimeout is step 8: the hold's lifetime passes with no decision, so the
+// StepExpiredHold is step 8: the hold's lifetime passes with no decision, so the
 // policy denies. The next resubmission gets the same permissionDenied; the
 // thread is never reopened, so a late approval changes nothing and a further
 // resubmission is refused too; a new request on a new thread is put to the
 // person again (hcp/grants/request "Holding" rule 6).
-func StepTimeout(w *World) TimedOut {
+func StepExpiredHold(w *World) ExpiredHold {
 	P, C := w.Provider, w.ContextClient
-	w.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes")
+	w.step("8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes")
 	ask := func(threadID string) json.RawMessage {
 		return w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID))
 	}
@@ -1130,7 +1130,7 @@ func StepTimeout(w *World) TimedOut {
 	if replyOf[json.RawMessage](w.Exchange(C, P, again)).Type != nextstep.TypeURI {
 		panic("expected a next step")
 	}
-	return TimedOut{ThreadID: threadID, NewThreadID: *replyOf[json.RawMessage](again).ThreadID, Refused: refused}
+	return ExpiredHold{ThreadID: threadID, NewThreadID: *replyOf[json.RawMessage](again).ThreadID, Refused: refused}
 }
 
 // Result is what a run produces.
@@ -1141,7 +1141,7 @@ type Result struct {
 	PostRevokeError tt.Document[tt.ErrorPayload]
 	Notice          tt.Document[revoked.Payload]
 	Declined        Declined
-	TimedOut        TimedOut
+	ExpiredHold     ExpiredHold
 }
 
 // RunDemo plays the eight steps, in order, on w (a fresh world when nil).
@@ -1156,6 +1156,6 @@ func RunDemo(w *World) Result {
 	postRevokeError := StepQueryAfterRevoke(w, grantID)
 	notice := StepNotice(w, grantID)
 	declined := StepDecline(w)
-	timedOut := StepTimeout(w)
-	return Result{Transcript: w.transcript.String(), ThreadID: threadID, GrantID: grantID, PostRevokeError: postRevokeError, Notice: notice, Declined: declined, TimedOut: timedOut}
+	expiredHold := StepExpiredHold(w)
+	return Result{Transcript: w.transcript.String(), ThreadID: threadID, GrantID: grantID, PostRevokeError: postRevokeError, Notice: notice, Declined: declined, ExpiredHold: expiredHold}
 }

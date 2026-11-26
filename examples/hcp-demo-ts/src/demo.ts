@@ -9,7 +9,8 @@
 //
 // Every document is built with the generated types, signed with
 // @openvtc/trust-tasks-proof, sealed with @openvtc/trust-tasks-tsp (a Direct
-// TSP message: HPKE-Auth, signed), opened, and run through the SPEC §7.2
+// TSP Rev 2 message: HPKE-Auth, signed; TSP 1.0 once trust-tasks-ts-tsp moves to
+// @openvtc/vti-tsp-js 0.4), opened, and run through the SPEC §7.2
 // pipeline (proof verified over the document as received, payload validated
 // against its schema) before anything acts on it. Nothing touches the network.
 
@@ -703,11 +704,11 @@ export async function stepDecline(world: World): Promise<{ threadId: string; ref
  * too; a new request on a new thread is put to the person again
  * (hcp/grants/request "Holding" rule 6). Returns both threads and the refusals.
  */
-export async function stepTimeout(
+export async function stepExpiredHold(
   world: World,
 ): Promise<{ threadId: string; newThreadId: string; refused: TrustTaskDocument<any>[] }> {
   const { provider: P, contextClient: C } = world;
-  world.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes");
+  world.step("8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes");
   const first = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK);
   if ((await world.exchange(C, P, first)).type !== nextStep.TYPE_URI) throw new Error("expected a next step");
   world.personDoesNotDecide(first.threadId!);
@@ -728,7 +729,7 @@ export interface DemoResult {
   postRevokeError: TrustTaskDocument<{ code: string }>;
   notice: TrustTaskDocument<revoked.Payload>;
   declined: { threadId: string; refused: TrustTaskDocument<any> };
-  timedOut: { threadId: string; newThreadId: string; refused: TrustTaskDocument<any>[] };
+  expiredHold: { threadId: string; newThreadId: string; refused: TrustTaskDocument<any>[] };
 }
 
 /** The eight steps in order. */
@@ -740,6 +741,6 @@ export async function runDemo(world = new World()): Promise<DemoResult> {
   const postRevokeError = await stepQueryAfterRevoke(world, grantId);
   const notice = await stepNotice(world, grantId);
   const declined = await stepDecline(world);
-  const timedOut = await stepTimeout(world);
-  return { transcript: world.transcript.join(""), threadId, grantId, postRevokeError, notice, declined, timedOut };
+  const expiredHold = await stepExpiredHold(world);
+  return { transcript: world.transcript.join(""), threadId, grantId, postRevokeError, notice, declined, expiredHold };
 }
