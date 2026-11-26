@@ -47,10 +47,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"limit\": 0\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-            "{\n  \"status\": \"revoked\"\n}",
-        ),
-        (
             "Unknown top-level request member — the list is filtered only by status (HCP 9.4.6).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"client\": \"booking-agent\"\n}",
         ),

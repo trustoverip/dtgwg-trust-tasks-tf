@@ -39,10 +39,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"delegationId\": \"delegation-12\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the caller's authority (HCP 9.2, 9.4.13).",
-            "{\n  \"delegationId\": \"urn:uuid:2e4a6c8d-0f1b-4d3e-b5a7-9c1e3a5c7e08\"\n}",
-        ),
-        (
             "Missing `delegationId` — an ending names the delegation it ends.",
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
         ),

@@ -32,7 +32,7 @@ pub mod error {
         }
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -153,16 +153,27 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
+}
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+        }
+    }
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -558,19 +569,22 @@ impl<'de> ::serde::Deserialize<'de> for Urn {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
             }
         }
     }
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -766,7 +780,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$id\":\"https://trusttasks.org/spec/hcp/rules/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List standing rules operation (HCP 6.3, 5.4; `GET /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, reads the standing rules. HCP defines no request schema and no parameters for this operation; the only member is the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — List Standing Rules — payload\",\"type\":\"object\"}\n",
+        "{\"$id\":\"https://trusttasks.org/spec/hcp/rules/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List standing rules operation (HCP 6.3, 5.4; `GET /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, reads the standing rules. HCP defines no request schema and no parameters for this operation; the only member is the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"}},\"title\":\"HCP — List Standing Rules — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -775,7 +789,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(4194304usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The standing rules the caller may see. Carries HCP's `200` result, a `rules` array (HCP 9.4.14). Not paginated: HCP gives this operation no cursor. Failures use trust-task-error, not this shape.\",\"properties\":{\"rules\":{\"description\":\"HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order.\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"type\":\"array\"}},\"required\":[\"rules\"],\"title\":\"HCP — List Standing Rules — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The standing rules the caller may see. Carries HCP's `200` result, a `rules` array (HCP 9.4.14). Not paginated: HCP gives this operation no cursor. Failures use trust-task-error, not this shape.\",\"properties\":{\"rules\":{\"description\":\"HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order.\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"type\":\"array\"}},\"required\":[\"rules\"],\"title\":\"HCP — List Standing Rules — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

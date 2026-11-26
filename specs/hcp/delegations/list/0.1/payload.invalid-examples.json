@@ -1,9 +1,5 @@
 [
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9, 9.3).",
-    "payload": { "status": "ended" }
-  },
-  {
     "note": "A `status` HCP does not define — `ended` is the only value HCP 9.4.13 names.",
     "payload": { "accessToken": "hcp_mt_x", "status": "active" }
   },

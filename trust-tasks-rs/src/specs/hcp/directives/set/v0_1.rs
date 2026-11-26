@@ -32,7 +32,7 @@ pub mod error {
         }
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -108,7 +108,7 @@ impl<'de> ::serde::Deserialize<'de> for Category {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct Directive {
-    ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
+    ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub action: DirectiveAction,
     ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -135,7 +135,7 @@ impl Directive {
         Default::default()
     }
 }
-///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
+///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -509,9 +509,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP `action` (HCP 6.4, 9.4.15): what the directive governs: `share` (passing received context to another agent, HCP 3.12), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP A.3).
     pub action: PayloadAction,
     ///HCP `categories` (HCP 6.4, 9.4.15): the categories whose context the directive governs. Absent means every category, held now or later. A delegate's directive must stay within the delegation's scope (HCP 6.4, 17.4). The maxItems is a framework bound, not an HCP requirement.
@@ -530,7 +534,7 @@ impl Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1083,7 +1087,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         action: ::std::result::Result<super::PayloadAction, ::std::string::String>,
         categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
         effect: ::std::result::Result<super::PayloadEffect, ::std::string::String>,
@@ -1096,7 +1103,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 action: Err("no value supplied for action".to_string()),
                 categories: Ok(Default::default()),
                 effect: Err("no value supplied for effect".to_string()),
@@ -1108,7 +1115,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -1237,7 +1244,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/directives/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"action\":{\"description\":\"HCP `action` (HCP 6.4, 9.4.15): what the directive governs: `share` (passing received context to another agent, HCP 3.12), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP A.3).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"HCP `categories` (HCP 6.4, 9.4.15): the categories whose context the directive governs. Absent means every category, held now or later. A delegate's directive must stay within the delegation's scope (HCP 6.4, 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"effect\":{\"description\":\"HCP `effect` (HCP 6.4, 9.4.15): `deny`, the client MUST NOT take the action; `ask-first`, the client MUST obtain the Context Subject's confirmation each time before taking it; `permit`, the client may take it without asking. HCP's own values, carried verbatim.\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"HCP `operators` (HCP 6.4, 9.4.15): the Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules (HCP 6.3). Absent means every operator. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"text\":{\"description\":\"HCP `text` (HCP 6.4, 9.4.15): the directive in the Context Subject's words, shown to them when it is set and delivered to every client it applies to. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"action\",\"effect\",\"text\",\"accessToken\"],\"title\":\"HCP — Set Directive — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/directives/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"action\":{\"description\":\"HCP `action` (HCP 6.4, 9.4.15): what the directive governs: `share` (passing received context to another agent, HCP 3.12), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP A.3).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"HCP `categories` (HCP 6.4, 9.4.15): the categories whose context the directive governs. Absent means every category, held now or later. A delegate's directive must stay within the delegation's scope (HCP 6.4, 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"effect\":{\"description\":\"HCP `effect` (HCP 6.4, 9.4.15): `deny`, the client MUST NOT take the action; `ask-first`, the client MUST obtain the Context Subject's confirmation each time before taking it; `permit`, the client may take it without asking. HCP's own values, carried verbatim.\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"HCP `operators` (HCP 6.4, 9.4.15): the Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules (HCP 6.3). Absent means every operator. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"text\":{\"description\":\"HCP `text` (HCP 6.4, 9.4.15): the directive in the Context Subject's words, shown to them when it is set and delivered to every client it applies to. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"action\",\"effect\",\"text\"],\"title\":\"HCP — Set Directive — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -1245,7 +1252,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Directive_1c3bbd1f!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The directive is set. Carries HCP's `201` result, the directive with its `directiveId` and `createdAt` (HCP 9.4.15), wrapped in `directive`. Failures use trust-task-error, not this shape.\",\"properties\":{\"directive\":{\"$ref\":\"#/$defs/Directive\",\"description\":\"The directive as the provider holds it (HCP 6.4, 9.4.15): the requested `action`, `effect`, `text`, `categories` and `operators`, with `directiveId`, `setBy` and `createdAt` set by the provider.\"}},\"required\":[\"directive\"],\"title\":\"HCP — Set Directive — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The directive is set. Carries HCP's `201` result, the directive with its `directiveId` and `createdAt` (HCP 9.4.15), wrapped in `directive`. Failures use trust-task-error, not this shape.\",\"properties\":{\"directive\":{\"$ref\":\"#/$defs/Directive\",\"description\":\"The directive as the provider holds it (HCP 6.4, 9.4.15): the requested `action`, `effect`, `text`, `categories` and `operators`, with `directiveId`, `setBy` and `createdAt` set by the provider.\"}},\"required\":[\"directive\"],\"title\":\"HCP — Set Directive — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

@@ -16,10 +16,6 @@
     "payload": { "entryId": "urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357", "categories": ["work_context"], "accessToken": "hcp_mt_x" }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "entryId": "urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357", "categories": ["work_context"], "expectedVersion": 2 }
-  },
-  {
     "variant": "response",
     "note": "No `entry` — HCP answers with the entry, with its new categories (HCP 9.4.10).",
     "payload": {}

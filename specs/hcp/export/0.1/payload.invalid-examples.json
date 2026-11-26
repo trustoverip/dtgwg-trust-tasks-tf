@@ -1,11 +1,5 @@
 [
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-    "payload": {
-      "excludeDeleted": true
-    }
-  },
-  {
     "note": "An export option as a string — HCP 5.4.1's options are booleans; the `include=audit` query parameter of HCP 9.4.8 maps to `includeAudit: true`.",
     "payload": {
       "includeAudit": "audit",

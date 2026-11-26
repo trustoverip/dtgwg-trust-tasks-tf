@@ -32,7 +32,7 @@ pub mod error {
         }
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -124,7 +124,7 @@ pub struct Delegation {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub may_delegate: ::std::option::Option<bool>,
-    ///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+    ///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub relationship: DelegationRelationship,
     ///The categories and actions the delegate may authorize (HCP 17.4).
     pub scope: DelegationScope,
@@ -599,7 +599,7 @@ impl ::std::convert::TryFrom<::std::string::String> for DelegationEndedReason {
         value.parse()
     }
 }
-///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1177,19 +1177,31 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold ("with ended ones where `status=ended` is asked", HCP 9.4.13), pending HCP confirmation (question 31).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub status: ::std::option::Option<PayloadStatus>,
+}
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+            status: Default::default(),
+        }
+    }
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -2095,7 +2107,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         status: ::std::result::Result<
             ::std::option::Option<super::PayloadStatus>,
             ::std::string::String,
@@ -2104,7 +2119,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 status: Ok(Default::default()),
             }
         }
@@ -2112,7 +2127,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -2194,7 +2209,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$id\":\"https://trusttasks.org/spec/hcp/delegations/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List delegations operation (Delegated Authorization Profile, HCP 17.2; `GET /v2/delegations` in HCP 9.2, 9.4.13): a Management Client, acting for the Context Subject or a delegate, lists the delegations it may see. HCP defines no request schema for this operation; the `status` parameter comes from HCP 9.4.13, and the result follows the delegations-result shape HCP publishes for the same draft. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold (\\\"with ended ones where `status=ended` is asked\\\", HCP 9.4.13), pending HCP confirmation (question 31).\",\"enum\":[\"ended\"],\"type\":\"string\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — List Delegations — payload\",\"type\":\"object\"}\n",
+        "{\"$id\":\"https://trusttasks.org/spec/hcp/delegations/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List delegations operation (Delegated Authorization Profile, HCP 17.2; `GET /v2/delegations` in HCP 9.2, 9.4.13): a Management Client, acting for the Context Subject or a delegate, lists the delegations it may see. HCP defines no request schema for this operation; the `status` parameter comes from HCP 9.4.13, and the result follows the delegations-result shape HCP publishes for the same draft. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold (\\\"with ended ones where `status=ended` is asked\\\", HCP 9.4.13), pending HCP confirmation (question 31).\",\"enum\":[\"ended\"],\"type\":\"string\"}},\"title\":\"HCP — List Delegations — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2204,7 +2219,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(2097152usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Delegation_446bc4b2!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delegations the caller may see (HCP 9.4.13, 17.2). Not paginated (HCP 9.4.13). Failures use trust-task-error, not this shape.\",\"properties\":{\"delegations\":{\"description\":\"HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"type\":\"array\"}},\"required\":[\"delegations\"],\"title\":\"HCP — List Delegations — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Delegation_62ece95d!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delegations the caller may see (HCP 9.4.13, 17.2). Not paginated (HCP 9.4.13). Failures use trust-task-error, not this shape.\",\"properties\":{\"delegations\":{\"description\":\"HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"type\":\"array\"}},\"required\":[\"delegations\"],\"title\":\"HCP — List Delegations — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

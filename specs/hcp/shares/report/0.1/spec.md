@@ -114,7 +114,7 @@ A token issued to a client other than the one the `issuer` VID identifies is ref
 | HCP Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-The organization told is named in the payload, not as a party: it takes no part in the exchange. As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1).
+The organization told is named in the payload, not as a party: it takes no part in the exchange. As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a client's anchor for the provider is the provider VID the client obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it.
 
 ## Request
 
@@ -188,7 +188,7 @@ HCP requires a `context.shared` event for every report (HCP 5.2.8, 8.1), and def
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`. A client whose grant was revoked after it shared has no way to report under HCP 2.0-draft-3; that gap is HCP's, and this task does not fill it.
@@ -211,6 +211,8 @@ The request says which of the person's entries, by grant-scoped `ref`, went to w
 ### The access token
 
 `accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../../entries/query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

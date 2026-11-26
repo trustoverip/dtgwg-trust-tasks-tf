@@ -16,10 +16,6 @@
     "payload": { "entryId": "hcp-ref-a91c4f", "disposition": "confirmed", "expectedVersion": 2, "accessToken": "hcp_mt_x" }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-    "payload": { "entryId": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561", "disposition": "rejected", "expectedVersion": 2 }
-  },
-  {
     "variant": "response",
     "note": "No `entry` — HCP answers with the entry (HCP 9.4.9), not an empty acknowledgement.",
     "payload": {}

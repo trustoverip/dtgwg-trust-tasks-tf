@@ -623,7 +623,7 @@ export type Capability_DeviceV0_2 =
   | "pcsTrustee"
   | "credentialPresent";
 /**
- * An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+ * An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
  */
 export type Category = string;
 /**
@@ -8322,7 +8322,7 @@ export interface AuditEvent_HcpV0_1 {
    */
   categories?: Category[];
   /**
-   * The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
+   * The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements.
    */
   purpose: string | null;
   /**
@@ -10686,7 +10686,7 @@ export interface Delegation {
     [k: string]: unknown | undefined;
   };
   /**
-   * The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+   * The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
    */
   relationship: string;
   /**
@@ -11741,7 +11741,7 @@ export interface Directive {
    */
   directiveId: Urn;
   /**
-   * What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
+   * What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
    */
   action: string;
   /**

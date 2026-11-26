@@ -39,10 +39,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"grantId\": \"grant-42\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\"\n}",
-        ),
-        (
             "Missing `grantId` — a revocation names the grant it ends.",
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
         ),

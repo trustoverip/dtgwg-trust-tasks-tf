@@ -121,32 +121,6 @@
     }
   },
   {
-    "note": "Missing `accessToken` — the token is the evidence of the grant.",
-    "payload": {
-      "schema": "https://hcp.example/spec/entry/2.0",
-      "subject": {
-        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
-      },
-      "content": {
-        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
-        "value": "Prefers a window table."
-      },
-      "classification": {
-        "categories": [
-          "general_preferences"
-        ]
-      },
-      "assertion": {
-        "declarationType": "person-declared"
-      },
-      "record": {
-        "provenance": {
-          "source": "person-input"
-        }
-      }
-    }
-  },
-  {
     "note": "A provider-assigned `id` at the top level — the provider assigns the entry's `id` (HCP 5.2.3).",
     "payload": {
       "schema": "https://hcp.example/spec/entry/2.0",

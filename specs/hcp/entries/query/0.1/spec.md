@@ -136,7 +136,7 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 The authority is **the grant** the person gave the client: a category-scoped, purpose-bound and revocable HCP grant (HCP 6.1), held by the provider and evidenced by the access token in `accessToken`. The provider **MUST** check the grant on every request (HCP 6.2.2), exactly as it does over HCP's HTTP binding: the token must be valid, and the requested `categories` and `purpose` must be within the grant (HCP 5.2.1).
 
-Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. The request always carries a proof, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), so a token issued to a client other than the one the `issuer` VID identifies is always refused with `permissionDenied` (see [The access token](#the-access-token)).
+Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. The request always carries a proof, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), so a token issued to a client other than the one the `issuer` VID identifies is always refused with `permissionDenied` (see [The access token](#the-access-token)). A grant identifies the client it was issued to (HCP 3.11, invariant 3), so a client that changes its identity, to a new VID or to a key it cannot prove continuity with, is a new client and needs a new grant from the person; a grant is never moved to another client identity.
 
 Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and `directives` null. This specification reads HCP as letting a Management Client query and receive whole `Entry` objects with no directives, *pending HCP confirmation* ([question 5](#pending-hcp-confirmation)).
 
@@ -163,7 +163,7 @@ Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). Th
 | result `directives` | `directives` | Unchanged. |
 | result `timestamp` | `respondedAt` | **Renamed**, following the registry's `<event>At` convention for instants. Same type and meaning. |
 
-**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
+**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say. These bounds, and each `maxDocumentBytes` the family declares, bound what a party writes and accepts; they are not delivery guarantees. A transport or mediator may cap a message lower, for example a mediator that accepts messages of at most 1 MiB, so a party **MUST NOT** assume that a document within the bound will be delivered.
 
 ### Parties
 
@@ -172,7 +172,10 @@ Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). Th
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery document (`/.well-known/hcp-configuration`, HCP 19.1), and a client by its registration. Neither is a VID. A provider serving this task **MUST** make its VID verifiably bound to its HCP identity: its DID document lists the discovery document as a service, or its discovery document names the VID, or both. A client **MUST** check that binding before it sends a token to a VID.
+HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery document (`/.well-known/hcp-configuration`, HCP 19.1), and a client by its registration. Neither is a VID. A provider that serves the family only over a Trust Task binding may publish no discovery document: HCP requires one of an implementation that claims HCP conformance (HCP 19.1), whose schema lists at least one of HCP's own bindings, and the provider may not claim the carriage in its `conformsTo` ([question 1](#pending-hcp-confirmation)). This rule, which every `hcp/*` specification applies, covers both cases:
+
+- **The anchor.** A client's trust anchor for a provider is the provider VID the client obtained when the person connected it to that provider: from the pairing or QR code the person used, or from [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) asked of a VID the client already trusts for that purpose. A client **MUST** send a token only to that VID.
+- **The discovery binding.** Where the provider publishes an HCP discovery document, it **MUST** also make its VID verifiably bound to its HCP identity: its DID document lists the discovery document as a service, or its discovery document names the VID, or both. A client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
@@ -286,7 +289,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T10:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSARiKBk9czhSePTFehP8c3PGfb6a22gkfUKKPWtsuNYYHNXS5d2"
   }
 }
@@ -336,7 +339,7 @@ HCP requires a `context.read` audit event for every query (HCP 8.1). Because thi
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
@@ -352,6 +355,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Minimization** (HCP 7.1–7.3): the provider decides which entries to disclose and in what order; the document only carries the result.
 - **Use limits** (HCP 7.6): `useUntil` is carried, but the client's duty to stop using a copy after it, and not to pass copies on (HCP 3.12), is on the client.
 - **Directives** (HCP 6.4): carried with every result to a Context Client; following them is on a client that claims to.
+- **Health context** (HCP 16.2). A copy disclosed from `health_context`, a High-sensitivity category, is usable for at most 24 hours (HCP 7.6). A provider conforming to the Health Context Profile (HCP 16.1, 18.1) does not disclose a `model-inferred` entry in `health_context` to a Context Client unless the most recent confirmation record on its current version is `confirmed`: until then a query does not return it.
 - **Grant-scoped `ref`s** (HCP 7.4): minted by the provider. A disclosure carries no subject identifier at all (HCP 7.4); the per-client pseudonym is in the grant (HCP 3.4).
 - **Cryptosuite.** An HCP implementation **MUST** verify `eddsa-rdfc-2022` and **SHOULD** verify `ecdsa-sd-2023` for credentials that are an entry's content (HCP 14.5). That concerns credentials inside entries, not this document's `proof`, which follows [SPEC §4.7.1](/SPEC.md#471-cryptosuites).
 
@@ -361,11 +365,13 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries the access token, a bearer secret, and the query text, which can itself reveal something about the person. The response carries the person's context: up to 20 disclosures that may include High-sensitivity categories such as `health_context`, and credentials as evidence. A producer **MUST NOT** put context, query text or the token in `ext` or in any `message`. The smallest answer is an empty `entries`; the provider, not the client, decides how much to disclose, and a client asks for no more than its purpose needs, through `categories` and `maxEntries`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a signed assertion that any third party can verify. That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a statement signed by the provider, which anyone holding the provider's public key can check came from it. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
 
 ### The access token
 
 `accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime** (HCP 10.5). HCP states for its MCP binding that the grant is held by the component that presents credentials, never by the model; that the access token **MUST NOT** enter the model's context and **MUST NOT** be returned as tool content (HCP 3.11, invariant 14); and that where the client claims to follow directives, the host applies them, since placing a directive in the model's context is not following it. The same holds wherever an agent runtime carries `hcp/*`, whatever its binding. The token, whether the client presents it or receives it in a response, is held by the component that builds and sends the document, and **MUST NOT** enter a model's context or be returned as tool content or in a tool's result. Where the client claims to follow directives, the host applies them (HCP 6.4, 10.5). Every `hcp/*` specification applies this rule.
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 

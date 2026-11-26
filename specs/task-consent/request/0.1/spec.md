@@ -274,6 +274,54 @@ requester could compute.
 }
 ```
 
+### The same kind of request, typed with the `#request` fragment
+
+A request's `type` may be written as the bare Type URI, as above, or with the
+`#request` fragment ([SPEC §4.4.1](/SPEC.md#441-request-and-response-variants)).
+The framework makes the two forms equivalent, so an approver accepts either. This one asks
+for a key rotation alone, with only the REQUIRED members.
+
+```json
+{
+  "id": "urn:uuid:4b8e2f61-0c7d-4a95-8e13-6f2a9d0c5b72",
+  "type": "https://trusttasks.org/spec/task-consent/request/0.1#request",
+  "issuer": "did:key:z6MkExecutorVtaExample",
+  "recipient": "did:key:z6MkApproverPhoneExample",
+  "issuedAt": "2026-07-13T10:12:00Z",
+  "payload": {
+    "challenge": "5e0a7c3d91b24f68a1c7e2d09b4f3a65",
+    "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+    "payloadDigest": "zQmT7xYkVq3RnB9cHfLp2WdJs8GaZ4uEoMi6KbNtXyC1vDr",
+    "sideEffects": "mutating",
+    "exposure": {
+      "discloses": "none",
+      "actsAsSubject": false
+    },
+    "requester": "did:key:z6MkRequesterBrowserExample",
+    "effects": [
+      {
+        "kind": "keyRotation",
+        "summary": "Rotates this DID's update key. The current update key stops being able to authorize changes.",
+        "before": ["z6MkpB2NextUpdateKeyExample"],
+        "after": ["z6MkqC7FollowingUpdateKeyExample"]
+      }
+    ],
+    "approverSet": "operators",
+    "minApprovals": 1,
+    "excludeRequester": true,
+    "expiresAt": "2026-07-13T10:27:00Z"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-07-13T10:12:00Z",
+    "verificationMethod": "did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample",
+    "proofPurpose": "authentication",
+    "proofValue": "z4KpRwExampleProofValueForTaskConsentRequestFragmentForm"
+  }
+}
+```
+
 ## Response
 
 ```json

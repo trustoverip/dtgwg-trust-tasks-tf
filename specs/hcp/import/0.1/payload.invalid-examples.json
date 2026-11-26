@@ -7,26 +7,6 @@
     }
   },
   {
-    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-    "payload": {
-      "export": {
-        "@context": [
-          "https://hcp.example/contexts/v2"
-        ],
-        "type": "ContextExport",
-        "schema": "https://hcp.example/spec/export/2.0",
-        "subject": {
-          "id": "did:web:person.example"
-        },
-        "exportedBy": "https://context.provider.example",
-        "exportedAt": "2026-11-25T09:00:02Z",
-        "options": { "includeVersions": false, "includeAudit": false },
-        "entries": [],
-        "rules": []
-      }
-    }
-  },
-  {
     "note": "A `categoryMap` value that is not a category — each replacement is an HCP category (HCP 4.5, 5.4.3).",
     "payload": {
       "export": {

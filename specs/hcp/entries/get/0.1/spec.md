@@ -166,7 +166,7 @@ As for [`hcp/entries/query`](../../query/0.1/spec.md#authorization), neither the
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (its discovery document, HCP 19.1), and a client **MUST** check that binding before it sends a token to a VID.
+As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client **MUST** send a token only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
@@ -260,7 +260,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Gk2pXwVqN7sLmT3dRcB9yHf6jZa1eU8oKnQ5vC2xWb7MtE4rP9gS3iJ6hA1yD8uF5lO2wX9zC7nB4mV6kT3qR"
   }
 }
@@ -290,7 +290,7 @@ HCP requires a `context.read` event for every get entry (HCP 5.2.2, 8.1). As for
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
@@ -305,6 +305,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **The grant, scope, standing-rule and purpose checks** (HCP 5.2.2, 6.2.2, 6.3, 4.2.6), and the narrowing of HCP 6.1.5.1: they are made against provider-held state.
 - **Existence hiding** (HCP 5.2.2, 5.5): every refusal looks the same.
 - **Use limits** (HCP 7.6) and **directives** (HCP 6.4): carried, but honouring them is on the client.
+- **Health context** (HCP 16.2). A copy disclosed from `health_context`, a High-sensitivity category, is usable for at most 24 hours (HCP 7.6). A provider conforming to the Health Context Profile (HCP 16.1, 18.1) does not disclose a `model-inferred` entry in `health_context` to a Context Client unless the most recent confirmation record on its current version is `confirmed`: until then a get of it is refused with `permissionDenied`, as for an entry that does not exist.
 
 ## Security & Privacy
 
@@ -315,6 +316,8 @@ The request carries the access token, a bearer secret, and names one entry and a
 ### The access token
 
 `accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
 **Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 
