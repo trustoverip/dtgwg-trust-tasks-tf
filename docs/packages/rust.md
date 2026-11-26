@@ -120,6 +120,13 @@ The builder setters take the field's type through `TryInto`, so:
 - Reading: `p.label.flatten()` gives the value when you don't care why there
   isn't one; match `Some(None)` to see an explicit `null`.
 - Any other optional member keeps its `Option<T>` setter, type and decoding.
+- Decoding a `null` on an optional array or map with no null form is now
+  **accepted** and read as absent. typify's bare `Vec` / map could not read a
+  `null`, so `{"redactedFields": null}` used to fail to decode, and a typed
+  consumer decoding `TrustTask<P>` before `consume_inbound::<P>` refused it
+  there. Like every
+  other forbidden `null`, it is now left to validation of the received payload
+  (above).
 
 These are public type changes, so the change that introduced them was a
 breaking release of `trust-tasks-rs`, and an application generating its own
