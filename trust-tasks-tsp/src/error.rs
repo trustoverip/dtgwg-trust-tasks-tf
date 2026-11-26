@@ -25,7 +25,7 @@ pub enum TspError {
     /// a version mismatch: TSP has no version negotiation, so the peer has to
     /// upgrade.
     ///
-    /// A TSP MINOR never gates a message (TSP 1.0 §3): a 1.x message that then
+    /// A TSP MINOR never gates a message (TSP 1.0 §3.1): a 1.x message that then
     /// fails to open is [`Self::Upstream`], as any other unopenable one is.
     #[error(
         "unsupported TSP version: the message is TSP MAJOR {major}, this binding speaks TSP {} only (the sender must upgrade; TSP has no version negotiation)",

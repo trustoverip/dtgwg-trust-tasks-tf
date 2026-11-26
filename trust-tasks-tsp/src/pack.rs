@@ -27,7 +27,7 @@ use crate::handler::TspHandler;
 /// A message in a TSP MAJOR other than 1 — the drafts Rev 3 (`YTSP-AAC`) and
 /// Rev 2 (`YTSP-AAB`) among them — is refused as
 /// [`TspError::UnsupportedTspVersion`]; an unknown 1.x MINOR is not a version
-/// refusal (TSP 1.0 §3). TSP has no version negotiation, so a peer on a draft
+/// refusal (TSP 1.0 §3.1). TSP has no version negotiation, so a peer on a draft
 /// has to upgrade.
 pub const TSP_VERSION: &str = "1.0";
 

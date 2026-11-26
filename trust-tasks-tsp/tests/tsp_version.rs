@@ -203,7 +203,7 @@ async fn refuses_a_tsp_draft_before_the_sender_is_needed() {
     }
 }
 
-/// MINOR never gates a message (TSP 1.0 §3): a 1.x message with a MINOR this
+/// MINOR never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this
 /// binding does not know is read like any other, so one that then fails to
 /// open is an ordinary failure, not a version refusal. The signature covers the
 /// header, so the bumped message no longer verifies.
