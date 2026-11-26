@@ -44,7 +44,7 @@ pub struct Target {
     /// [`Target::index`].
     pub(crate) index: bool,
     /// Path of a module of the runtime crate that defines the member-presence
-    /// helpers (`present`, `not_null`), or `None` to emit them into each
+    /// helper (`present`), or `None` to emit it into each
     /// generated module (see `presence`).
     pub(crate) presence_helpers: Option<&'static str>,
 }

@@ -1,8 +1,8 @@
 //! The types `generate_module` emits keep an optional member's presence: an
 //! absent member, a present empty array or map, and an explicit `null` where
-//! the schema admits one must each survive a decode-then-encode round trip,
-//! and a `null` where the schema has no null form is refused, not read as
-//! absent.
+//! the schema admits one must each survive a decode-then-encode round trip.
+//! A `null` where the schema has no null form reads as absent (serde's own
+//! `Option`): refusing it is payload-schema validation's job, not decoding's.
 //!
 //! typify renders an optional array or map as a bare `Vec` / map skipped when
 //! empty (`[]` and `{}` come back absent), an optional nullable member as an
@@ -153,21 +153,22 @@ fn unprefixed(ty: String) -> String {
     ty.replace("::trust_tasks_rs::__private", "")
 }
 
-/// Which helper a field reads through.
+/// How a field reads a present member.
 #[derive(Clone, Copy, Debug)]
 enum Helper {
-    /// The member admits `null`: a present `null` is `Some`.
+    /// The member admits `null`: through `present`, so a present `null` is
+    /// `Some`.
     Present,
-    /// It does not: a `null` is refused.
-    NotNull,
+    /// It does not: serde's own `Option`, so a `null` reads as `None`
+    /// (absent). No `deserialize_with` at all.
+    Plain,
 }
 
 fn reads_through(serde: &str, helpers: &str, helper: Helper) -> bool {
-    let name = match helper {
-        Helper::Present => "present",
-        Helper::NotNull => "not_null",
-    };
-    serde.contains(&format!("deserialize_with=\"{helpers}::{name}\""))
+    match helper {
+        Helper::Present => serde.contains(&format!("deserialize_with=\"{helpers}::present\"")),
+        Helper::Plain => !serde.contains("deserialize_with"),
+    }
 }
 
 /// `ty.name` is `Option<inner>`, read through `helper`, skipped only when
@@ -208,14 +209,14 @@ fn an_optional_array_or_map_is_an_option_so_empty_stays_present() {
     for (target, h) in targets() {
         let file = module(&target);
         let list = "::std::vec::Vec<::std::string::String>";
-        assert_presence_kept(&file, "Payload", "list", list, h, Helper::NotNull);
+        assert_presence_kept(&file, "Payload", "list", list, h, Helper::Plain);
         assert_presence_kept(
             &file,
             "Payload",
             "map",
             "::std::collections::HashMap<::std::string::String,::std::string::String>",
             h,
-            Helper::NotNull,
+            Helper::Plain,
         );
         assert_presence_kept(
             &file,
@@ -223,7 +224,7 @@ fn an_optional_array_or_map_is_an_option_so_empty_stays_present() {
             "object",
             "::serde_json::Map<::std::string::String,::serde_json::Value>",
             h,
-            Helper::NotNull,
+            Helper::Plain,
         );
     }
 }
@@ -262,14 +263,7 @@ fn an_intrinsic_default_is_no_default_so_the_member_keeps_its_presence() {
     for (target, h) in targets() {
         let file = module(&target);
         let list = "::std::vec::Vec<::std::string::String>";
-        assert_presence_kept(
-            &file,
-            "Payload",
-            "empty_by_default",
-            list,
-            h,
-            Helper::NotNull,
-        );
+        assert_presence_kept(&file, "Payload", "empty_by_default", list, h, Helper::Plain);
         let string = format!("{OPTION}<::std::string::String>");
         assert_presence_kept(
             &file,
@@ -283,7 +277,7 @@ fn an_intrinsic_default_is_no_default_so_the_member_keeps_its_presence() {
 }
 
 #[test]
-fn any_other_optional_member_keeps_its_type_and_refuses_null() {
+fn any_other_optional_member_is_left_as_typify_renders_it() {
     for (target, h) in targets() {
         let file = module(&target);
         let name = "plain";
@@ -293,7 +287,7 @@ fn any_other_optional_member_keeps_its_type_and_refuses_null() {
             format!("{OPTION}<::std::string::String>"),
             "{name}"
         );
-        assert!(reads_through(&serde, h, Helper::NotNull), "{name}: {serde}");
+        assert!(reads_through(&serde, h, Helper::Plain), "{name}: {serde}");
         assert!(serde.contains("skip_serializing_if=\"::std::option::Option::is_none\""));
         // The type is unchanged, so the builder is too.
         assert_eq!(
@@ -325,11 +319,12 @@ fn the_tag_never_reaches_the_output_and_descriptions_survive() {
         assert!(!source.contains("trust-tasks-build:nullable"), "{source}");
         assert!(source.contains("///Explicit null clears it; absent leaves it."));
     }
-    // Only an application's module carries the helpers, naming serde through
+    // Only an application's module carries the helper, naming serde through
     // the target's path; the runtime crate's share `crate::specs::__presence`.
+    // No helper refuses a `null`: that is payload-schema validation's job.
     let app = generate_module(&fixture_bundle(), &Target::application()).unwrap();
     assert!(app.contains("mod presence"));
-    assert!(app.contains("fn present<") && app.contains("fn not_null<"));
+    assert!(app.contains("fn present<") && !app.contains("not_null"));
     assert!(app.contains("::trust_tasks_rs::__private::serde::Deserializer<'de>"));
     let own = generate_module(&fixture_bundle(), &Target::runtime_crate()).unwrap();
     assert!(!own.contains("mod presence"));
@@ -357,28 +352,4 @@ fn a_nullable_member_rendered_as_a_bare_collection_fails_generation() {
             "{message}"
         );
     }
-}
-
-/// The text of the `not_null` refusal in `source`.
-fn refusal(source: &str) -> String {
-    let start = source
-        .find("&\"a value")
-        .expect("the not_null refusal message")
-        + 2;
-    let end = start + source[start..].find('"').unwrap();
-    source[start..end].to_string()
-}
-
-#[test]
-fn the_emitted_and_hand_written_refusals_say_the_same() {
-    let app = generate_module(&fixture_bundle(), &Target::application()).unwrap();
-    let path = concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../trust-tasks-rs/src/specs/mod.rs"
-    );
-    // Only in the repository: a packaged crate has no sibling to compare with.
-    let Ok(hand_written) = std::fs::read_to_string(path) else {
-        return;
-    };
-    assert_eq!(refusal(&app), refusal(&hand_written));
 }

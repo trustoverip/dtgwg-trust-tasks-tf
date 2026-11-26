@@ -13,28 +13,33 @@
 //! - an optional member whose schema is `{"type": "null"}` becomes `()` with
 //!   `#[serde(default)]`, so an absent member is written back as `null`;
 //! - any other optional member becomes `Option<T>`, and serde reads a `null`
-//!   there as `None`, so a `null` the schema refuses is accepted and written
-//!   back as absent.
+//!   there as `None`.
 //!
-//! This module rewrites those fields so the three states stay apart, and a
-//! `null` is accepted exactly where the schema admits one:
+//! This module rewrites those fields so the three states stay apart wherever
+//! the schema gives them apart:
 //!
 //! | schema of an optional member | field type | absent | `null` | value |
 //! |---|---|---|---|---|
-//! | array / map | `Option<Vec<T>>` / `Option<Map>` | `None` | refused | `Some(v)` (`[]` too) |
+//! | array / map | `Option<Vec<T>>` / `Option<Map>` | `None` | `None` | `Some(v)` (`[]` too) |
 //! | admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
 //! | `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
-//! | anything else | `Option<T>` (unchanged) | `None` | refused | `Some(v)` |
+//! | anything else | `Option<T>` (unchanged) | `None` | `None` | `Some(v)` |
 //!
-//! Every optional field reads through one of two helpers (`deserialize_with`)
-//! and keeps `skip_serializing_if = "Option::is_none"`, so only an absent
-//! member is omitted. `present` maps a present member, `null` included, to
-//! `Some` (the member admits `null`); `not_null` refuses a `null` (it does
-//! not). For `Target::runtime_crate()` the
-//! helpers are the crate-private `crate::specs::__presence` in `trust-tasks-rs`,
-//! which adds no public API. For an application they are emitted into each
-//! module that needs them, so a generated module names nothing new in the
-//! runtime's `__private` surface (and so no new ABI item).
+//! Every rewritten field keeps `skip_serializing_if = "Option::is_none"`, so
+//! only an absent member is omitted. A member that admits `null` reads through
+//! the `present` helper (`deserialize_with`), which maps a present member,
+//! `null` included, to `Some`. For `Target::runtime_crate()` the helper is the
+//! crate-private `crate::specs::__presence::present` in `trust-tasks-rs`,
+//! which adds no public API. For an application it is emitted into each module
+//! that needs it, so a generated module names nothing new in the runtime's
+//! `__private` surface (and so no new ABI item).
+//!
+//! A `null` on a member whose schema has no null form is read as absent, not
+//! refused: decoding enforces what the Rust type can express, and refusing a
+//! `null` the schema forbids is payload-schema validation's job
+//! (`PayloadPolicy::Validate`, the `validate` feature), as in the other three
+//! runtimes. A per-field refusal (`deserialize_with` on ~14,600 fields of the
+//! prebuilt tree) cost about 2 GiB of compiler memory and was dropped.
 //!
 //! A member whose schema is `true`, `{}` or annotations only accepts any
 //! value, `null` included. It is tagged like any other member that admits
@@ -51,7 +56,7 @@
 //!
 //! Each tag carries its own id, and generation fails if one is never read
 //! back, so a description typify drops cannot silently turn a member that
-//! admits `null` into one that refuses it. A tagged member typify renders as
+//! admits `null` into one that reads its `null` as absent. A tagged member typify renders as
 //! anything but an `Option` (a bare `Vec` or map skipped when empty) fails
 //! generation too: no rewrite of that field can both keep `[]` and `null`
 //! apart and admit `null`.
@@ -226,12 +231,13 @@ fn is_null_only(p: &serde_json::Map<String, Value>) -> bool {
 /// `allOf` (every branch), `$ref`, and a `not` of a schema that is exactly
 /// `null`. Any other keyword (`not` of anything else, `if`, a type-specific
 /// keyword such as `minLength`) is taken to admit it. The answer drives
-/// whether a `null` is kept or refused, and erring towards "admits" only keeps
-/// a `null` the schema might refuse, where erring the other way would refuse a
-/// document the schema accepts.
+/// whether a `null` is kept or read as absent, and erring towards "admits"
+/// only keeps a `null` the schema might refuse (payload-schema validation
+/// still refuses it), where erring the other way would lose a `null` the
+/// schema accepts.
 fn admits_null(schema: &Value, root: &Value, depth: usize) -> bool {
     if depth > 64 {
-        // The safe direction: keep a `null` rather than refuse one.
+        // The safe direction: keep a `null` rather than lose one.
         return true;
     }
     let map = match schema {
@@ -305,10 +311,10 @@ fn resolve<'a>(root: &'a Value, reference: &str) -> Option<&'a Value> {
 type Rewrites = BTreeSet<(String, String)>;
 
 /// Rewrite the fields described in the module docs, follow each into the
-/// struct's builder, and emit the helpers the fields use. `serde` is the path
+/// struct's builder, and emit the helper the fields use. `serde` is the path
 /// generated code names serde by. `shared` is the path of a module that
-/// already defines the helpers (`crate::specs::__presence` inside
-/// `trust-tasks-rs`), or `None` to emit them into this module. `tags` is
+/// already defines the helper (`crate::specs::__presence` inside
+/// `trust-tasks-rs`), or `None` to emit it into this module. `tags` is
 /// what [`mark_nullable_optional_members`] returned.
 ///
 /// Every tag must be read back off a field. A field typify made required (a
@@ -366,7 +372,8 @@ pub(crate) fn apply_presence(
     }
     if let Some(name) = rewriter.ambiguous.first() {
         // typify writes no doc comment on an enum variant's fields, so the tag
-        // cannot come back there; refuse rather than guess from the name.
+        // cannot come back there; refuse rather than guess from the name (a
+        // wrong "no" would read the member's `null` as absent and lose it).
         return Err(anyhow!(
             "optional member {name:?} of an enum variant: a member of the same name elsewhere \
              in the schema admits null, and typify writes no doc on a variant's fields, so \
@@ -396,8 +403,8 @@ pub(crate) fn apply_presence(
         .collect();
     if !unread.is_empty() {
         // typify dropped the member's description, so whether its field
-        // admits `null` cannot be read back; guessing "no" would refuse a
-        // document the schema accepts.
+        // admits `null` cannot be read back; guessing "no" would read the
+        // member's `null` as absent and lose it.
         return Err(anyhow!(
             "optional member(s) {} admit null, but the tag marking them was not found on any \
              field typify generated, so the field's null handling cannot be chosen safely \
@@ -410,7 +417,7 @@ pub(crate) fn apply_presence(
     // description onto the newtype it makes for a constrained member.
     StripMarker.visit_file_mut(file);
 
-    if rewriter.rewrites.is_empty() && !rewriter.used_present && !rewriter.used_not_null {
+    if rewriter.rewrites.is_empty() && !rewriter.used_present {
         return Ok(());
     }
     for item in file.items.iter_mut() {
@@ -425,55 +432,28 @@ pub(crate) fn apply_presence(
     if shared.is_some() {
         return Ok(());
     }
-    // Only the helpers this module uses, so neither is dead code.
-    let mut fns: Vec<syn::Item> = Vec::new();
-    if rewriter.used_present {
-        fns.push(syn::parse_quote! {
-            /// Reads a present member, `null` included, as `Some`, so an
-            /// absent member (`None`, via `#[serde(default)]`) stays distinct.
-            pub(super) fn present<'de, D, T>(
-                deserializer: D,
-            ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-            where
-                D: #serde::Deserializer<'de>,
-                T: #serde::Deserialize<'de>,
-            {
-                <T as #serde::Deserialize<'de>>::deserialize(deserializer)
-                    .map(::std::option::Option::Some)
-            }
-        });
+    // Only when this module uses it, so it is never dead code.
+    if !rewriter.used_present {
+        return Ok(());
     }
-    if rewriter.used_not_null {
-        fns.push(syn::parse_quote! {
-            /// Reads a present member as `Some` and refuses a `null`: the
-            /// member's schema has no null form, so `null` is not "absent".
-            pub(super) fn not_null<'de, D, T>(
-                deserializer: D,
-            ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-            where
-                D: #serde::Deserializer<'de>,
-                T: #serde::Deserialize<'de>,
-            {
-                match <::std::option::Option<T> as #serde::Deserialize<'de>>::deserialize(
-                    deserializer,
-                )? {
-                    ::std::option::Option::Some(value) => {
-                        ::std::result::Result::Ok(::std::option::Option::Some(value))
-                    }
-                    ::std::option::Option::None => ::std::result::Result::Err(
-                        <D::Error as #serde::de::Error>::invalid_type(
-                            #serde::de::Unexpected::Unit,
-                            &"a value (this optional member has no null form: leave it out instead)",
-                        ),
-                    ),
-                }
-            }
-        });
-    }
+    let present: syn::Item = syn::parse_quote! {
+        /// Reads a present member, `null` included, as `Some`, so an
+        /// absent member (`None`, via `#[serde(default)]`) stays distinct.
+        pub(super) fn present<'de, D, T>(
+            deserializer: D,
+        ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+        where
+            D: #serde::Deserializer<'de>,
+            T: #serde::Deserialize<'de>,
+        {
+            <T as #serde::Deserialize<'de>>::deserialize(deserializer)
+                .map(::std::option::Option::Some)
+        }
+    };
     let helper: syn::Item = syn::parse_quote! {
         #[doc(hidden)]
         mod presence {
-            #(#fns)*
+            #present
         }
     };
     file.items.push(helper);
@@ -482,7 +462,7 @@ pub(crate) fn apply_presence(
 
 #[derive(Default)]
 struct Rewriter {
-    /// Path the fields name the helpers by: `presence` (emitted into the
+    /// Path the fields name the helper by: `presence` (emitted into the
     /// module) or a shared module.
     helpers: String,
     rewrites: Rewrites,
@@ -498,7 +478,6 @@ struct Rewriter {
     /// on a member of that name (see [`apply_presence`]).
     in_variant: BTreeSet<String>,
     used_present: bool,
-    used_not_null: bool,
 }
 
 impl Rewriter {
@@ -544,35 +523,33 @@ impl Rewriter {
                 self.in_variant.insert(json_name.clone());
             }
         }
-        // (wrap the type in one more `Option`, the schema admits `null`)
-        let (wrap, nullable) = if optional_option {
+        // Every rewrite wraps the type in one more `Option`; `nullable`: the
+        // schema admits `null`, so it reads through `present`.
+        let nullable = if optional_option {
             if has_tag {
-                (true, true)
+                true
             } else if owner.is_none() && tagged.contains(&json_name) {
                 self.ambiguous.push(json_name);
                 return;
             } else {
-                // Not nullable: the type stays, a `null` is refused.
-                (false, false)
+                // Not nullable: left as typify renders it (a `null` reads as
+                // `None`, as absent; payload-schema validation refuses it).
+                return;
             }
         } else if serde.default && serde.skip_if_empty() {
-            (true, false)
+            false
         } else if serde.default && serde.skip.is_none() && is_unit(ty) {
-            (true, true)
+            true
         } else {
             return;
         };
-        let helper = if nullable {
+        // A non-nullable array or map needs no helper: `default` reads an
+        // absent member as `None`, and serde reads a `null` there as `None`.
+        let helper = nullable.then(|| {
             self.used_present = true;
-            "present"
-        } else {
-            self.used_not_null = true;
-            "not_null"
-        };
-        serde.rewrite(&mut field.attrs, &format!("{}::{helper}", self.helpers));
-        if !wrap {
-            return;
-        }
+            format!("{}::present", self.helpers)
+        });
+        serde.rewrite(&mut field.attrs, helper.as_deref());
         field.ty = wrap_in_option(ty);
         if let (Some(owner), Some(ident)) = (owner, &field.ident) {
             self.rewrites.insert((owner.to_string(), ident.to_string()));
@@ -631,9 +608,9 @@ impl SerdeAttr {
 
     /// Replace the field's `#[serde(…)]` with the presence-keeping form,
     /// keeping its `rename`.
-    fn rewrite(&self, attrs: &mut [syn::Attribute], helper: &str) {
-        let attr: syn::Attribute = match &self.rename {
-            Some(rename) => syn::parse_quote! {
+    fn rewrite(&self, attrs: &mut [syn::Attribute], helper: Option<&str>) {
+        let attr: syn::Attribute = match (&self.rename, helper) {
+            (Some(rename), Some(helper)) => syn::parse_quote! {
                 #[serde(
                     rename = #rename,
                     default,
@@ -641,12 +618,22 @@ impl SerdeAttr {
                     skip_serializing_if = "::std::option::Option::is_none"
                 )]
             },
-            None => syn::parse_quote! {
+            (None, Some(helper)) => syn::parse_quote! {
                 #[serde(
                     default,
                     deserialize_with = #helper,
                     skip_serializing_if = "::std::option::Option::is_none"
                 )]
+            },
+            (Some(rename), None) => syn::parse_quote! {
+                #[serde(
+                    rename = #rename,
+                    default,
+                    skip_serializing_if = "::std::option::Option::is_none"
+                )]
+            },
+            (None, None) => syn::parse_quote! {
+                #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
             },
         };
         if let Some(slot) = attrs.iter_mut().find(|a| a.path().is_ident("serde")) {
@@ -1112,7 +1099,8 @@ mod tests {
     #[test]
     fn a_struct_tag_does_not_make_a_variant_field_ambiguous() {
         // Outside a branch, a tag cannot be on a variant's field: the optional
-        // variant field of that name is an unrelated member, refusing `null`.
+        // variant field of that name is an unrelated member, left as typify
+        // renders it (its `null` reads as absent).
         let doc = marker(0);
         let file: syn::File = syn::parse_quote! {
             pub struct Payload {
@@ -1130,7 +1118,7 @@ mod tests {
         let out = run(file, &[(0, tag("label", false))]).unwrap();
         let text = quote::quote!(#out).to_string();
         assert!(text.contains("\"presence::present\""), "{text}");
-        assert!(text.contains("\"presence::not_null\""), "{text}");
+        assert_eq!(text.matches("deserialize_with").count(), 1, "{text}");
     }
 
     #[test]
