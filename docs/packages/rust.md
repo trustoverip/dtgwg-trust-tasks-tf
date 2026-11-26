@@ -93,7 +93,7 @@ The `hcp` family does not depend on any generator keeping those forms apart.
 Where the difference carries meaning, its schemas carry presence explicitly, so
 the document itself says what was asked for or what is null, whichever library
 wrote it. These members, which HCP's own shapes leave optional, do so (each
-*pending HCP confirmation*, question 42):
+*pending HCP confirmation*, [question 42](../../specs/hcp/_shared/0.1/QUESTIONS.md)):
 
 - `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
   `grantId` are required and nullable;

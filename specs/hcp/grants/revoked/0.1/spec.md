@@ -23,7 +23,7 @@ proofRequirement:
   request: REQUIRED
   response: RECOMMENDED
   rationale: >-
-    HCP requires the revocation notice to be signed and the client to verify it (HCP 9.9): an unsigned notice would
+    HCP requires the revocation notification to be signed and the client to verify it (HCP 9.9): an unsigned notice would
     let anyone make a client stop using its context and a live grant. The proof is REQUIRED on every binding.
     The acknowledgement's proof is RECOMMENDED, so the provider can show the client received the notice.
 issuedAtRequirement:
@@ -57,7 +57,7 @@ related:
 
 ## Abstract
 
-The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, where that client holds disclosed entries and has registered a notification endpoint (HCP 6.2.2), and the client acknowledges. HCP sends this notice as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any Trust Task binding. The same notice also announces a grant that ended because the delegation it was authorized under ended (HCP 17.6), *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)).
+The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, where that client holds disclosed entries and has registered a notification endpoint (HCP 6.2.2), and the client acknowledges. HCP sends this notification as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any transport binding. The same notice also announces a grant that ended because the delegation it was authorized under ended (HCP 17.6), *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)).
 
 It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)). The revocation itself is [`hcp/grants/revoke`](../../revoke/0.1/spec.md).
 
@@ -71,7 +71,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider and client that use this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation notices; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md), *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider and client that use this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation notifications; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md), *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 This specification makes one declared departure from HCP: every delivery attempt is a fresh Trust Task document, with its own `id`, `issuedAt` and `proof`, where HCP 9.9 sends the same token on every attempt. The token's `jti`, which HCP keeps the same on every attempt so that the client can deduplicate, is carried as the payload's `noticeId` (see [Delivery rules carried from HCP](#delivery-rules-carried-from-hcp)). It is *pending HCP confirmation* ([question 16](#pending-hcp-confirmation)).
 
@@ -79,7 +79,7 @@ This specification makes one declared departure from HCP: every delivery attempt
 
 The authority is **the provider's position as the holder of the grant**: only the provider that issued a grant can say it has ended. The client accepts the notice only when its `proof` verifies under a key of that provider. Here the proof is the authorization in the sense of [CONTRIBUTING-SPECS](../../../../../CONTRIBUTING-SPECS.md#what-to-write): a verified assertion by the one party entitled to make it, for the one purpose of ending use of that grant.
 
-HCP requires the notice to be signed with an asymmetric algorithm, with a key the provider publishes at its `jwks_uri`, and the client to verify it (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. The provider **MUST** sign the notice with a key that its VID's DID document authorizes for the proof's purpose. Where the provider publishes an HCP discovery document (HCP 19.1), that key **MUST** also be one its HCP JWKS publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A provider that serves the family only over a Trust Task binding may publish no discovery document, and so has no `jwks_uri` ([question 1](#pending-hcp-confirmation)); its VID's DID document is then the only place the key is published. A client **MUST** check that the `issuer` VID is its anchor for the provider that issued the grant (see [Parties](#parties)) and, where that provider publishes a discovery document, **MUST** refuse a notice whose key it cannot find in the provider's JWKS.
+HCP requires the notice to be signed with an asymmetric algorithm, with a key the provider publishes at its `jwks_uri`, and the client to verify it (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. The provider **MUST** sign the notice with a key that its VID's DID document authorizes for the proof's purpose. Where the provider publishes an HCP discovery document (HCP 19.1), that key **MUST** also be one its HCP JWKS publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A provider that serves the family only over a transport binding may publish no discovery document, and so has no `jwks_uri` ([question 1](#pending-hcp-confirmation)); its VID's DID document is then the only place the key is published. A client **MUST** check that the `issuer` VID is its anchor for the provider that issued the grant (see [Parties](#parties)) and, where that provider publishes a discovery document, **MUST** refuse a notice whose key it cannot find in the provider's JWKS.
 
 The client does not need to hold any authority of its own to acknowledge.
 
@@ -287,4 +287,4 @@ The provider keeps the `revocation.notified` audit event (HCP 6.2.3) and **SHOUL
 
 ### Consent/purpose
 
-The notice exists to carry out the person's withdrawal of permission. Its data is used only to identify the grant whose context the client must stop using. Nothing in this task asks the person anything, and whether the client tells its own user is its policy ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
+The notice exists to carry out the person's withdrawal of permission. Its data is used only to identify the grant whose context the client must stop using. Nothing in this task asks the person anything, and whether the client tells the person is its policy ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
