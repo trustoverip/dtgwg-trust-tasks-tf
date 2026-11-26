@@ -79,7 +79,7 @@ This specification makes one declared departure from HCP: every delivery attempt
 
 The authority is **the provider's position as the holder of the grant**: only the provider that issued a grant can say it has ended. The client accepts the notice only when its `proof` verifies under a key of that provider. Here the proof is the authorization in the sense of [CONTRIBUTING-SPECS](../../../../../CONTRIBUTING-SPECS.md#what-to-write): a verified assertion by the one party entitled to make it, for the one purpose of ending use of that grant.
 
-HCP requires the notice to be signed with an asymmetric algorithm, with a key the provider publishes at its `jwks_uri`, and the client to verify it (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. To meet both, the provider **MUST** sign the notice with a key that its VID's DID document lists **and** that its HCP JWKS also publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A client **MUST** check that the `issuer` VID is bound to the provider that issued the grant (see [Parties](#parties)) and **MUST** refuse a notice whose key it cannot find in that provider's JWKS.
+HCP requires the notice to be signed with an asymmetric algorithm, with a key the provider publishes at its `jwks_uri`, and the client to verify it (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. The provider **MUST** sign the notice with a key that its VID's DID document authorizes for the proof's purpose. Where the provider publishes an HCP discovery document (HCP 19.1), that key **MUST** also be one its HCP JWKS publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A provider that serves the family only over a Trust Task binding may publish no discovery document, and so has no `jwks_uri` ([question 1](#pending-hcp-confirmation)); its VID's DID document is then the only place the key is published. A client **MUST** check that the `issuer` VID is its anchor for the provider that issued the grant (see [Parties](#parties)) and, where that provider publishes a discovery document, **MUST** refuse a notice whose key it cannot find in the provider's JWKS.
 
 The client does not need to hold any authority of its own to acknowledge.
 
@@ -119,7 +119,7 @@ The Security Event Token's claims map to the Trust Task envelope, and the event'
 | HCP Provider | `issuer` of the notice, `recipient` of the acknowledgement |
 | Context Client | `recipient` of the notice, `issuer` of the acknowledgement |
 
-HCP sends the notice to the notification endpoint the client registered. Here the client's VID stands in for that endpoint: at registration, the client **MUST** give the provider the VID it will receive notices at, and the provider **MUST** send the notice to that VID and no other. The provider's VID is bound to its HCP identity as [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties) describes.
+HCP sends the notice to the notification endpoint the client registered. Here the client's VID stands in for that endpoint: at registration, the client **MUST** give the provider the VID it will receive notices at, and the provider **MUST** send the notice to that VID and no other. The client's anchor for the provider's VID, and the VID's binding to the provider's HCP identity where the provider publishes a discovery document, are as [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties) describes.
 
 ## Request
 
@@ -269,7 +269,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - The retry schedule and the abandonment duty (HCP 9.9, 6.2.4).
 - The client's end of use of disclosed copies, and its passing none on (HCP 6.2.2), which no acknowledgement can prove.
-- The key-publication rule: the signing key's presence in the provider's JWKS (HCP 9.9) is checked outside the document.
+- The key-publication rule: where the provider publishes a discovery document, the signing key's presence in its JWKS (HCP 9.9) is checked outside the document.
 
 ## Security & Privacy
 

@@ -114,7 +114,7 @@ A token issued to a client other than the one the `issuer` VID identifies is ref
 | HCP Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-The organization told is named in the payload, not as a party: it takes no part in the exchange. As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1).
+The organization told is named in the payload, not as a party: it takes no part in the exchange. As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a client's anchor for the provider is the provider VID the client obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it.
 
 ## Request
 

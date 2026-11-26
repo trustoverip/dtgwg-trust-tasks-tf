@@ -135,7 +135,10 @@ Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). Th
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery document (`/.well-known/hcp-configuration`, HCP 19.1), and a client by its registration. Neither is a VID. A provider serving this task **MUST** make its VID verifiably bound to its HCP identity: its DID document lists the discovery document as a service, or its discovery document names the VID, or both. A client **MUST** check that binding before it sends a token to a VID.
+HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery document (`/.well-known/hcp-configuration`, HCP 19.1), and a client by its registration. Neither is a VID. A provider that serves the family only over a Trust Task binding may publish no discovery document: HCP requires one of an implementation that claims HCP conformance (HCP 19.1), whose schema lists at least one of HCP's own bindings, and the provider may not claim the carriage in its `conformsTo` ([question 1](#pending-hcp-confirmation)). This rule, which every `hcp/*` specification applies, covers both cases:
+
+- **The anchor.** A client's trust anchor for a provider is the provider VID the client obtained when the person connected it to that provider: from the pairing or QR code the person used, or from [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) asked of a VID the client already trusts for that purpose. A client **MUST** send a token only to that VID.
+- **The discovery binding.** Where the provider publishes an HCP discovery document, it **MUST** also make its VID verifiably bound to its HCP identity: its DID document lists the discovery document as a service, or its discovery document names the VID, or both. A client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
