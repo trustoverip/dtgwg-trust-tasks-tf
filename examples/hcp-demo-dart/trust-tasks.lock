@@ -6,25 +6,25 @@ registry = "https://trusttasks.org"
 slug = "hcp/entries/query"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/entries/query/0.1"
-digest = "sha256:943c5ec216844d69073a52ed5705a40e0b504f91237d5bb4a3ac4b017c9f90aa"
+digest = "sha256:0ab943e462141d4eea33bc0e71f887e3c389920b045af2b51b356f7648d69e00"
 
 [[task]]
 slug = "hcp/grants/request"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/grants/request/0.1"
-digest = "sha256:3ffde3ede8d6154c94714fcbb3bd17ae64e33bb79f7be16ee37517473610a33b"
+digest = "sha256:40fd6181cfdfb4bf36fc6d506b7c785a60902f5c8a3ff0dc684be585f6f27f7d"
 
 [[task]]
 slug = "hcp/grants/revoke"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/grants/revoke/0.1"
-digest = "sha256:18157409a6f938fdcf1fd38a6d7a1973550f8b6d9b55945817cf219c75817052"
+digest = "sha256:81a2367dce9c221e648dd670035a771d450d990a6fedfb84eb79dccaa8cd7d84"
 
 [[task]]
 slug = "hcp/grants/revoked"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/grants/revoked/0.1"
-digest = "sha256:66e9f44d93d18e448361cf7ace5ad8228eaa8760c68274df45069e40be38d759"
+digest = "sha256:cea976657d8d0c651477e6b773d0b8cd7344f332ac761f1d96a19293eebc9fea"
 
 [[task]]
 slug = "trust-task-discovery"
