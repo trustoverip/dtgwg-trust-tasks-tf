@@ -414,6 +414,17 @@ export function issuedAtNow(): string {
 }
 
 /**
+ * The request's `ceremony` member for a document that answers it, as a copy:
+ * the answer must not share the request's object, which the caller may still
+ * hold as the document it received.
+ */
+function carriedCeremony(ceremony: Ceremony): Ceremony {
+  const copy: Ceremony = { ...ceremony };
+  if (ceremony.prev !== undefined) copy.prev = ceremony.prev.map((step) => ({ ...step }));
+  return copy;
+}
+
+/**
  * Build the error response for `request`, addressed to an explicit `recipient`.
  *
  * ⚠ Prefer {@link rejectWith} for ordinary refusals. This form exists for
@@ -458,6 +469,12 @@ export function rejectWithRecipient<P>(
   // parent does not become an explicit `undefined` on the wire.
   if (request.parentThreadId !== undefined) {
     response.parentThreadId = request.parentThreadId;
+  }
+  // §4.11.3 — the same enactment is carried onto every document of a step,
+  // error responses included, so a rejection stays inside the ceremony it
+  // belongs to. Absent stays absent, as for the parent.
+  if (request.ceremony !== undefined) {
+    response.ceremony = carriedCeremony(request.ceremony);
   }
   return response;
 }
@@ -515,6 +532,11 @@ export function respondWith<P, R>(
   // §4.9.2 — the whole exchange shares one parent.
   if (request.parentThreadId !== undefined) {
     response.parentThreadId = request.parentThreadId;
+  }
+  // §4.11.3 — the response half of a step belongs to the same enactment as
+  // the request.
+  if (request.ceremony !== undefined) {
+    response.ceremony = carriedCeremony(request.ceremony);
   }
   return response;
 }
