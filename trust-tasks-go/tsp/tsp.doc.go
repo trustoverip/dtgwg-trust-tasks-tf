@@ -1,5 +1,5 @@
 // Package tsp is the ToIP Trust Spanning Protocol (TSP) transport binding
-// (bindings/tsp/0.1) for the Trust Tasks framework, built on
+// (bindings/tsp/0.3) for the Trust Tasks framework, built on
 // github.com/affinidi/affinidi-tsp-go.
 //
 // PackTrustTask seals a document into a Direct TSP message; UnpackTrustTask

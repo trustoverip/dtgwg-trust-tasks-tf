@@ -9,12 +9,13 @@ import 'package:trust_tasks/trust_tasks.dart';
 // importing both packages is not an ambiguity.
 export 'package:trust_tasks/trust_tasks.dart' show newUrnUuid;
 
-/// The binding's stable identifier (`bindings/tsp/0.1` §1).
+/// The binding's stable identifier (`bindings/tsp/0.3` §1), which requires TSP
+/// 1.0. The envelope `type` is still the `tsp/0.1` one.
 const String bindingUri = _bindingUri;
 
 // Named privately as well, because [TspTransport.bindingUri] shadows the public
 // constant inside that class.
-const String _bindingUri = 'https://trusttasks.org/binding/tsp/0.1';
+const String _bindingUri = 'https://trusttasks.org/binding/tsp/0.3';
 
 /// The one TSP version this binding seals and opens: TSP 1.0 (`YTSP-BAA`),
 /// through `affinidi_tsp` 0.2. A message in a MAJOR other than 1 — the drafts

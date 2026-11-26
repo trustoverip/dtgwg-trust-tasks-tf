@@ -97,7 +97,7 @@ and `didcomm.NewMessageID` remain, as forwarders to it.
 
 ### The `trust-tasks-go/tsp` nested module
 
-The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
+The TSP transport binding (`tsp/0.3`) is a **separate Go module** under `trust-tasks-go/tsp`,
 not a package of the core. The core module has zero dependencies (its selling
 point, and what the website claims), and this one pulls in `affinidi-tsp-go` and
 its crypto. Keeping them apart is the whole point.

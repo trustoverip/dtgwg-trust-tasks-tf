@@ -1,7 +1,7 @@
 # @openvtc/trust-tasks-tsp
 
 The [Trust Tasks](https://trusttasks.org) ToIP Trust Spanning Protocol (TSP)
-transport binding ([`bindings/tsp/0.1`](https://trusttasks.org/binding/tsp/0.1))
+transport binding ([`bindings/tsp/0.3`](https://trusttasks.org/binding/tsp/0.3))
 for TypeScript, on
 [`@openvtc/vti-tsp-js`](https://www.npmjs.com/package/@openvtc/vti-tsp-js) — the
 pure-TypeScript TSP the VTA browser plugin uses (browser, Node, React Native, no

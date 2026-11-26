@@ -32,7 +32,7 @@ package to the core `@openvtc/trust-tasks`. Notes:
   matrix leg and a `TS_PACKAGES` entry in `scripts/release-pr.sh`; its first
   npm publish is manual (RELEASING.md).
 
-`@openvtc/trust-tasks-tsp` (dir `trust-tasks-ts-tsp`) is the TSP binding on
+`@openvtc/trust-tasks-tsp` (dir `trust-tasks-ts-tsp`) is the TSP binding (`tsp/0.3`) on
 `@openvtc/vti-tsp-js`, which is **key-based and does no DID resolution** — the
 consumer takes the recipient's raw Ed25519/X25519 private keys and a
 `resolveSender(vid)` callback for the sender's public keys (the Go-style model).

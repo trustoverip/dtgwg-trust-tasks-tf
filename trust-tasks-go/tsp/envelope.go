@@ -10,8 +10,9 @@ import (
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
 
-// BindingURI is the binding's stable identifier (bindings/tsp/0.1 §1).
-const BindingURI = "https://trusttasks.org/binding/tsp/0.1"
+// BindingURI is the binding's stable identifier (bindings/tsp/0.3 §1), which
+// requires TSP 1.0. The envelope type is still the tsp/0.1 one.
+const BindingURI = "https://trusttasks.org/binding/tsp/0.3"
 
 // TSPVersion is the one TSP version this binding seals and opens: TSP 1.0
 // (YTSP-BAA), through affinidi-tsp-go v0.2. A MAJOR other than 1 — the drafts
