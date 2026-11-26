@@ -79,8 +79,21 @@ pub(crate) const NULLABLE_MARKER: &str = "[[trust-tasks-build:nullable-optional-
 /// End of the tag.
 const MARKER_END: &str = "]]";
 
-/// The tagged members of one schema: tag id to JSON member name.
-pub(crate) type NullableTags = BTreeMap<usize, String>;
+/// One tagged member.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Tag {
+    /// The member's JSON name.
+    pub(crate) name: String,
+    /// Whether typify may render the member as an enum variant's field: it
+    /// sits under a `oneOf` / `anyOf` branch, or on an object whose own
+    /// `oneOf` / `anyOf` (directly or through an `allOf` branch) typify
+    /// merges its members into. Only such a tag can be accounted for by a
+    /// variant's field (see [`apply_presence`]).
+    pub(crate) in_branch: bool,
+}
+
+/// The tagged members of one schema, by tag id.
+pub(crate) type NullableTags = BTreeMap<usize, Tag>;
 
 fn marker(id: usize) -> String {
     format!("{NULLABLE_MARKER}{id}{MARKER_END}")
@@ -105,18 +118,39 @@ const ANNOTATIONS: &[&str] = &[
 
 /// Tag every optional member whose schema admits `null` (see the module
 /// docs). Runs on the typify copy, after `migrate_defs_to_definitions`, so
-/// local references read `#/definitions/…`. Returns each tag's id and the
-/// JSON name of the member it is on.
+/// local references read `#/definitions/…`. Returns each tag's id, the JSON
+/// name of the member it is on, and whether that member sits under a
+/// `oneOf` / `anyOf` branch.
 pub(crate) fn mark_nullable_optional_members(schema: &mut Value) -> NullableTags {
     let root = schema.clone();
     let mut tagged = NullableTags::new();
-    mark(schema, &root, &mut tagged);
+    mark(schema, &root, &mut tagged, false);
     tagged
 }
 
-fn mark(node: &mut Value, root: &Value, tagged: &mut NullableTags) {
+/// Whether an object schema carries a `oneOf` / `anyOf`, directly or in one
+/// of its `allOf` branches (typify merges those into the object).
+fn has_union(map: &serde_json::Map<String, Value>) -> bool {
+    map.contains_key("oneOf")
+        || map.contains_key("anyOf")
+        || map
+            .get("allOf")
+            .and_then(Value::as_array)
+            .is_some_and(|branches| {
+                branches
+                    .iter()
+                    .any(|b| b.as_object().is_some_and(has_union))
+            })
+}
+
+/// `in_branch`: `node` sits under a `oneOf` / `anyOf` branch.
+fn mark(node: &mut Value, root: &Value, tagged: &mut NullableTags, in_branch: bool) {
     match node {
         Value::Object(map) => {
+            let union_here = has_union(map);
+            // typify can merge this object's own members into the variants
+            // of its `oneOf` / `anyOf`.
+            let props_in_branch = in_branch || union_here;
             let required: BTreeSet<String> = map
                 .get("required")
                 .and_then(Value::as_array)
@@ -148,16 +182,25 @@ fn mark(node: &mut Value, root: &Value, tagged: &mut NullableTags) {
                         None => tag,
                     };
                     p.insert("description".into(), Value::String(description));
-                    tagged.insert(id, name.clone());
+                    tagged.insert(
+                        id,
+                        Tag {
+                            name: name.clone(),
+                            in_branch: props_in_branch,
+                        },
+                    );
                 }
             }
-            for value in map.values_mut() {
-                mark(value, root, tagged);
+            for (key, value) in map.iter_mut() {
+                let child_in_branch = in_branch
+                    || matches!(key.as_str(), "oneOf" | "anyOf")
+                    || (key == "allOf" && union_here);
+                mark(value, root, tagged, child_in_branch);
             }
         }
         Value::Array(items) => {
             for item in items {
-                mark(item, root, tagged);
+                mark(item, root, tagged, in_branch);
             }
         }
         _ => {}
@@ -271,16 +314,29 @@ type Rewrites = BTreeSet<(String, String)>;
 /// Every tag must be read back off a field. A field typify made required (a
 /// `oneOf` branch requiring the member) reads its tag and needs no rewrite.
 /// An enum variant's fields carry no docs, so a tag on a member typify put in
-/// a variant cannot come back: it is accounted for by the variant's field of
-/// that name when that field is required, and refused when the field is
-/// optional (it could be either). Any other tag left unread fails generation.
+/// a variant cannot come back. Only a tag `mark` placed under a `oneOf` /
+/// `anyOf` branch ([`Tag::in_branch`]) can be on such a member: it is
+/// accounted for by a variant's required field of that name, and an optional
+/// variant field of that name is refused (it could be either). Any other tag
+/// left unread fails generation, even where some variant has a field of the
+/// same name.
+///
+/// What this cannot see: where typify copies one description onto two fields
+/// (merging an `allOf`, say), the id read back off one copy also accounts for
+/// a copy that lost it. The output does not say which fields are copies, so
+/// that case is not caught.
 pub(crate) fn apply_presence(
     file: &mut syn::File,
     serde: &TokenStream,
     shared: Option<&str>,
     tags: &NullableTags,
 ) -> Result<()> {
-    let tagged: BTreeSet<String> = tags.values().cloned().collect();
+    // Names a variant's field may carry a tag for.
+    let tagged: BTreeSet<String> = tags
+        .values()
+        .filter(|t| t.in_branch)
+        .map(|t| t.name.clone())
+        .collect();
     let tagged = &tagged;
     let mut rewriter = Rewriter {
         helpers: shared.unwrap_or(HELPER_MODULE).to_string(),
@@ -318,9 +374,13 @@ pub(crate) fn apply_presence(
              safely (rename one of the members, or make the variant a `$defs` type)"
         ));
     }
-    if let Some(name) = rewriter.not_option.first() {
+    if let Some((owner, name)) = rewriter.not_option.first() {
+        let owner = match owner {
+            Some(owner) => format!("of `{owner}`"),
+            None => "of an enum variant".to_string(),
+        };
         return Err(anyhow!(
-            "optional member {name:?} admits null, but typify rendered it as a bare collection \
+            "optional member {name:?} {owner} admits null, but typify rendered it as a bare collection \
              (skipped when empty) rather than an `Option`: no field rewrite can keep `[]` / `{{}}` \
              apart from absent and still admit null (give the member an explicit `type` that \
              includes \"null\", or one that excludes it)"
@@ -328,10 +388,11 @@ pub(crate) fn apply_presence(
     }
     let unread: Vec<String> = tags
         .iter()
-        .filter(|(id, name)| {
-            !rewriter.read_back.contains(id) && !rewriter.in_variant.contains(*name)
+        .filter(|(id, tag)| {
+            !rewriter.read_back.contains(id)
+                && !(tag.in_branch && rewriter.in_variant.contains(&tag.name))
         })
-        .map(|(id, name)| format!("{name:?} (tag {id})"))
+        .map(|(id, tag)| format!("{:?} (tag {id})", tag.name))
         .collect();
     if !unread.is_empty() {
         // typify dropped the member's description, so whether its field
@@ -339,7 +400,9 @@ pub(crate) fn apply_presence(
         // document the schema accepts.
         return Err(anyhow!(
             "optional member(s) {} admit null, but the tag marking them was not found on any \
-             field typify generated, so the field's null handling cannot be chosen safely",
+             field typify generated, so the field's null handling cannot be chosen safely \
+             (typify dropped the member's description: move the member's schema into a `$defs` \
+             type, or report this as a trust-tasks-build bug)",
             unread.join(", ")
         ));
     }
@@ -426,8 +489,9 @@ struct Rewriter {
     /// Optional enum-variant fields whose JSON name was tagged somewhere in
     /// the schema: their own nullability cannot be read back.
     ambiguous: Vec<String>,
-    /// Tagged members typify rendered as something other than an `Option`.
-    not_option: Vec<String>,
+    /// Tagged members typify rendered as something other than an `Option`:
+    /// the owning struct (`None` for an enum variant) and the JSON name.
+    not_option: Vec<(Option<String>, String)>,
     /// Tag ids read back off a field.
     read_back: BTreeSet<usize>,
     /// JSON names of required enum-variant fields, which account for a tag
@@ -468,7 +532,7 @@ impl Rewriter {
         // Optional through an intrinsic default, but not as an `Option`.
         let optional_other = !optional_option && serde.default && !is_unit(ty);
         if has_tag && optional_other {
-            self.not_option.push(json_name);
+            self.not_option.push((owner.map(str::to_owned), json_name));
             return;
         }
         if owner.is_none() && !has_tag && tagged.contains(&json_name) {
@@ -794,6 +858,7 @@ mod tests {
         let mut s = schema;
         mark_nullable_optional_members(&mut s)
             .into_values()
+            .map(|t| t.name)
             .collect()
     }
 
@@ -865,7 +930,7 @@ mod tests {
         });
         let tags = mark_nullable_optional_members(&mut schema);
         assert_eq!(tags.len(), 2);
-        assert!(tags.values().all(|name| name == "a"));
+        assert!(tags.values().all(|t| t.name == "a" && !t.in_branch));
         let first = schema["properties"]["a"]["description"].as_str().unwrap();
         let (text, ids) = strip_tags(first);
         assert_eq!(text, "First.");
@@ -879,5 +944,206 @@ mod tests {
         // Something that only looks like a tag is left for `assert_no_marker`.
         let (text, ids) = strip_tags(&format!("x {NULLABLE_MARKER}y]]"));
         assert!(ids.is_empty() && text.contains(NULLABLE_MARKER));
+    }
+
+    #[test]
+    fn records_which_tags_sit_under_a_branch() {
+        let mut schema = json!({
+            "type": "object",
+            "properties": {
+                "top": {"type": ["string", "null"]},
+                "nested": {"type": "object", "properties": {"deep": {"type": ["string", "null"]}}}
+            },
+            "definitions": {
+                "Branched": {
+                    "oneOf": [
+                        {"type": "object", "properties": {"inBranch": {"type": ["string", "null"]}}}
+                    ]
+                },
+                "Merged": {
+                    "type": "object",
+                    "properties": {"merged": {"type": ["string", "null"]}},
+                    "anyOf": [{"required": ["merged"]}, {"required": ["other"]}]
+                },
+                "ViaAllOf": {
+                    "allOf": [
+                        {"type": "object", "properties": {"viaAllOf": {"type": ["string", "null"]}}},
+                        {"oneOf": [{"required": ["viaAllOf"]}, {"required": ["other"]}]}
+                    ]
+                }
+            }
+        });
+        let tags = mark_nullable_optional_members(&mut schema);
+        let got: BTreeMap<String, bool> =
+            tags.into_values().map(|t| (t.name, t.in_branch)).collect();
+        let want: BTreeMap<String, bool> = [
+            ("top", false),
+            ("deep", false),
+            ("inBranch", true),
+            ("merged", true),
+            ("viaAllOf", true),
+        ]
+        .into_iter()
+        .map(|(n, b)| (n.to_string(), b))
+        .collect();
+        assert_eq!(got, want);
+    }
+
+    fn tag(name: &str, in_branch: bool) -> Tag {
+        Tag {
+            name: name.to_string(),
+            in_branch,
+        }
+    }
+
+    fn run(mut file: syn::File, tags: &[(usize, Tag)]) -> Result<syn::File> {
+        let tags: NullableTags = tags.iter().cloned().collect();
+        let serde: TokenStream = quote::quote!(::serde);
+        apply_presence(&mut file, &serde, None, &tags).map(|()| file)
+    }
+
+    fn run_err(file: syn::File, tags: &[(usize, Tag)]) -> String {
+        match run(file, tags) {
+            Ok(_) => panic!("expected generation to fail"),
+            Err(e) => e.to_string(),
+        }
+    }
+
+    /// An optional struct member as typify renders it, with no doc comment:
+    /// its tag, if it had one, was dropped.
+    fn struct_with_untagged_label() -> syn::File {
+        syn::parse_quote! {
+            pub struct Payload {
+                #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+                pub label: ::std::option::Option<::std::string::String>,
+            }
+        }
+    }
+
+    #[test]
+    fn an_unread_tag_fails_naming_the_member_and_tag() {
+        let err = run_err(struct_with_untagged_label(), &[(0, tag("label", false))]);
+        assert!(err.contains("\"label\" (tag 0)"), "{err}");
+        assert!(
+            err.contains("`$defs`"),
+            "the error suggests a remedy: {err}"
+        );
+    }
+
+    #[test]
+    fn a_tag_read_back_rewrites_the_field() {
+        let doc = format!("A label.\n\n{}", marker(0));
+        let file: syn::File = syn::parse_quote! {
+            pub struct Payload {
+                #[doc = #doc]
+                #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+                pub label: ::std::option::Option<::std::string::String>,
+            }
+        };
+        let out = run(file, &[(0, tag("label", false))]).unwrap();
+        let text = quote::quote!(#out).to_string();
+        assert!(text.contains("\"presence::present\""), "{text}");
+        assert!(!text.contains(NULLABLE_MARKER), "{text}");
+    }
+
+    #[test]
+    fn a_required_variant_field_accounts_for_a_branch_tag() {
+        // typify writes no doc on a variant's fields; a required one (no
+        // `#[serde]`, or a `rename` only) accounts for a branch tag.
+        let file: syn::File = syn::parse_quote! {
+            pub enum Body {
+                Plain {
+                    label: ::std::option::Option<::std::string::String>,
+                },
+                Renamed {
+                    #[serde(rename = "theLabel")]
+                    the_label: ::std::option::Option<::std::string::String>,
+                },
+            }
+        };
+        run(file, &[(0, tag("label", true)), (1, tag("theLabel", true))]).unwrap();
+    }
+
+    #[test]
+    fn a_variant_field_does_not_mask_an_unread_struct_tag() {
+        // The struct's `label` lost its tag; a required `label` in an
+        // unrelated enum must not account for it.
+        let mut file = struct_with_untagged_label();
+        let other: syn::File = syn::parse_quote! {
+            pub enum Other {
+                Only {
+                    label: ::std::option::Option<::std::string::String>,
+                },
+            }
+        };
+        file.items.extend(other.items);
+        let err = run_err(file, &[(0, tag("label", false)), (1, tag("label", true))]);
+        assert!(err.contains("\"label\" (tag 0)"), "{err}");
+        assert!(!err.contains("tag 1"), "{err}");
+    }
+
+    #[test]
+    fn an_optional_variant_field_of_a_branch_tagged_name_is_ambiguous() {
+        let as_vec: syn::File = syn::parse_quote! {
+            pub enum Body {
+                Listed {
+                    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+                    label: ::std::vec::Vec<::std::string::String>,
+                },
+            }
+        };
+        let as_option: syn::File = syn::parse_quote! {
+            pub enum Body {
+                Maybe {
+                    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+                    label: ::std::option::Option<::std::string::String>,
+                },
+            }
+        };
+        for file in [as_vec, as_option] {
+            let err = run_err(file, &[(0, tag("label", true))]);
+            assert!(
+                err.contains("\"label\" of an enum variant") && err.contains("cannot be read back"),
+                "{err}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_struct_tag_does_not_make_a_variant_field_ambiguous() {
+        // Outside a branch, a tag cannot be on a variant's field: the optional
+        // variant field of that name is an unrelated member, refusing `null`.
+        let doc = marker(0);
+        let file: syn::File = syn::parse_quote! {
+            pub struct Payload {
+                #[doc = #doc]
+                #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+                pub label: ::std::option::Option<::std::string::String>,
+            }
+            pub enum Body {
+                Maybe {
+                    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+                    label: ::std::option::Option<::std::string::String>,
+                },
+            }
+        };
+        let out = run(file, &[(0, tag("label", false))]).unwrap();
+        let text = quote::quote!(#out).to_string();
+        assert!(text.contains("\"presence::present\""), "{text}");
+        assert!(text.contains("\"presence::not_null\""), "{text}");
+    }
+
+    #[test]
+    fn a_bare_collection_error_names_the_owning_struct() {
+        let doc = marker(0);
+        let file: syn::File = syn::parse_quote! {
+            pub struct Payload {
+                #[doc = #doc]
+                #[serde(default, skip_serializing_if = "::std::collections::HashMap::is_empty")]
+                pub meta: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            }
+        };
+        let err = run_err(file, &[(0, tag("meta", false))]);
+        assert!(err.contains("\"meta\" of `Payload`"), "{err}");
     }
 }
