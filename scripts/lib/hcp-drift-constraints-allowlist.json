@@ -37,6 +37,13 @@
       "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared PurposeCode)"
     },
     {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "purpose",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: the member takes PurposeCode's shape, and HCP's `purposeCode` branch (anyOf with null) already refuses the empty string by its pattern.",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
       "object": "hcp/_shared:MinimizationReport",
       "path": "method",
       "kind": "minLength",
