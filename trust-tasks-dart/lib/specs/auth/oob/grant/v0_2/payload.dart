@@ -89,7 +89,7 @@ extension type const PayloadDecision(String value) {
 /// Closed: additionalProperties false and no `ext`. The outer document members (id,
 /// type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework —
 /// SPEC §6.3.
-@Deprecated('superseded by auth/oob/grant/0.3')
+@Deprecated('superseded by auth/oob/grant/0.4')
 class Payload {
   const Payload({
     required this.requestId,
@@ -173,7 +173,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by auth/oob/grant/0.3';
+const String? deprecation = 'superseded by auth/oob/grant/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/auth/oob/grant/0.2';

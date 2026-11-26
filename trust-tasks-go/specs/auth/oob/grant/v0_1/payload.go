@@ -66,7 +66,7 @@ const (
 // document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by
 // the framework — SPEC §6.3.
 //
-// Deprecated: superseded by auth/oob/grant/0.3
+// Deprecated: superseded by auth/oob/grant/0.4
 type Payload struct {
 	RequestID RequestID `json:"requestId"`
 
@@ -109,7 +109,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by auth/oob/grant/0.3"
+const Deprecation = "superseded by auth/oob/grant/0.4"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

@@ -133,6 +133,9 @@ export import AuthChallenge_v0_1 = _AuthChallenge_v0_1;
 import * as _OobShared_v0_1 from "./auth/oob/_shared/0.1/oob.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import OobShared_v0_1 = _OobShared_v0_1;
+import * as _OobShared_v0_2 from "./auth/oob/_shared/0.2/oob.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import OobShared_v0_2 = _OobShared_v0_2;
 import * as _AuthOobCancel_v0_1 from "./auth/oob/cancel/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobCancel_v0_1 = _AuthOobCancel_v0_1;
@@ -142,6 +145,9 @@ export import AuthOobClaim_v0_1 = _AuthOobClaim_v0_1;
 import * as _AuthOobClaim_v0_2 from "./auth/oob/claim/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobClaim_v0_2 = _AuthOobClaim_v0_2;
+import * as _AuthOobClaim_v0_3 from "./auth/oob/claim/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobClaim_v0_3 = _AuthOobClaim_v0_3;
 import * as _AuthOobGrant_v0_1 from "./auth/oob/grant/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobGrant_v0_1 = _AuthOobGrant_v0_1;
@@ -151,9 +157,15 @@ export import AuthOobGrant_v0_2 = _AuthOobGrant_v0_2;
 import * as _AuthOobGrant_v0_3 from "./auth/oob/grant/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobGrant_v0_3 = _AuthOobGrant_v0_3;
+import * as _AuthOobGrant_v0_4 from "./auth/oob/grant/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobGrant_v0_4 = _AuthOobGrant_v0_4;
 import * as _AuthOobIdentify_v0_1 from "./auth/oob/identify/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobIdentify_v0_1 = _AuthOobIdentify_v0_1;
+import * as _AuthOobIdentify_v0_2 from "./auth/oob/identify/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobIdentify_v0_2 = _AuthOobIdentify_v0_2;
 import * as _AuthOobProve_v0_1 from "./auth/oob/prove/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobProve_v0_1 = _AuthOobProve_v0_1;
@@ -163,18 +175,27 @@ export import AuthOobProve_v0_2 = _AuthOobProve_v0_2;
 import * as _AuthOobProve_v0_3 from "./auth/oob/prove/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobProve_v0_3 = _AuthOobProve_v0_3;
+import * as _AuthOobProve_v0_4 from "./auth/oob/prove/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobProve_v0_4 = _AuthOobProve_v0_4;
 import * as _AuthOobRedeem_v0_1 from "./auth/oob/redeem/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRedeem_v0_1 = _AuthOobRedeem_v0_1;
 import * as _AuthOobRedeem_v0_2 from "./auth/oob/redeem/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRedeem_v0_2 = _AuthOobRedeem_v0_2;
+import * as _AuthOobRedeem_v0_3 from "./auth/oob/redeem/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobRedeem_v0_3 = _AuthOobRedeem_v0_3;
 import * as _AuthOobRequest_v0_1 from "./auth/oob/request/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRequest_v0_1 = _AuthOobRequest_v0_1;
 import * as _AuthOobRequest_v0_2 from "./auth/oob/request/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRequest_v0_2 = _AuthOobRequest_v0_2;
+import * as _AuthOobRequest_v0_3 from "./auth/oob/request/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobRequest_v0_3 = _AuthOobRequest_v0_3;
 import * as _AuthOobRespond_v0_1 from "./auth/oob/respond/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRespond_v0_1 = _AuthOobRespond_v0_1;
@@ -184,6 +205,9 @@ export import AuthOobRespond_v0_2 = _AuthOobRespond_v0_2;
 import * as _AuthOobRespond_v0_3 from "./auth/oob/respond/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthOobRespond_v0_3 = _AuthOobRespond_v0_3;
+import * as _AuthOobRespond_v0_4 from "./auth/oob/respond/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthOobRespond_v0_4 = _AuthOobRespond_v0_4;
 import * as _AuthPasskeyAdminList_v0_1 from "./auth/passkey/admin-list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthPasskeyAdminList_v0_1 = _AuthPasskeyAdminList_v0_1;
