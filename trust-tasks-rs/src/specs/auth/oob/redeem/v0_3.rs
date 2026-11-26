@@ -1393,8 +1393,8 @@ pub struct Response {
     )]
     pub acl_entry: ::std::option::Option<AclEntry>,
     ///`login` only. Authentication Methods References (RFC 8176) for the session. For this family: `["did", "oob", "uv"]`.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub amr: ::std::vec::Vec<ResponseAmrItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub amr: ::std::option::Option<::std::vec::Vec<ResponseAmrItem>>,
     ///`login` only. A name for the signed-in identity, for the confirmation step. Untrusted wherever rendered.
     #[serde(
         rename = "displayName",
@@ -2798,7 +2798,10 @@ pub mod builder {
     pub struct Response {
         acl_entry:
             ::std::result::Result<::std::option::Option<super::AclEntry>, ::std::string::String>,
-        amr: ::std::result::Result<::std::vec::Vec<super::ResponseAmrItem>, ::std::string::String>,
+        amr: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ResponseAmrItem>>,
+            ::std::string::String,
+        >,
         display_name: ::std::result::Result<
             ::std::option::Option<super::ResponseDisplayName>,
             ::std::string::String,
@@ -2848,7 +2851,9 @@ pub mod builder {
         }
         pub fn amr<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseAmrItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseAmrItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.amr = value
