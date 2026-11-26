@@ -3970,7 +3970,7 @@ const IMPLEMENTATION_DETAILS = {
       {
         name: "trust-tasks-go/tsp", accent: "sky", role: "TSP binding · not yet released",
         tagline: "Seal a document into a ToIP TSP message.",
-        summary: "A separate nested Go module built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP message whose HPKE authenticated encryption binds the sender's VID; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte. Built and tested, but not yet tagged for release: it requires affinidi-tsp-go at a pseudo-version until that library is tagged.",
+        summary: "A separate nested Go module built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP 1.0 message, signed by the sender's VID and sealed to the recipient; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte. Built on affinidi-tsp-go v0.2 (TSP 1.0); a peer on a TSP draft is refused. Built and tested, but not yet tagged for release: it has no release wiring yet.",
         bullets: [
           "PackTrustTask / UnpackTrustTask over a Direct TSP message",
           "Consumer.Receive — guarded §7.2, replay record on by default",
@@ -4052,12 +4052,12 @@ const IMPLEMENTATION_DETAILS = {
       {
         name: "trust_tasks_tsp", accent: "sky", role: "TSP binding · not yet on pub.dev",
         tagline: "Seal a document into a ToIP TSP message.",
-        summary: "packTrustTask / unpackTrustTask over HPKE-sealed Direct TSP messages, and TspConsumer, the guarded inbound path. Built and tested — the sealed {type, document} envelope matches the Rust crate and the Go module byte for byte — but not on pub.dev yet, because affinidi_tsp, the TSP library it seals with, is not published. That is the half circle on the matrix; it becomes a full one when affinidi_tsp reaches pub.dev.",
+        summary: "packTrustTask / unpackTrustTask over Direct TSP 1.0 messages, and TspConsumer, the guarded inbound path. Built on affinidi_tsp 0.2 from pub.dev; a peer on a TSP draft is refused. Built and tested — the sealed {type, document} envelope matches the Rust crate and the Go module byte for byte — but not on pub.dev yet: it has no release wiring yet. That is the half circle on the matrix.",
         bullets: [
           "packTrustTask / unpackTrustTask over a Direct TSP message",
           "TspConsumer — guarded §7.2, replay record on by default",
           "Built on affinidi-tsp-dart; Ed25519 VIDs",
-          "Depend on it via git until affinidi_tsp is published",
+          "Refuses a peer on a TSP draft (unsupportedTspVersion)",
         ],
         repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-tsp",
       },
