@@ -66,7 +66,7 @@ or §7.1 says to stay silent.
 Before the pipeline, with no reply possible — TSP has no anonymous sender, so
 these leave nothing authenticated to answer (§4). They come back as an
 `*EnvelopeError` whose `Failure` is one of `FailNotForThisReceiver` (bad framing,
-wrong receiver, failed signature or HPKE authentication), `FailNotSealed` (a
+wrong receiver, a failed signature or a payload that does not open), `FailNotSealed` (a
 signed-only message; §2 requires sealing), `FailNotFinalRecipient` (a
 routed/nested layer this VID only relays, §5.2), `FailWrongEnvelopeType`,
 `FailInvalidBody`, or `FailUnsupportedTSPVersion` (a peer on a TSP draft; see
@@ -109,8 +109,11 @@ and `@openvtc/trust-tasks-tsp` (on `@openvtc/vti-tsp-js`) do. TSP has no version
 negotiation: a message from a peer still on a draft — Rev 3 (`YTSP-AAC`), which
 this module spoke before, or Rev 2 (`YTSP-AAB`) — is refused
 `FailUnsupportedTSPVersion` from its version marker, before any key is used, and
-`AdvertisedSender` reads no sender from it. Such a peer has to upgrade. MINOR
-never gates a message (TSP §9.1): a 1.x message with a MINOR this module does
+`AdvertisedSender` reads no sender from it. You need not resolve one to learn
+that: `Receive` and `UnpackTrustTask` refuse it before touching the sender
+identity, so pass nil when `AdvertisedSender` is empty and the operator still
+sees the version mismatch. Such a peer has to upgrade. MINOR
+never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this module does
 not know is opened like any other, and one that then fails to open is
 `FailNotForThisReceiver`.
 

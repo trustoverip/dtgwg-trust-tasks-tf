@@ -111,7 +111,7 @@ its crypto. Keeping them apart is the whole point.
   (`YTSP-BAA`), as the Rust and TypeScript TSP bindings speak 1.0. A peer on a TSP
   draft (MAJOR other than 1) is refused `FailUnsupportedTSPVersion` from the
   version marker, before `Open`; an unknown 1.x MINOR is not a version refusal
-  (TSP §9.1). TSP has no version negotiation, so moving `affinidi-tsp-go` across
+  (TSP 1.0 §3.1). TSP has no version negotiation, so moving `affinidi-tsp-go` across
   a TSP version is a wire break for every peer: do it deliberately, and
   regenerate the fixtures in `interop_test.go` (each records how it was
   produced) when the TSP version moves, not when the library does.

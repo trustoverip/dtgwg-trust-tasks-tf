@@ -109,7 +109,7 @@ window.TT_LIBRARY_CAPABILITIES = [
     group: "Transports",
     binding: "tsp",
     label: "TSP",
-    note: "The preferred binding. HPKE authenticated encryption binds the sender's VID, which maps directly onto the framework's transport-authenticated identity.",
+    note: "The preferred binding. TSP 1.0 signs every message and seals the sender's VID into the payload, so the authenticated sender VID maps directly onto the framework's transport-authenticated identity.",
   },
   {
     id: "binding:https",

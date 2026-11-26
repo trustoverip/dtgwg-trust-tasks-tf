@@ -170,7 +170,7 @@ func TestRefusesTSPDraftPeers(t *testing.T) {
 	}
 }
 
-// MINOR never gates a message (TSP §9.1): a 1.x message with a MINOR this
+// MINOR never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this
 // binding does not know is opened like any other, so one that then fails to open
 // is FailNotForThisReceiver, not a version refusal. Bytes 6..8 are the version
 // code, f8 10 00 for 1.0; the last carries MINOR's low bits. The signature

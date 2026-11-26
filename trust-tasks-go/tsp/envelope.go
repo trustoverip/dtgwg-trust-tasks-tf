@@ -16,7 +16,7 @@ const BindingURI = "https://trusttasks.org/binding/tsp/0.1"
 // TSPVersion is the one TSP version this binding seals and opens: TSP 1.0
 // (YTSP-BAA), through affinidi-tsp-go v0.2. A MAJOR other than 1 — the drafts
 // Rev 3 YTSP-AAC and Rev 2 YTSP-AAB — is refused [FailUnsupportedTSPVersion];
-// an unknown 1.x MINOR is not a version refusal (TSP §9.1).
+// an unknown 1.x MINOR is not a version refusal (TSP 1.0 §3.1).
 const TSPVersion = "1.0"
 
 // EnvelopeType is the type member of the envelope object a TSP message carries
@@ -52,7 +52,8 @@ type Failure uint8
 
 const (
 	// FailNotForThisReceiver: not a TSP message this VID can open — bad framing,
-	// wrong receiver, failed signature or HPKE authentication.
+	// wrong receiver, a failed signature, a payload that does not decrypt, or an
+	// ESSR sender field that does not match the envelope.
 	FailNotForThisReceiver Failure = iota
 	// FailNotSealed: the message opened but is signed-only, not sealed. §2
 	// requires the payload sealed as well as signed.
@@ -68,7 +69,7 @@ const (
 	// FailUnsupportedTSPVersion: the message is framed in a TSP MAJOR other
 	// than 1 — a peer still on a draft (Rev 3 YTSP-AAC, Rev 2 YTSP-AAB). TSP
 	// has no version negotiation, so the peer has to upgrade. MINOR never gates
-	// a message (TSP §9.1): a 1.x message that fails to open is
+	// a message (TSP 1.0 §3.1): a 1.x message that fails to open is
 	// FailNotForThisReceiver.
 	FailUnsupportedTSPVersion
 )
@@ -119,7 +120,7 @@ type envelope struct {
 // (§2, §5.1), returning the wire bytes.
 //
 // The message payload is the envelope object {"type": EnvelopeType, "document":
-// document}, sealed with HPKE authenticated encryption and signed from sender's
+// document}, sealed to receiver (TSP 1.0, HPKE-Base) and signed from sender's
 // VID. receiver must carry an encryption key.
 //
 // document is marshalled with encoding/json; pass a *tt.Document[P] or any value
@@ -170,7 +171,7 @@ type Unpacked struct {
 
 // UnpackTrustTask opens a Direct TSP message addressed to recipient and takes
 // out the Trust Task document. sender is the resolved public identity whose
-// signature and HPKE authentication are checked; it must be the identity the
+// signature and ESSR sender field are checked; it must be the identity the
 // message names.
 //
 // It returns an *EnvelopeError for anything that stops before a document is in

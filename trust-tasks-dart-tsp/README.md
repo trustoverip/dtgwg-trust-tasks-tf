@@ -81,7 +81,7 @@ these leave nothing authenticated to answer (§4). They throw
 
 | `TspFailure` | Cause |
 |---|---|
-| `notForThisReceiver` | not a TSP message this VID can open — bad framing, wrong receiver, failed signature or HPKE authentication, or an unresolvable sender |
+| `notForThisReceiver` | not a TSP message this VID can open — bad framing, wrong receiver, a failed signature or a payload that does not open, or an unresolvable sender |
 | `senderNotAllowed` | not in `allowedSenders` — refused **before** the sender VID is resolved |
 | `notSealed` | a signed-only message; §2 requires the payload sealed as well as signed |
 | `notFinalRecipient` | a routed/nested message this VID only relays (§5.2) |
@@ -140,7 +140,7 @@ negotiation: a message from a peer still on a draft — Rev 3 (`YTSP-AAC`), whic
 this package spoke before, or Rev 2 (`YTSP-AAB`) — is refused
 `unsupportedTspVersion` from its version marker, before any key is used, and
 `advertisedSender` reads no sender from it. Such a peer has to upgrade. MINOR
-never gates a message (TSP §9.1): a 1.x message with a MINOR this package does
+never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this package does
 not know is opened like any other, and one that then fails to open is
 `notForThisReceiver`.
 

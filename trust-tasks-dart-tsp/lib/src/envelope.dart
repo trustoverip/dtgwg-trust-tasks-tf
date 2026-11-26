@@ -20,7 +20,7 @@ const String _bindingUri = 'https://trusttasks.org/binding/tsp/0.1';
 /// through `affinidi_tsp` 0.2. A message in a MAJOR other than 1 — the drafts
 /// Rev 3 (`YTSP-AAC`) and Rev 2 (`YTSP-AAB`) — is refused
 /// [TspFailure.unsupportedTspVersion]; an unknown 1.x MINOR is not a version
-/// refusal (TSP §9.1).
+/// refusal (TSP 1.0 §3.1).
 const String tspVersion = '1.0';
 
 /// The `type` member of the envelope object a TSP message carries (§1, §2). A
@@ -54,7 +54,8 @@ final class TspTransport implements TransportHandler {
 /// [wrongEnvelopeType] / [invalidBody] are refused at the binding layer (§4).
 enum TspFailure {
   /// Not a TSP message, or one this VID cannot open (bad framing, wrong
-  /// receiver, failed signature or HPKE authentication).
+  /// receiver, a failed signature, a payload that does not decrypt, or an ESSR
+  /// sender field that does not match the envelope).
   notForThisReceiver,
 
   /// The sender is not on the allowlist. Refused before the message is opened,
@@ -84,7 +85,7 @@ enum TspFailure {
   /// still on a draft (Rev 3 `YTSP-AAC`, Rev 2 `YTSP-AAB`). Told apart from the
   /// version marker before any key is used or the sender is resolved. TSP has
   /// no version negotiation, so the peer has to upgrade. MINOR never gates a
-  /// message (TSP §9.1): a 1.x message that fails to open is
+  /// message (TSP 1.0 §3.1): a 1.x message that fails to open is
   /// [notForThisReceiver].
   unsupportedTspVersion,
 }
@@ -140,8 +141,8 @@ final class UnpackedTrustTask {
 /// §5.1), returning the wire bytes.
 ///
 /// The message payload is the envelope object with `type` [envelopeType] and
-/// `document` set to [document], sealed with HPKE authenticated encryption and
-/// signed from [sender]'s VID. [receiver] must carry an encryption key; a
+/// `document` set to [document], sealed to [receiver] (TSP 1.0, HPKE-Base)
+/// and signed from [sender]'s VID. [receiver] must carry an encryption key; a
 /// signed-only receiver cannot be sealed to.
 Future<Uint8List> packTrustTask(
   Map<String, dynamic> document, {
@@ -183,8 +184,8 @@ String? advertisedSender(Uint8List wire) {
 }
 
 /// Open a Direct TSP message addressed to [recipient] and take out the Trust
-/// Task document. [sender] is the resolved public VID whose signature and HPKE
-/// authentication are checked; it must be the VID the message names.
+/// Task document. [sender] is the resolved public VID whose signature and ESSR
+/// sender field are checked; it must be the VID the message names.
 ///
 /// Throws [TspEnvelopeException]: [TspFailure.unsupportedTspVersion] for a
 /// message from a peer on a TSP draft.

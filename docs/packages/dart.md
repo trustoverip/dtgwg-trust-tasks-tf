@@ -140,7 +140,7 @@ binding on Affinidi's `package:didcomm`.
   TypeScript TSP bindings do; its SDK floor is the 3.10 `affinidi_tsp` 0.2 sets.
   A peer on a TSP draft (MAJOR other than 1) is refused `unsupportedTspVersion`
   from the version marker, before the allowlist and sender resolution; an
-  unknown 1.x MINOR is not a version refusal (TSP §9.1). TSP has no version
+  unknown 1.x MINOR is not a version refusal (TSP 1.0 §3.1). TSP has no version
   negotiation, so moving `affinidi_tsp` across a TSP version is a wire break for
   every peer: regenerate the fixtures in `test/interop_test.dart` (each records
   how it was produced) when the TSP version moves.
