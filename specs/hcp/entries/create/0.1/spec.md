@@ -65,8 +65,9 @@ errorCodes:
   - code: hcp:credentialInvalid
     meaning: >-
       HCP `credential-invalid` (HCP 5.5): a credential that is the entry's content fails verification, in its proof,
-      its securing mechanism, its verification method or its status (HCP 14.6). The `message` says which, and reveals
-      no status-list internals.
+      its securing mechanism, its verification method or its status (HCP 14.6); or, for an `issuer-attested` entry in
+      `health_context`, no credential it carries, content or supporting, passes verification (HCP 16.2). The
+      `message` says which check failed, and reveals no status-list internals.
     retryable: false
 uncheckedRules:
   - member: "/properties/content"
@@ -301,7 +302,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | not authorized | `scope-denied`: a category the grant does not let the caller write, an `issuer-attested` write from a client that is not the issuer or authorized by it (HCP 5.2.3, 3.7) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict`: a retried request that does not match the original (HCP 9.6) | `idConflict`: the document `id` reused with different content ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)). See [Repeated requests](#repeated-requests). |
 | version conflict | `version-conflict` | Does not arise: a create names no existing version (HCP 5.2.4). |
-| credential invalid | `credential-invalid`: the content is a credential that fails verification (HCP 14.6) | `hcp:credentialInvalid`, `retryable: false`. The `message` says which check failed (proof, securing mechanism, verification method or status) and reveals no status-list internals (HCP 5.5). |
+| credential invalid | `credential-invalid`: the content is a credential that fails verification (HCP 14.6), or the entry is `issuer-attested` in `health_context` and no credential it carries, content or supporting, passes (HCP 16.2) | `hcp:credentialInvalid`, `retryable: false`. The `message` says which check failed (proof, securing mechanism, verification method or status) and reveals no status-list internals (HCP 5.5). |
 | subject unavailable | `subject-unavailable`: under end-to-end encrypted storage, the content checks need the Context Subject's trust domain (HCP 4.8, 5.2.3) | `unavailable`. The client may retry later (HCP 5.5). |
 | rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
 | unsupported version | `unsupported-version` | `unsupportedVersion` |

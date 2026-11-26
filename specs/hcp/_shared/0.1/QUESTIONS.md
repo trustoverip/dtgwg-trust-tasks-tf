@@ -32,10 +32,10 @@ below. When the editors answer, update that section and the marked sentences.
   recorded under questions 16 (a 24-hour limit on notice delivery), 25 (why a decline is `permissionDenied`), 36
   (the trust anchor when a provider has no HCP discovery document) and 39 (an abandoned hold is denied, never
   reopened).
-- **Still open, no assumption taken:** questions 44, 46 and 48. Question 47 needs none yet, because we do not offer
+- **Still open, no assumption taken:** questions 44, 46, 48 and 57. Question 47 needs none yet, because we do not offer
   what it asks about.
 - **Decided, not carried:** questions 35 and 36 (no Trust Task defines an operation HCP does not).
-- **Appear in no spec:** 12 numbered questions, 35, 36 and 43 to 52 (41 is unused). The others are cited in the
+- **Appear in no spec:** 13 numbered questions, 35, 36, 43 to 52 and 57 (41 is unused). The others are cited in the
   `## Pending HCP confirmation` section of each spec they affect, question 56 included (the governance specs and
   `hcp/entries/create`, where `accessToken` is now optional).
 
@@ -69,6 +69,10 @@ below. When the editors answer, update that section and the marked sentences.
 - 2026-11-26: 56's assumption gains the create made with no token (the Management Client's write, under no grant),
   and its specs now carry the change; 25, 36 and 39 point to the spec rules they summarise. The list is published
   in the registry beside the `hcp/*` shared schemas, and each spec's Pending section links to it.
+- 2026-11-26, later: question 57 added under `hcp/entries/get`, `create`, `revise`, `withdraw` (health entries
+  resting on supporting credentials), with no assumption taken; 56 questions now (1-57, 41 unused). The same change
+  widens `hcp:credentialInvalid` in `hcp/entries/create` and `hcp/entries/revise` to 16.2's case, which HCP states
+  and so needs no question.
 
 Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, C4→10, 16→11, (new)→12, 20→13, (new)→14, 2→15,
 3→16, 4→17, C6→18, (new)→19, 24→20, 8→21, 9→22, 10→23, 11→24, 12→25, C7→26, 13→27, 26 (the second 23)→28, 15→29,
@@ -270,6 +274,27 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     *Assumption taken:* `hardDeleted` is an OPTIONAL member, always `false` (hard delete is governance); a new
     withdrawal of a `deleted` entry succeeds with the same result and appends another `context.withdrawn` event.
     *Specs:* `hcp/entries/withdraw` (HCP field mapping, Repeated requests).
+
+<!-- Added 2026-11-26; a separate list, so the number renders as written. -->
+
+57. **Health entries resting on supporting credentials (16.2, 14.6, 14.7).** 16.2 requires an `issuer-attested`
+    entry in `health_context` to carry a credential, as its content or in support of it, at least one of which passes
+    verification at ingest, and rejects a write where none passes with credential invalid. Two points that rule
+    leaves open:
+    (a) 14.6 says the credential-invalid error's detail names which check failed (proof, securing mechanism,
+    verification method or status), which assumes one credential. Where the entry carries several supporting
+    credentials and each fails a different check, which does the detail name: each credential's failure, the first,
+    or only the fact that none passed?
+    (b) An entry admitted only because a supporting credential passed at ingest: if that credential is later revoked
+    or suspended, should the entry still be disclosed? 14.7 withholds disclosure, and sets `revoked` or `suspended`,
+    only for a *content* credential; for a supporting credential it changes only its `verification` (14.8). 16.2's "at
+    least one credential passes" then holds at ingest but not afterwards.
+    *Assumption taken:* none. `hcp/entries/create` and `hcp/entries/revise` refuse such a write with
+    `hcp:credentialInvalid` as 16.2 says, and their `message` names the failed check without choosing among several;
+    disclosure follows 14.7 as written.
+    *Ask:* for (a), what should the detail say; for (b), is disclosure after the last passing supporting credential is
+    revoked or suspended intended, and if not, which state should the entry take?
+    *Specs:* none yet (`hcp/entries/create`, `hcp/entries/revise` and the disclosing specs would follow the answer).
 
 ## `hcp/entries/hard-delete`, `confirm`, `set-categories`, `restrict-purposes`
 

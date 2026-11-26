@@ -8206,7 +8206,7 @@ pub mod error_codes {
     };
     /// `hcp:credentialInvalid`
     ///
-    /// HCP `credential-invalid` (HCP 5.5): a credential that is the revised content fails verification, in its proof, its securing mechanism, its verification method or its status (HCP 14.6). The `message` says which, and reveals no status-list internals.
+    /// HCP `credential-invalid` (HCP 5.5): a credential that is the revised content fails verification, in its proof, its securing mechanism, its verification method or its status (HCP 14.6); or, for an `issuer-attested` entry in `health_context`, no credential the revision carries, content or supporting, passes verification (HCP 16.2). The `message` says which check failed, and reveals no status-list internals.
     ///
     /// Declared `retryable: false`.
     pub const CREDENTIAL_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
