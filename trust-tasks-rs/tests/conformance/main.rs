@@ -2711,6 +2711,7 @@ mod vtc {
         }
         mod query {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod elections {
