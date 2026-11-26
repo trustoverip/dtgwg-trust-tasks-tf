@@ -103,9 +103,10 @@ command-line tool), as text the person opens on a device with their wallet:
 - The VTA has no `SignInPortal` service. The `origin` in step 1 and in the grant
   is the origin of the `serviceEndpoint` of the VTA's `TrustTaskHTTPS` service
   ([`CONVENTIONS.md`](CONVENTIONS.md) §7, A6).
-- A wallet **MUST NOT** claim a link whose `_from` is not a VTA it administers,
-  and **MUST** stop after step 1 when step 1 names `deviceEnrol` for any service
-  other than such a VTA. An attacker can open a request at a victim's public
+- The link does not name its purpose: a wallet learns it from step 1, the
+  `claim` response. A wallet **MUST** stop after step 1 when step 1 names
+  `deviceEnrol` and `_from` is not a VTA it administers
+  ([`auth/oob/claim/0.3`](../../claim/0.3/spec.md) approver item 5). An attacker can open a request at a victim's public
   VTA DID and relay both the code and the number; the wallet's own record of the
   VTAs it administers, the `requester` and `sameNetwork` signals at step 2, and
   words that say a program will get lasting access, are what the person decides

@@ -37,7 +37,7 @@ exposure:
 retention:
   class: durable
   rationale: >-
-    The stored grant is the audit record of the sign-in decision and is kept with the session it armed.
+    The stored grant is the audit record of the sign-in decision and is kept with the session it armed — for deviceEnrol, with the ACL entry it led to, as that entry's provenance.
 errorCodes:
   - code: auth/oob/respond:contextMismatch
     meaning: The grant's purpose, sessionKey, origin, contextDigest or signingScope does not match what the service stored for the request. The request is declined.

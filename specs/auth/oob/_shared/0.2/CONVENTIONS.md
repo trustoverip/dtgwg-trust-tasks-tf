@@ -104,8 +104,10 @@ compare-and-set, so only one caller can make it.
 1a. **The `deviceEnrol` exception to rule 1.** For `deviceEnrol` the starter
    key outlives the request: once `redeem` succeeds it stays the subject of the
    ACL entry the VTA created, until the client swaps it for its own DID with
-   `acl/swap-key`, which it **MUST** do before `swapClosesAt`. Until then the VTA
-   **MUST** accept the starter key for nothing but that swap, and **MUST**
+   `acl/swap-key`, which it **MUST** do before `swapClosesAt`. Until then the entry
+   **MUST** authorize the starter key for nothing but that swap — the key still
+   signs this family's own `redeem` and `cancel` for the request, as rule 1
+   allows, and nothing else — and the VTA **MUST**
    remove the entry if no swap has happened by `swapClosesAt` ([§7](#7-pending-confirmation) A5). The
    lock key is unaffected: it is used for one request only. Rule 3 still holds.
 2. **Disclosure ladder.** Nothing about the starter is revealed before a
@@ -265,8 +267,9 @@ give one. Each later point is a tightening a new version can relax additively.
   [`auth/oob/cancel`](../../cancel/0.1/spec.md) is sent by the starter or the
   lock holder only — so a VTA provides it by its own means for now (see the
   open questions below). The exact numbers are its policy.
-- **A5 — what the starter key may do before the swap.** Only `acl/swap-key`
-  of its own entry. The entry's scope is exercised by the swapped-in DID, never
+- **A5 — what the starter key may do before the swap.** Under the entry, only
+  `acl/swap-key` of that entry; outside it, only this family's `redeem` (to
+  receive the enrolment again) and `cancel`. The entry's scope is exercised by the swapped-in DID, never
   by the starter key, and an entry not swapped by `swapClosesAt` is removed.
   For that swap the VTA **SHOULD** require `linkProof`, so the entry lands on a
   key the client controls.
