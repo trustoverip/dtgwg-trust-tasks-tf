@@ -23,7 +23,8 @@
  * spec's field-mapping row or the editors' question. An entry that matches
  * nothing any more is reported as stale.
  *
- * Not part of `npm run check` or CI: it needs an HCP checkout.
+ * Not part of `npm run check`: it needs an HCP checkout. CI runs it in
+ * checks.yml's `hcp-drift` job, which checks HCP out at the pinned commit.
  *
  *   npm run check-hcp-drift -- --hcp <hcp-spec checkout> [--commit <sha>] [--mode members|constraints|both] [--verbose]
  *   npm run check-hcp-drift -- --pinned-commit   (prints the commit the carried specs pin, and exits)
