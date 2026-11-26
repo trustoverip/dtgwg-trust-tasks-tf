@@ -152,6 +152,150 @@
     }
   },
   {
+    "note": "An imported directive with an empty `text` — the framework bounds are not applied within an import, but HCP's own directive schema requires a non-empty `text` (HCP 6.4), so it is still refused.",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": [],
+        "directives": [
+          {
+            "directiveId": "urn:uuid:a71d3e09-2c4b-4d8f-9e15-b6f0c8a2d473",
+            "action": "share",
+            "effect": "ask-first",
+            "text": "",
+            "setBy": "",
+            "createdAt": "2026-09-20T10:00:00Z"
+          }
+        ]
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "An imported standing rule whose `setBy` is not a string — HCP's own standing-rule schema allows it to be empty, but it is a string (HCP 6.3).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": [
+          {
+            "ruleId": "urn:uuid:4e8a2c17-5b9d-4f01-a3c6-7d2e9b1f0a54",
+            "effect": "deny",
+            "operators": [
+              "ads.example"
+            ],
+            "setBy": 7,
+            "createdAt": "2026-09-14T18:20:00Z"
+          }
+        ]
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "An imported delegation whose delegate has an empty `name` — the import drops the shared shapes' extra non-empty requirements, but HCP's own delegation schema requires the delegate's name (HCP 17.2).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": [],
+        "delegations": [
+          {
+            "delegationId": "urn:uuid:3f6b8d21-0e7a-4c59-b4d2-9a1c5e7f0b36",
+            "subject": {
+              "id": "did:web:person.example"
+            },
+            "delegate": {
+              "id": "",
+              "name": ""
+            },
+            "relationship": "caregiver",
+            "basis": {
+              "method": "attested",
+              "description": "",
+              "establishedBy": "",
+              "establishedAt": "2026-07-01T09:00:00Z"
+            },
+            "scope": {
+              "categories": [
+                "travel_preferences"
+              ],
+              "actions": [
+                "read"
+              ]
+            },
+            "term": {
+              "endsAt": null,
+              "atMajority": false
+            }
+          }
+        ]
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "An imported category that is a bare `scheme:` — HCP's `category` pattern alone would accept it, but a URI category keeps at least one character after the scheme, as HCP's `uri` and `purposeCode` patterns require (question 54).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": [
+          {
+            "ruleId": "urn:uuid:4e8a2c17-5b9d-4f01-a3c6-7d2e9b1f0a54",
+            "effect": "deny",
+            "operators": [
+              "ads.example"
+            ],
+            "categories": [
+              "urn:"
+            ],
+            "setBy": "",
+            "createdAt": "2026-09-14T18:20:00Z"
+          }
+        ]
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
     "variant": "response",
     "note": "An outcome HCP does not define — the outcomes are imported, converted, skipped and rejected (HCP 5.4.3).",
     "payload": {

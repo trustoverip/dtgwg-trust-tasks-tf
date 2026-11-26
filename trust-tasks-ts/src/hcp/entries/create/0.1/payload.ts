@@ -7,7 +7,7 @@ import type { AssertedBy, Assertion, Assurance, Basis, Category, Classification,
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPCreateEntryPayload {
   /**
@@ -104,7 +104,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/entries/create/0.1",
   "title": "HCP — Create Entry — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -7,7 +7,7 @@ import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipant
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPExportPayload {
   /**
@@ -86,7 +86,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/export/0.1",
   "title": "HCP — Export — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Export operation (HCP 5.4.1, 5.4; `GET /v2/export` in HCP 9.4.8): a Management Client, acting for the Context Subject, asks the provider for the Context Subject's own export. HCP defines no request schema for this operation; the members are HCP 5.4.1's export options, which HCP 9.4.8 carries as query parameters. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [

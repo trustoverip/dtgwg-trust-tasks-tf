@@ -4,7 +4,7 @@
  */
 
 /**
- * The Human Context Protocol (HCP) 2.0-draft-3 entry (HCP 4.2) and its parts, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Objects are open: a provider preserves entry members HCP does not define (HCP 4.2, A.3), and HCP's own shapes leave every object open, so an undeclared member is carried, never rejected. Where this schema and the HCP text differ, the HCP text governs.
+ * The Human Context Protocol (HCP) 2.0-draft-3 entry (HCP 4.2) and its parts, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Objects are open: a provider preserves entry members HCP does not define (HCP 4.2, A.3), and HCP's own shapes leave every object open, so an undeclared member is carried, never rejected. Where this schema and the HCP text differ, the HCP text governs. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty, which an hcp/* party never writes empty. hcp/import applies neither to an export it takes.
  */
 export interface HCPContextEntry {
   [k: string]: unknown | undefined;

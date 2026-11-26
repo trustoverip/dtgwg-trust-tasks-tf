@@ -7,7 +7,7 @@ import type { AccessDetail, AuthorizingPrincipal, Category, Directive, Grant, Gr
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Read own grant operation (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2): an HCP Client reads the grant under which it acts. The request carries only the token, which names the grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Read own grant operation (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2): an HCP Client reads the grant under which it acts. The request carries only the token, which names the grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPReadOwnGrantPayload {
   /**
@@ -78,7 +78,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/grants/read-own/0.1",
   "title": "HCP — Read Own Grant — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Read own grant operation (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2): an HCP Client reads the grant under which it acts. The request carries only the token, which names the grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Read own grant operation (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2): an HCP Client reads the grant under which it acts. The request carries only the token, which names the grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [
