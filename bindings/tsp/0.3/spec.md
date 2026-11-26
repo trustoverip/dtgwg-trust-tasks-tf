@@ -91,7 +91,7 @@ A *producer* **MUST** send the envelope in a TSP 1.0 message: TSP version MAJOR 
 
 A *consumer* **MUST** refuse a message whose TSP MAJOR is not `1` — among them the TSP drafts Rev 3 (`YTSP-AAC`) and Rev 2 (`YTSP-AAB`), whose MAJOR is `0` — before it uses any key or resolves the sender. It **MUST NOT** answer such a message: nothing in it has been authenticated, so there is no sender to route a reply to ([§4](#4-error-mapping)). It **SHOULD** report the refusal to its operator as a TSP version mismatch, distinct from a message it cannot open, so an operator can see which peers have not upgraded.
 
-A *consumer* **MUST NOT** refuse a message for its TSP MINOR. TSP reserves a break in backward compatibility to the MAJOR, so a 1.x message is a TSP 1.0 message as far as this binding is concerned. A 1.x message that then fails to verify or open is refused as any other message it cannot open is.
+A *consumer* **MUST NOT** refuse a message for its TSP MINOR. TSP reserves a break in backward compatibility to the MAJOR ([TSP 1.0 §3, *TSP Envelope*](https://trustoverip.github.io/tswg-tsp-specification/#tsp-envelope), `TSP_Version`), so a 1.x message is a TSP 1.0 message as far as this binding is concerned. A 1.x message that then fails to verify or open is refused as any other message it cannot open is.
 
 TSP has no version negotiation. A peer still on a TSP draft cannot exchange messages with a `0.3` implementation in either direction, and has to upgrade; nothing at this layer can bridge the two.
 
