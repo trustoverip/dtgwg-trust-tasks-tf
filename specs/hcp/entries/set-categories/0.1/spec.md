@@ -261,7 +261,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 13 — unsupported categories and a delegate's scope.** A category the provider neither holds nor supports is refused with `malformedRequest`, as HCP 4.5 requires for a write. Under a delegation, both the entry's current categories and every new category must be within the delegation's scope, or the request is refused with `permissionDenied` (see [Authorization](#authorization)).

@@ -286,7 +286,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 12 — a delegate confirming or rejecting.** HCP 3.8 says confirmation is performed by the Context Subject, and HCP 17.4 lets a delegate perform governance operations on entries within the delegation's scope. This specification reads the two together: a delegate's Management Client may confirm or reject an entry in categories within the delegation's scope, and no other (see [Authorization](#authorization)).

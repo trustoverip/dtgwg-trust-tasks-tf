@@ -188,7 +188,7 @@ HCP requires a `context.shared` event for every report (HCP 5.2.8, 8.1), and def
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`. A client whose grant was revoked after it shared has no way to report under HCP 2.0-draft-3; that gap is HCP's, and this task does not fill it.

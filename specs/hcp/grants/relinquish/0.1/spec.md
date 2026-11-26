@@ -189,7 +189,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`, which covers a second relinquishment with a new document (see [Repeated requests](#repeated-requests)).

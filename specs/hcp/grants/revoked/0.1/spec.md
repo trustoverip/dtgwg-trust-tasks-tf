@@ -259,7 +259,7 @@ Over TSP without a return path, the acknowledgement is delivered best-effort ([T
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors.
 - **Question 16 — freshness versus retries.** Every delivery attempt is a fresh Trust Task document, with a new `id`, `issuedAt` and `proof`, and the client applies HCP's 300-second check to that `issuedAt`. The SET's `jti` is carried as the payload's `noticeId`, the same on every attempt; the client deduplicates on it and answers a repeat with the empty acknowledgement. This is a declared departure from HCP 9.9, which sends the same token on every attempt (see [Delivery rules carried from HCP](#delivery-rules-carried-from-hcp)).

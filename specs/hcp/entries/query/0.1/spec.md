@@ -302,7 +302,7 @@ HCP requires a `context.read` audit event for every query (HCP 8.1). Because thi
 
 ## Pending HCP confirmation
 
-HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
