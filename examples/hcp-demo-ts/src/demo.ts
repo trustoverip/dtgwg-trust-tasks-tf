@@ -34,7 +34,7 @@ import {
 import * as discovery from "@openvtc/trust-tasks/trust-task-discovery/0.4/payload";
 import * as error from "@openvtc/trust-tasks/trust-task-error/0.6/payload";
 import * as nextStep from "@openvtc/trust-tasks/trust-task-next-step/0.1/payload";
-import { schemaValidator, validatePayload } from "./validator.js";
+import { schemaValidator, validNextStepHint, validatePayload } from "./validator.js";
 
 // ── Deterministic inputs ───────────────────────────────────────────────────
 // A fixed clock the demo controls: it starts at START and moves one second per
@@ -361,10 +361,12 @@ export class World {
       case "approved": {
         // The person approved (the toy approves everything asked, read only): issue the one grant.
         const grantedAt = this.clock.iso();
+        const expiresAt = this.clock.plus(hold.payload.expiresIn ?? 4 * 3600); // HCP 6.1.3 default
         const grant: Grant = {
           grantId: this.ids.next(),
           token: `hcp_at_demo_${String(++this.tokens).padStart(4, "0")}`, // DEMO ONLY
-          tokenExpiresAt: this.clock.plus(3600), // HCP 13.4 default
+          // No refresh in 0.1, so the token lasts as long as the grant (hcp/grants/request "Response").
+          tokenExpiresAt: expiresAt,
           client: issuer,
           access: hold.payload.access.map((a) => ({
             type: a.type,
@@ -375,7 +377,7 @@ export class World {
           categories: hold.payload.access.flatMap((a) => a.categories),
           purposes: hold.payload.access.flatMap((a) => (a.purposes ?? []).map((p) => p.code)),
           issuedAt: grantedAt,
-          expiresAt: this.clock.plus(hold.payload.expiresIn ?? 4 * 3600), // HCP 6.1.3 default
+          expiresAt,
           status: "active",
         };
         this.grants.push(grant);
@@ -514,6 +516,21 @@ export function pretty(value: unknown, indent = ""): string {
   return JSON.stringify(value);
 }
 
+/** How long the client waits before it resubmits when the next step's hint is absent or fails NextStepHint. */
+export const DEFAULT_RETRY_AFTER = 5;
+
+/**
+ * The seconds to wait before resubmitting, read from a next step's `hint`.
+ * The client validates the hint against `$defs.NextStepHint` in
+ * hcp/grants/request's schema (an object whose only member, `retryAfter`, is
+ * an integer from 1 to 3600) and ignores a hint that fails, as if it were
+ * absent (hcp/grants/request "Holding" rule 5, trust-task-next-step).
+ */
+export function retryAfterOf(hint: unknown): number {
+  if (hint === undefined || !validNextStepHint(hint)) return DEFAULT_RETRY_AFTER;
+  return (hint as { retryAfter: number }).retryAfter;
+}
+
 // ── The six steps, one function each ───────────────────────────────────────
 
 /** What the Context Client asks for in step 2. */
@@ -556,10 +573,7 @@ export async function stepGrantRequest(world: World): Promise<{ threadId: string
   if (held.type !== nextStep.TYPE_URI) throw new Error("expected a next step");
   world.personApproves(first.threadId!);
   // The client SHOULD NOT resubmit sooner than the next step's retryAfter (hcp/grants/request "Holding").
-  const hint = (held.payload as nextStep.Payload).expects[0]?.hint as { retryAfter?: unknown } | undefined;
-  const retryAfter = hint?.retryAfter;
-  if (typeof retryAfter !== "number") throw new Error("expected a retryAfter hint");
-  world.clock.advance(retryAfter);
+  world.clock.advance(retryAfterOf((held.payload as nextStep.Payload).expects[0]?.hint));
   // Resubmission: a new document, fresh id, same threadId and payload.
   const granted = await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId));
   if (granted.type !== grantRequest.RESPONSE_TYPE_URI) throw new Error("expected the grant");

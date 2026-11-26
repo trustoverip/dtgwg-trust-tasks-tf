@@ -331,3 +331,30 @@ func Test14AnotherRegisteredClientOnAHeldThreadIsPermissionDenied(t *testing.T) 
 		t.Errorf("%d grants, want 0", len(w.grants))
 	}
 }
+
+func Test15TheHoldsHintIsReadAgainstNextStepHintAndAFailingHintIsIgnored(t *testing.T) {
+	for hint, want := range map[string]int64{`{"retryAfter": 1}`: 1, `{"retryAfter": 3600}`: 3600} {
+		if got := RetryAfterOf(json.RawMessage(hint)); got != want {
+			t.Errorf("%s: got %d, want %d", hint, got, want)
+		}
+	}
+	if got := RetryAfterOf(nil); got != DefaultRetryAfter {
+		t.Errorf("no hint: got %d, want %d", got, DefaultRetryAfter)
+	}
+	for _, hint := range []string{`{"retryAfter": 2.5}`, `{"retryAfter": 0}`, `{"retryAfter": "5"}`, `{"retryAfter": 3601}`, `{"retryAfter": 1, "extra": true}`, `{}`, `null`, `5`} {
+		if got := RetryAfterOf(json.RawMessage(hint)); got != DefaultRetryAfter {
+			t.Errorf("%s: got %d, want %d", hint, got, DefaultRetryAfter)
+		}
+	}
+}
+
+func Test16TheGrantsTokenLastsAsLongAsTheGrant(t *testing.T) { // no refresh in 0.1
+	w, _, _ := afterGrant()
+	if len(w.grants) != 1 {
+		t.Fatalf("%d grants, want 1", len(w.grants))
+	}
+	g := w.grants[0]
+	if g.tokenExpiresAt != g.expiresAt || g.expiresAt != "2026-11-25T14:00:06Z" {
+		t.Errorf("tokenExpiresAt %s, expiresAt %s, want both 2026-11-25T14:00:06Z", g.tokenExpiresAt, g.expiresAt)
+	}
+}

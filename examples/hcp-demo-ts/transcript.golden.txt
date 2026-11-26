@@ -204,13 +204,13 @@
         "id": "hcp-sub-demo-alex"
       }
     },
-    "tokenExpiresAt": "2026-11-25T11:00:06Z"
+    "tokenExpiresAt": "2026-11-25T14:00:06Z"
   },
   "proof": {
     "created": "2026-11-25T10:00:07Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z24NAgDo68pejyLGDbWmKzSbDWzKZJkZ2qwmZ2pv7WZsZcTmk1UXG4S9qniy6msrRBictj6o2rpbxSZP52vPA7kzJ",
+    "proofValue": "z23TwQEyKay2e3E56pBqRyqbFLNQTAnzTcTnbM8EZPUBYKDyoC5GHgJjYDi6eoRVbHnpHEbLm3fthwtaRg9FnJGra",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },

@@ -284,4 +284,33 @@ void main() {
     expect(hold.state, 'approved');
     expect(world.grants, isEmpty);
   });
+
+  test("15. the hold's hint is read against NextStepHint, and a hint that "
+      'fails is ignored as if absent', () {
+    expect(retryAfterOf({'retryAfter': 1}), 1);
+    expect(retryAfterOf({'retryAfter': 3600}), 3600);
+    expect(retryAfterOf(null), defaultRetryAfter);
+    for (final hint in <Object?>[
+      {'retryAfter': 2.5},
+      {'retryAfter': 0},
+      {'retryAfter': '5'},
+      {'retryAfter': 3601},
+      {'retryAfter': 1, 'extra': true},
+      <String, Object?>{},
+      null,
+      5,
+    ]) {
+      expect(retryAfterOf(hint), defaultRetryAfter, reason: '$hint');
+    }
+  });
+
+  test(
+    "16. the grant's token lasts as long as the grant (no refresh in 0.1)",
+    () async {
+      final (world, _) = await afterGrant();
+      expect(world.grants, hasLength(1));
+      expect(world.grants[0].tokenExpiresAt, world.grants[0].expiresAt);
+      expect(world.grants[0].expiresAt, '2026-11-25T14:00:06Z');
+    },
+  );
 }

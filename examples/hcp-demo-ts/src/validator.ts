@@ -54,3 +54,11 @@ export function validatePayload(reply: TrustTaskDocument<unknown>): void {
   const errors = check(schema, reply.payload);
   if (errors.length > 0) throw new Error(`reply ${reply.type} fails its schema: ${errors.join("; ")}`);
 }
+
+/** Whether a next step's `hint` satisfies hcp/grants/request's `$defs.NextStepHint`, taken from the pinned schema. */
+export function validNextStepHint(hint: unknown): boolean {
+  const defs = (HcpGrantsRequest_v0_1.PAYLOAD_SCHEMA as { $defs?: Record<string, object> }).$defs;
+  const schema = defs?.["NextStepHint"];
+  if (schema === undefined) throw new Error("hcp/grants/request's schema has no NextStepHint");
+  return check(schema, hint).length === 0;
+}

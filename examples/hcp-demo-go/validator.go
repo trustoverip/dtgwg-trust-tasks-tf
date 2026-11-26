@@ -100,3 +100,21 @@ func validateReply(typeURI string, payload json.RawMessage) error {
 	}
 	return nil
 }
+
+// nextStepHintSchema is hcp/grants/request's `$defs.NextStepHint`, taken from
+// the pinned payload schema.
+var nextStepHintSchema = sync.OnceValue(func() string {
+	var schema struct {
+		Defs map[string]json.RawMessage `json:"$defs"`
+	}
+	if err := json.Unmarshal([]byte(grantrequest.PayloadSchemaJSON), &schema); err != nil || schema.Defs["NextStepHint"] == nil {
+		panic("hcp/grants/request's schema has no NextStepHint")
+	}
+	return string(schema.Defs["NextStepHint"])
+})
+
+// validNextStepHint is whether a next step's `hint` satisfies
+// hcp/grants/request's `$defs.NextStepHint`.
+func validNextStepHint(hint json.RawMessage) bool {
+	return check(nextStepHintSchema(), hint) == nil
+}

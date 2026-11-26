@@ -130,7 +130,9 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
    the bytes or a language's own serialisation: members in another order are the same payload.
 5. `pending` → a further next step (same shape, `inResponseTo` the resubmission).
 6. `approved` → issue the one grant (approved as asked), set the hold to `granted` with the
-   `grantId` and the response time, and answer the response.
+   `grantId` and the response time, and answer the response. `grant.expiresAt` is now plus the
+   request's `expiresIn` (4 hours when absent), and `tokenExpiresAt` equals it: 0.1 has no refresh,
+   so the token lasts as long as the grant (hcp/grants/request "Response").
 7. `granted` → if more than 3600 s have passed since the response was first sent, or the grant is
    not `active` → `permissionDenied`. Otherwise answer a response for **the same grant**: the same
    token, `tokenExpiresAt` and `grant`, with its status as it stands. Never a second grant.
@@ -149,6 +151,16 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
 **`hcp/grants/revoke`**: a token other than the management token, or an unknown `grantId` →
 `permissionDenied`. Otherwise, if the grant is `active`, set it `revoked` and record `revokedAt`
 (now); answer `{}` (a second revoke is idempotent and keeps the first `revokedAt`).
+
+### Reading the hold's hint
+
+Before it resubmits, the Context Client reads `retryAfter` from the next step's `expects[0].hint`
+(hcp/grants/request "Holding" rule 5). It validates the hint against `$defs.NextStepHint` in the
+pinned hcp/grants/request schema, with the port's JSON Schema validator: an object whose only
+member, `retryAfter`, is an integer from 1 to 3600. A hint that is absent or fails (`2.5`, `0`,
+`"5"`, `3601`, an extra member, `{}`, not an object) is ignored as if absent, and the client waits
+its default, **5 s**, instead. A failing hint is never an error. The provider sends
+`{"retryAfter": 1}`, so the main run waits 1 s.
 
 ### The Context Client's state
 
@@ -192,8 +204,8 @@ values not listed here are in the golden transcript. The ids are the counter val
 |---|---|---|---|---|---|
 | 1 | Context Client → Provider | `…/trust-task-discovery/0.4` (bare) | #1, 10:00:01 | `{"patterns": ["hcp/*"]}` | `#response` #2: `supportedTypes` = the four `hcp/*` Type URIs, bare, in the order request, query, revoke, revoked |
 | 2a | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #3, 10:00:03 | `access`: one detail, `type https://hcp.example/spec/authorization/context-access`, `actions ["read"]`, `categories ["travel_preferences"]`, purposes `[{code https://purposes.example/travel-booking, description "Book trips that match how you like to travel"}]`; `expiresIn 14400`; `subjectHint "acct:alex@provider.example"` | `trust-task-next-step/0.1` #4: `expects [{typeUri <request Type URI>#request, reason "The request is with the person, who has not decided yet.", hint {"retryAfter": 1}}]`; `continuation "resubmit"`; `inResponseTo {typeUri …#request, id #3}` |
-| — | the person | — | — | prints `[person] approves the grant request on thread <#3> in the provider's app`; the hold becomes `approved`. The client then waits the next step's `retryAfter` (read from #4's `expects[0].hint`, here 1 s) before it resubmits: the clock moves on without a document (hcp/grants/request: the client SHOULD NOT resubmit sooner) | — |
-| 2b | Context Client → Provider | same, **resubmission** | #5, thread #3, 10:00:06 | identical payload | `#response` #7: `accessToken hcp_at_demo_0001`, `tokenExpiresAt` 11:00:06, `grant` = `{grantId #6, subject {id hcp-sub-demo-alex}, authorizingPrincipal {id hcp-sub-demo-alex}, client {id <Context Client VID>, name, operator}, access <as asked>, grantType temporary, issuedAt 10:00:06, expiresAt 14:00:06, status active}`. The client puts the token in its wallet under #6 |
+| — | the person | — | — | prints `[person] approves the grant request on thread <#3> in the provider's app`; the hold becomes `approved`. The client then waits the next step's `retryAfter` (read from #4's `expects[0].hint`, here 1 s; see "Reading the hold's hint") before it resubmits: the clock moves on without a document (hcp/grants/request: the client SHOULD NOT resubmit sooner) | — |
+| 2b | Context Client → Provider | same, **resubmission** | #5, thread #3, 10:00:06 | identical payload | `#response` #7: `accessToken hcp_at_demo_0001`, `tokenExpiresAt` 14:00:06 (= `grant.expiresAt`), `grant` = `{grantId #6, subject {id hcp-sub-demo-alex}, authorizingPrincipal {id hcp-sub-demo-alex}, client {id <Context Client VID>, name, operator}, access <as asked>, grantType temporary, issuedAt 10:00:06, expiresAt 14:00:06, status active}`. The client puts the token in its wallet under #6 |
 | 3 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #8, 10:00:08 | `query "How does Alex like to fly?"`, `categories ["travel_preferences"]`, `purpose` the purpose code, `maxEntries 5`, `accessToken` from the wallet | `#response` #10: the two travel entries (`useUntil` 11:00:08), `retrievalId` #9, `minimization {"method": "lexical"}`, `categoriesSearched ["travel_preferences"]`, `directives []`, `respondedAt` 10:00:08. The client records refs `hcp-ref-0001`, `hcp-ref-0002` |
 | 4 | Management Client → Provider | `…/hcp/grants/revoke/0.1#request` | #11, 10:00:10 | `grantId` #6, `accessToken hcp_mt_demo_management` | `#response` #12: `{}`; the grant is `revoked`, `revokedAt` 10:00:10 |
 | 5 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #13, 10:00:12 | the same payload as step 3 (the token still in the wallet: no notice has arrived) | `trust-task-error/0.6` #14: `code "hcp:invalidToken"`, `message "The access token is not valid."`, `retryable false`, `inResponseTo` #13. The client forgets grant #6 |
@@ -272,6 +284,12 @@ code.
     the Management Client resubmits on that thread with the same payload → `permissionDenied`
     (rule 3); the hold's `issuer` is still the Context Client's VID, its state is still
     `approved`, and no grant was issued.
+15. The hint check, on hand-built hints: `{"retryAfter": 1}` reads 1 and `{"retryAfter": 3600}`
+    reads 3600; no hint, `{"retryAfter": 2.5}`, `{"retryAfter": 0}`, `{"retryAfter": "5"}`,
+    `{"retryAfter": 3601}`, `{"retryAfter": 1, "extra": true}`, `{}`, `null` and `5` each read the
+    default, 5.
+16. After the grant: the grant table holds one grant, whose `tokenExpiresAt` equals its
+    `expiresAt`, `2026-11-25T14:00:06Z`.
 
 ## Documented differences
 

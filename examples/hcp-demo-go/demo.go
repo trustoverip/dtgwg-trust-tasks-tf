@@ -524,12 +524,11 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 	case approved: // 6. the person approved (the toy approves everything asked, read only): issue the one grant
 		w.tokens++
 		g := &grant{
-			grantID:        w.IDs.Next(),
-			token:          fmt.Sprintf("hcp_at_demo_%04d", w.tokens), // DEMO ONLY
-			tokenExpiresAt: w.Clock.Plus(3600),                        // HCP 13.4 default
-			client:         issuer,
-			issuedAt:       w.Clock.ISO(),
-			status:         grantrequest.GrantStatusActive,
+			grantID:  w.IDs.Next(),
+			token:    fmt.Sprintf("hcp_at_demo_%04d", w.tokens), // DEMO ONLY
+			client:   issuer,
+			issuedAt: w.Clock.ISO(),
+			status:   grantrequest.GrantStatusActive,
 		}
 		for _, a := range h.payload.Access {
 			g.categories = append(g.categories, a.Categories...)
@@ -551,6 +550,8 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 			expiresIn = *h.payload.ExpiresIn
 		}
 		g.expiresAt = w.Clock.Plus(expiresIn)
+		// No refresh in 0.1, so the token lasts as long as the grant (hcp/grants/request "Response").
+		g.tokenExpiresAt = g.expiresAt
 		w.grants = append(w.grants, g)
 		h.state, h.grantID, h.respondedAt = granted, g.grantID, w.Clock.Now()
 		return reply(w, me, doc, w.grantResponse(g))
@@ -897,17 +898,24 @@ func StepDiscover(w *World) {
 	}
 }
 
-// retryAfter is the seconds a next step's first expectation asks the client to
-// wait before it resubmits.
-func retryAfter(p nextstep.Payload) int64 {
-	if len(p.Expects) == 0 || p.Expects[0].Hint == nil {
-		panic("expected a retryAfter hint")
+// DefaultRetryAfter is how long the client waits before it resubmits when the
+// next step's hint is absent or fails NextStepHint.
+const DefaultRetryAfter = 5
+
+// RetryAfterOf is the seconds to wait before resubmitting, read from a next
+// step's `hint` (nil when absent). The client validates the hint against
+// `$defs.NextStepHint` in hcp/grants/request's schema (an object whose only
+// member, `retryAfter`, is an integer from 1 to 3600) and ignores a hint that
+// fails, as if it were absent (hcp/grants/request "Holding" rule 5,
+// trust-task-next-step).
+func RetryAfterOf(hint json.RawMessage) int64 {
+	var h struct {
+		RetryAfter int64 `json:"retryAfter"`
 	}
-	var seconds int64
-	if err := json.Unmarshal((*p.Expects[0].Hint)["retryAfter"], &seconds); err != nil {
-		panic("expected a retryAfter hint: " + err.Error())
+	if hint == nil || !validNextStepHint(hint) || json.Unmarshal(hint, &h) != nil {
+		return DefaultRetryAfter
 	}
-	return seconds
+	return h.RetryAfter
 }
 
 // StepGrantRequest is step 2, Grant request: held with a next step while the
@@ -926,7 +934,11 @@ func StepGrantRequest(w *World) (threadID, grantID string) {
 	w.PersonApproves(threadID)
 	// The client SHOULD NOT resubmit sooner than the next step's retryAfter
 	// (hcp/grants/request "Holding").
-	w.Clock.Advance(retryAfter(held.Payload))
+	var hint json.RawMessage
+	if len(held.Payload.Expects) > 0 && held.Payload.Expects[0].Hint != nil {
+		hint, _ = json.Marshal(*held.Payload.Expects[0].Hint)
+	}
+	w.Clock.Advance(RetryAfterOf(hint))
 	// Resubmission: a new document, fresh id, same threadId and payload.
 	granted := replyOf[grantrequest.Response](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID)))
 	if granted.Type != grantrequest.ResponseTypeURI {

@@ -556,11 +556,15 @@ final class World {
         // The person approved (the toy approves everything asked, read only):
         // issue the one grant.
         final asked = hold.payload.access;
+        // HCP 6.1.3 default
+        final expiresAt = clock.plus(hold.payload.expiresIn ?? 4 * 3600);
         final grant = Grant(
           grantId: ids.next(),
           token:
               'hcp_at_demo_${(++_tokens).toString().padLeft(4, '0')}', // DEMO ONLY
-          tokenExpiresAt: clock.plus(3600), // HCP 13.4 default
+          // No refresh in 0.1, so the token lasts as long as the grant
+          // (hcp/grants/request "Response").
+          tokenExpiresAt: expiresAt,
           client: issuer,
           access: [
             // approved as asked
@@ -585,8 +589,7 @@ final class World {
           categories: [for (final a in asked) ...a.categories],
           purposes: [for (final a in asked) ...?a.purposes?.map((p) => p.code)],
           issuedAt: clock.iso(),
-          // HCP 6.1.3 default
-          expiresAt: clock.plus(hold.payload.expiresIn ?? 4 * 3600),
+          expiresAt: expiresAt,
         );
         grants.add(grant);
         hold
@@ -852,6 +855,21 @@ Future<void> stepDiscover(World w) async {
   }
 }
 
+/// How long the client waits before it resubmits when the next step's hint
+/// is absent or fails NextStepHint.
+const int defaultRetryAfter = 5;
+
+/// The seconds to wait before resubmitting, read from a next step's `hint`.
+/// The client validates the hint against `$defs.NextStepHint` in
+/// hcp/grants/request's schema (an object whose only member, `retryAfter`, is
+/// an integer from 1 to 3600) and ignores a hint that fails, as if it were
+/// absent (hcp/grants/request "Holding" rule 5, trust-task-next-step).
+int retryAfterOf(Object? hint) {
+  if (hint == null || !validNextStepHint(hint)) return defaultRetryAfter;
+  // JSON Schema's integer admits a whole double such as 1.0.
+  return ((hint as Map)['retryAfter'] as num).toInt();
+}
+
 /// 2. Grant request: held with a next step while the person decides, then
 /// resubmitted on the same thread (HCP 6.1.6, 6.1.7; SPEC §8.6). The client
 /// keeps the token in its wallet. Returns the thread and the grant.
@@ -870,10 +888,7 @@ Future<({String threadId, String grantId})> stepGrantRequest(World w) async {
   // The client SHOULD NOT resubmit sooner than the next step's retryAfter
   // (hcp/grants/request "Holding").
   final expects = (held['payload'] as Json)['expects'] as List<dynamic>;
-  final hint = (expects.first as Json)['hint'] as Json?;
-  final retryAfter = hint?['retryAfter'];
-  if (retryAfter is! int) throw StateError('expected a retryAfter hint');
-  w.clock.advance(retryAfter);
+  w.clock.advance(retryAfterOf((expects.first as Json)['hint']));
   // Resubmission: a new document, fresh id, same threadId and payload.
   final granted = await w.exchange(
     c,

@@ -6,9 +6,9 @@
 use serde_json::{json, Value};
 use trust_tasks::Payload as _;
 use trust_tasks_example_hcp_demo::{
-    ask, check_reply, grant_request, query, query_payload, request_uri, revoked, run_demo,
-    step_discover, step_grant_request, step_notice, step_revoke, DemoResult, Granted, World,
-    AFTER_APPROVAL_WINDOW, ERROR_TYPE_URI, MANAGEMENT_TOKEN,
+    ask, check_reply, grant_request, query, query_payload, request_uri, retry_after_of, revoked,
+    run_demo, step_discover, step_grant_request, step_notice, step_revoke, DemoResult, Granted,
+    World, AFTER_APPROVAL_WINDOW, DEFAULT_RETRY_AFTER, ERROR_TYPE_URI, MANAGEMENT_TOKEN,
 };
 
 /// The golden transcript every language's port shares, kept beside the
@@ -275,4 +275,33 @@ async fn t14_another_registered_client_on_a_held_thread_is_refused_and_the_hold_
     assert_eq!(reply["payload"]["code"], "permissionDenied");
     assert_eq!(world.hold(&thread_id), Some((c.vid.clone(), "approved")));
     assert_eq!(world.grant_count(), 0);
+}
+
+#[test]
+fn t15_the_holds_hint_is_read_against_next_step_hint_and_a_hint_that_fails_is_ignored() {
+    assert_eq!(retry_after_of(Some(&json!({ "retryAfter": 1 }))), 1);
+    assert_eq!(retry_after_of(Some(&json!({ "retryAfter": 3600 }))), 3600);
+    assert_eq!(retry_after_of(None), DEFAULT_RETRY_AFTER);
+    for hint in [
+        json!({ "retryAfter": 2.5 }),
+        json!({ "retryAfter": 0 }),
+        json!({ "retryAfter": "5" }),
+        json!({ "retryAfter": 3601 }),
+        json!({ "retryAfter": 1, "extra": true }),
+        json!({}),
+        Value::Null,
+        json!(5),
+    ] {
+        assert_eq!(retry_after_of(Some(&hint)), DEFAULT_RETRY_AFTER, "{hint}");
+    }
+}
+
+#[tokio::test]
+async fn t16_the_grants_token_lasts_as_long_as_the_grant_no_refresh_in_0_1() {
+    let (world, _) = after_grant().await;
+    let expiries = world.grant_expiries();
+    assert_eq!(expiries.len(), 1);
+    let (token_expires_at, expires_at) = &expiries[0];
+    assert_eq!(token_expires_at, expires_at);
+    assert_eq!(expires_at, "2026-11-25T14:00:06Z");
 }

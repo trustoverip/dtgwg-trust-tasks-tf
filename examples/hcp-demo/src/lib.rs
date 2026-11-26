@@ -23,7 +23,7 @@
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use affinidi_secrets_resolver::secrets::Secret;
 use affinidi_tsp::message::direct;
@@ -387,6 +387,16 @@ impl World {
     /// How many grants the provider has issued.
     pub fn grant_count(&self) -> usize {
         self.shared.state.lock().expect("state").grants.len()
+    }
+
+    /// Each issued grant's `tokenExpiresAt` and `expiresAt`, in issue order.
+    pub fn grant_expiries(&self) -> Vec<(String, String)> {
+        let state = self.shared.state.lock().expect("state");
+        state
+            .grants
+            .iter()
+            .map(|g| (g.token_expires_at.clone(), g.expires_at.clone()))
+            .collect()
     }
 
     /// How many grant requests the provider holds (by threadId).
@@ -802,16 +812,19 @@ impl Shared {
             .flat_map(|a| strings(purposes_of(a).iter().map(|p| p["code"].clone()).collect()))
             .collect();
         let expires_in = asked["expiresIn"].as_i64().unwrap_or(4 * 3600); // HCP 6.1.3 default
+        let expires_at = self.clock.plus(expires_in);
         Grant {
             grant_id: self.ids.next(),
             token: format!("hcp_at_demo_{tokens:04}"), // DEMO ONLY
-            token_expires_at: self.clock.plus(3600),   // HCP 13.4 default
+            // No refresh in 0.1, so the token lasts as long as the grant
+            // (hcp/grants/request "Response").
+            token_expires_at: expires_at.clone(),
             client: client.to_string(),
             access: Value::Array(access), // approved as asked
             categories,
             purposes,
             issued_at: self.clock.iso(),
-            expires_at: self.clock.plus(expires_in),
+            expires_at,
             active: true,
             revoked_at: None,
         }
@@ -923,7 +936,9 @@ impl Shared {
             let mut state = self.state.lock().expect("state");
             let grant = state.grants.iter_mut().find(|g| g.grant_id == *p.grant_id);
             match grant {
-                Some(grant) if p.access_token.as_deref().map(|t| t.as_str()) == Some(MANAGEMENT_TOKEN) => {
+                Some(grant)
+                    if p.access_token.as_deref().map(|t| t.as_str()) == Some(MANAGEMENT_TOKEN) =>
+                {
                     // Immediate (HCP 6.2.2); a second revoke is idempotent and
                     // keeps the first revokedAt.
                     if grant.active {
@@ -1063,6 +1078,36 @@ pub fn pretty(value: &Value, indent: &str) -> String {
     }
 }
 
+/// How long the client waits before it resubmits when the next step's hint is
+/// absent or fails `NextStepHint`.
+pub const DEFAULT_RETRY_AFTER: i64 = 5;
+
+/// The seconds to wait before resubmitting, read from a next step's `hint`.
+/// The client validates the hint against `$defs.NextStepHint` in
+/// hcp/grants/request's schema (an object whose only member, `retryAfter`, is
+/// an integer from 1 to 3600) and ignores a hint that fails, as if it were
+/// absent (hcp/grants/request "Holding" rule 5, trust-task-next-step).
+pub fn retry_after_of(hint: Option<&Value>) -> i64 {
+    static NEXT_STEP_HINT: OnceLock<String> = OnceLock::new();
+    let schema = NEXT_STEP_HINT.get_or_init(|| {
+        let schema = <grant_request::Payload as Payload>::PAYLOAD_SCHEMA
+            .expect("hcp/grants/request embeds its schema");
+        let schema: Value = serde_json::from_str(schema).expect("the schema is JSON");
+        let hint = &schema["$defs"]["NextStepHint"];
+        assert!(
+            hint.is_object(),
+            "hcp/grants/request's schema has no NextStepHint"
+        );
+        hint.to_string()
+    });
+    match hint {
+        Some(hint) if VALIDATOR.check(schema, hint).is_ok() => {
+            hint["retryAfter"].as_i64().unwrap_or(DEFAULT_RETRY_AFTER)
+        }
+        _ => DEFAULT_RETRY_AFTER,
+    }
+}
+
 // ── The six steps, one function each ───────────────────────────────────────
 
 /// What the Context Client asks for in step 2.
@@ -1145,10 +1190,9 @@ pub async fn step_grant_request(world: &World) -> Result<Granted, Error> {
     world.person_approves(&thread_id);
     // The client SHOULD NOT resubmit sooner than the next step's retryAfter
     // (hcp/grants/request "Holding").
-    let Some(retry_after) = held["payload"]["expects"][0]["hint"]["retryAfter"].as_i64() else {
-        return Err("expected a retryAfter hint".into());
-    };
-    world.clock().advance(retry_after);
+    world
+        .clock()
+        .advance(retry_after_of(held["payload"]["expects"][0].get("hint")));
     // Resubmission: a new document, fresh id, same threadId and payload.
     let resubmission = world
         .request(c, p, &grant_uri, ask(), Some(&thread_id))

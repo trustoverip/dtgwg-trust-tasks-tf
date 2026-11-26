@@ -9,10 +9,12 @@ import { test } from "node:test";
 import {
   AFTER_APPROVAL_WINDOW,
   ASK,
+  DEFAULT_RETRY_AFTER,
   MANAGEMENT_TOKEN,
   World,
   checkReply,
   queryPayload,
+  retryAfterOf,
   runDemo,
   stepDiscover,
   stepGrantRequest,
@@ -166,4 +168,20 @@ test("14. another registered client resubmitting on a held thread is refused wit
   assert.equal(hold.issuer, C.vid);
   assert.equal(hold.state, "approved");
   assert.equal(world.grants.length, 0);
+});
+
+test("15. the hold's hint is read against NextStepHint, and a hint that fails is ignored as if absent", () => {
+  assert.equal(retryAfterOf({ retryAfter: 1 }), 1);
+  assert.equal(retryAfterOf({ retryAfter: 3600 }), 3600);
+  assert.equal(retryAfterOf(undefined), DEFAULT_RETRY_AFTER);
+  for (const hint of [{ retryAfter: 2.5 }, { retryAfter: 0 }, { retryAfter: "5" }, { retryAfter: 3601 }, { retryAfter: 1, extra: true }, {}, null, 5]) {
+    assert.equal(retryAfterOf(hint), DEFAULT_RETRY_AFTER, JSON.stringify(hint));
+  }
+});
+
+test("16. the grant's token lasts as long as the grant (no refresh in 0.1)", async () => {
+  const { world } = await afterGrant();
+  assert.equal(world.grants.length, 1);
+  assert.equal(world.grants[0]!.tokenExpiresAt, world.grants[0]!.expiresAt);
+  assert.equal(world.grants[0]!.expiresAt, "2026-11-25T14:00:06Z");
 });

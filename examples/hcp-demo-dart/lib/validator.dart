@@ -6,6 +6,8 @@
 // Each generated library embeds its payload schema with cross-file `$ref`s
 // already inlined, so no resolver is needed.
 
+import 'dart:convert';
+
 import 'package:json_schema/json_schema.dart';
 import 'package:trust_tasks/specs/trust_task_discovery/v0_4/payload.dart'
     as discovery;
@@ -69,4 +71,18 @@ void validateReply(Map<String, dynamic> reply) {
   if (errors.isNotEmpty) {
     throw StateError('reply $type fails its schema: ${errors.join('; ')}');
   }
+}
+
+/// Whether a next step's `hint` satisfies hcp/grants/request's
+/// `$defs.NextStepHint`, taken from the pinned schema.
+bool validNextStepHint(Object? hint) {
+  final defs =
+      (jsonDecode(grant_request.payloadSchemaJson)
+              as Map<String, dynamic>)[r'$defs']
+          as Map<String, dynamic>?;
+  final schema = defs?['NextStepHint'];
+  if (schema == null) {
+    throw StateError("hcp/grants/request's schema has no NextStepHint");
+  }
+  return _check(jsonEncode(schema), hint).isEmpty;
 }
