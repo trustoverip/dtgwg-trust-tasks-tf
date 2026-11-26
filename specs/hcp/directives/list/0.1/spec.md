@@ -141,7 +141,7 @@ The Management Client asks for the directives. The payload is the top-level sche
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T13:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6Rt3mV9qNcX2wB8hL4kP1sY7dF5gJ0aQe2uK3oZnC8iT4pD7wH1yM9vE6bS5rA2jU8lG3fO7xN0tZ4zW1cK6mY8"
   }
 }

@@ -202,7 +202,7 @@ The Context Client sends the query to the provider. The payload is the top-level
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T10:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zR7FjY6BFx2GpqpM3AbnuVz15bVdYyYHy1hswAuaQS1JFK4ZonnmHLommsePUWev2gMnBT96kmcf8T64trLapb1"
   }
 }

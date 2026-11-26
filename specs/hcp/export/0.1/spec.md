@@ -64,7 +64,7 @@ maxDocumentBytes:
     covers what the import request adds to the export, at the schema bounds (an 8192-character accessToken, a
     categoryMap of 256 entries whose keys and values are categories of up to 2048 characters, about 1.03 MiB
     together at one byte a character), and its envelope and proof, with about 0.9 MiB to spare. It is a framework
-    bound, not an HCP requirement, since HCP sets no size limit. An export that would exceed it is refused with `hcp:exportTooLarge`,
+    bound, not an HCP requirement, since HCP sets no size limit. An export that would exceed it is refused with `hcp/export:tooLarge`,
     and is taken over HCP's own HTTP binding, or with narrower options, instead.
 errorCodes:
   - code: hcp:invalidToken
@@ -72,7 +72,7 @@ errorCodes:
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
       Client's access token.
     retryable: false
-  - code: hcp:exportTooLarge
+  - code: hcp/export:tooLarge
     meaning: >-
       The export would exceed this task's declared maxDocumentBytes response bound, so it cannot be carried in one
       Trust Task document. Not an HCP error: HCP sets no size limit on an export (HCP 5.4.1, 9.4.8). Retrying the
@@ -191,7 +191,7 @@ An absent option, or one set to `false`, takes HCP's default.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Kp8vR2mXcN6wB4hT9qL1sY7dF3gJ5aZe2uP8oVkC4iM6nD1tH9yW5xS3wE7rA2jU8fG4lO6pK1vX9zN5bR3cQ7"
   }
 }
@@ -287,7 +287,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
 
 ### An export too large for one document
 
-The person asked for every version and the audit log, and the export would exceed this task's 14 MiB bound, so the provider refuses with `hcp:exportTooLarge`, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP binding, or asks again without the versions or the audit log.
+The person asked for every version and the audit log, and the export would exceed this task's 14 MiB bound, so the provider refuses with `hcp/export:tooLarge`, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP binding, or asks again without the versions or the audit log.
 
 ```json
 {
@@ -298,7 +298,7 @@ The person asked for every version and the audit log, and the export would excee
   "issuedAt": "2026-11-25T09:10:01Z",
   "threadId": "urn:uuid:dab7261d-d7ad-4009-878f-897939119604",
   "payload": {
-    "code": "hcp:exportTooLarge",
+    "code": "hcp/export:tooLarge",
     "message": "The export exceeds the size this task can carry; use the HTTP binding or narrower options.",
     "retryable": false
   }
@@ -321,7 +321,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
 | unsupported version | `unsupported-version` | `unsupportedVersion`. The provider never serves a different HCP version silently (HCP 5.5). |
 
-This task adds one code that is not an HCP error: `hcp:exportTooLarge`, `retryable: false`, where the export would exceed the declared `maxDocumentBytes` response bound (see [Export size](#export-size)). A Management Client that does not know `hcp:invalidToken` or `hcp:exportTooLarge` reads it as `taskFailed` ([SPEC §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)) and still honours `retryable: false`.
+This task adds one code that is not an HCP error: `hcp/export:tooLarge`, `retryable: false`, where the export would exceed the declared `maxDocumentBytes` response bound (see [Export size](#export-size)). A Management Client that does not know `hcp:invalidToken` or `hcp/export:tooLarge` reads it as `taskFailed` ([SPEC §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)) and still honours `retryable: false`.
 
 ## Rules carried from HCP
 
@@ -333,7 +333,7 @@ This task adds one code that is not an HCP error: `hcp:exportTooLarge`, `retryab
 
 ## Export size
 
-HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 14 MiB: a framework bound, not an HCP requirement. It is 2 MiB under the framework's 16 MiB ceiling for a declared bound, which is the request bound of [`hcp/import`](../../import/0.1/spec.md), so that an export this task produces always fits an import request together with the `accessToken`, the `categoryMap` (at most 256 entries), the envelope and the proof that request adds; at their schema bounds those additions come to about 1.03 MiB at one byte a character, leaving about 0.9 MiB to spare. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp:exportTooLarge`, and the Management Client takes the export over HCP's HTTP binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported.
+HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 14 MiB: a framework bound, not an HCP requirement. It is 2 MiB under the framework's 16 MiB ceiling for a declared bound, which is the request bound of [`hcp/import`](../../import/0.1/spec.md), so that an export this task produces always fits an import request together with the `accessToken`, the `categoryMap` (at most 256 entries), the envelope and the proof that request adds; at their schema bounds those additions come to about 1.03 MiB at one byte a character, leaving about 0.9 MiB to spare. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp/export:tooLarge`, and the Management Client takes the export over HCP's HTTP binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported.
 
 ## Repeated requests
 
@@ -347,7 +347,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 28 — a delegate's rules and directives.** A delegate's export carries each standing rule and directive whose `categories` are absent or all within the delegation's scope, as [`hcp/rules/list`](../../rules/list/0.1/spec.md) and [`hcp/directives/list`](../../directives/list/0.1/spec.md) return them; one naming any category outside the scope is left out whole.
 - **Question 32 — a delegate's sub-delegations.** A delegate's export carries the delegations naming them and the sub-delegations they appointed, as [`hcp/delegations/list`](../../delegations/list/0.1/spec.md) returns them.
-- **Question 33 — export size.** The export travels in one document bounded at 14 MiB, 2 MiB under the framework's 16 MiB ceiling so that it always fits an `hcp/import` request; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
+- **Question 33 — export size.** The export travels in one document bounded at 14 MiB, 2 MiB under the framework's 16 MiB ceiling so that it always fits an `hcp/import` request; a larger export is refused with `hcp/export:tooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's export carries only the superseded versions, of the entries it returns, whose own categories are all within the delegation's scope (see [Authorization](#authorization)).
 - **Question 42 — presence signals the carriage adds.** The export's `options` is required, with `includeVersions` and `includeAudit` each `true` or `false`, so that the export says whether `versions` and `audit` were asked for; and every `AuditEvent` in `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null. HCP's own shapes leave these members optional (HCP 5.4.1, 8.2). [`hcp/import`](../../import/0.1/spec.md) still accepts an export without `options`, and audit events without those five members.

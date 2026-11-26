@@ -145,7 +145,7 @@ The Management Client asks for the rules. The payload is the top-level schema in
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Lm7pQ4rXcN9vB3hT8kW1sY6dF5gJ0aRe2uZ3oKnC8iM4tD7wH1yS9xE6bV5qA2jU8lG3fO7pN0vX4zK1cT6mY9"
   }
 }

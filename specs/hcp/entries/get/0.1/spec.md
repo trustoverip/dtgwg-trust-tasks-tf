@@ -196,7 +196,7 @@ The client names the entry and the purpose. The payload is the top-level schema 
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zRzm3kEoDTJvw7KrjEPVBwhBfQ4QZai8J6Nm2SunoYV9uJKrjsBtibJdArCN692e1j4j6B1QNxmoLqTdTwxDg3f"
   }
 }

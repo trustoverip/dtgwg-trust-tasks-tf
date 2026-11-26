@@ -182,7 +182,7 @@ The Management Client sends the new list to the provider. The payload is the top
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Qm3vN7kLcT8xB1hR4pW6sY2dF9gJ7aZe1uK5oVbC4iM3kD8tH2yP6xS9wE1rA3jU7fG4lO2pN6vX9zB5bT8cW1"
   }
 }
@@ -211,7 +211,7 @@ An empty list permits no purpose, so the entry is disclosed for none, whatever a
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:05:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Kp8wR2mVdN6yT1cH5qL9sB4fX7gJ2aWe8uM3oZbD6iQ1kF5tG9yS4xP7wA2rE6jC3fU8lN1pV5vY9zH4bK7cR2"
   }
 }

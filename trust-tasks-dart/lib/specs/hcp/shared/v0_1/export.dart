@@ -1150,7 +1150,7 @@ class ExportSubject {
 /// hcp/import request) is reached first (each item serializes to more than 100 bytes),
 /// as HCP 5.4.1 lists every rule, directive and delegation and the list operations
 /// bound none: an export too large for one document is refused with
-/// `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
+/// `hcp/export:tooLarge` (hcp/export), never cut short by an item count.
 class Export {
   const Export({
     required this.context,

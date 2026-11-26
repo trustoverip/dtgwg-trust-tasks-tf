@@ -264,7 +264,7 @@ The Management Client sends the export to the provider. The payload is the top-l
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zwkTQijD5JX2muLDZX2bjowk8DW6RLsrp6M5y7tgzscSUBgpcaivaJw4VVGef8cjurwPQhEJDZW3KJdQN8YceRtN"
   }
 }
@@ -352,7 +352,7 @@ This export, from a provider that does not write `options`, says nothing of whet
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zr4yLz4W2AxhBML7C9Sf3J4GMWq4AeL3tW2Cm85PYHJK1fCGYGrjhVj7n8UPZPgRbojK5Tt75P1coLCsZezEfEXB"
   }
 }
