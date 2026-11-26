@@ -6,6 +6,7 @@
 import type { ArchiveAccess, CommunityRoomV3, Ext, HostedRoom_VtcV0_3 as HostedRoom, PendingChange, PurgeProgress, RetentionPolicy, RoomDescription, RoomLabel, RoomState, RoomStatus, RoomTag, RoomTags, SignalDelay, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/rooms/community/get/0.6 */
 export interface VTCRoomsCommunityGetPayload {
   /**
    * The room's identifier: its DID.
@@ -15,6 +16,8 @@ export interface VTCRoomsCommunityGetPayload {
 }
 /**
  * Success response to vtc/rooms/community/get. Type https://trusttasks.org/spec/vtc/rooms/community/get/0.5#response. One room the community owns, in any state of its owner's lifecycle, with its counts and its signal delay. Its members are vtc/rooms/community/members/list's.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.6
  */
 export interface VTCRoomsCommunityGetResponsePayload {
   room: CommunityRoomV3;
@@ -45,15 +48,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/rooms/community/get/0.6";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.6
+ */
 export type Payload = VTCRoomsCommunityGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/get/0.5#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.6
+ */
 export type Response = VTCRoomsCommunityGetResponsePayload;
 
 /**

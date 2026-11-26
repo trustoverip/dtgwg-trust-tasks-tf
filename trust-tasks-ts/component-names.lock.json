@@ -963,6 +963,7 @@
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomLabel": "RoomLabel",
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomMemberV2": "RoomMemberV2",
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomMembershipV2": "RoomMembershipV2",
+  "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomRecordMembers": "RoomRecordMembers",
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomState": "RoomState",
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomStatus": "RoomStatus",
   "vtc/_shared/0.5/community-room.schema.json#/$defs/RoomTag": "RoomTag",
