@@ -264,7 +264,7 @@ jobs:
       # request held with a next step, query, revoke, revocation notice), sealed
       # over trust_tasks_tsp. Its tests hold the run to the golden transcript
       # every language's port shares (examples/hcp-demo-ts/transcript.golden.txt).
-      # Not on the 3.3 floor: trust_tasks_tsp's is 3.8, which affinidi_tsp sets.
+      # Not on the 3.3 floor: the demo's is 3.10, which affinidi_tsp 0.2 sets.
       # The format check skips lib/trust_tasks/, which the generator formats.
       - name: "HCP demo: install dependencies"
         if: matrix.sdk != '3.3'
