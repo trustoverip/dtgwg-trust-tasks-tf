@@ -152,7 +152,7 @@ A conforming **consumer** (the community) **MUST**:
 
 ## Definitions
 
-- `Event`, `EventId`, `When`, `AccessDetails`, `PlaceSummary`, `Audience`, `RegistrationSettings`, `RosterSetting`, `Accessibility`, `Duration` — see [`event.schema.json`](../../_shared/0.1/event.schema.json).
+- `Event`, `EventId`, `When`, `AccessDetails`, `PlaceSummary`, `EventAudience`, `RegistrationSettings`, `RosterSetting`, `Accessibility`, `JSCalendarDuration` — see [`event.schema.json`](../../_shared/0.1/event.schema.json).
 
 ## Request
 

@@ -3,7 +3,7 @@
  * Source: specs/vtc/events/access/show/0.1/payload.schema.json
  */
 
-import type { AccessDetails, EventId, Ext, Instant_VtcEventsV0_1 as Instant, Place, VirtualFeature, VirtualPlace } from "../../../../../_shared/components.js";
+import type { AccessDetails, EventId, EventInstant, Ext, Place, VirtualFeature, VirtualPlace } from "../../../../../_shared/components.js";
 
 
 /**
@@ -30,7 +30,7 @@ export interface VTCEventsAccessShowResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AccessDetails, EventId, Ext, Instant, Place, VirtualFeature, VirtualPlace };
+export type { AccessDetails, EventId, EventInstant, Ext, Place, VirtualFeature, VirtualPlace };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/access/show/0.1" as const;
@@ -187,13 +187,13 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Show the access details with the event to its whole audience. Absent means false."
         },
         "revealAt": {
-          "$ref": "#/$defs/Instant",
+          "$ref": "#/$defs/EventInstant",
           "description": "Not before this, even to a registrant who is going. Absent means on acceptance."
         }
       }
     },
-    "Instant": {
-      "title": "Instant",
+    "EventInstant": {
+      "title": "EventInstant",
       "type": "string",
       "format": "date-time",
       "description": "An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`."

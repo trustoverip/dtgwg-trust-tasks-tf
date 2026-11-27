@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "updatedSince": {
-      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Instant",
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventInstant",
       "description": "Only registrations whose registration or event changed at or after this instant (inclusive)."
     },
     "statuses": {

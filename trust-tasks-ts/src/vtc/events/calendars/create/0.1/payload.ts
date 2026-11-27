@@ -3,15 +3,15 @@
  * Source: specs/vtc/events/calendars/create/0.1/payload.schema.json
  */
 
-import type { Calendar, CalendarId, Color, Description_VtcEventsV0_1 as Description, Ext, GroupId, Instant_VtcEventsV0_1 as Instant, ReminderMinutes, RosterSetting, Title } from "../../../../../_shared/components.js";
+import type { Calendar, CalendarId, Color, EventDescription, EventInstant, EventTitle, Ext, GroupId, ReminderMinutes, RosterSetting } from "../../../../../_shared/components.js";
 
 
 /**
  * Create a calendar of the community's or a group's own calendar. The outer document members are owned by the framework — SPEC §6.3.
  */
 export interface VTCEventsCalendarsCreatePayload {
-  name: Title;
-  description?: Description;
+  name: EventTitle;
+  description?: EventDescription;
   color?: Color;
   /**
    * Make it this group's calendar. Absent: a further calendar of the community's.
@@ -43,7 +43,7 @@ export interface VTCEventsCalendarsCreateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Calendar, CalendarId, Color, Description, Ext, GroupId, Instant, ReminderMinutes, RosterSetting, Title };
+export type { Calendar, CalendarId, Color, EventDescription, EventInstant, EventTitle, Ext, GroupId, ReminderMinutes, RosterSetting };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/calendars/create/0.1" as const;
@@ -99,10 +99,10 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   ],
   "properties": {
     "name": {
-      "$ref": "#/$defs/Title"
+      "$ref": "#/$defs/EventTitle"
     },
     "description": {
-      "$ref": "#/$defs/Description"
+      "$ref": "#/$defs/EventDescription"
     },
     "color": {
       "$ref": "#/$defs/Color"
@@ -161,15 +161,15 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^#[0-9A-Fa-f]{6}$"
     },
-    "Description": {
-      "title": "Description",
+    "EventDescription": {
+      "title": "EventDescription",
       "type": "string",
       "minLength": 1,
       "maxLength": 10000,
       "description": "What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions."
     },
-    "Title": {
-      "title": "Title",
+    "EventTitle": {
+      "title": "EventTitle",
       "type": "string",
       "minLength": 1,
       "maxLength": 200,
@@ -233,10 +233,10 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/CalendarId"
         },
         "name": {
-          "$ref": "#/$defs/Title"
+          "$ref": "#/$defs/EventTitle"
         },
         "description": {
-          "$ref": "#/$defs/Description"
+          "$ref": "#/$defs/EventDescription"
         },
         "color": {
           "$ref": "#/$defs/Color"
@@ -271,12 +271,12 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "`archived`: takes no new events; its events are kept."
         },
         "createdAt": {
-          "$ref": "#/$defs/Instant"
+          "$ref": "#/$defs/EventInstant"
         }
       }
     },
-    "Instant": {
-      "title": "Instant",
+    "EventInstant": {
+      "title": "EventInstant",
       "type": "string",
       "format": "date-time",
       "description": "An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`."
@@ -303,15 +303,15 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^#[0-9A-Fa-f]{6}$"
     },
-    "Description": {
-      "title": "Description",
+    "EventDescription": {
+      "title": "EventDescription",
       "type": "string",
       "minLength": 1,
       "maxLength": 10000,
       "description": "What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions."
     },
-    "Title": {
-      "title": "Title",
+    "EventTitle": {
+      "title": "EventTitle",
       "type": "string",
       "minLength": 1,
       "maxLength": 200,

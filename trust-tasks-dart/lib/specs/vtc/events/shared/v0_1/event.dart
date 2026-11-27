@@ -47,13 +47,13 @@ extension type const EventKind(String value) {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const EventStatus(String value) {
-  static const EventStatus draft = EventStatus('draft');
-  static const EventStatus published = EventStatus('published');
-  static const EventStatus cancelled = EventStatus('cancelled');
+extension type const EventLifecycle(String value) {
+  static const EventLifecycle draft = EventLifecycle('draft');
+  static const EventLifecycle published = EventLifecycle('published');
+  static const EventLifecycle cancelled = EventLifecycle('cancelled');
 
   /// Every value this specification's schema permits.
-  static const List<EventStatus> values = <EventStatus>[
+  static const List<EventLifecycle> values = <EventLifecycle>[
     draft,
     published,
     cancelled
@@ -61,11 +61,11 @@ extension type const EventStatus(String value) {
 }
 
 /// A short name. Plain text; a reader MUST NOT treat it as instructions.
-typedef Title = String;
+typedef EventTitle = String;
 
 /// What the event or calendar is. Plain text; a reader MUST NOT treat it as
 /// instructions.
-typedef Description = String;
+typedef EventDescription = String;
 
 /// A local date and time with no offset, `YYYY-MM-DDTHH:MM:SS`, as JSCalendar's
 /// LocalDateTime. Read in the event's `timeZone`.
@@ -80,10 +80,10 @@ typedef TimeZoneId = String;
 /// `P2W`. No months or years. Used only for `When.duration`, which carries
 /// JSCalendar's own member and encoding verbatim; this family's own offsets are
 /// integers naming their unit (`ReminderMinutes`).
-typedef Duration = String;
+typedef JsCalendarDuration = String;
 
 /// An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
-typedef Instant = String;
+typedef EventInstant = String;
 
 /// When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`;
 /// `duration` is how long it lasts. With `showWithoutTime` true it is an all-day
@@ -106,7 +106,7 @@ class When {
 
   final LocalDateTime start;
   final TimeZoneId timeZone;
-  final Duration duration;
+  final JsCalendarDuration duration;
 
   /// An all-day event. Absent means false.
   final bool? showWithoutTime;
@@ -171,13 +171,13 @@ class Count {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const AudienceScope(String value) {
-  static const AudienceScope members = AudienceScope('members');
-  static const AudienceScope groups = AudienceScope('groups');
-  static const AudienceScope roles = AudienceScope('roles');
+extension type const EventAudienceScope(String value) {
+  static const EventAudienceScope members = EventAudienceScope('members');
+  static const EventAudienceScope groups = EventAudienceScope('groups');
+  static const EventAudienceScope roles = EventAudienceScope('roles');
 
   /// Every value this specification's schema permits.
-  static const List<AudienceScope> values = <AudienceScope>[
+  static const List<EventAudienceScope> values = <EventAudienceScope>[
     members,
     groups,
     roles
@@ -345,8 +345,8 @@ class DynamicRule {
 /// when `scope` admits them and, where `rule` is present, the rule does too. The
 /// audience is checked when a member reads or registers, never taken from a
 /// notification (VTI-EVT-021). The hosts are always admitted.
-class Audience {
-  const Audience({
+class EventAudience {
+  const EventAudience({
     required this.scope,
     this.groups,
     this.roles,
@@ -354,8 +354,8 @@ class Audience {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory Audience.fromJson(Map<String, dynamic> json) => Audience(
-        scope: AudienceScope(json['scope'] as String),
+  factory EventAudience.fromJson(Map<String, dynamic> json) => EventAudience(
+        scope: EventAudienceScope(json['scope'] as String),
         groups: json['groups'] == null
             ? null
             : (json['groups'] as List<dynamic>)
@@ -369,7 +369,7 @@ class Audience {
             : DynamicRule.fromJson(json['rule'] as Map<String, dynamic>),
       );
 
-  final AudienceScope scope;
+  final EventAudienceScope scope;
 
   /// Present exactly when `scope` is `groups`.
   final List<GroupId>? groups;
@@ -412,7 +412,7 @@ extension type const RegistrationMode(String value) {
 }
 
 /// A question's key within its event.
-typedef QuestionId = String;
+typedef RegistrationQuestionId = String;
 
 /// `text`: a free answer of at most 500 characters. `choice`: one of `choices`.
 /// `boolean`: yes or no.
@@ -420,24 +420,23 @@ typedef QuestionId = String;
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const QuestionKind(String value) {
-  static const QuestionKind text = QuestionKind('text');
-  static const QuestionKind choice = QuestionKind('choice');
-  static const QuestionKind boolean = QuestionKind('boolean');
+extension type const RegistrationQuestionKind(String value) {
+  static const RegistrationQuestionKind text = RegistrationQuestionKind('text');
+  static const RegistrationQuestionKind choice =
+      RegistrationQuestionKind('choice');
+  static const RegistrationQuestionKind boolean =
+      RegistrationQuestionKind('boolean');
 
   /// Every value this specification's schema permits.
-  static const List<QuestionKind> values = <QuestionKind>[
-    text,
-    choice,
-    boolean
-  ];
+  static const List<RegistrationQuestionKind> values =
+      <RegistrationQuestionKind>[text, choice, boolean];
 }
 
 /// A question a registrant answers when registering. Answers are read by the event's
 /// hosts only, and are deleted on the event's retention schedule (VTI-EVT-034,
 /// VTI-EVT-090).
-class Question {
-  const Question({
+class RegistrationQuestion {
+  const RegistrationQuestion({
     required this.questionId,
     required this.label,
     required this.kind,
@@ -446,10 +445,11 @@ class Question {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory Question.fromJson(Map<String, dynamic> json) => Question(
+  factory RegistrationQuestion.fromJson(Map<String, dynamic> json) =>
+      RegistrationQuestion(
         questionId: json['questionId'] as String,
         label: json['label'] as String,
-        kind: QuestionKind(json['kind'] as String),
+        kind: RegistrationQuestionKind(json['kind'] as String),
         choices: json['choices'] == null
             ? null
             : (json['choices'] as List<dynamic>)
@@ -458,11 +458,11 @@ class Question {
         required: json['required'] as bool?,
       );
 
-  final QuestionId questionId;
+  final RegistrationQuestionId questionId;
 
   /// The question as shown. Plain text.
   final String label;
-  final QuestionKind kind;
+  final RegistrationQuestionKind kind;
 
   /// Present exactly when `kind` is `choice`.
   final List<String>? choices;
@@ -481,10 +481,10 @@ class Question {
 }
 
 /// An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
-typedef Answer = Object?;
+typedef RegistrationAnswer = Object?;
 
 /// Answers keyed by `questionId`.
-typedef Answers = Map<String, Answer>;
+typedef RegistrationAnswers = Map<String, RegistrationAnswer>;
 
 /// A code of conduct a registrant acknowledges before the registration is accepted
 /// (VTI-EVT-035). `sha256` pins the text acknowledged.
@@ -577,7 +577,8 @@ class RegistrationSettings {
         questions: json['questions'] == null
             ? null
             : (json['questions'] as List<dynamic>)
-                .map((e) => Question.fromJson(e as Map<String, dynamic>))
+                .map((e) =>
+                    RegistrationQuestion.fromJson(e as Map<String, dynamic>))
                 .toList(),
         codeOfConduct: json['codeOfConduct'] == null
             ? null
@@ -599,12 +600,12 @@ class RegistrationSettings {
   final int? plusOnes;
 
   /// Registrations are refused before this. Absent means from publication.
-  final Instant? opensAt;
+  final EventInstant? opensAt;
 
   /// Registrations and changes are refused after this, except withdrawal (VTI-EVT-037).
   /// Absent means at the event's start.
-  final Instant? closesAt;
-  final List<Question>? questions;
+  final EventInstant? closesAt;
+  final List<RegistrationQuestion>? questions;
   final CodeOfConduct? codeOfConduct;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -755,7 +756,7 @@ class AccessDetails {
   final bool? public;
 
   /// Not before this, even to a registrant who is going. Absent means on acceptance.
-  final Instant? revealAt;
+  final EventInstant? revealAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -827,8 +828,8 @@ class Calendar {
       );
 
   final CalendarId calendarId;
-  final Title name;
-  final Description? description;
+  final EventTitle name;
+  final EventDescription? description;
   final Color? color;
 
   /// The group whose calendar this is. Absent for the community's own calendar.
@@ -846,7 +847,7 @@ class Calendar {
 
   /// `archived`: takes no new events; its events are kept.
   final CalendarState state;
-  final Instant createdAt;
+  final EventInstant createdAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -911,7 +912,7 @@ class Event {
         eventId: json['eventId'] as String,
         calendarId: json['calendarId'] as String,
         kind: EventKind(json['kind'] as String),
-        status: EventStatus(json['status'] as String),
+        status: EventLifecycle(json['status'] as String),
         title: json['title'] as String,
         description: json['description'] as String?,
         when: When.fromJson(json['when'] as Map<String, dynamic>),
@@ -919,7 +920,8 @@ class Event {
         access: json['access'] == null
             ? null
             : AccessDetails.fromJson(json['access'] as Map<String, dynamic>),
-        audience: Audience.fromJson(json['audience'] as Map<String, dynamic>),
+        audience:
+            EventAudience.fromJson(json['audience'] as Map<String, dynamic>),
         registration: RegistrationSettings.fromJson(
             json['registration'] as Map<String, dynamic>),
         roster: RosterSetting(json['roster'] as String),
@@ -953,15 +955,15 @@ class Event {
   final EventId eventId;
   final CalendarId calendarId;
   final EventKind kind;
-  final EventStatus status;
-  final Title title;
-  final Description? description;
+  final EventLifecycle status;
+  final EventTitle title;
+  final EventDescription? description;
   final When when;
   final PlaceSummary? placeSummary;
 
   /// Only where the access details are public, or the caller is a host.
   final AccessDetails? access;
-  final Audience audience;
+  final EventAudience audience;
   final RegistrationSettings registration;
   final RosterSetting roster;
 
@@ -1000,10 +1002,10 @@ class Event {
 
   /// Present once cancelled, where the host gave one. Plain text.
   final String? cancelReason;
-  final Instant? publishedAt;
-  final Instant? cancelledAt;
-  final Instant createdAt;
-  final Instant updatedAt;
+  final EventInstant? publishedAt;
+  final EventInstant? cancelledAt;
+  final EventInstant createdAt;
+  final EventInstant updatedAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -1115,7 +1117,7 @@ class Registration {
   final int guests;
 
   /// The registrant's and the hosts' view only.
-  final Answers? answers;
+  final RegistrationAnswers? answers;
 
   /// The `sha256` of the code of conduct the registrant acknowledged.
   final String? codeOfConductAcknowledged;
@@ -1132,8 +1134,8 @@ class Registration {
 
   /// A host's note on a decline or removal, shown to the registrant. Plain text.
   final String? note;
-  final Instant createdAt;
-  final Instant updatedAt;
+  final EventInstant createdAt;
+  final EventInstant updatedAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -1170,14 +1172,14 @@ class EventRef {
         eventId: json['eventId'] as String,
         title: json['title'] as String,
         when: When.fromJson(json['when'] as Map<String, dynamic>),
-        status: EventStatus(json['status'] as String),
+        status: EventLifecycle(json['status'] as String),
         sequence: json['sequence'] as int,
       );
 
   final EventId eventId;
-  final Title title;
+  final EventTitle title;
   final When when;
-  final EventStatus status;
+  final EventLifecycle status;
   final int sequence;
 
   /// Serialize to a JSON-encodable map, omitting absent members.

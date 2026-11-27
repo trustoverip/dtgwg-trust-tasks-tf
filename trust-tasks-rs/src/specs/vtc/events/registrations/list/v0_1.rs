@@ -32,147 +32,6 @@ pub mod error {
         }
     }
 }
-///An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged)]
-#[non_exhaustive]
-pub enum Answer {
-    String(AnswerString),
-    Boolean(bool),
-}
-impl ::std::str::FromStr for Answer {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if let Ok(v) = value.parse() {
-            Ok(Self::String(v))
-        } else if let Ok(v) = value.parse() {
-            Ok(Self::Boolean(v))
-        } else {
-            Err("string conversion failed for all variants".into())
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for Answer {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for Answer {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for Answer {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::fmt::Display for Answer {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match self {
-            Self::String(x) => x.fmt(f),
-            Self::Boolean(x) => x.fmt(f),
-        }
-    }
-}
-impl ::std::convert::From<AnswerString> for Answer {
-    fn from(value: AnswerString) -> Self {
-        Self::String(value)
-    }
-}
-impl ::std::convert::From<bool> for Answer {
-    fn from(value: bool) -> Self {
-        Self::Boolean(value)
-    }
-}
-///`AnswerString`
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AnswerString(::std::string::String);
-impl ::std::ops::Deref for AnswerString {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AnswerString> for ::std::string::String {
-    fn from(value: AnswerString) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AnswerString {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 500usize {
-            return Err("longer than 500 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AnswerString {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AnswerString {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AnswerString {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AnswerString {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Answers keyed by `questionId`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(transparent)]
-pub struct Answers(pub ::std::collections::HashMap<QuestionId, Answer>);
-impl ::std::ops::Deref for Answers {
-    type Target = ::std::collections::HashMap<QuestionId, Answer>;
-    fn deref(&self) -> &::std::collections::HashMap<QuestionId, Answer> {
-        &self.0
-    }
-}
-impl ::std::convert::From<Answers> for ::std::collections::HashMap<QuestionId, Answer> {
-    fn from(value: Answers) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<::std::collections::HashMap<QuestionId, Answer>> for Answers {
-    fn from(value: ::std::collections::HashMap<QuestionId, Answer>) -> Self {
-        Self(value)
-    }
-}
 ///Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -299,6 +158,50 @@ impl<'de> ::serde::Deserialize<'de> for EventId {
             })
     }
 }
+///An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct EventInstant(pub ::chrono::DateTime<::chrono::offset::Utc>);
+impl ::std::ops::Deref for EventInstant {
+    type Target = ::chrono::DateTime<::chrono::offset::Utc>;
+    fn deref(&self) -> &::chrono::DateTime<::chrono::offset::Utc> {
+        &self.0
+    }
+}
+impl ::std::convert::From<EventInstant> for ::chrono::DateTime<::chrono::offset::Utc> {
+    fn from(value: EventInstant) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::chrono::DateTime<::chrono::offset::Utc>> for EventInstant {
+    fn from(value: ::chrono::DateTime<::chrono::offset::Utc>) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for EventInstant {
+    type Err = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EventInstant {
+    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for EventInstant {
+    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for EventInstant {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -381,50 +284,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
-    }
-}
-///An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(transparent)]
-pub struct Instant(pub ::chrono::DateTime<::chrono::offset::Utc>);
-impl ::std::ops::Deref for Instant {
-    type Target = ::chrono::DateTime<::chrono::offset::Utc>;
-    fn deref(&self) -> &::chrono::DateTime<::chrono::offset::Utc> {
-        &self.0
-    }
-}
-impl ::std::convert::From<Instant> for ::chrono::DateTime<::chrono::offset::Utc> {
-    fn from(value: Instant) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<::chrono::DateTime<::chrono::offset::Utc>> for Instant {
-    fn from(value: ::chrono::DateTime<::chrono::offset::Utc>) -> Self {
-        Self(value)
-    }
-}
-impl ::std::str::FromStr for Instant {
-    type Err = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
-        Ok(Self(value.parse()?))
-    }
-}
-impl ::std::convert::TryFrom<&str> for Instant {
-    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<String> for Instant {
-    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::fmt::Display for Instant {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        self.0.fmt(f)
     }
 }
 ///List an event's registrations as the caller may see them: every registration, answers included, for the event's hosts; on a `visible` roster, for a registrant who is going or maybe, the others who are going or maybe — who, their status and their guests, nothing else. On a `hidden` roster nobody but the hosts reads any. The outer document members are owned by the framework — SPEC §6.3.
@@ -514,67 +373,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
             })
     }
 }
-///A question's key within its event.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct QuestionId(::std::string::String);
-impl ::std::ops::Deref for QuestionId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<QuestionId> for ::std::string::String {
-    fn from(value: QuestionId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for QuestionId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z][a-z0-9-]{0,31}$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]{0,31}$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for QuestionId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for QuestionId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for QuestionId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for QuestionId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -583,7 +381,7 @@ impl<'de> ::serde::Deserialize<'de> for QuestionId {
 pub struct Registration {
     ///The registrant's and the hosts' view only.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub answers: ::std::option::Option<Answers>,
+    pub answers: ::std::option::Option<RegistrationAnswers>,
     ///The `sha256` of the code of conduct the registrant acknowledged.
     #[serde(
         rename = "codeOfConductAcknowledged",
@@ -592,7 +390,7 @@ pub struct Registration {
     )]
     pub code_of_conduct_acknowledged: ::std::option::Option<RegistrationCodeOfConductAcknowledged>,
     #[serde(rename = "createdAt")]
-    pub created_at: Instant,
+    pub created_at: EventInstant,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
     #[serde(rename = "eventId")]
@@ -611,7 +409,7 @@ pub struct Registration {
     pub roster: RosterSetting,
     pub status: RegistrationStatus,
     #[serde(rename = "updatedAt")]
-    pub updated_at: Instant,
+    pub updated_at: EventInstant,
     ///While `waitlisted`: the registrant's place in the queue, 1 first.
     #[serde(
         rename = "waitlistPosition",
@@ -623,6 +421,155 @@ pub struct Registration {
 impl Registration {
     pub fn builder() -> builder::Registration {
         Default::default()
+    }
+}
+///An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum RegistrationAnswer {
+    String(RegistrationAnswerString),
+    Boolean(bool),
+}
+impl ::std::str::FromStr for RegistrationAnswer {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if let Ok(v) = value.parse() {
+            Ok(Self::String(v))
+        } else if let Ok(v) = value.parse() {
+            Ok(Self::Boolean(v))
+        } else {
+            Err("string conversion failed for all variants".into())
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for RegistrationAnswer {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RegistrationAnswer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RegistrationAnswer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for RegistrationAnswer {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match self {
+            Self::String(x) => x.fmt(f),
+            Self::Boolean(x) => x.fmt(f),
+        }
+    }
+}
+impl ::std::convert::From<RegistrationAnswerString> for RegistrationAnswer {
+    fn from(value: RegistrationAnswerString) -> Self {
+        Self::String(value)
+    }
+}
+impl ::std::convert::From<bool> for RegistrationAnswer {
+    fn from(value: bool) -> Self {
+        Self::Boolean(value)
+    }
+}
+///`RegistrationAnswerString`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RegistrationAnswerString(::std::string::String);
+impl ::std::ops::Deref for RegistrationAnswerString {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RegistrationAnswerString> for ::std::string::String {
+    fn from(value: RegistrationAnswerString) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RegistrationAnswerString {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 500usize {
+            return Err("longer than 500 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RegistrationAnswerString {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RegistrationAnswerString {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RegistrationAnswerString {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RegistrationAnswerString {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Answers keyed by `questionId`.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct RegistrationAnswers(
+    pub ::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer>,
+);
+impl ::std::ops::Deref for RegistrationAnswers {
+    type Target = ::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer>;
+    fn deref(&self) -> &::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer> {
+        &self.0
+    }
+}
+impl ::std::convert::From<RegistrationAnswers>
+    for ::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer>
+{
+    fn from(value: RegistrationAnswers) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer>>
+    for RegistrationAnswers
+{
+    fn from(
+        value: ::std::collections::HashMap<RegistrationQuestionId, RegistrationAnswer>,
+    ) -> Self {
+        Self(value)
     }
 }
 ///The `sha256` of the code of conduct the registrant acknowledged.
@@ -800,6 +747,67 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrationNote {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for RegistrationNote {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A question's key within its event.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RegistrationQuestionId(::std::string::String);
+impl ::std::ops::Deref for RegistrationQuestionId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RegistrationQuestionId> for ::std::string::String {
+    fn from(value: RegistrationQuestionId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RegistrationQuestionId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z][a-z0-9-]{0,31}$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]{0,31}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RegistrationQuestionId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RegistrationQuestionId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RegistrationQuestionId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RegistrationQuestionId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1289,13 +1297,15 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Registration {
-        answers:
-            ::std::result::Result<::std::option::Option<super::Answers>, ::std::string::String>,
+        answers: ::std::result::Result<
+            ::std::option::Option<super::RegistrationAnswers>,
+            ::std::string::String,
+        >,
         code_of_conduct_acknowledged: ::std::result::Result<
             ::std::option::Option<super::RegistrationCodeOfConductAcknowledged>,
             ::std::string::String,
         >,
-        created_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        created_at: ::std::result::Result<super::EventInstant, ::std::string::String>,
         entry_id: ::std::result::Result<super::EntryId, ::std::string::String>,
         event_id: ::std::result::Result<super::EventId, ::std::string::String>,
         event_sequence: ::std::result::Result<u64, ::std::string::String>,
@@ -1307,7 +1317,7 @@ pub mod builder {
         registration_id: ::std::result::Result<super::RegistrationId, ::std::string::String>,
         roster: ::std::result::Result<super::RosterSetting, ::std::string::String>,
         status: ::std::result::Result<super::RegistrationStatus, ::std::string::String>,
-        updated_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        updated_at: ::std::result::Result<super::EventInstant, ::std::string::String>,
         waitlist_position: ::std::result::Result<
             ::std::option::Option<::std::num::NonZeroU64>,
             ::std::string::String,
@@ -1335,7 +1345,7 @@ pub mod builder {
     impl Registration {
         pub fn answers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Answers>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::RegistrationAnswers>>,
             T::Error: ::std::fmt::Display,
         {
             self.answers = value
@@ -1357,7 +1367,7 @@ pub mod builder {
         }
         pub fn created_at<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::Instant>,
+            T: ::std::convert::TryInto<super::EventInstant>,
             T::Error: ::std::fmt::Display,
         {
             self.created_at = value
@@ -1447,7 +1457,7 @@ pub mod builder {
         }
         pub fn updated_at<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::Instant>,
+            T: ::std::convert::TryInto<super::EventInstant>,
             T::Error: ::std::fmt::Display,
         {
             self.updated_at = value
@@ -1707,7 +1717,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Answer_6aa60e5b!(), ",", crate::specs::shared_defs::d_Answers_64a848ea!(), ",", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.\",\"format\":\"date-time\",\"title\":\"Instant\",\"type\":\"string\"},\"QuestionId\":{\"description\":\"A question's key within its event.\",\"pattern\":\"^[a-z][a-z0-9-]{0,31}$\",\"title\":\"QuestionId\",\"type\":\"string\"},", crate::specs::shared_defs::d_Registration_1a886ecc!(), ",", crate::specs::shared_defs::d_RegistrationId_aadbc7a5!(), ",", crate::specs::shared_defs::d_RegistrationStatus_acc918c7!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/registrations/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/list/0.1#response. `registrations` is present exactly when `view` is `host`, `roster` exactly when it is `roster`.\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"type\":\"string\"},\"registrations\":{\"description\":\"Host view: registrations in order of `createdAt`, then `registrationId`; waitlisted ones carry `waitlistPosition`.\",\"items\":{\"$ref\":\"#/$defs/Registration\"},\"maxItems\":100,\"type\":\"array\"},\"roster\":{\"description\":\"Roster view: registrants going or maybe, the caller included, in order of `entryId`.\",\"items\":{\"$ref\":\"#/$defs/RosterItem\"},\"maxItems\":100,\"type\":\"array\"},\"view\":{\"$ref\":\"#/$defs/View\"}},\"required\":[\"eventId\",\"view\"],\"title\":\"VTC Events — Registrations — List — response payload\",\"type\":\"object\"},\"RosterItem\":{\"additionalProperties\":false,\"description\":\"Another registrant as the roster view shows them: who, whether going or maybe, and how many guests. Never their answers, their acknowledgement or when they registered (VTI-EVT-053).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"guests\":{\"description\":\"Plus-ones the registrant brings; 0 where none.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"Whether the registrant is going or maybe; the roster view shows no other status.\",\"enum\":[\"going\",\"maybe\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"status\",\"guests\"],\"title\":\"RosterItem\",\"type\":\"object\"},", crate::specs::shared_defs::d_RosterSetting_f5d25358!(), ",\"View\":{\"description\":\"Which view the caller was given. `host`: the event's hosts — every registration, all of it (VTI-EVT-073). `roster`: a registrant on a `visible` roster — who else is going or maybe (VTI-EVT-053).\",\"enum\":[\"host\",\"roster\"],\"title\":\"View\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_EventInstant_9cf8a7cf!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Registration_50244eab!(), ",", crate::specs::shared_defs::d_RegistrationAnswer_aa96e019!(), ",", crate::specs::shared_defs::d_RegistrationAnswers_94e05d0e!(), ",", crate::specs::shared_defs::d_RegistrationId_aadbc7a5!(), ",", crate::specs::shared_defs::d_RegistrationQuestionId_2b2977be!(), ",", crate::specs::shared_defs::d_RegistrationStatus_acc918c7!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/registrations/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/list/0.1#response. `registrations` is present exactly when `view` is `host`, `roster` exactly when it is `roster`.\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"type\":\"string\"},\"registrations\":{\"description\":\"Host view: registrations in order of `createdAt`, then `registrationId`; waitlisted ones carry `waitlistPosition`.\",\"items\":{\"$ref\":\"#/$defs/Registration\"},\"maxItems\":100,\"type\":\"array\"},\"roster\":{\"description\":\"Roster view: registrants going or maybe, the caller included, in order of `entryId`.\",\"items\":{\"$ref\":\"#/$defs/RosterItem\"},\"maxItems\":100,\"type\":\"array\"},\"view\":{\"$ref\":\"#/$defs/View\"}},\"required\":[\"eventId\",\"view\"],\"title\":\"VTC Events — Registrations — List — response payload\",\"type\":\"object\"},\"RosterItem\":{\"additionalProperties\":false,\"description\":\"Another registrant as the roster view shows them: who, whether going or maybe, and how many guests. Never their answers, their acknowledgement or when they registered (VTI-EVT-053).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"guests\":{\"description\":\"Plus-ones the registrant brings; 0 where none.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"Whether the registrant is going or maybe; the roster view shows no other status.\",\"enum\":[\"going\",\"maybe\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"status\",\"guests\"],\"title\":\"RosterItem\",\"type\":\"object\"},", crate::specs::shared_defs::d_RosterSetting_f5d25358!(), ",\"View\":{\"description\":\"Which view the caller was given. `host`: the event's hosts — every registration, all of it (VTI-EVT-073). `roster`: a registrant on a `visible` roster — who else is going or maybe (VTI-EVT-053).\",\"enum\":[\"host\",\"roster\"],\"title\":\"View\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

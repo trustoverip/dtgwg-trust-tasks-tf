@@ -3,7 +3,7 @@
  * Source: specs/vtc/events/registrations/list/0.1/payload.schema.json
  */
 
-import type { Answer_VtcEventsV0_1 as Answer, Answers, EntryId, EventId, Ext, Instant_VtcEventsV0_1 as Instant, Registration, RegistrationId, RegistrationStatus, RosterSetting } from "../../../../../_shared/components.js";
+import type { EntryId, EventId, EventInstant, Ext, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting } from "../../../../../_shared/components.js";
 
 
 /**
@@ -95,7 +95,7 @@ export interface RosterItem {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Answer, Answers, EntryId, EventId, Ext, Instant, Registration, RegistrationId, RegistrationStatus, RosterSetting };
+export type { EntryId, EventId, EventInstant, Ext, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/list/0.1" as const;
@@ -346,7 +346,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Plus-ones the registrant brings."
         },
         "answers": {
-          "$ref": "#/$defs/Answers",
+          "$ref": "#/$defs/RegistrationAnswers",
           "description": "The registrant's and the hosts' view only."
         },
         "codeOfConductAcknowledged": {
@@ -375,15 +375,15 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "A host's note on a decline or removal, shown to the registrant. Plain text."
         },
         "createdAt": {
-          "$ref": "#/$defs/Instant"
+          "$ref": "#/$defs/EventInstant"
         },
         "updatedAt": {
-          "$ref": "#/$defs/Instant"
+          "$ref": "#/$defs/EventInstant"
         }
       }
     },
-    "Instant": {
-      "title": "Instant",
+    "EventInstant": {
+      "title": "EventInstant",
       "type": "string",
       "format": "date-time",
       "description": "An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`."
@@ -397,20 +397,20 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "hidden"
       ]
     },
-    "Answers": {
-      "title": "Answers",
+    "RegistrationAnswers": {
+      "title": "RegistrationAnswers",
       "description": "Answers keyed by `questionId`.",
       "type": "object",
       "maxProperties": 20,
       "propertyNames": {
-        "$ref": "#/$defs/QuestionId"
+        "$ref": "#/$defs/RegistrationQuestionId"
       },
       "additionalProperties": {
-        "$ref": "#/$defs/Answer"
+        "$ref": "#/$defs/RegistrationAnswer"
       }
     },
-    "Answer": {
-      "title": "Answer",
+    "RegistrationAnswer": {
+      "title": "RegistrationAnswer",
       "description": "An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.",
       "anyOf": [
         {
@@ -422,8 +422,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       ]
     },
-    "QuestionId": {
-      "title": "QuestionId",
+    "RegistrationQuestionId": {
+      "title": "RegistrationQuestionId",
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,31}$",
       "description": "A question's key within its event."

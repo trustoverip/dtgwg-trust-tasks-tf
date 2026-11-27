@@ -28,7 +28,7 @@
       "description": "Plus-ones the member brings, at most the event's `plusOnes`. Absent means 0 on a new registration and unchanged on a change."
     },
     "answers": {
-      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Answers",
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/RegistrationAnswers",
       "description": "Answers to the event's questions, keyed by `questionId`. On a change, the answers given replace the ones held; absent leaves them unchanged."
     },
     "codeOfConductAcknowledged": {

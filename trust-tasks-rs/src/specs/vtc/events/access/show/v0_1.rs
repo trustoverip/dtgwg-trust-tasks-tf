@@ -52,7 +52,7 @@ pub struct AccessDetails {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub reveal_at: ::std::option::Option<Instant>,
+    pub reveal_at: ::std::option::Option<EventInstant>,
     #[serde(
         rename = "virtualPlaces",
         default,
@@ -201,6 +201,50 @@ impl<'de> ::serde::Deserialize<'de> for EventId {
             })
     }
 }
+///An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct EventInstant(pub ::chrono::DateTime<::chrono::offset::Utc>);
+impl ::std::ops::Deref for EventInstant {
+    type Target = ::chrono::DateTime<::chrono::offset::Utc>;
+    fn deref(&self) -> &::chrono::DateTime<::chrono::offset::Utc> {
+        &self.0
+    }
+}
+impl ::std::convert::From<EventInstant> for ::chrono::DateTime<::chrono::offset::Utc> {
+    fn from(value: EventInstant) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::chrono::DateTime<::chrono::offset::Utc>> for EventInstant {
+    fn from(value: ::chrono::DateTime<::chrono::offset::Utc>) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for EventInstant {
+    type Err = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EventInstant {
+    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for EventInstant {
+    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
+    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for EventInstant {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -283,50 +327,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
-    }
-}
-///An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(transparent)]
-pub struct Instant(pub ::chrono::DateTime<::chrono::offset::Utc>);
-impl ::std::ops::Deref for Instant {
-    type Target = ::chrono::DateTime<::chrono::offset::Utc>;
-    fn deref(&self) -> &::chrono::DateTime<::chrono::offset::Utc> {
-        &self.0
-    }
-}
-impl ::std::convert::From<Instant> for ::chrono::DateTime<::chrono::offset::Utc> {
-    fn from(value: Instant) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<::chrono::DateTime<::chrono::offset::Utc>> for Instant {
-    fn from(value: ::chrono::DateTime<::chrono::offset::Utc>) -> Self {
-        Self(value)
-    }
-}
-impl ::std::str::FromStr for Instant {
-    type Err = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
-        Ok(Self(value.parse()?))
-    }
-}
-impl ::std::convert::TryFrom<&str> for Instant {
-    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<String> for Instant {
-    type Error = <::chrono::DateTime<::chrono::offset::Utc> as ::std::str::FromStr>::Err;
-    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::fmt::Display for Instant {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        self.0.fmt(f)
     }
 }
 ///Read where an event happens and how to join it: answered to a registrant who is going, and to the event's hosts, from the event's `revealAt` if it has one. The outer document members are owned by the framework — SPEC §6.3.
@@ -808,8 +808,10 @@ pub mod builder {
             ::std::string::String,
         >,
         public: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        reveal_at:
-            ::std::result::Result<::std::option::Option<super::Instant>, ::std::string::String>,
+        reveal_at: ::std::result::Result<
+            ::std::option::Option<super::EventInstant>,
+            ::std::string::String,
+        >,
         virtual_places: ::std::result::Result<
             ::std::option::Option<::std::vec::Vec<super::VirtualPlace>>,
             ::std::string::String,
@@ -859,7 +861,7 @@ pub mod builder {
         }
         pub fn reveal_at<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Instant>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::EventInstant>>,
             T::Error: ::std::fmt::Display,
         {
             self.reveal_at = value
@@ -1213,7 +1215,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccessDetails_90a89412!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.\",\"format\":\"date-time\",\"title\":\"Instant\",\"type\":\"string\"},", crate::specs::shared_defs::d_Place_37d00bf7!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/access/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/access/show/0.1#response.\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"The access details as they stand. May be empty where the hosts have not stated any yet.\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sequence\":{\"description\":\"The event's `sequence` now, so the reader knows which version of the access details it holds (VTI-EVT-063).\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"eventId\",\"access\",\"sequence\"],\"title\":\"VTC Events — Access — Show — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_VirtualFeature_522d40e1!(), ",", crate::specs::shared_defs::d_VirtualPlace_dc4c8311!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccessDetails_d64d030c!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_EventInstant_9cf8a7cf!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Place_37d00bf7!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/access/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/access/show/0.1#response.\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"The access details as they stand. May be empty where the hosts have not stated any yet.\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sequence\":{\"description\":\"The event's `sequence` now, so the reader knows which version of the access details it holds (VTI-EVT-063).\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"eventId\",\"access\",\"sequence\"],\"title\":\"VTC Events — Access — Show — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_VirtualFeature_522d40e1!(), ",", crate::specs::shared_defs::d_VirtualPlace_dc4c8311!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

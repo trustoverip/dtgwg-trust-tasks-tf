@@ -13,12 +13,12 @@
       "$ref": "../../../_shared/0.1/event.schema.json#/$defs/CalendarId"
     },
     "name": {
-      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Title"
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventTitle"
     },
     "description": {
       "anyOf": [
         {
-          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Description"
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventDescription"
         },
         {
           "type": "null"

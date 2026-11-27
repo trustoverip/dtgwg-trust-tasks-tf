@@ -37,26 +37,26 @@ const (
 	EventKindMeeting EventKind = "meeting"
 )
 
-// EventStatus `draft`: seen only by its hosts, changes freely, takes no registrations.
+// EventLifecycle `draft`: seen only by its hosts, changes freely, takes no registrations.
 // `published`: seen by its audience, takes registrations; its roster setting is fixed.
 // `cancelled`: will not happen; kept so registrants and their agents see it was
 // cancelled, and takes no registrations. Whether a published event has ended is read from
 // its time, never stored (VTI-EVT-004).
-type EventStatus string
+type EventLifecycle string
 
-// Values EventStatus may take, per this specification's schema.
+// Values EventLifecycle may take, per this specification's schema.
 const (
-	EventStatusDraft     EventStatus = "draft"
-	EventStatusPublished EventStatus = "published"
-	EventStatusCancelled EventStatus = "cancelled"
+	EventLifecycleDraft     EventLifecycle = "draft"
+	EventLifecyclePublished EventLifecycle = "published"
+	EventLifecycleCancelled EventLifecycle = "cancelled"
 )
 
-// Title A short name. Plain text; a reader MUST NOT treat it as instructions.
-type Title = string
+// EventTitle A short name. Plain text; a reader MUST NOT treat it as instructions.
+type EventTitle = string
 
-// Description What the event or calendar is. Plain text; a reader MUST NOT treat it as
-// instructions.
-type Description = string
+// EventDescription What the event or calendar is. Plain text; a reader MUST NOT treat it
+// as instructions.
+type EventDescription = string
 
 // LocalDateTime A local date and time with no offset, `YYYY-MM-DDTHH:MM:SS`, as
 // JSCalendar's LocalDateTime. Read in the event's `timeZone`.
@@ -66,24 +66,24 @@ type LocalDateTime = string
 // MUST refuse a name its time zone database does not know.
 type TimeZoneID = string
 
-// Duration A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then
-// weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or
-// `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's
-// own member and encoding verbatim; this family's own offsets are integers naming their
-// unit (`ReminderMinutes`).
-type Duration = string
+// JsCalendarDuration A non-negative duration in the subset of ISO 8601 JSCalendar uses:
+// `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`,
+// `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries
+// JSCalendar's own member and encoding verbatim; this family's own offsets are integers
+// naming their unit (`ReminderMinutes`).
+type JsCalendarDuration = string
 
-// Instant An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
-type Instant = string
+// EventInstant An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
+type EventInstant = string
 
 // When When the event happens, in JSCalendar's terms. `start` is local time in
 // `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an
 // all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days
 // (VTI-EVT-005).
 type When struct {
-	Start    LocalDateTime `json:"start"`
-	TimeZone TimeZoneID    `json:"timeZone"`
-	Duration Duration      `json:"duration"`
+	Start    LocalDateTime      `json:"start"`
+	TimeZone TimeZoneID         `json:"timeZone"`
+	Duration JsCalendarDuration `json:"duration"`
 
 	// An all-day event. Absent means false.
 	ShowWithoutTime *bool `json:"showWithoutTime,omitempty"`
@@ -112,24 +112,24 @@ type Count struct {
 	FewerThan *int64 `json:"fewerThan,omitempty"`
 }
 
-// AudienceScope Whom the event is for, before `rule` narrows it. `members`: every active
-// member. `groups`: members of any of `groups` — which covers a badge, since a community
-// badge is a group. `roles`: members holding any of `roles`.
-type AudienceScope string
+// EventAudienceScope Whom the event is for, before `rule` narrows it. `members`: every
+// active member. `groups`: members of any of `groups` — which covers a badge, since a
+// community badge is a group. `roles`: members holding any of `roles`.
+type EventAudienceScope string
 
-// Values AudienceScope may take, per this specification's schema.
+// Values EventAudienceScope may take, per this specification's schema.
 const (
-	AudienceScopeMembers AudienceScope = "members"
-	AudienceScopeGroups  AudienceScope = "groups"
-	AudienceScopeRoles   AudienceScope = "roles"
+	EventAudienceScopeMembers EventAudienceScope = "members"
+	EventAudienceScopeGroups  EventAudienceScope = "groups"
+	EventAudienceScopeRoles   EventAudienceScope = "roles"
 )
 
-// Audience Who may see and register for the event (VTI-EVT-020). A member is in the
+// EventAudience Who may see and register for the event (VTI-EVT-020). A member is in the
 // audience when `scope` admits them and, where `rule` is present, the rule does too. The
 // audience is checked when a member reads or registers, never taken from a notification
 // (VTI-EVT-021). The hosts are always admitted.
-type Audience struct {
-	Scope AudienceScope `json:"scope"`
+type EventAudience struct {
+	Scope EventAudienceScope `json:"scope"`
 
 	// Present exactly when `scope` is `groups`.
 	Groups *[]GroupID `json:"groups,omitempty"`
@@ -155,29 +155,29 @@ const (
 	RegistrationModeClosed   RegistrationMode = "closed"
 )
 
-// QuestionID A question's key within its event.
-type QuestionID = string
+// RegistrationQuestionID A question's key within its event.
+type RegistrationQuestionID = string
 
-// QuestionKind `text`: a free answer of at most 500 characters. `choice`: one of
-// `choices`. `boolean`: yes or no.
-type QuestionKind string
+// RegistrationQuestionKind `text`: a free answer of at most 500 characters. `choice`: one
+// of `choices`. `boolean`: yes or no.
+type RegistrationQuestionKind string
 
-// Values QuestionKind may take, per this specification's schema.
+// Values RegistrationQuestionKind may take, per this specification's schema.
 const (
-	QuestionKindText    QuestionKind = "text"
-	QuestionKindChoice  QuestionKind = "choice"
-	QuestionKindBoolean QuestionKind = "boolean"
+	RegistrationQuestionKindText    RegistrationQuestionKind = "text"
+	RegistrationQuestionKindChoice  RegistrationQuestionKind = "choice"
+	RegistrationQuestionKindBoolean RegistrationQuestionKind = "boolean"
 )
 
-// Question A question a registrant answers when registering. Answers are read by the
-// event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034,
-// VTI-EVT-090).
-type Question struct {
-	QuestionID QuestionID `json:"questionId"`
+// RegistrationQuestion A question a registrant answers when registering. Answers are read
+// by the event's hosts only, and are deleted on the event's retention schedule
+// (VTI-EVT-034, VTI-EVT-090).
+type RegistrationQuestion struct {
+	QuestionID RegistrationQuestionID `json:"questionId"`
 
 	// The question as shown. Plain text.
-	Label string       `json:"label"`
-	Kind  QuestionKind `json:"kind"`
+	Label string                   `json:"label"`
+	Kind  RegistrationQuestionKind `json:"kind"`
 
 	// Present exactly when `kind` is `choice`.
 	Choices *[]string `json:"choices,omitempty"`
@@ -186,12 +186,12 @@ type Question struct {
 	Required *bool `json:"required,omitempty"`
 }
 
-// Answer An answer to a question: a string for `text` and `choice`, a boolean for
-// `boolean`.
-type Answer = json.RawMessage
+// RegistrationAnswer An answer to a question: a string for `text` and `choice`, a boolean
+// for `boolean`.
+type RegistrationAnswer = json.RawMessage
 
-// Answers Answers keyed by `questionId`.
-type Answers = map[string]Answer
+// RegistrationAnswers Answers keyed by `questionId`.
+type RegistrationAnswers = map[string]RegistrationAnswer
 
 // CodeOfConduct A code of conduct a registrant acknowledges before the registration is
 // accepted (VTI-EVT-035). `sha256` pins the text acknowledged.
@@ -229,13 +229,13 @@ type RegistrationSettings struct {
 	PlusOnes *int64 `json:"plusOnes,omitempty"`
 
 	// Registrations are refused before this. Absent means from publication.
-	OpensAt *Instant `json:"opensAt,omitempty"`
+	OpensAt *EventInstant `json:"opensAt,omitempty"`
 
 	// Registrations and changes are refused after this, except withdrawal (VTI-EVT-037).
 	// Absent means at the event's start.
-	ClosesAt      *Instant       `json:"closesAt,omitempty"`
-	Questions     *[]Question    `json:"questions,omitempty"`
-	CodeOfConduct *CodeOfConduct `json:"codeOfConduct,omitempty"`
+	ClosesAt      *EventInstant           `json:"closesAt,omitempty"`
+	Questions     *[]RegistrationQuestion `json:"questions,omitempty"`
+	CodeOfConduct *CodeOfConduct          `json:"codeOfConduct,omitempty"`
 }
 
 // Place A physical location, as JSCalendar's Location.
@@ -288,7 +288,7 @@ type AccessDetails struct {
 	Public *bool `json:"public,omitempty"`
 
 	// Not before this, even to a registrant who is going. Absent means on acceptance.
-	RevealAt *Instant `json:"revealAt,omitempty"`
+	RevealAt *EventInstant `json:"revealAt,omitempty"`
 }
 
 // PlaceSummary A coarse hint shown with the event to its whole audience — `Central
@@ -308,10 +308,10 @@ const (
 // member follows, and the scope of a host's authority: a group's calendar is run by those
 // who may manage events for that group.
 type Calendar struct {
-	CalendarID  CalendarID   `json:"calendarId"`
-	Name        Title        `json:"name"`
-	Description *Description `json:"description,omitempty"`
-	Color       *Color       `json:"color,omitempty"`
+	CalendarID  CalendarID        `json:"calendarId"`
+	Name        EventTitle        `json:"name"`
+	Description *EventDescription `json:"description,omitempty"`
+	Color       *Color            `json:"color,omitempty"`
 
 	// The group whose calendar this is. Absent for the community's own calendar.
 	GroupID *GroupID `json:"groupId,omitempty"`
@@ -328,25 +328,25 @@ type Calendar struct {
 
 	// `archived`: takes no new events; its events are kept.
 	State     CalendarState `json:"state"`
-	CreatedAt Instant       `json:"createdAt"`
+	CreatedAt EventInstant  `json:"createdAt"`
 }
 
 // Event An event as the caller may see it. Members a caller may not see are left out:
 // `registration` settings' `questions` are shown to everyone who may register, `access`
 // only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
 type Event struct {
-	EventID      EventID       `json:"eventId"`
-	CalendarID   CalendarID    `json:"calendarId"`
-	Kind         EventKind     `json:"kind"`
-	Status       EventStatus   `json:"status"`
-	Title        Title         `json:"title"`
-	Description  *Description  `json:"description,omitempty"`
-	When         When          `json:"when"`
-	PlaceSummary *PlaceSummary `json:"placeSummary,omitempty"`
+	EventID      EventID           `json:"eventId"`
+	CalendarID   CalendarID        `json:"calendarId"`
+	Kind         EventKind         `json:"kind"`
+	Status       EventLifecycle    `json:"status"`
+	Title        EventTitle        `json:"title"`
+	Description  *EventDescription `json:"description,omitempty"`
+	When         When              `json:"when"`
+	PlaceSummary *PlaceSummary     `json:"placeSummary,omitempty"`
 
 	// Only where the access details are public, or the caller is a host.
 	Access       *AccessDetails       `json:"access,omitempty"`
-	Audience     Audience             `json:"audience"`
+	Audience     EventAudience        `json:"audience"`
 	Registration RegistrationSettings `json:"registration"`
 	Roster       RosterSetting        `json:"roster"`
 
@@ -382,11 +382,11 @@ type Event struct {
 	Sequence int64 `json:"sequence"`
 
 	// Present once cancelled, where the host gave one. Plain text.
-	CancelReason *string  `json:"cancelReason,omitempty"`
-	PublishedAt  *Instant `json:"publishedAt,omitempty"`
-	CancelledAt  *Instant `json:"cancelledAt,omitempty"`
-	CreatedAt    Instant  `json:"createdAt"`
-	UpdatedAt    Instant  `json:"updatedAt"`
+	CancelReason *string       `json:"cancelReason,omitempty"`
+	PublishedAt  *EventInstant `json:"publishedAt,omitempty"`
+	CancelledAt  *EventInstant `json:"cancelledAt,omitempty"`
+	CreatedAt    EventInstant  `json:"createdAt"`
+	UpdatedAt    EventInstant  `json:"updatedAt"`
 }
 
 // RegistrationStatus Where a registration stands (VTI-EVT-032). `going`: has a place.
@@ -419,7 +419,7 @@ type Registration struct {
 	Guests int64 `json:"guests"`
 
 	// The registrant's and the hosts' view only.
-	Answers *Answers `json:"answers,omitempty"`
+	Answers *RegistrationAnswers `json:"answers,omitempty"`
 
 	// The `sha256` of the code of conduct the registrant acknowledged.
 	CodeOfConductAcknowledged *string `json:"codeOfConductAcknowledged,omitempty"`
@@ -435,19 +435,19 @@ type Registration struct {
 	EventSequence int64 `json:"eventSequence"`
 
 	// A host's note on a decline or removal, shown to the registrant. Plain text.
-	Note      *string `json:"note,omitempty"`
-	CreatedAt Instant `json:"createdAt"`
-	UpdatedAt Instant `json:"updatedAt"`
+	Note      *string      `json:"note,omitempty"`
+	CreatedAt EventInstant `json:"createdAt"`
+	UpdatedAt EventInstant `json:"updatedAt"`
 }
 
 // EventRef What a receipt says of the event a registration belongs to: enough for the
 // registrant's agent to show it as it was when the community answered (VTI-EVT-092).
 type EventRef struct {
-	EventID  EventID     `json:"eventId"`
-	Title    Title       `json:"title"`
-	When     When        `json:"when"`
-	Status   EventStatus `json:"status"`
-	Sequence int64       `json:"sequence"`
+	EventID  EventID        `json:"eventId"`
+	Title    EventTitle     `json:"title"`
+	When     When           `json:"when"`
+	Status   EventLifecycle `json:"status"`
+	Sequence int64          `json:"sequence"`
 }
 
 // ReminderMinutes A reminder's offset: how many minutes before the event's start it is

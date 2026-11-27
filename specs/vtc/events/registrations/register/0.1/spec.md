@@ -176,7 +176,7 @@ Registering is an act of the member (VTI-EVT-095): a member portal that holds a 
 
 ## Definitions
 
-- `EventId`, `Registration`, `RegistrationStatus`, `EventRef`, `Answers`, `CodeOfConduct` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
+- `EventId`, `Registration`, `RegistrationStatus`, `EventRef`, `RegistrationAnswers`, `CodeOfConduct` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
 - **Receipt** — the community's signed answer to a registration, withdrawal or decision, naming the registration and the event as they stood (VTI-EVT-092).
 
 ## Request

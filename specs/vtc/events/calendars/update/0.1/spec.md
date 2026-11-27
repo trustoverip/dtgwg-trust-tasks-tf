@@ -104,7 +104,7 @@ A conforming **consumer** (the community) **MUST**:
 
 ## Definitions
 
-- `Calendar`, `CalendarId`, `RosterSetting`, `Duration`, `Color`, `Title`, `Description` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
+- `Calendar`, `CalendarId`, `RosterSetting`, `JSCalendarDuration`, `Color`, `EventTitle`, `EventDescription` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
 
 ## Request
 

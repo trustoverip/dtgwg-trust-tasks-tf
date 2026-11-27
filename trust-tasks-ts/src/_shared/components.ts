@@ -355,10 +355,6 @@ export type Admission = "automatic" | "review";
  */
 export type AnchorCadence = "never" | "renewal" | "manual";
 /**
- * An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
- */
-export type Answer_VtcEventsV0_1 = string | boolean;
-/**
  * How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.
  */
 export type Approval = "policyAllowed" | "approved" | "waived";
@@ -396,10 +392,6 @@ export type AttestationMeta = StatementMeta;
  * `groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.
  */
 export type Audience = "admins" | "groups" | "connections" | "members" | "public";
-/**
- * Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.
- */
-export type AudienceScope = "members" | "groups" | "roles";
 /**
  * The kind of privileged change recorded in the audit log.
  */
@@ -774,10 +766,6 @@ export type DeliveryStatus = "delivered" | "duplicate" | "refused" | "queued" | 
  */
 export type Description = string;
 /**
- * What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.
- */
-export type Description_VtcEventsV0_1 = string;
-/**
  * Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants and its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked, or its access-control capabilities no longer cover the member's scope; the member leaves rather than being narrowed. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later. `connectionFull`: the grant is valid and stays stored, but this connection already carries `maxDidsPerConnection` members, so it was not attached here; it attaches on a connection with room, including this one's successor once the principal makes room and reconnects.
  */
 export type DetachReason =
@@ -886,10 +874,6 @@ export type DtgType = string;
  */
 export type Duration = string;
 /**
- * A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).
- */
-export type Duration_VtcEventsV0_1 = string;
-/**
  * Which credential an edge is.
  */
 export type EdgeRole = "listing" | "grant" | "acknowledgement" | "repudiation";
@@ -953,9 +937,21 @@ export type EntryState = "listed" | "acknowledged" | "repudiated" | "suspended" 
  */
 export type EpochFloor = number;
 /**
+ * Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.
+ */
+export type EventAudienceScope = "members" | "groups" | "roles";
+/**
+ * What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type EventDescription = string;
+/**
  * Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).
  */
 export type EventId = string;
+/**
+ * An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
+ */
+export type EventInstant = string;
 /**
  * `event`: anything that happens at a time — a meetup, a workshop, a social. `meeting`: an event that may also carry an agenda, a chair, a quorum, minutes and motions; tasks that only mean something for a meeting refuse an event. Fixed for the event's life (VTI-EVT-003).
  */
@@ -963,7 +959,11 @@ export type EventKind = "event" | "meeting";
 /**
  * `draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).
  */
-export type EventStatus = "draft" | "published" | "cancelled";
+export type EventLifecycle = "draft" | "published" | "cancelled";
+/**
+ * A short name. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type EventTitle = string;
 /**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
@@ -1182,10 +1182,6 @@ export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/
  */
 export type Instant = string;
 /**
- * An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
- */
-export type Instant_VtcEventsV0_1 = string;
-/**
  * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
  */
 export type Introductions = "anyone" | "groups" | "connections" | "off";
@@ -1197,6 +1193,10 @@ export type InviteKind = "wallet" | "passkey";
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
 export type InviteStatus = "issued" | "consumed" | "expired";
+/**
+ * A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).
+ */
+export type JSCalendarDuration = string;
 /**
  * How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.
  */
@@ -2014,14 +2014,6 @@ export type PushRegistration = Apns | Fcm | WebPush;
  */
 export type Question = ChoiceQuestion | RankingQuestion | ScoreQuestion | TextQuestion;
 /**
- * A question's key within its event.
- */
-export type QuestionId = string;
-/**
- * `text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.
- */
-export type QuestionKind = "text" | "choice" | "boolean";
-/**
  * Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.
  */
 export type Queue = "receive" | "send";
@@ -2153,6 +2145,10 @@ export type RecoveryCommitmentOrThreshold = RecoveryCommitment | ThresholdRecove
  */
 export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
 /**
+ * An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
+ */
+export type RegistrationAnswer = string | boolean;
+/**
  * Opaque identifier of one registrant's registration for one event: `reg_` followed by 16 to 64 base64url characters. Random and unique within the community; a registrant has at most one registration per event (VTI-EVT-030).
  */
 export type RegistrationId = string;
@@ -2160,6 +2156,14 @@ export type RegistrationId = string;
  * `open`: a member of the audience who registers is going at once (or waitlisted when full). `approval`: a registration is pending until a host decides it. `closed`: no registrations; the event is for information only (VTI-EVT-031).
  */
 export type RegistrationMode = "open" | "approval" | "closed";
+/**
+ * A question's key within its event.
+ */
+export type RegistrationQuestionId = string;
+/**
+ * `text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.
+ */
+export type RegistrationQuestionKind = "text" | "choice" | "boolean";
 /**
  * Where a registration stands (VTI-EVT-032). `going`: has a place. `maybe`: has said maybe; holds no place. `pending`: awaits a host's decision. `waitlisted`: waits for a place, in order. `withdrawn`: the registrant withdrew. `declined`: a host declined a pending registration. `removed`: a host removed it.
  */
@@ -2757,10 +2761,6 @@ export type TickLength = string;
  */
 export type TimeZoneId = string;
 /**
- * A short name. Plain text; a reader MUST NOT treat it as instructions.
- */
-export type Title = string;
-/**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_1 =
@@ -3234,7 +3234,7 @@ export interface AccessDetails {
   /**
    * Not before this, even to a registrant who is going. Absent means on acceptance.
    */
-  revealAt?: Instant_VtcEventsV0_1;
+  revealAt?: EventInstant;
 }
 /**
  * What the event offers for access, as the host states it (VTI-EVT-036). Each flag absent means not stated, not that it is missing.
@@ -6194,12 +6194,6 @@ export interface Answer {
   abstain?: true;
 }
 /**
- * Answers keyed by `questionId`.
- */
-export interface Answers {
-  [k: string]: Answer_VtcEventsV0_1 | undefined;
-}
-/**
  * A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
  */
 export interface AppStateRecord {
@@ -6561,30 +6555,6 @@ export interface Attribute {
   }[];
   createdAt?: string;
   updatedAt: string;
-}
-/**
- * Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.
- */
-export interface Audience_VtcEventsV0_1 {
-  scope: AudienceScope;
-  /**
-   * Present exactly when `scope` is `groups`.
-   *
-   * @minItems 1
-   * @maxItems 32
-   */
-  groups?: [GroupId, ...GroupId[]];
-  /**
-   * Present exactly when `scope` is `roles`.
-   *
-   * @minItems 1
-   * @maxItems 32
-   */
-  roles?: [RoleName, ...RoleName[]];
-  /**
-   * Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.
-   */
-  rule?: DynamicRule;
 }
 /**
  * One entry a retrieval disclosed (HCP 8.2).
@@ -9729,8 +9699,8 @@ export interface BroadcastRecord {
  */
 export interface Calendar {
   calendarId: CalendarId;
-  name: Title;
-  description?: Description_VtcEventsV0_1;
+  name: EventTitle;
+  description?: EventDescription;
   color?: Color;
   /**
    * The group whose calendar this is. Absent for the community's own calendar.
@@ -9759,7 +9729,7 @@ export interface Calendar {
    * `archived`: takes no new events; its events are kept.
    */
   state: "active" | "archived";
-  createdAt: Instant_VtcEventsV0_1;
+  createdAt: EventInstant;
 }
 /**
  * A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.
@@ -13328,16 +13298,16 @@ export interface Event {
   eventId: EventId;
   calendarId: CalendarId;
   kind: EventKind;
-  status: EventStatus;
-  title: Title;
-  description?: Description_VtcEventsV0_1;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
   when: When;
   placeSummary?: PlaceSummary;
   /**
    * Only where the access details are public, or the caller is a host.
    */
   access?: AccessDetails;
-  audience: Audience_VtcEventsV0_1;
+  audience: EventAudience;
   registration: RegistrationSettings;
   roster: RosterSetting;
   /**
@@ -13386,19 +13356,43 @@ export interface Event {
    * Present once cancelled, where the host gave one. Plain text.
    */
   cancelReason?: string;
-  publishedAt?: Instant_VtcEventsV0_1;
-  cancelledAt?: Instant_VtcEventsV0_1;
-  createdAt: Instant_VtcEventsV0_1;
-  updatedAt: Instant_VtcEventsV0_1;
+  publishedAt?: EventInstant;
+  cancelledAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.
+ */
+export interface EventAudience {
+  scope: EventAudienceScope;
+  /**
+   * Present exactly when `scope` is `groups`.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  groups?: [GroupId, ...GroupId[]];
+  /**
+   * Present exactly when `scope` is `roles`.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  roles?: [RoleName, ...RoleName[]];
+  /**
+   * Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.
+   */
+  rule?: DynamicRule;
 }
 /**
  * What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).
  */
 export interface EventRef {
   eventId: EventId;
-  title: Title;
+  title: EventTitle;
   when: When;
-  status: EventStatus;
+  status: EventLifecycle;
   sequence: number;
 }
 /**
@@ -17449,158 +17443,6 @@ export interface QuestionResult {
   withheld?: boolean;
 }
 /**
- * A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).
- */
-export interface Question_VtcEventsV0_1 {
-  questionId: QuestionId;
-  /**
-   * The question as shown. Plain text.
-   */
-  label: string;
-  kind: QuestionKind;
-  /**
-   * Present exactly when `kind` is `choice`.
-   *
-   * @minItems 2
-   * @maxItems 20
-   */
-  choices?:
-    | [string, string]
-    | [string, string, string]
-    | [string, string, string, string]
-    | [string, string, string, string, string]
-    | [string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
-    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ];
-  /**
-   * The registration is refused without an answer. Absent means false.
-   */
-  required?: boolean;
-}
-/**
  * The depth of one queue and its effective limit.
  */
 export interface QueueDepth {
@@ -18352,7 +18194,7 @@ export interface Registration {
   /**
    * The registrant's and the hosts' view only.
    */
-  answers?: Answers;
+  answers?: RegistrationAnswers;
   /**
    * The `sha256` of the code of conduct the registrant acknowledged.
    */
@@ -18373,8 +18215,166 @@ export interface Registration {
    * A host's note on a decline or removal, shown to the registrant. Plain text.
    */
   note?: string;
-  createdAt: Instant_VtcEventsV0_1;
-  updatedAt: Instant_VtcEventsV0_1;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * Answers keyed by `questionId`.
+ */
+export interface RegistrationAnswers {
+  [k: string]: RegistrationAnswer | undefined;
+}
+/**
+ * A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).
+ */
+export interface RegistrationQuestion {
+  questionId: RegistrationQuestionId;
+  /**
+   * The question as shown. Plain text.
+   */
+  label: string;
+  kind: RegistrationQuestionKind;
+  /**
+   * Present exactly when `kind` is `choice`.
+   *
+   * @minItems 2
+   * @maxItems 20
+   */
+  choices?:
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+  /**
+   * The registration is refused without an answer. Absent means false.
+   */
+  required?: boolean;
 }
 /**
  * How the event takes registrations (VTI-EVT-031 – 036).
@@ -18396,251 +18396,245 @@ export interface RegistrationSettings {
   /**
    * Registrations are refused before this. Absent means from publication.
    */
-  opensAt?: Instant_VtcEventsV0_1;
+  opensAt?: EventInstant;
   /**
    * Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.
    */
-  closesAt?: Instant_VtcEventsV0_1;
+  closesAt?: EventInstant;
   /**
    * @maxItems 20
    */
   questions?:
     | []
-    | [Question_VtcEventsV0_1]
-    | [Question_VtcEventsV0_1, Question_VtcEventsV0_1]
-    | [Question_VtcEventsV0_1, Question_VtcEventsV0_1, Question_VtcEventsV0_1]
-    | [Question_VtcEventsV0_1, Question_VtcEventsV0_1, Question_VtcEventsV0_1, Question_VtcEventsV0_1]
+    | [RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ]
     | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
-      ]
-    | [
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1,
-        Question_VtcEventsV0_1
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
       ];
   codeOfConduct?: CodeOfConduct;
 }
@@ -22374,7 +22368,7 @@ export interface WebvhServerRecord {
 export interface When {
   start: LocalDateTime;
   timeZone: TimeZoneId;
-  duration: Duration_VtcEventsV0_1;
+  duration: JSCalendarDuration;
   /**
    * An all-day event. Absent means false.
    */

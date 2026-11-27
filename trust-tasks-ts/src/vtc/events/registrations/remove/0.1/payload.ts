@@ -3,7 +3,7 @@
  * Source: specs/vtc/events/registrations/remove/0.1/payload.schema.json
  */
 
-import type { Answer_VtcEventsV0_1 as Answer, Answers, Duration_VtcEventsV0_1 as Duration, EntryId, EventId, EventRef, EventStatus, Ext, Instant_VtcEventsV0_1 as Instant, LocalDateTime, Registration, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, Title, When } from "../../../../../_shared/components.js";
+import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
 
 
 /**
@@ -34,7 +34,7 @@ export interface VTCEventsRegistrationsRemoveResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Answer, Answers, Duration, EntryId, EventId, EventRef, EventStatus, Ext, Instant, LocalDateTime, Registration, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, Title, When };
+export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/remove/0.1" as const;
@@ -182,13 +182,13 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/EventId"
         },
         "title": {
-          "$ref": "#/$defs/Title"
+          "$ref": "#/$defs/EventTitle"
         },
         "when": {
           "$ref": "#/$defs/When"
         },
         "status": {
-          "$ref": "#/$defs/EventStatus"
+          "$ref": "#/$defs/EventLifecycle"
         },
         "sequence": {
           "type": "integer",
@@ -196,8 +196,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "EventStatus": {
-      "title": "EventStatus",
+    "EventLifecycle": {
+      "title": "EventLifecycle",
       "description": "`draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).",
       "type": "string",
       "enum": [
@@ -224,7 +224,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/TimeZoneId"
         },
         "duration": {
-          "$ref": "#/$defs/Duration"
+          "$ref": "#/$defs/JSCalendarDuration"
         },
         "showWithoutTime": {
           "type": "boolean",
@@ -232,8 +232,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Duration": {
-      "title": "Duration",
+    "JSCalendarDuration": {
+      "title": "JSCalendarDuration",
       "description": "A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).",
       "type": "string",
       "minLength": 3,
@@ -254,8 +254,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
     },
-    "Title": {
-      "title": "Title",
+    "EventTitle": {
+      "title": "EventTitle",
       "type": "string",
       "minLength": 1,
       "maxLength": 200,
@@ -303,7 +303,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Plus-ones the registrant brings."
         },
         "answers": {
-          "$ref": "#/$defs/Answers",
+          "$ref": "#/$defs/RegistrationAnswers",
           "description": "The registrant's and the hosts' view only."
         },
         "codeOfConductAcknowledged": {
@@ -332,15 +332,15 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "A host's note on a decline or removal, shown to the registrant. Plain text."
         },
         "createdAt": {
-          "$ref": "#/$defs/Instant"
+          "$ref": "#/$defs/EventInstant"
         },
         "updatedAt": {
-          "$ref": "#/$defs/Instant"
+          "$ref": "#/$defs/EventInstant"
         }
       }
     },
-    "Instant": {
-      "title": "Instant",
+    "EventInstant": {
+      "title": "EventInstant",
       "type": "string",
       "format": "date-time",
       "description": "An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`."
@@ -354,20 +354,20 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "hidden"
       ]
     },
-    "Answers": {
-      "title": "Answers",
+    "RegistrationAnswers": {
+      "title": "RegistrationAnswers",
       "description": "Answers keyed by `questionId`.",
       "type": "object",
       "maxProperties": 20,
       "propertyNames": {
-        "$ref": "#/$defs/QuestionId"
+        "$ref": "#/$defs/RegistrationQuestionId"
       },
       "additionalProperties": {
-        "$ref": "#/$defs/Answer"
+        "$ref": "#/$defs/RegistrationAnswer"
       }
     },
-    "Answer": {
-      "title": "Answer",
+    "RegistrationAnswer": {
+      "title": "RegistrationAnswer",
       "description": "An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.",
       "anyOf": [
         {
@@ -379,8 +379,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       ]
     },
-    "QuestionId": {
-      "title": "QuestionId",
+    "RegistrationQuestionId": {
+      "title": "RegistrationQuestionId",
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,31}$",
       "description": "A question's key within its event."

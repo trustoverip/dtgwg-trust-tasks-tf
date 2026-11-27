@@ -36,12 +36,12 @@ macro_rules! d_AccessDetail_770259fe {
 }
 pub(crate) use d_AccessDetail_770259fe;
 
-macro_rules! d_AccessDetails_90a89412 {
+macro_rules! d_AccessDetails_d64d030c {
     () => {
-        "\"AccessDetails\":{\"additionalProperties\":false,\"description\":\"Where the event happens and how to join it (VTI-EVT-060 – 063). Answered by vtc/events/access/show to a registrant who is going, from `revealAt` if set; included in the event itself only where `public` is true.\",\"properties\":{\"notes\":{\"description\":\"Anything else attendees need. Plain text.\",\"maxLength\":2000,\"minLength\":1,\"type\":\"string\"},\"places\":{\"items\":{\"$ref\":\"#/$defs/Place\"},\"maxItems\":8,\"type\":\"array\"},\"public\":{\"description\":\"Show the access details with the event to its whole audience. Absent means false.\",\"type\":\"boolean\"},\"revealAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Not before this, even to a registrant who is going. Absent means on acceptance.\"},\"virtualPlaces\":{\"items\":{\"$ref\":\"#/$defs/VirtualPlace\"},\"maxItems\":8,\"type\":\"array\"}},\"title\":\"AccessDetails\",\"type\":\"object\"}"
+        "\"AccessDetails\":{\"additionalProperties\":false,\"description\":\"Where the event happens and how to join it (VTI-EVT-060 – 063). Answered by vtc/events/access/show to a registrant who is going, from `revealAt` if set; included in the event itself only where `public` is true.\",\"properties\":{\"notes\":{\"description\":\"Anything else attendees need. Plain text.\",\"maxLength\":2000,\"minLength\":1,\"type\":\"string\"},\"places\":{\"items\":{\"$ref\":\"#/$defs/Place\"},\"maxItems\":8,\"type\":\"array\"},\"public\":{\"description\":\"Show the access details with the event to its whole audience. Absent means false.\",\"type\":\"boolean\"},\"revealAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Not before this, even to a registrant who is going. Absent means on acceptance.\"},\"virtualPlaces\":{\"items\":{\"$ref\":\"#/$defs/VirtualPlace\"},\"maxItems\":8,\"type\":\"array\"}},\"title\":\"AccessDetails\",\"type\":\"object\"}"
     };
 }
-pub(crate) use d_AccessDetails_90a89412;
+pub(crate) use d_AccessDetails_d64d030c;
 
 macro_rules! d_Accessibility_cd111cc8 {
     () => {
@@ -281,20 +281,6 @@ macro_rules! d_Answer_4eb5a0ab {
 }
 pub(crate) use d_Answer_4eb5a0ab;
 
-macro_rules! d_Answer_6aa60e5b {
-    () => {
-        "\"Answer\":{\"anyOf\":[{\"maxLength\":500,\"type\":\"string\"},{\"type\":\"boolean\"}],\"description\":\"An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.\",\"title\":\"Answer\"}"
-    };
-}
-pub(crate) use d_Answer_6aa60e5b;
-
-macro_rules! d_Answers_64a848ea {
-    () => {
-        "\"Answers\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Answer\"},\"description\":\"Answers keyed by `questionId`.\",\"maxProperties\":20,\"propertyNames\":{\"$ref\":\"#/$defs/QuestionId\"},\"title\":\"Answers\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Answers_64a848ea;
-
 macro_rules! d_AppStateRecord_b43e1af5 {
     () => {
         "\"AppStateRecord\":{\"additionalProperties\":false,\"description\":\"A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.\",\"properties\":{\"contextId\":{\"description\":\"The VTA context the record is scoped to; the isolation boundary.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.\",\"format\":\"date-time\",\"type\":\"string\"},\"deleted\":{\"description\":\"True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.\",\"type\":\"boolean\"},\"deletedAt\":{\"description\":\"When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.\",\"format\":\"date-time\",\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"namespace\":{\"$ref\":\"#/$defs/Namespace\"},\"updatedAt\":{\"description\":\"When the write that produced this `version` was applied. For a tombstone, when the delete was applied.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"description\":\"The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.\"},\"valueBytes\":{\"description\":\"Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.\",\"minimum\":0,\"type\":\"integer\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.\"}},\"required\":[\"contextId\",\"namespace\",\"key\",\"version\",\"deleted\",\"updatedAt\"],\"title\":\"AppStateRecord\",\"type\":\"object\"}"
@@ -449,26 +435,12 @@ macro_rules! d_Attribute_133dffe2 {
 }
 pub(crate) use d_Attribute_133dffe2;
 
-macro_rules! d_AudienceScope_27d9d470 {
-    () => {
-        "\"AudienceScope\":{\"description\":\"Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.\",\"enum\":[\"members\",\"groups\",\"roles\"],\"title\":\"AudienceScope\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AudienceScope_27d9d470;
-
 macro_rules! d_Audience_76aa3fc6 {
     () => {
         "\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_Audience_76aa3fc6;
-
-macro_rules! d_Audience_f696cb37 {
-    () => {
-        "\"Audience\":{\"additionalProperties\":false,\"description\":\"Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.\",\"properties\":{\"groups\":{\"description\":\"Present exactly when `scope` is `groups`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"roles\":{\"description\":\"Present exactly when `scope` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/RoleName\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.\"},\"scope\":{\"$ref\":\"#/$defs/AudienceScope\"}},\"required\":[\"scope\"],\"title\":\"Audience\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Audience_f696cb37;
 
 macro_rules! d_AuditDisclosed_fc9343da {
     () => {
@@ -841,12 +813,12 @@ macro_rules! d_CalendarId_496c49b1 {
 }
 pub(crate) use d_CalendarId_496c49b1;
 
-macro_rules! d_Calendar_a2e5904a {
+macro_rules! d_Calendar_247bf9f2 {
     () => {
-        "\"Calendar\":{\"additionalProperties\":false,\"description\":\"A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.\",\"properties\":{\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"color\":{\"$ref\":\"#/$defs/Color\"},\"community\":{\"description\":\"True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).\",\"type\":\"boolean\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\"},\"defaultReminderMinutes\":{\"description\":\"The reminders a new event in this calendar suggests, as minutes before its start.\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"defaultRoster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting a new event in this calendar starts with. Absent means `hidden`.\"},\"description\":{\"$ref\":\"#/$defs/Description\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The group whose calendar this is. Absent for the community's own calendar.\"},\"name\":{\"$ref\":\"#/$defs/Title\"},\"state\":{\"description\":\"`archived`: takes no new events; its events are kept.\",\"enum\":[\"active\",\"archived\"],\"type\":\"string\"}},\"required\":[\"calendarId\",\"name\",\"state\",\"createdAt\"],\"title\":\"Calendar\",\"type\":\"object\"}"
+        "\"Calendar\":{\"additionalProperties\":false,\"description\":\"A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.\",\"properties\":{\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"color\":{\"$ref\":\"#/$defs/Color\"},\"community\":{\"description\":\"True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).\",\"type\":\"boolean\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"defaultReminderMinutes\":{\"description\":\"The reminders a new event in this calendar suggests, as minutes before its start.\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"defaultRoster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting a new event in this calendar starts with. Absent means `hidden`.\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The group whose calendar this is. Absent for the community's own calendar.\"},\"name\":{\"$ref\":\"#/$defs/EventTitle\"},\"state\":{\"description\":\"`archived`: takes no new events; its events are kept.\",\"enum\":[\"active\",\"archived\"],\"type\":\"string\"}},\"required\":[\"calendarId\",\"name\",\"state\",\"createdAt\"],\"title\":\"Calendar\",\"type\":\"object\"}"
     };
 }
-pub(crate) use d_Calendar_a2e5904a;
+pub(crate) use d_Calendar_247bf9f2;
 
 macro_rules! d_CapabilityGrant_b7831816 {
     () => {
@@ -1520,13 +1492,6 @@ macro_rules! d_DepartedGranter_b630b756 {
 }
 pub(crate) use d_DepartedGranter_b630b756;
 
-macro_rules! d_Description_17c4f52c {
-    () => {
-        "\"Description\":{\"description\":\"What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":10000,\"minLength\":1,\"title\":\"Description\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Description_17c4f52c;
-
 macro_rules! d_DesignatedService_a0c905ae {
     () => {
         "\"DesignatedService\":{\"additionalProperties\":true,\"description\":\"A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.\",\"properties\":{\"id\":{\"description\":\"The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused.\",\"pattern\":\"^#[A-Za-z0-9._~-]+$\",\"type\":\"string\"},\"serviceEndpoint\":{\"description\":\"A URI, a map, or a set of either, as the DID document data model allows.\",\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"additionalProperties\":true,\"type\":\"object\"},{\"items\":{\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"additionalProperties\":true,\"type\":\"object\"}]},\"minItems\":1,\"type\":\"array\"}]},\"type\":{\"description\":\"The service type, matched by peers on its value, never on `id`.\",\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}]}},\"required\":[\"id\",\"type\",\"serviceEndpoint\"],\"title\":\"DesignatedService\",\"type\":\"object\"}"
@@ -1863,13 +1828,6 @@ macro_rules! d_DtgType_de154912 {
 }
 pub(crate) use d_DtgType_de154912;
 
-macro_rules! d_Duration_69ea31d8 {
-    () => {
-        "\"Duration\":{\"description\":\"A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).\",\"maxLength\":32,\"minLength\":3,\"pattern\":\"^P(?!$)([0-9]+W)?([0-9]+D)?(T(?=[0-9])([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$\",\"title\":\"Duration\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Duration_69ea31d8;
-
 macro_rules! d_Duration_854f011f {
     () => {
         "\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"}"
@@ -2122,12 +2080,40 @@ macro_rules! d_EpochLink_3162eb88 {
 }
 pub(crate) use d_EpochLink_3162eb88;
 
+macro_rules! d_EventAudienceScope_cfe64ee2 {
+    () => {
+        "\"EventAudienceScope\":{\"description\":\"Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.\",\"enum\":[\"members\",\"groups\",\"roles\"],\"title\":\"EventAudienceScope\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventAudienceScope_cfe64ee2;
+
+macro_rules! d_EventAudience_ff1e5c43 {
+    () => {
+        "\"EventAudience\":{\"additionalProperties\":false,\"description\":\"Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.\",\"properties\":{\"groups\":{\"description\":\"Present exactly when `scope` is `groups`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"roles\":{\"description\":\"Present exactly when `scope` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/RoleName\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.\"},\"scope\":{\"$ref\":\"#/$defs/EventAudienceScope\"}},\"required\":[\"scope\"],\"title\":\"EventAudience\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EventAudience_ff1e5c43;
+
+macro_rules! d_EventDescription_70968dca {
+    () => {
+        "\"EventDescription\":{\"description\":\"What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":10000,\"minLength\":1,\"title\":\"EventDescription\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventDescription_70968dca;
+
 macro_rules! d_EventId_949f8f11 {
     () => {
         "\"EventId\":{\"description\":\"Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).\",\"pattern\":\"^evt_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventId\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_EventId_949f8f11;
+
+macro_rules! d_EventInstant_9cf8a7cf {
+    () => {
+        "\"EventInstant\":{\"description\":\"An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.\",\"format\":\"date-time\",\"title\":\"EventInstant\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventInstant_9cf8a7cf;
 
 macro_rules! d_EventKind_5e885bff {
     () => {
@@ -2136,26 +2122,33 @@ macro_rules! d_EventKind_5e885bff {
 }
 pub(crate) use d_EventKind_5e885bff;
 
-macro_rules! d_EventRef_d4a96118 {
+macro_rules! d_EventLifecycle_3d99bf37 {
     () => {
-        "\"EventRef\":{\"additionalProperties\":false,\"description\":\"What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"sequence\":{\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/EventStatus\"},\"title\":{\"$ref\":\"#/$defs/Title\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"title\",\"when\",\"status\",\"sequence\"],\"title\":\"EventRef\",\"type\":\"object\"}"
+        "\"EventLifecycle\":{\"description\":\"`draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).\",\"enum\":[\"draft\",\"published\",\"cancelled\"],\"title\":\"EventLifecycle\",\"type\":\"string\"}"
     };
 }
-pub(crate) use d_EventRef_d4a96118;
+pub(crate) use d_EventLifecycle_3d99bf37;
 
-macro_rules! d_EventStatus_c579a967 {
+macro_rules! d_EventRef_10be7eb2 {
     () => {
-        "\"EventStatus\":{\"description\":\"`draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).\",\"enum\":[\"draft\",\"published\",\"cancelled\"],\"title\":\"EventStatus\",\"type\":\"string\"}"
+        "\"EventRef\":{\"additionalProperties\":false,\"description\":\"What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"sequence\":{\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"title\",\"when\",\"status\",\"sequence\"],\"title\":\"EventRef\",\"type\":\"object\"}"
     };
 }
-pub(crate) use d_EventStatus_c579a967;
+pub(crate) use d_EventRef_10be7eb2;
 
-macro_rules! d_Event_bf3cd67b {
+macro_rules! d_EventTitle_7ed66703 {
     () => {
-        "\"Event\":{\"additionalProperties\":false,\"description\":\"An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"Only where the access details are public, or the caller is a host.\"},\"accessibility\":{\"$ref\":\"#/$defs/Accessibility\"},\"audience\":{\"$ref\":\"#/$defs/Audience\"},\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"cancelReason\":{\"description\":\"Present once cancelled, where the host gave one. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"cancelledAt\":{\"$ref\":\"#/$defs/Instant\"},\"countThreshold\":{\"description\":\"Below this many going, a count is shown as `fewerThan`. Absent means 5.\",\"maximum\":100,\"minimum\":2,\"type\":\"integer\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\"},\"description\":{\"$ref\":\"#/$defs/Description\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"full\":{\"description\":\"True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.\",\"type\":\"boolean\"},\"goingCount\":{\"$ref\":\"#/$defs/Count\",\"description\":\"People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.\"},\"hosts\":{\"description\":\"The event's appointed hosts. Its creator is the first.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/EventKind\"},\"listed\":{\"description\":\"Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).\",\"type\":\"boolean\"},\"placeSummary\":{\"$ref\":\"#/$defs/PlaceSummary\"},\"publishedAt\":{\"$ref\":\"#/$defs/Instant\"},\"registration\":{\"$ref\":\"#/$defs/RegistrationSettings\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\"},\"sequence\":{\"description\":\"Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).\",\"minimum\":0,\"type\":\"integer\"},\"showCount\":{\"description\":\"Show the number going to the audience, subject to `countThreshold`. Absent means false.\",\"type\":\"boolean\"},\"status\":{\"$ref\":\"#/$defs/EventStatus\"},\"suggestedReminderMinutes\":{\"description\":\"Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"title\":{\"$ref\":\"#/$defs/Title\"},\"updatedAt\":{\"$ref\":\"#/$defs/Instant\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"calendarId\",\"kind\",\"status\",\"title\",\"when\",\"audience\",\"registration\",\"roster\",\"listed\",\"sequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Event\",\"type\":\"object\"}"
+        "\"EventTitle\":{\"description\":\"A short name. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":200,\"minLength\":1,\"title\":\"EventTitle\",\"type\":\"string\"}"
     };
 }
-pub(crate) use d_Event_bf3cd67b;
+pub(crate) use d_EventTitle_7ed66703;
+
+macro_rules! d_Event_dc4cfcc7 {
+    () => {
+        "\"Event\":{\"additionalProperties\":false,\"description\":\"An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"Only where the access details are public, or the caller is a host.\"},\"accessibility\":{\"$ref\":\"#/$defs/Accessibility\"},\"audience\":{\"$ref\":\"#/$defs/EventAudience\"},\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"cancelReason\":{\"description\":\"Present once cancelled, where the host gave one. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"cancelledAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"countThreshold\":{\"description\":\"Below this many going, a count is shown as `fewerThan`. Absent means 5.\",\"maximum\":100,\"minimum\":2,\"type\":\"integer\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"full\":{\"description\":\"True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.\",\"type\":\"boolean\"},\"goingCount\":{\"$ref\":\"#/$defs/Count\",\"description\":\"People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.\"},\"hosts\":{\"description\":\"The event's appointed hosts. Its creator is the first.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/EventKind\"},\"listed\":{\"description\":\"Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).\",\"type\":\"boolean\"},\"placeSummary\":{\"$ref\":\"#/$defs/PlaceSummary\"},\"publishedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"registration\":{\"$ref\":\"#/$defs/RegistrationSettings\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\"},\"sequence\":{\"description\":\"Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).\",\"minimum\":0,\"type\":\"integer\"},\"showCount\":{\"description\":\"Show the number going to the audience, subject to `countThreshold`. Absent means false.\",\"type\":\"boolean\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"suggestedReminderMinutes\":{\"description\":\"Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"calendarId\",\"kind\",\"status\",\"title\",\"when\",\"audience\",\"registration\",\"roster\",\"listed\",\"sequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Event\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Event_dc4cfcc7;
 
 macro_rules! d_EvidenceDocument_14af4a63 {
     () => {
@@ -2863,6 +2856,13 @@ macro_rules! d_Issued_43396018 {
     };
 }
 pub(crate) use d_Issued_43396018;
+
+macro_rules! d_JSCalendarDuration_1512b122 {
+    () => {
+        "\"JSCalendarDuration\":{\"description\":\"A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).\",\"maxLength\":32,\"minLength\":3,\"pattern\":\"^P(?!$)([0-9]+W)?([0-9]+D)?(T(?=[0-9])([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$\",\"title\":\"JSCalendarDuration\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_JSCalendarDuration_1512b122;
 
 macro_rules! d_JSContactCard_1820fb15 {
     () => {
@@ -4089,13 +4089,6 @@ macro_rules! d_QueryContext_a5f1bb81 {
 }
 pub(crate) use d_QueryContext_a5f1bb81;
 
-macro_rules! d_QuestionKind_46ac8ee0 {
-    () => {
-        "\"QuestionKind\":{\"description\":\"`text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.\",\"enum\":[\"text\",\"choice\",\"boolean\"],\"title\":\"QuestionKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_QuestionKind_46ac8ee0;
-
 macro_rules! d_QuestionOption_8674ad7c {
     () => {
         "\"QuestionOption\":{\"additionalProperties\":false,\"properties\":{\"key\":{\"$ref\":\"#/$defs/Key\"},\"label\":{\"description\":\"Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).\",\"maxLength\":512,\"type\":\"string\"}},\"required\":[\"key\"],\"title\":\"QuestionOption\",\"type\":\"object\"}"
@@ -4116,13 +4109,6 @@ macro_rules! d_Question_a819fd4e {
     };
 }
 pub(crate) use d_Question_a819fd4e;
-
-macro_rules! d_Question_e17acf3b {
-    () => {
-        "\"Question\":{\"additionalProperties\":false,\"description\":\"A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).\",\"properties\":{\"choices\":{\"description\":\"Present exactly when `kind` is `choice`.\",\"items\":{\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"maxItems\":20,\"minItems\":2,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/QuestionKind\"},\"label\":{\"description\":\"The question as shown. Plain text.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"questionId\":{\"$ref\":\"#/$defs/QuestionId\"},\"required\":{\"description\":\"The registration is refused without an answer. Absent means false.\",\"type\":\"boolean\"}},\"required\":[\"questionId\",\"label\",\"kind\"],\"title\":\"Question\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Question_e17acf3b;
 
 macro_rules! d_QueueDepth_8fd0872a {
     () => {
@@ -4467,6 +4453,20 @@ macro_rules! d_RegistrarState_0ac4473b {
 }
 pub(crate) use d_RegistrarState_0ac4473b;
 
+macro_rules! d_RegistrationAnswer_aa96e019 {
+    () => {
+        "\"RegistrationAnswer\":{\"anyOf\":[{\"maxLength\":500,\"type\":\"string\"},{\"type\":\"boolean\"}],\"description\":\"An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.\",\"title\":\"RegistrationAnswer\"}"
+    };
+}
+pub(crate) use d_RegistrationAnswer_aa96e019;
+
+macro_rules! d_RegistrationAnswers_94e05d0e {
+    () => {
+        "\"RegistrationAnswers\":{\"additionalProperties\":{\"$ref\":\"#/$defs/RegistrationAnswer\"},\"description\":\"Answers keyed by `questionId`.\",\"maxProperties\":20,\"propertyNames\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"title\":\"RegistrationAnswers\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationAnswers_94e05d0e;
+
 macro_rules! d_RegistrationId_aadbc7a5 {
     () => {
         "\"RegistrationId\":{\"description\":\"Opaque identifier of one registrant's registration for one event: `reg_` followed by 16 to 64 base64url characters. Random and unique within the community; a registrant has at most one registration per event (VTI-EVT-030).\",\"pattern\":\"^reg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"RegistrationId\",\"type\":\"string\"}"
@@ -4481,12 +4481,33 @@ macro_rules! d_RegistrationMode_085109d4 {
 }
 pub(crate) use d_RegistrationMode_085109d4;
 
-macro_rules! d_RegistrationSettings_59a2f744 {
+macro_rules! d_RegistrationQuestionId_2b2977be {
     () => {
-        "\"RegistrationSettings\":{\"additionalProperties\":false,\"description\":\"How the event takes registrations (VTI-EVT-031 – 036).\",\"properties\":{\"capacity\":{\"description\":\"The most people who may be going, plus-ones included. Absent means no limit.\",\"maximum\":100000,\"minimum\":1,\"type\":\"integer\"},\"closesAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.\"},\"codeOfConduct\":{\"$ref\":\"#/$defs/CodeOfConduct\"},\"mode\":{\"$ref\":\"#/$defs/RegistrationMode\"},\"opensAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Registrations are refused before this. Absent means from publication.\"},\"plusOnes\":{\"description\":\"The most guests a registrant may bring. Absent means 0.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/Question\"},\"maxItems\":20,\"type\":\"array\"},\"waitlist\":{\"description\":\"Registrations beyond `capacity` are waitlisted, and the first on the waitlist becomes going when a place frees (VTI-EVT-033). Absent means false: a registration beyond capacity is refused.\",\"type\":\"boolean\"}},\"required\":[\"mode\"],\"title\":\"RegistrationSettings\",\"type\":\"object\"}"
+        "\"RegistrationQuestionId\":{\"description\":\"A question's key within its event.\",\"pattern\":\"^[a-z][a-z0-9-]{0,31}$\",\"title\":\"RegistrationQuestionId\",\"type\":\"string\"}"
     };
 }
-pub(crate) use d_RegistrationSettings_59a2f744;
+pub(crate) use d_RegistrationQuestionId_2b2977be;
+
+macro_rules! d_RegistrationQuestionKind_addaa298 {
+    () => {
+        "\"RegistrationQuestionKind\":{\"description\":\"`text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.\",\"enum\":[\"text\",\"choice\",\"boolean\"],\"title\":\"RegistrationQuestionKind\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationQuestionKind_addaa298;
+
+macro_rules! d_RegistrationQuestion_df1f5f45 {
+    () => {
+        "\"RegistrationQuestion\":{\"additionalProperties\":false,\"description\":\"A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).\",\"properties\":{\"choices\":{\"description\":\"Present exactly when `kind` is `choice`.\",\"items\":{\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"maxItems\":20,\"minItems\":2,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/RegistrationQuestionKind\"},\"label\":{\"description\":\"The question as shown. Plain text.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"questionId\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"required\":{\"description\":\"The registration is refused without an answer. Absent means false.\",\"type\":\"boolean\"}},\"required\":[\"questionId\",\"label\",\"kind\"],\"title\":\"RegistrationQuestion\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationQuestion_df1f5f45;
+
+macro_rules! d_RegistrationSettings_e3ff7b85 {
+    () => {
+        "\"RegistrationSettings\":{\"additionalProperties\":false,\"description\":\"How the event takes registrations (VTI-EVT-031 – 036).\",\"properties\":{\"capacity\":{\"description\":\"The most people who may be going, plus-ones included. Absent means no limit.\",\"maximum\":100000,\"minimum\":1,\"type\":\"integer\"},\"closesAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.\"},\"codeOfConduct\":{\"$ref\":\"#/$defs/CodeOfConduct\"},\"mode\":{\"$ref\":\"#/$defs/RegistrationMode\"},\"opensAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations are refused before this. Absent means from publication.\"},\"plusOnes\":{\"description\":\"The most guests a registrant may bring. Absent means 0.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/RegistrationQuestion\"},\"maxItems\":20,\"type\":\"array\"},\"waitlist\":{\"description\":\"Registrations beyond `capacity` are waitlisted, and the first on the waitlist becomes going when a place frees (VTI-EVT-033). Absent means false: a registration beyond capacity is refused.\",\"type\":\"boolean\"}},\"required\":[\"mode\"],\"title\":\"RegistrationSettings\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationSettings_e3ff7b85;
 
 macro_rules! d_RegistrationStatus_acc918c7 {
     () => {
@@ -4495,12 +4516,12 @@ macro_rules! d_RegistrationStatus_acc918c7 {
 }
 pub(crate) use d_RegistrationStatus_acc918c7;
 
-macro_rules! d_Registration_1a886ecc {
+macro_rules! d_Registration_50244eab {
     () => {
-        "\"Registration\":{\"additionalProperties\":false,\"description\":\"One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).\",\"properties\":{\"answers\":{\"$ref\":\"#/$defs/Answers\",\"description\":\"The registrant's and the hosts' view only.\"},\"codeOfConductAcknowledged\":{\"description\":\"The `sha256` of the code of conduct the registrant acknowledged.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"eventSequence\":{\"description\":\"The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.\",\"minimum\":0,\"type\":\"integer\"},\"guests\":{\"description\":\"Plus-ones the registrant brings.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"note\":{\"description\":\"A host's note on a decline or removal, shown to the registrant. Plain text.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"$ref\":\"#/$defs/RegistrationId\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting the registration was made under (VTI-EVT-052).\"},\"status\":{\"$ref\":\"#/$defs/RegistrationStatus\"},\"updatedAt\":{\"$ref\":\"#/$defs/Instant\"},\"waitlistPosition\":{\"description\":\"While `waitlisted`: the registrant's place in the queue, 1 first.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"registrationId\",\"eventId\",\"entryId\",\"status\",\"guests\",\"roster\",\"eventSequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Registration\",\"type\":\"object\"}"
+        "\"Registration\":{\"additionalProperties\":false,\"description\":\"One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).\",\"properties\":{\"answers\":{\"$ref\":\"#/$defs/RegistrationAnswers\",\"description\":\"The registrant's and the hosts' view only.\"},\"codeOfConductAcknowledged\":{\"description\":\"The `sha256` of the code of conduct the registrant acknowledged.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"eventSequence\":{\"description\":\"The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.\",\"minimum\":0,\"type\":\"integer\"},\"guests\":{\"description\":\"Plus-ones the registrant brings.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"note\":{\"description\":\"A host's note on a decline or removal, shown to the registrant. Plain text.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"$ref\":\"#/$defs/RegistrationId\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting the registration was made under (VTI-EVT-052).\"},\"status\":{\"$ref\":\"#/$defs/RegistrationStatus\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"waitlistPosition\":{\"description\":\"While `waitlisted`: the registrant's place in the queue, 1 first.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"registrationId\",\"eventId\",\"entryId\",\"status\",\"guests\",\"roster\",\"eventSequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Registration\",\"type\":\"object\"}"
     };
 }
-pub(crate) use d_Registration_1a886ecc;
+pub(crate) use d_Registration_50244eab;
 
 macro_rules! d_ReissuanceFollowUp_f5768d3e {
     () => {
@@ -7218,12 +7239,12 @@ macro_rules! d_WebvhServerRecord_112e8b1e {
 }
 pub(crate) use d_WebvhServerRecord_112e8b1e;
 
-macro_rules! d_When_5c34cf36 {
+macro_rules! d_When_a8906ca9 {
     () => {
-        "\"When\":{\"additionalProperties\":false,\"description\":\"When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days (VTI-EVT-005).\",\"properties\":{\"duration\":{\"$ref\":\"#/$defs/Duration\"},\"showWithoutTime\":{\"description\":\"An all-day event. Absent means false.\",\"type\":\"boolean\"},\"start\":{\"$ref\":\"#/$defs/LocalDateTime\"},\"timeZone\":{\"$ref\":\"#/$defs/TimeZoneId\"}},\"required\":[\"start\",\"timeZone\",\"duration\"],\"title\":\"When\",\"type\":\"object\"}"
+        "\"When\":{\"additionalProperties\":false,\"description\":\"When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days (VTI-EVT-005).\",\"properties\":{\"duration\":{\"$ref\":\"#/$defs/JSCalendarDuration\"},\"showWithoutTime\":{\"description\":\"An all-day event. Absent means false.\",\"type\":\"boolean\"},\"start\":{\"$ref\":\"#/$defs/LocalDateTime\"},\"timeZone\":{\"$ref\":\"#/$defs/TimeZoneId\"}},\"required\":[\"start\",\"timeZone\",\"duration\"],\"title\":\"When\",\"type\":\"object\"}"
     };
 }
-pub(crate) use d_When_5c34cf36;
+pub(crate) use d_When_a8906ca9;
 
 macro_rules! d_Window_85bd7e01 {
     () => {

@@ -7,11 +7,11 @@
   "additionalProperties": false,
   "properties": {
     "from": {
-      "$ref": "../../_shared/0.1/event.schema.json#/$defs/Instant",
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventInstant",
       "description": "Only events still running at or after this instant."
     },
     "to": {
-      "$ref": "../../_shared/0.1/event.schema.json#/$defs/Instant",
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventInstant",
       "description": "Only events starting before this instant."
     },
     "calendarId": {

@@ -89,7 +89,7 @@ A conforming **consumer** (the community) **MUST**:
 
 ## Definitions
 
-- `Event`, `EventId`, `CalendarId`, `EventKind`, `RegistrationStatus`, `Instant` — see [`event.schema.json`](../../_shared/0.1/event.schema.json).
+- `Event`, `EventId`, `CalendarId`, `EventKind`, `RegistrationStatus`, `EventInstant` — see [`event.schema.json`](../../_shared/0.1/event.schema.json).
 
 ## Request
 

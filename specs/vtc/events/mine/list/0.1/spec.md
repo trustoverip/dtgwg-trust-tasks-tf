@@ -81,7 +81,7 @@ Reading one's own registrations is an act of the member (VTI-EVT-095): a member 
 
 ## Definitions
 
-- `Registration`, `RegistrationStatus`, `EventRef`, `Instant` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
+- `Registration`, `RegistrationStatus`, `EventRef`, `EventInstant` — see [`event.schema.json`](../../../_shared/0.1/event.schema.json).
 
 ## Request
 

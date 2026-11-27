@@ -13,12 +13,12 @@
       "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventId"
     },
     "title": {
-      "$ref": "../../_shared/0.1/event.schema.json#/$defs/Title"
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventTitle"
     },
     "description": {
       "anyOf": [
         {
-          "$ref": "../../_shared/0.1/event.schema.json#/$defs/Description"
+          "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventDescription"
         },
         {
           "type": "null"
@@ -52,7 +52,7 @@
       "description": "`null` clears it."
     },
     "audience": {
-      "$ref": "../../_shared/0.1/event.schema.json#/$defs/Audience"
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventAudience"
     },
     "registration": {
       "$ref": "../../_shared/0.1/event.schema.json#/$defs/RegistrationSettings"

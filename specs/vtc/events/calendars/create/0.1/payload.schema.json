@@ -10,10 +10,10 @@
   ],
   "properties": {
     "name": {
-      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Title"
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventTitle"
     },
     "description": {
-      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Description"
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventDescription"
     },
     "color": {
       "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Color"
