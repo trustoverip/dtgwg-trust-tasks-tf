@@ -577,6 +577,9 @@ export import HostingAccountShared_v0_4 = _HostingAccountShared_v0_4;
 import * as _SelfRegistrationPolicyShared_v0_4 from "./did-management/_shared/0.4/self-registration-policy.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import SelfRegistrationPolicyShared_v0_4 = _SelfRegistrationPolicyShared_v0_4;
+import * as _DidManagementAccountExempt_v0_1 from "./did-management/account/exempt/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DidManagementAccountExempt_v0_1 = _DidManagementAccountExempt_v0_1;
 import * as _DidManagementAccountExpiryNotice_v0_1 from "./did-management/account/expiry-notice/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementAccountExpiryNotice_v0_1 = _DidManagementAccountExpiryNotice_v0_1;

@@ -414,6 +414,9 @@ pub struct HostingAccount {
     pub disable_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.
     pub domain: HostingAccountDomain,
+    ///`true` when an administrator has exempted the account from its domain's terms (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered account.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub exempt: ::std::option::Option<bool>,
     ///The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.
     #[serde(
         rename = "lastActiveAt",
@@ -2427,6 +2430,7 @@ pub mod builder {
             ::std::string::String,
         >,
         domain: ::std::result::Result<super::HostingAccountDomain, ::std::string::String>,
+        exempt: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         last_active_at: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -2458,6 +2462,7 @@ pub mod builder {
                 admission: Ok(Default::default()),
                 disable_at: Ok(Default::default()),
                 domain: Err("no value supplied for domain".to_string()),
+                exempt: Ok(Default::default()),
                 last_active_at: Ok(Default::default()),
                 last_resolved_at: Ok(Default::default()),
                 max_did_count: Ok(Default::default()),
@@ -2502,6 +2507,16 @@ pub mod builder {
             self.domain = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn exempt<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exempt = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exempt: {e}"));
             self
         }
         pub fn last_active_at<T>(mut self, value: T) -> Self
@@ -2620,6 +2635,7 @@ pub mod builder {
                 admission: value.admission?,
                 disable_at: value.disable_at?,
                 domain: value.domain?,
+                exempt: value.exempt?,
                 last_active_at: value.last_active_at?,
                 last_resolved_at: value.last_resolved_at?,
                 max_did_count: value.max_did_count?,
@@ -2639,6 +2655,7 @@ pub mod builder {
                 admission: Ok(value.admission),
                 disable_at: Ok(value.disable_at),
                 domain: Ok(value.domain),
+                exempt: Ok(value.exempt),
                 last_active_at: Ok(value.last_active_at),
                 last_resolved_at: Ok(value.last_resolved_at),
                 max_did_count: Ok(value.max_did_count),
@@ -3423,7 +3440,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountReferral_e7a42fdb!(), ",", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_DidRecord_e18b658b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_a6fb4cad!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account the service created and the DID record it published. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\"}},\"required\":[\"account\",\"record\"],\"title\":\"DID Management — Account Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountReferral_e7a42fdb!(), ",", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_DidRecord_e18b658b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_9af1dd6a!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account the service created and the DID record it published. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\"}},\"required\":[\"account\",\"record\"],\"title\":\"DID Management — Account Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

@@ -176,6 +176,10 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "referral": {
           "$ref": "#/$defs/AccountReferral"
+        },
+        "exempt": {
+          "type": "boolean",
+          "description": "`true` when an administrator has exempted the account from its domain's terms (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered account."
         }
       }
     },

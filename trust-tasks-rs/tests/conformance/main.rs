@@ -403,6 +403,9 @@ mod device {
 #[cfg(feature = "did-management")]
 mod did_management {
     mod account {
+        mod exempt {
+            mod v0_1;
+        }
         mod expiry_notice {
             mod v0_1;
         }

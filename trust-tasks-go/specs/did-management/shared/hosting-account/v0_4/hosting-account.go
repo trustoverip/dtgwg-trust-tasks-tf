@@ -72,6 +72,11 @@ type HostingAccount struct {
 	// does not state one.
 	MaxTotalSizeBytes *int64           `json:"maxTotalSizeBytes,omitempty"`
 	Referral          *AccountReferral `json:"referral,omitempty"`
+
+	// `true` when an administrator has exempted the account from its domain's terms
+	// (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity
+	// lifecycle. Absent or `false`: the terms apply. Only on a self-registered account.
+	Exempt *bool `json:"exempt,omitempty"`
 }
 
 // AccountState Where an account stands in the inactivity lifecycle. `active`: its DIDs

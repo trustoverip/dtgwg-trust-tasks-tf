@@ -100,6 +100,7 @@ class HostingAccount {
     this.maxDidCount,
     this.maxTotalSizeBytes,
     this.referral,
+    this.exempt,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -122,6 +123,7 @@ class HostingAccount {
             ? null
             : AccountReferral.fromJson(
                 json['referral'] as Map<String, dynamic>),
+        exempt: json['exempt'] as bool?,
       );
 
   /// The DID that holds the account, exactly as it authenticated when it registered. A
@@ -178,6 +180,12 @@ class HostingAccount {
   final int? maxTotalSizeBytes;
   final AccountReferral? referral;
 
+  /// `true` when an administrator has exempted the account from its domain's terms
+  /// (did-management/account/exempt): no path prefixes, agent names allowed, no
+  /// inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered
+  /// account.
+  final bool? exempt;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'subject': subject,
@@ -193,6 +201,7 @@ class HostingAccount {
         if (maxDidCount != null) 'maxDidCount': maxDidCount!,
         if (maxTotalSizeBytes != null) 'maxTotalSizeBytes': maxTotalSizeBytes!,
         if (referral != null) 'referral': referral!.toJson(),
+        if (exempt != null) 'exempt': exempt!,
       };
 }
 

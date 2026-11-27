@@ -123,6 +123,7 @@ related:
   - did-management/account/renew
   - did-management/account/status
   - did-management/account/expiry-notice
+  - did-management/account/exempt
   - did-management/server/info
   - did-management/did/register
 ---
@@ -162,7 +163,7 @@ A conforming **consumer** (the hosting service):
 5. **MUST** accept `issuer` only if it is that DID, or its `did:scid` alias **and** the latest document lists that alias in `alsoKnownAs`; and **MUST** verify the document's proof against the document the log implies, never one resolved over the network, with the key in its `authentication` relationship. Otherwise `issuerNotSubject` (or `proofInvalid`, where the proof itself fails). A voucher's `type` MUST include `DidHostingVoucher`.
 6. **MUST** refuse with `capacityReached` when the domain already holds the most self-registered accounts it admits, and with `pathNotAllowed` or `pathTaken` as their meanings say. It **MUST NOT** replace any existing slot.
 7. **MUST** create the account, publish the log and consume the invite or record the voucher in one atomic commit: a failure anywhere leaves the invite redeemable and the voucher unused. The account's `subject` is the identity `issuer` names, without any `src`.
-8. **MUST** create the account under the service's ordinary DID-owner role: admission decides who may register, not what an account may do. What sets a self-registered account apart is its terms, which the consumer **MUST** apply to every DID the account holds, not only the first: its domain's path prefixes, its quotas (the service's ordinary limits where the terms state none), and its inactivity lifecycle (did-management/account/renew). A consumer **MAY** hold such an account to further limits of its own, which it **SHOULD** document.
+8. **MUST** create the account under the service's ordinary DID-owner role: admission decides who may register, not what an account may do. What sets a self-registered account apart is its terms, which the consumer **MUST** apply to every DID the account holds, not only the first: its domain's path prefixes, its quotas (the service's ordinary limits where the terms state none), and its inactivity lifecycle (did-management/account/renew). A consumer **MAY** hold such an account to further limits of its own, which it **SHOULD** document. An administrator lifts the terms from one account with did-management/account/exempt.
 9. **MUST** record a `referral` as stated, with `verified: false`, unless the admission evidence supports it: a voucher whose `issuer` is `referral.via` (the consumer **MAY** fill an absent `via` from the voucher's `issuer`), or an invite that carries a referral of its own, which then replaces the registrant's with `verified: true`. A consumer **MUST NOT** authorise anything on a referral.
 
 ### Referral
