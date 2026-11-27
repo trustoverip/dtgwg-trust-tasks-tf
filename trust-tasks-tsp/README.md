@@ -3,12 +3,13 @@
 The ToIP **Trust Spanning Protocol** (TSP) transport binding for the
 [Trust Tasks](https://trusttasks.org/) framework, built on
 [`affinidi-tsp`](https://crates.io/crates/affinidi-tsp). It implements
-[`bindings/tsp/0.1`](https://trusttasks.org/bindings/tsp/0.1)
-(binding URI `https://trusttasks.org/binding/tsp/0.1`).
+[`bindings/tsp/0.3`](https://trusttasks.org/binding/tsp/0.3)
+(binding URI `https://trusttasks.org/binding/tsp/0.3`).
 
 A Trust Task document rides as the authenticated, encrypted payload of a TSP
-message — sealed with HPKE authenticated encryption and signed from the
-producer's *Verifiable Identifier* (VID) to the recipient's. On unwrap, the
+1.0 message — sealed to the recipient's *Verifiable Identifier* (VID) with
+HPKE-Base, the producer's VID inside the sealed payload (ESSR), and signed from
+the producer's VID. On unwrap, the
 authenticated sender VID becomes the framework's transport-authenticated sender
 for [SPEC §4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)
 precedence. TSP has no anonymous sender mode, so every envelope this binding
@@ -34,7 +35,20 @@ The TSP message payload is the JSON serialisation of the binding envelope:
 ```
 
 The same `{type, document}` object is sealed by the TypeScript, Go and Dart TSP
-bindings.
+bindings. The envelope `type` has not changed since `tsp/0.1`.
+
+## TSP version
+
+The crate speaks TSP 1.0 (`YTSP-BAA`, `TSP_VERSION`) through `affinidi-tsp`
+0.5, and nothing else, as binding `tsp/0.3` §2.2 requires. A message from a peer
+still on a TSP draft (Rev 3 `YTSP-AAC`, Rev 2 `YTSP-AAB`) is refused from its
+version marker, before any key is used, as `TspError::UnsupportedTspVersion`.
+Read the sender of an inbound message with `advertised_sender(&wire)`, which
+refuses a draft before you resolve the sender; `affinidi_tsp::MetaEnvelope::parse`
+reads any version, because a relay has to. Do not answer a refused message —
+nothing in it is authenticated — but report it to the operator: TSP has no
+version negotiation, so the peer has to upgrade. A 1.x message with a MINOR this
+crate does not know is not refused for it.
 
 ## API
 
@@ -42,11 +56,13 @@ bindings.
 |---|---|
 | `pack_trust_task(&doc, &sender, &recipient)` | Seal a document as a **Direct** TSP message from a `PrivateVid` to a `ResolvedVid`. `doc` may be any serializable document, including a `TrustTask<serde_json::Value>` or an `ErrorResponse`. |
 | `pack_trust_task_nested(…)`, `pack_trust_task_routed(…)` | The same inner Direct message, wrapped for a single intermediary (**Nested**, metadata privacy) or relayed through hops (**Routed**). Relaying is the mediator's job; the consumer always opens the innermost Direct message. |
+| `advertised_sender(&wire)` | The sender VID the message names in its cleartext envelope, read without keys and unauthenticated — what to resolve before unpacking. A TSP draft is `TspError::UnsupportedTspVersion` here. |
 | `unpack_trust_task::<P>(&wire, &recipient, &sender)` | Open and verify the seal, check the envelope, and return `(TrustTask<P>, TspHandler)`. It stops there: the SPEC §7.2 consumer checks still have to run. |
 | `TspConsumer` | The guarded inbound path: unseal, then run `consume_inbound` with §7.2 item 11's duplicate-execution record and the consequential freshness bound **on by default**. `receive` for one payload type, `receive_dispatched` with an `AsyncDispatcher` for a consumer that routes on `type`. A `document` that does not deserialise is answered `malformedRequest` to the verified sender (binding §4) as `ConsumeOutcome::Rejected`. Dereferences to `trust_tasks_rs::GuardedConsumer`, the core it shares with the DIDComm bindings, whose `consume` / `consume_dispatched` take a message another TSP stack already opened. |
 | `Envelope`, `ENVELOPE_TYPE` | The envelope object without the seal, for an application whose own TSP stack seals and opens messages (a messaging SDK holding the keys). `Envelope::new(&doc)?.to_bytes()` is the plaintext to seal — byte-for-byte what `pack_trust_task` seals; `Envelope::from_bytes(&plaintext)?` checks the envelope `type` (`TspError::WrongEnvelopeType`) and keeps the `document` as received (`document()`, `into_document()`, `into_trust_task::<P>()`). `with_delivery_id(id)` / `delivery_id()` carry binding `tsp/0.2` §2.1's optional `deliveryId`, which requests an end-to-end delivery receipt (1 to 256 characters; `from_bytes` drops an id outside that rather than refusing the envelope). Without one the bytes are a `tsp/0.1` envelope's. It makes none of the checks on the TSP message itself that `unpack_trust_task` makes, and none of the §7.2 consumer checks: pass the document to `GuardedConsumer::consume_body` / `consume_body_dispatched` with a `TspHandler` naming the VIDs your stack authenticated. |
-| `TspHandler` | The `TransportHandler` carrying the authenticated local and peer VIDs into the pipeline. |
-| `TspError` | Envelope-layer failures (seal, signature, carriage, envelope type). These are errors rather than framework error responses: there is no authenticated party to answer. |
+| `TspHandler`, `BINDING_URI` | The `TransportHandler` carrying the authenticated local and peer VIDs into the pipeline; it reports the binding URI `https://trusttasks.org/binding/tsp/0.3`. |
+| `TSP_VERSION` | `"1.0"`, the one TSP version the crate seals and opens. |
+| `TspError` | Envelope-layer failures (TSP version, seal, signature, carriage, envelope type). These are errors rather than framework error responses: there is no authenticated party to answer. |
 
 Use `TspConsumer` unless you have a reason not to. Binding §7 records that TSP
 data messages do not inherently prevent replay, and under routed or nested

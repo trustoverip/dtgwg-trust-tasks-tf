@@ -210,9 +210,9 @@ pub struct Response {
     #[serde(
         rename = "didTemplates",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub did_templates: ::std::vec::Vec<::std::string::String>,
+    pub did_templates: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The context previewed.
@@ -223,9 +223,9 @@ pub struct Response {
     #[serde(
         rename = "subContexts",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub sub_contexts: ::std::vec::Vec<::std::string::String>,
+    pub sub_contexts: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.
     #[serde(rename = "webvhDids")]
     pub webvh_dids: ::std::vec::Vec<::std::string::String>,
@@ -295,13 +295,17 @@ pub mod builder {
             ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
         acl_entries_updated:
             ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        did_templates:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        did_templates: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
         keys: ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        sub_contexts:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        sub_contexts: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         webvh_dids:
             ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
     }
@@ -342,7 +346,9 @@ pub mod builder {
         }
         pub fn did_templates<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.did_templates = value
@@ -382,7 +388,9 @@ pub mod builder {
         }
         pub fn sub_contexts<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.sub_contexts = value

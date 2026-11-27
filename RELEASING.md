@@ -126,7 +126,7 @@ are the manifests (for crates) and the package arrays at the top of
 | `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `GO_MODULES` entry in `scripts/release-pr.sh` like the core. No manual first publish — a Go tag is self-bootstrapping. |
 | `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
 | `trust-tasks-go/capabilityclient` | none — a **separate** nested Go module (capability wire client), released on its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag, the same way as `proof`. |
-| `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
+| `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` is tagged (v0.2.0), so nothing upstream blocks a release, but it has no release wiring yet (docs/packages/go.md). `go get` of the module resolves a pseudo-version of this repository. It is a separate module so the core stays dependency-free. |
 | `trust-tasks-go/specs` | none — a **separate** nested Go module holding the generated (prebuilt) specification packages, so the core no longer carries the tree (#1112). Released on its own `trust-tasks-go/specs/vX.Y.Z` tag, the same way as `proof`; its first, `v0.1.0`, is tagged by `publish-go` from the seeded `version.go`. It requires the published core (v0.13.0 or later — an older core still contains `specs/`, so its imports would be ambiguous), so a generator change that needs a new runtime API waits for that core's release and a move of `trust-tasks-go/specs/go.mod`. |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
 | `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
@@ -549,13 +549,13 @@ usually fixes it, because the missing crate is on crates.io by then.
   `npm run check-dart-packages` (a required-able job in `dart.yml`) fails until
   the five agree.
 
-  **A package whose dependency is not yet on pub.dev cannot be released.**
-  `trust_tasks_tsp` depends on `affinidi_tsp`, which is not published, so it is
-  tested in `dart.yml` (against a git-pinned override) but left out of the four
-  release entries above — a release deletes the override and `dart pub get`
-  would fail on the unpublished hosted dependency. When `affinidi_tsp` reaches
-  pub.dev: remove the git override from `trust-tasks-dart-tsp/pubspec_overrides.yaml`,
-  add the four release entries, and do the manual first publish.
+  **A package whose dependency is not yet on pub.dev cannot be released**: a
+  release deletes `pubspec_overrides.yaml`, so a dependency supplied there from
+  git fails `dart pub get`. `trust_tasks_tsp` was held back for that reason until
+  `affinidi_tsp` reached pub.dev; it now resolves the hosted `affinidi_tsp` and
+  its override holds only the in-tree `trust_tasks`, like the other siblings. It
+  is still tested in `dart.yml` but left out of the four release entries above.
+  Releasing it: add the four release entries and do the manual first publish.
 
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to

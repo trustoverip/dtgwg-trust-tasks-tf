@@ -69,8 +69,8 @@ pub struct Board {
     pub selection_rule: ::std::option::Option<BoardSelectionRule>,
     pub status: BoardStatus,
     pub template: ElectionTemplate,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub timetable: ::std::vec::Vec<Slot>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub timetable: ::std::option::Option<::std::vec::Vec<Slot>>,
     pub title: BoardTitle,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub topics: ::std::option::Option<Vec<Topic>>,
@@ -1723,7 +1723,10 @@ pub mod builder {
         >,
         status: ::std::result::Result<super::BoardStatus, ::std::string::String>,
         template: ::std::result::Result<super::ElectionTemplate, ::std::string::String>,
-        timetable: ::std::result::Result<::std::vec::Vec<super::Slot>, ::std::string::String>,
+        timetable: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Slot>>,
+            ::std::string::String,
+        >,
         title: ::std::result::Result<super::BoardTitle, ::std::string::String>,
         topics:
             ::std::result::Result<::std::option::Option<Vec<super::Topic>>, ::std::string::String>,
@@ -1874,7 +1877,7 @@ pub mod builder {
         }
         pub fn timetable<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Slot>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Slot>>>,
             T::Error: ::std::fmt::Display,
         {
             self.timetable = value

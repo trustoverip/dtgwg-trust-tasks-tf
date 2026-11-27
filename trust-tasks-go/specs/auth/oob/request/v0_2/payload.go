@@ -13,6 +13,8 @@ import (
 
 // Response The handle of the new request and the instant its claim window closes. The
 // starter builds the trigger link from these and the service's DID.
+//
+// Deprecated: superseded by auth/oob/request/0.3
 type Response struct {
 	RequestID RequestID `json:"requestId"`
 
@@ -64,6 +66,8 @@ const (
 // Ed25519 key, which is fixed for the life of the request. The outer document members
 // (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/request/0.3
 type Payload struct {
 	Purpose Purpose `json:"purpose"`
 	Mode    Mode    `json:"mode"`
@@ -85,7 +89,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by auth/oob/request/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/oob/request/0.2#response"

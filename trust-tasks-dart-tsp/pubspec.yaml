@@ -10,8 +10,8 @@ issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
 
 environment:
-  # The floor package:affinidi_tsp sets.
-  sdk: ^3.8.0
+  # The floor package:affinidi_tsp 0.2 sets.
+  sdk: ^3.10.0
 
 dependencies:
   # The floor is the oldest published core this package's lib/ and example/
@@ -21,7 +21,10 @@ dependencies:
   # 0.9.11-0.9.22 never reached pub.dev). lib/ needs 0.9.6 (`received:`).
   trust_tasks: ^0.12.0
   # ToIP TSP for Dart: CESR framing, HPKE-Base sealing, ssi-integrated VIDs.
-  affinidi_tsp: ^0.1.0
+  # 0.2 speaks TSP 1.0 (YTSP-BAA) only and refuses the Rev 3 and Rev 2 drafts;
+  # 0.1 was Rev 3. TSP has no version negotiation, so moving to another TSP
+  # version is a deliberate change of this range.
+  affinidi_tsp: ^0.2.0
   # For DidManager, DidDocument and the resolver types affinidi_tsp's API is
   # expressed in. The range matches the other binding packages.
   ssi: ">=3.9.6 <5.0.0"

@@ -147,20 +147,36 @@ Advertised and active are reported separately: a registry that advertises a prot
 #[non_exhaustive]
 pub struct RegistryTransport {
     ///The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub active: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub active: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub advertised: ::std::vec::Vec<RegistryTransportAdvertisedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub advertised: ::std::option::Option<::std::vec::Vec<RegistryTransportAdvertisedItem>>,
     ///The registry's DID, when addressed by one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub did: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Why the last selection failed, if it did.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub error: ::std::option::Option<RegistryTransportError>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub error: ::std::option::Option<::std::option::Option<RegistryTransportError>>,
     ///The registry's endpoint, when addressed by one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub url: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub url: ::std::option::Option<::std::option::Option<::std::string::String>>,
 }
 impl ::std::default::Default for RegistryTransport {
     fn default() -> Self {
@@ -311,35 +327,42 @@ pub struct Response {
     #[serde(
         rename = "lastError",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_error: ::std::option::Option<ResponseLastError>,
+    pub last_error: ::std::option::Option<::std::option::Option<ResponseLastError>>,
     #[serde(
         rename = "lastFailureAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_failure_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub last_failure_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     #[serde(
         rename = "lastSuccessAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_success_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub last_success_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///The mediator's DID, when one is configured.
     #[serde(
         rename = "mediatorDid",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub mediator_did: ::std::option::Option<::std::string::String>,
+    pub mediator_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The mediator's endpoint, when one is configured.
     #[serde(
         rename = "mediatorUrl",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub mediator_url: ::std::option::Option<::std::string::String>,
+    pub mediator_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.
     #[serde(
         rename = "messagingStatus",
@@ -351,9 +374,10 @@ pub struct Response {
     #[serde(
         rename = "oldestPendingAgeSeconds",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub oldest_pending_age_seconds: ::std::option::Option<i64>,
+    pub oldest_pending_age_seconds: ::std::option::Option<::std::option::Option<i64>>,
     ///Pending + in-flight sync jobs.
     #[serde(rename = "queueDepth")]
     pub queue_depth: u64,
@@ -395,8 +419,8 @@ pub struct Response {
     Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.
 
     Reports all protocols rather than only the advertised ones, so a client can tell "not advertised" from "absent from an older response".*/
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub transports: ::std::vec::Vec<TransportStatus>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub transports: ::std::option::Option<::std::vec::Vec<TransportStatus>>,
     ///The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.
     #[serde(
         rename = "vtaDid",
@@ -662,8 +686,12 @@ pub struct TransportStatus {
     ///Present in the DID document, so a resolving client will find it.
     pub advertised: bool,
     ///The advertised endpoint, or null when not advertised — there is no endpoint to give.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub endpoint: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub endpoint: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The protocol this row describes.
     pub protocol: TransportStatusProtocol,
     ///This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.
@@ -772,23 +800,23 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct RegistryTransport {
         active: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         advertised: ::std::result::Result<
-            ::std::vec::Vec<super::RegistryTransportAdvertisedItem>,
+            ::std::option::Option<::std::vec::Vec<super::RegistryTransportAdvertisedItem>>,
             ::std::string::String,
         >,
         did: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         error: ::std::result::Result<
-            ::std::option::Option<super::RegistryTransportError>,
+            ::std::option::Option<::std::option::Option<super::RegistryTransportError>>,
             ::std::string::String,
         >,
         url: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
     }
@@ -806,7 +834,9 @@ pub mod builder {
     impl RegistryTransport {
         pub fn active<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.active = value
@@ -816,7 +846,9 @@ pub mod builder {
         }
         pub fn advertised<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RegistryTransportAdvertisedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RegistryTransportAdvertisedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.advertised = value
@@ -826,7 +858,9 @@ pub mod builder {
         }
         pub fn did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.did = value
@@ -836,7 +870,9 @@ pub mod builder {
         }
         pub fn error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::RegistryTransportError>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::RegistryTransportError>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.error = value
@@ -846,7 +882,9 @@ pub mod builder {
         }
         pub fn url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.url = value
@@ -885,31 +923,33 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         failed_count: ::std::result::Result<u64, ::std::string::String>,
         last_error: ::std::result::Result<
-            ::std::option::Option<super::ResponseLastError>,
+            ::std::option::Option<::std::option::Option<super::ResponseLastError>>,
             ::std::string::String,
         >,
         last_failure_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         last_success_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         mediator_did: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         mediator_url: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         messaging_status: ::std::result::Result<
             ::std::option::Option<super::ResponseMessagingStatus>,
             ::std::string::String,
         >,
-        oldest_pending_age_seconds:
-            ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        oldest_pending_age_seconds: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<i64>>,
+            ::std::string::String,
+        >,
         queue_depth: ::std::result::Result<u64, ::std::string::String>,
         registry_status:
             ::std::result::Result<super::ResponseRegistryStatus, ::std::string::String>,
@@ -921,8 +961,10 @@ pub mod builder {
         syncer_enabled: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         syncer_restarts: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         syncer_running: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        transports:
-            ::std::result::Result<::std::vec::Vec<super::TransportStatus>, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::TransportStatus>>,
+            ::std::string::String,
+        >,
         vta_did: ::std::result::Result<
             ::std::option::Option<super::ResponseVtaDid>,
             ::std::string::String,
@@ -975,7 +1017,9 @@ pub mod builder {
         }
         pub fn last_error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ResponseLastError>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ResponseLastError>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.last_error = value
@@ -986,7 +1030,9 @@ pub mod builder {
         pub fn last_failure_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -998,7 +1044,9 @@ pub mod builder {
         pub fn last_success_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1009,7 +1057,9 @@ pub mod builder {
         }
         pub fn mediator_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.mediator_did = value
@@ -1019,7 +1069,9 @@ pub mod builder {
         }
         pub fn mediator_url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.mediator_url = value
@@ -1039,7 +1091,7 @@ pub mod builder {
         }
         pub fn oldest_pending_age_seconds<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<i64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.oldest_pending_age_seconds = value.try_into().map_err(|e| {
@@ -1119,7 +1171,9 @@ pub mod builder {
         }
         pub fn transports<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::TransportStatus>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::TransportStatus>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.transports = value
@@ -1191,7 +1245,7 @@ pub mod builder {
     pub struct TransportStatus {
         advertised: ::std::result::Result<bool, ::std::string::String>,
         endpoint: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         protocol: ::std::result::Result<super::TransportStatusProtocol, ::std::string::String>,
@@ -1220,7 +1274,9 @@ pub mod builder {
         }
         pub fn endpoint<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.endpoint = value

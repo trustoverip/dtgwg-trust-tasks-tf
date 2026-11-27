@@ -95,7 +95,7 @@ A conforming **consumer** (the community) **MUST**:
 
 **Authority: ownership of the badge, or administration of badges, or authorship of the giving — read now.** An owner withdraws because the badge's owners answer for whom it is offered to, and ownership is the badge group's management (VTI-BDG-011), read from the signer's access-control entry at execution time; a holder of `vtc.badges.admin` withdraws because they run the community's badges; the giver of a kudos award withdraws because the giving was their own. Withdrawing an offer confers nothing and removes nothing: no membership and no credential existed yet (VTI-BDG-002, VTI-BDG-020). The proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
-A kudos giver's withdraw of their own giving is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) **MAY** sign it. An owner's or administrator's withdraw **MUST NOT** be accepted from such a key.
+A kudos giver's withdraw of their own giving is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) **MAY** sign it. An owner's or administrator's withdraw **MUST NOT** be accepted from such a key.
 
 ## Definitions
 

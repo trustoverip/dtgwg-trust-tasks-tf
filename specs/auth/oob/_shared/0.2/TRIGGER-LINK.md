@@ -1,0 +1,116 @@
+# auth/oob — binding note: the `sign-in` trigger link
+
+This note says how a starter hands an `auth/oob` request to an approver. It is
+a binding of the family to the **trigger link** of the Verifiable Trust
+Infrastructure specification, chapter *Trigger Links* (`VTI-LNK-*`), and
+uses the link's registered `sign-in` flow. It does not restate that chapter:
+the link's form, how a reader parses it, its outcomes and messages, and the
+producer and host rules are VTI-LNK's, and this note only says how the
+`auth/oob` members fill it.
+
+It replaces the `trusttasks://oob?v=1&svc=…&id=…` scheme of the original
+design. That scheme is not defined and **MUST NOT** be emitted.
+
+## 1. The link
+
+For `purpose: login` with `mode: scan`, the starter shows the link below. A
+`deviceEnrol` request uses the same link and the same `sign-in` flow, with the
+differences in [§6](#6-deviceenrol).
+
+```
+https://<link host>/t#_from=<service DID>&_id=<requestId>&_exp=<claimClosesAt, as epoch seconds>&_type=/vti/flow/sign-in/0.1
+```
+
+| Parameter | Value |
+|---|---|
+| `_from` | The service's DID: the `recipient` of the `auth/oob/request` that opened the request. Percent-encode `&`, `=`, `#` and `%`, and nothing else. |
+| `_id` | The `requestId` from the `auth/oob/request` response, as received (VTI-LNK-033, VTI-LNK-103). |
+| `_exp` | The `claimClosesAt` from the same response, converted: `_exp` stays integer UTC epoch seconds, as VTI-LNK defines it, and is computed from the RFC 3339 `claimClosesAt` when the link is built. (Request 0.1 returned this instant as `claimDeadline`, already in integer epoch seconds, and it was copied unchanged.) VTI-LNK-100 caps it at 300 s after the code is made; this family recommends 120 s. |
+| `_type` | The `sign-in` flow, `/vti/flow/sign-in/0.1` (path form, VTI-LNK-042). |
+
+The **link host** is configuration, defaulting to `link.trustoverip.org`, and
+**MUST NOT** be on the portal's own domain (VTI-LNK-084). The link carries
+nothing else: no endpoint, no purpose and no origin. A reader takes the
+transport from the service's verified DID document (VTI-LNK-053) and selects
+the service's Trust Task HTTPS service by `type` — `TrustTaskHTTPS` — never by `id`.
+Its `serviceEndpoint` is the Trust-Task base, and the reader composes the request
+URL from it as [HTTPS binding 0.2 §6](../../../../../bindings/https/0.2/spec.md#6-endpoint-discovery) requires.
+
+The producer emits ASCII only and stays within the size budget of VTI-LNK-081
+at QR error-correction level M. Render rules — level M, no logo, a quiet zone
+of at least 4 modules, at least 4 CSS px per module, dark on light, never
+inverted — are VTI-LNK's rendering guidance.
+
+## 2. The code is also a link
+
+The page wraps the QR code in `<a href="…">` carrying the same `https` text
+(VTI-LNK-086). There is no separate "open in your wallet" link. On a phone the
+link host's association opens the wallet; on a desktop with a browser plugin the
+plugin handles the click; with neither, the click lands on the link host's page
+for people with no wallet (VTI-LNK-091). Pages that carry the link follow
+VTI-LNK-082.
+
+When the page becomes hidden (`visibilitychange`), the starter hides the code
+but does not cancel the request, and keeps polling `auth/oob/redeem`: on a
+phone, tapping the code hides the tab, and the sign-in must survive that.
+
+## 3. The service's DID document
+
+For `sign-in`, the service's DID document lists a `SignInPortal` service
+(VTI-LNK-102):
+
+```json
+{ "id": "<did>#sign-in-portal", "type": "SignInPortal", "serviceEndpoint": "https://<portal host>/<path>" }
+```
+
+The **portal origin** is the origin of that `serviceEndpoint`. It is the
+`origin` the service returns in the `auth/oob/claim` response, and the `origin`
+the approver signs into `auth/oob/grant`. A reader that saw the click compares
+the page's origin with it (VTI-LNK-105).
+
+## 4. From the link to the first task
+
+The reader follows VTI-LNK-050 to VTI-LNK-056 and the `sign-in` rules
+(VTI-LNK-100 to VTI-LNK-105). Only after the person continues does the approver
+generate its lock key `K_a` and send [`auth/oob/claim`](../../claim/0.3/spec.md),
+which is the first request of VTI-LNK-054:
+
+- `issuer` is `K_a`, fresh for this exchange;
+- `recipient` is the service DID (`_from`);
+- `id` is unique;
+- `parentThreadId` is the handle (`_id`), equal to `payload.requestId`;
+- it is signed by `K_a`.
+
+From there the exchange is the `auth/oob` family: claim, prove (carrying
+identify), respond (carrying grant), with the starter redeeming.
+
+## 5. Handle security
+
+The `requestId` is a handle, not a credential (VTI-LNK-070). Possession of it
+lets a party *claim* the request and nothing more: the first claim locks it to
+that party's `K_a`, the starter sees the claim at once, and only a member who
+can see the starter's screen can pass `prove`. Fetching or previewing the link
+spends nothing (VTI-LNK-072).
+
+## 6. `deviceEnrol`
+
+For `purpose: deviceEnrol` the starter is the client asking to be enrolled, and
+it shows the same link, as a QR code or, where it has no screen of its own (a
+command-line tool), as text the person opens on a device with their wallet:
+
+- `_from` is the DID of the person's **VTA**, which is the service. The client
+  learns it from its own configuration; this family does not say how.
+- The VTA has no `SignInPortal` service. The `origin` in step 1 and in the grant
+  is the origin of the `serviceEndpoint` of the VTA's `TrustTaskHTTPS` service
+  ([`CONVENTIONS.md`](CONVENTIONS.md) §7, A6).
+- The link does not name its purpose: a wallet learns it from step 1, the
+  `claim` response. A wallet **MUST** stop after step 1 when step 1 names
+  `deviceEnrol` and `_from` is not a VTA it administers
+  ([`auth/oob/claim/0.3`](../../claim/0.3/spec.md) approver item 5). An attacker can open a request at a victim's public
+  VTA DID and relay both the code and the number; the wallet's own record of the
+  VTAs it administers, the `requester` and `sameNetwork` signals at step 2, and
+  words that say a program will get lasting access, are what the person decides
+  on.
+- The user verification and the windows are those of `login`. The match
+  number has four digits, not two ([`CONVENTIONS.md`](CONVENTIONS.md) §7, A12).
+  The client asks its own user for no confirmation (A13).

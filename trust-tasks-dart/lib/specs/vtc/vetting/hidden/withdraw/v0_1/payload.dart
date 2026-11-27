@@ -16,7 +16,7 @@ class Response {
   const Response({
     required this.criterionId,
     required this.withdrawn,
-    this.requirementsDigest,
+    required this.requirementsDigest,
     this.ext,
   });
 
@@ -46,8 +46,7 @@ class Response {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'criterionId': criterionId,
         'withdrawn': withdrawn,
-        if (requirementsDigest != null)
-          'requirementsDigest': requirementsDigest!,
+        'requirementsDigest': requirementsDigest,
         if (ext != null) 'ext': ext!,
       };
 }

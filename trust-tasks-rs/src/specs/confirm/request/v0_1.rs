@@ -128,9 +128,10 @@ pub struct Payload {
     #[serde(
         rename = "actionDetails",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub action_details: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub action_details:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Optional machine-readable action category the wallet MAY use for UI styling, history grouping, or local policy. Free-form; ecosystems define the vocabulary (e.g. "payment.transfer", "acl.delete", "data.share").
     #[serde(
         rename = "actionType",
@@ -417,7 +418,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         action_details: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         action_type: ::std::result::Result<
@@ -450,7 +451,9 @@ pub mod builder {
         pub fn action_details<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

@@ -124,8 +124,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     pub code: PayloadCode,
     ///Free-form structured context. Hosts SHOULD avoid leaking other tenants' data here.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub ctx: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ctx: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub domain: ::std::option::Option<::std::string::String>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -324,7 +324,7 @@ pub mod builder {
     pub struct Payload {
         code: ::std::result::Result<super::PayloadCode, ::std::string::String>,
         ctx: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         domain: ::std::result::Result<
@@ -361,7 +361,9 @@ pub mod builder {
         pub fn ctx<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

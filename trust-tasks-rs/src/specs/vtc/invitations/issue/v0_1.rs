@@ -276,9 +276,11 @@ pub struct Response {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub valid_until:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///The signed Invitation Credential (W3C VC). Opaque here; returned once.
     pub vic: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
@@ -437,7 +439,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         subject_did: ::std::result::Result<super::ResponseSubjectDid, ::std::string::String>,
         valid_until: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         vic: ::std::result::Result<
@@ -479,7 +481,9 @@ pub mod builder {
         pub fn valid_until<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

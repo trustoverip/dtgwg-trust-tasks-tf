@@ -5,6 +5,6 @@
 // module whose Document type and Type-URI helpers it builds on.
 module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient
 
-go 1.22
+go 1.24
 
 require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3

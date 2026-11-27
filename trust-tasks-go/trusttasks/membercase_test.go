@@ -152,3 +152,62 @@ func TestCheckMemberNamesFollowsTheShallowestField(t *testing.T) {
 		t.Fatal("accepted a case variant of a promoted name")
 	}
 }
+
+type caseStep struct {
+	X string `json:"x"`
+}
+
+// caseNullable carries an optional nullable object, slice of objects and map
+// of objects as generated payload types do: Nullable members tagged omitzero.
+// Ptr is the same object behind a pointer, the spelling Nullable replaced.
+type caseNullable struct {
+	Ptr   *caseStep                            `json:"ptr,omitempty"`
+	Step  tt.Nullable[caseStep]                `json:"step,omitzero"`
+	Steps tt.Nullable[[]caseStep]              `json:"steps,omitzero"`
+	ByKey tt.Nullable[map[string]caseStep]     `json:"byKey,omitzero"`
+	Deep  tt.Nullable[[]tt.Nullable[caseStep]] `json:"deep,omitzero"`
+	Boxed *tt.Nullable[caseStep]               `json:"boxed,omitzero"`
+	Inner tt.Nullable[map[string][]*caseStep]  `json:"inner,omitzero"`
+}
+
+// Nullable decodes itself, but through a plain encoding/json decode of T that
+// matches names without regard to case, so the check must enter it: a member
+// that differs from a declared one only by case is refused inside a Nullable
+// exactly as it is behind a pointer.
+func TestCheckMemberNamesEntersNullable(t *testing.T) {
+	for name, data := range map[string]string{
+		"pointer (the baseline)": `{"ptr":{"x":"a","X":"b"}}`,
+		"struct":                 `{"step":{"x":"a","X":"b"}}`,
+		"slice of structs":       `{"steps":[{"x":"a"},{"x":"a","X":"b"}]}`,
+		"map of structs":         `{"byKey":{"k":{"x":"a","X":"b"}}}`,
+		"case variant alone":     `{"step":{"X":"b"}}`,
+		"nested in a slice":      `{"deep":[null,{"x":"a","X":"b"}]}`,
+		"behind a pointer":       `{"boxed":{"x":"a","X":"b"}}`,
+		"map of slices":          `{"inner":{"k":[null,{"x":"a","X":"b"}]}}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			err := tt.CheckMemberNames[caseNullable]([]byte(data))
+			if err == nil || !strings.Contains(err.Error(), "case-sensitive") {
+				t.Fatalf("CheckMemberNames(%s) = %v, want a case-sensitive refusal", data, err)
+			}
+		})
+	}
+}
+
+// Null, absent and exact-case members inside a Nullable pass, and a Nullable
+// over a type with no struct inside it has nothing to check.
+func TestCheckMemberNamesAcceptsNullableMembers(t *testing.T) {
+	for _, data := range []string{
+		`{}`,
+		`{"step":null,"steps":null,"byKey":null,"deep":null,"boxed":null,"inner":null}`,
+		`{"step":{"x":"a"},"steps":[{"x":"a"}],"byKey":{"K":{"x":"a"}},"deep":[null,{"x":"a"}]}`,
+		`{"step":{"x":"a","y":"unrelated"}}`,
+	} {
+		if err := tt.CheckMemberNames[caseNullable]([]byte(data)); err != nil {
+			t.Errorf("CheckMemberNames(%s) = %v", data, err)
+		}
+	}
+	if err := tt.CheckMemberNames[tt.Nullable[map[string]any]]([]byte(`{"x":1,"X":2}`)); err != nil {
+		t.Errorf("a free-form map inside a Nullable was checked: %v", err)
+	}
+}

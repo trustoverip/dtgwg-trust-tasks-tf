@@ -396,8 +396,8 @@ jobs:
   # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
   # One matrix entry per Go module: the core, and the four nested modules that
   # version independently on their own `trust-tasks-go/<name>/vX.Y.Z` tags
-  # (proof, didcomm, capabilityclient and specs, the generated packages). tsp is deliberately absent — it depends on the
-  # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
+  # (proof, didcomm, capabilityclient and specs, the generated packages). tsp is absent — its dependency affinidi-tsp-go
+  # is tagged now (v0.2.0), but its release wiring is a follow-up. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
   #
   # `verify-go` builds, vets and tests; `publish-go` pushes the tag.

@@ -40,6 +40,26 @@ because a Dart library is a file and not a directory. Four things are its own:
 Paths are snake_cased for Dart's `file_names` lint, so the slug
 `acl/change-role` becomes `lib/specs/acl/change_role/v0_3/payload.dart`.
 
+**A required member whose schema admits `null` always keeps its key.** Its
+field is nullable (`final String? did;`), and `toJson` writes it whatever its
+value, so a null `did` on `vta/contexts/update-did` 1.2 writes `"did": null`
+("no DID of its own") instead of leaving the key out and failing the schema's
+`required`. Its constructor parameter is `required` as well
+(`required this.did`), so a caller writes `did: null` to clear the DID and
+cannot get that by leaving the argument out. That matches Rust, whose builder
+fails with "no value supplied for did" when the member is never set, and
+TypeScript, where `did: string | null` is a required property. Go is the
+outlier: nothing makes a Go caller set the `*string` field, so a nil it never
+set is not caught when the code is built ([go.md](go.md) says what such a nil
+writes). An *optional* nullable member is still written only when non-null,
+so Dart cannot tell `null` from absent there: `acl/update` 0.3 reads
+`"label": null` as "clear the label", and a Dart client can only send "leave it
+unchanged" ([runtime-parity.md](../runtime-parity.md)). Both generators do
+this independently: `scripts/build-dart-bindings.mjs` (pinned by
+`test/required_nullable_test.dart`) and the per-module generator in
+`lib/src/generator/emit.dart` (the `required nullable` group in
+`test/generator_test.dart`).
+
 ### The hand-written Dart packages beside it
 
 `trust-tasks-dart-proof` publishes as `trust_tasks_proof`: a Data Integrity
@@ -125,19 +145,25 @@ binding on Affinidi's `package:didcomm`.
   its own range says; the range matches `trust_tasks_proof`'s so the two share
   one graph.
 
-`trust-tasks-dart-tsp` publishes as `trust_tasks_tsp`, the TSP binding on
+`trust-tasks-dart-tsp` publishes as `trust_tasks_tsp`, the TSP binding (`tsp/0.3`) on
 `affinidi_tsp`. It is the odd one out in two ways:
 
-- **It cannot be published yet.** `affinidi_tsp` is not on pub.dev, so
-  `pubspec_overrides.yaml` supplies it from a pinned git commit and the pinned
-  `pubspec.yaml` names the hosted `^0.1.0` it will resolve against once
-  published. Because of that it is deliberately **absent from the release
-  lists** (`tag-dart` in `publish.yml`, `DART_PACKAGES` in `release-pr.sh`), its tag pattern
-  and case arm in `publish-dart.yml`, and the `release-bump-dart.sh` case — a
-  release would delete the override and fail `dart pub get`. `dart.yml` tests it
-  (via the override), and `check-dart-packages` permits a tested-but-unreleased
-  package. When affinidi_tsp publishes: drop the git override, add those four
-  release entries, and flip the website matrix cell.
+- **It is not released yet.** Its dependency `affinidi_tsp` is on pub.dev now
+  and resolves hosted (`^0.2.0`), so nothing upstream blocks a release, but the
+  package is still **absent from the release lists** (`tag-dart` in
+  `publish.yml`, `DART_PACKAGES` in `release-pr.sh`), its tag pattern and case
+  arm in `publish-dart.yml`, and the `release-bump-dart.sh` case. `dart.yml`
+  tests it, and `check-dart-packages` permits a tested-but-unreleased package.
+  Releasing it is a follow-up: add those four release entries, do the manual
+  first publish, and flip the website matrix cell.
+- **It speaks TSP 1.0 only** (`affinidi_tsp` 0.2, `YTSP-BAA`), as the Rust and
+  TypeScript TSP bindings do; its SDK floor is the 3.10 `affinidi_tsp` 0.2 sets.
+  A peer on a TSP draft (MAJOR other than 1) is refused `unsupportedTspVersion`
+  from the version marker, before the allowlist and sender resolution; an
+  unknown 1.x MINOR is not a version refusal (TSP 1.0 §3.1). TSP has no version
+  negotiation, so moving `affinidi_tsp` across a TSP version is a wire break for
+  every peer: regenerate the fixtures in `test/interop_test.dart` (each records
+  how it was produced) when the TSP version moves.
 - **TSP signing is Ed25519 only** in `affinidi_tsp` (the HPKE key agreement is
   derived from the Ed25519 key), so VIDs are built from Ed25519 keys. The sealed
   payload is the same `{type, document}` envelope object the Rust crate seals —

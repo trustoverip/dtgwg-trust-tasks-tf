@@ -1,0 +1,286 @@
+[
+  {
+    "note": "Reserved purpose — `stepUp` is reserved, not defined in 0.3; the closed Purpose list must reject it.",
+    "payload": {
+      "purpose": "stepUp",
+      "mode": "scan"
+    }
+  },
+  {
+    "note": "Reserved mode — `push` is reserved, not defined in 0.3; the closed Mode list must reject it.",
+    "payload": {
+      "purpose": "login",
+      "mode": "push"
+    }
+  },
+  {
+    "note": "Missing mode — both purpose and mode are required.",
+    "payload": {
+      "purpose": "login"
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false rejects an endpoint smuggled into the request.",
+    "payload": {
+      "purpose": "login",
+      "mode": "scan",
+      "callback": "https://evil.example/"
+    }
+  },
+  {
+    "note": "deviceEnrol without client or requestedScope — both are REQUIRED for deviceEnrol, so an enrolment can never be approved without a ceiling the approver saw.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan"
+    }
+  },
+  {
+    "note": "deviceEnrol without requestedScope — a client must state the most it asks for.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      }
+    }
+  },
+  {
+    "note": "login carrying requestedScope — the enrolment members MUST be absent for login, so a login request cannot smuggle a scope into step 2.",
+    "payload": {
+      "purpose": "login",
+      "mode": "scan",
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 90
+      }
+    }
+  },
+  {
+    "note": "login carrying client — MUST be absent for login.",
+    "payload": {
+      "purpose": "login",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      }
+    }
+  },
+  {
+    "note": "requestedScope.keys of `all` — a deviceEnrol client asks for `none` or a listed set, never every key (CONVENTIONS §7 A14).",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "maxLifetimeDays": 30
+      }
+    }
+  },
+  {
+    "note": "maxLifetimeDays of 0 — an enrolment lasts at least a day; 0 is not 'unbounded'.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 0
+      }
+    }
+  },
+  {
+    "note": "maxLifetimeDays above 365 — there is no unbounded or multi-year enrolment.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 3650
+      }
+    }
+  },
+  {
+    "note": "requestedScope without keys — every axis of the ceiling is stated, never implied.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "maxLifetimeDays": 90
+      }
+    }
+  },
+  {
+    "note": "An unknown serviceKind — consumerKind is device/_shared/0.2's closed ConsumerKind.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "robot"
+        },
+        "displayName": "x"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": [
+            "taskExecution"
+          ]
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 90
+      }
+    }
+  },
+  {
+    "note": "An empty purposes list — PurposeScope's listed shape needs at least one purpose; use the scope itself to say none is wanted.",
+    "payload": {
+      "purpose": "deviceEnrol",
+      "mode": "scan",
+      "client": {
+        "consumerKind": {
+          "kind": "service",
+          "serviceKind": "aiAgent"
+        },
+        "displayName": "Research agent"
+      },
+      "requestedScope": {
+        "capabilities": [
+          {
+            "capability": "memory.read"
+          }
+        ],
+        "purposes": {
+          "scope": "listed",
+          "purposes": []
+        },
+        "keys": {
+          "scope": "none"
+        },
+        "maxLifetimeDays": 90
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A requestId shorter than 22 characters carries fewer than 128 bits and must be rejected.",
+    "payload": {
+      "requestId": "tooShort",
+      "claimClosesAt": "2026-10-10T10:02:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "claimClosesAt is an RFC 3339 date-time; an integer count of seconds (the 0.1 `claimDeadline` form, the trigger link's `_exp` unit) is rejected.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "claimClosesAt": 1791626520
+    }
+  }
+]

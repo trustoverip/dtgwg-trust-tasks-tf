@@ -874,8 +874,8 @@ pub struct PayloadCleartext {
     pub in_reply_to: ::std::option::Option<RecordReference>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub kind: ::std::option::Option<RecordKind>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub tags: ::std::vec::Vec<PayloadCleartextTagsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub tags: ::std::option::Option<::std::vec::Vec<PayloadCleartextTagsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<PayloadCleartextTitle>,
     #[serde(
@@ -2608,7 +2608,7 @@ pub mod builder {
         kind:
             ::std::result::Result<::std::option::Option<super::RecordKind>, ::std::string::String>,
         tags: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadCleartextTagsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
             ::std::string::String,
         >,
         title: ::std::result::Result<
@@ -2741,7 +2741,9 @@ pub mod builder {
         }
         pub fn tags<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.tags = value

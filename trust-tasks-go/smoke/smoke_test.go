@@ -29,8 +29,10 @@ const (
 // trust-tasks-go/specs.
 var smokePackages = []string{
 	"acl/grant/v0_2",
+	"acl/update/v0_3",
 	"auth/authenticate/v0_3",
 	"vta/contexts/update/v1_0",
+	"vta/contexts/update-did/v1_2",
 }
 
 func TestGeneratedPackagesDriveTheRuntime(t *testing.T) {
@@ -55,7 +57,7 @@ func TestGeneratedPackagesDriveTheRuntime(t *testing.T) {
 	}
 	copyGoFiles(t, filepath.Join(core, "specs", "smoke"), filepath.Join(mod, "smoke"))
 
-	goMod := "module " + specsModule + "\n\ngo 1.22\n\n" +
+	goMod := "module " + specsModule + "\n\ngo 1.24\n\n" +
 		"require " + coreModule + " v0.0.0-00010101000000-000000000000\n\n" +
 		"replace " + coreModule + " => " + filepath.ToSlash(core) + "\n"
 	if err := os.WriteFile(filepath.Join(mod, "go.mod"), []byte(goMod), 0o644); err != nil {

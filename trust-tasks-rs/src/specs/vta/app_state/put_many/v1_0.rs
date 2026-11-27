@@ -639,9 +639,10 @@ pub struct WriteResult {
     #[serde(
         rename = "currentValue",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub current_value: ::std::option::Option<::serde_json::Value>,
+    pub current_value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).
     #[serde(
         rename = "currentVersion",
@@ -924,7 +925,7 @@ pub mod builder {
         created: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         current_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         current_value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         current_version:
@@ -983,7 +984,9 @@ pub mod builder {
         }
         pub fn current_value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.current_value = value
