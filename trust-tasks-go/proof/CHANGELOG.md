@@ -3,6 +3,31 @@
 All notable changes to `trust-tasks-go/proof` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.3.0 — 2026-11-27
+
+
+### Build & CI
+
+- **go,go-specs,go-proof,go-didcomm,go-capabilityclient**: Require Go 1.24 (#1374)
+
+Raise the `go` directive from 1.22 to 1.24 in the core, specs, proof,
+  didcomm and capabilityclient modules and in the two Go examples
+  (consumer-app-go, getting-started-go). tsp stays at 1.27, the floor it
+  inherits from affinidi-tsp-go. The go.yml matrices that prove the floor
+  move from ["1.22", "stable"] to ["1.24", "stable"], and the comments, the
+  dependabot note, go.md and the go.mod the generator and smoke tests write
+  for their throwaway modules say 1.24.
+
+  1.24 is the first release whose encoding/json honours `omitzero`, which an
+  optional member that admits null needs in order to be a comparable struct
+  that is still left out when absent.
+
+  A consumer whose toolchain is older than 1.24 and that runs with
+  GOTOOLCHAIN=local (a distribution's Go, a pinned CI image) can no longer
+  build these modules; with the default GOTOOLCHAIN=auto the go command
+  fetches 1.24 itself. Go supports only its two newest releases, and 1.22
+  and 1.23 are long out of support.
+
 ## 0.2.5 — 2026-11-25
 
 ## 0.2.4 — 2026-11-24
