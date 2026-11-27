@@ -331,6 +331,10 @@ export type AccountSettings =
  */
 export type AccountState = "active" | "suspended" | "archived";
 /**
+ * Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.
+ */
+export type AccountState_DidManagementV0_4 = "active" | "warned" | "disabled";
+/**
  * The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
@@ -3178,6 +3182,51 @@ export interface AccountBinding {
         string
       ];
   grantedAt?: string;
+}
+/**
+ * An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.
+ */
+export interface AccountInvite {
+  /**
+   * The service's identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite.
+   */
+  inviteId: string;
+  /**
+   * The hosting domain the invite admits an account on.
+   */
+  domain: string;
+  /**
+   * When present, the account's DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain's rules alone apply.
+   */
+  pathPrefix?: string;
+  /**
+   * The issuer's note on who the invite is for. Operator-facing; never shown to the invitee by this task family.
+   */
+  label?: string;
+  /**
+   * `pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.
+   */
+  state: "pending" | "redeemed" | "revoked" | "expired";
+  /**
+   * When the invite was issued.
+   */
+  createdAt: string;
+  /**
+   * The DID of the administrator who issued it.
+   */
+  createdBy?: string;
+  /**
+   * The last instant the invite can be redeemed.
+   */
+  expiresAt: string;
+  /**
+   * The account subject that redeemed it. Present exactly when `state` is `redeemed`.
+   */
+  redeemedBy?: string;
+  /**
+   * When it was redeemed. Present exactly when `state` is `redeemed`.
+   */
+  redeemedAt?: string;
 }
 export interface AccountProbeReport_ExternalV0_1 {
   at: string;
@@ -14213,6 +14262,56 @@ export interface HostedRoom_VtcV0_3 {
   mirrorOf?: string;
   createdAt: string;
   updatedAt: string;
+}
+/**
+ * One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.
+ */
+export interface HostingAccount {
+  /**
+   * The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.
+   */
+  subject: string;
+  /**
+   * The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.
+   */
+  role: string;
+  /**
+   * The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.
+   */
+  domain: string;
+  state: AccountState_DidManagementV0_4;
+  /**
+   * How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly.
+   */
+  admission?: "invite" | "voucher";
+  /**
+   * When the account was created.
+   */
+  registeredAt: string;
+  /**
+   * The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.
+   */
+  lastActiveAt?: string;
+  /**
+   * The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none.
+   */
+  lastResolvedAt?: string;
+  /**
+   * When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one.
+   */
+  disableAt?: string;
+  /**
+   * When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`.
+   */
+  purgeAt?: string;
+  /**
+   * The most DIDs the account may hold. Absent when the service does not state one.
+   */
+  maxDidCount?: number;
+  /**
+   * The most bytes of DID content the account may hold in total. Absent when the service does not state one.
+   */
+  maxTotalSizeBytes?: number;
 }
 /**
  * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.

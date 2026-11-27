@@ -1,0 +1,180 @@
+[
+  {
+    "note": "No admission evidence — self-certification proves identity, not entitlement, so admission is REQUIRED.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}"
+    }
+  },
+  {
+    "note": "Both an invite and a voucher — Admission is exactly one of the two.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "admission": {
+        "invite": {
+          "token": "inv_4b1f9c2e8a7d6e5f",
+          "claimCode": "K7QP-29XD"
+        },
+        "voucher": {
+          "type": [
+            "DidHostingVoucher"
+          ],
+          "id": "v1",
+          "issuer": "did:example:vtc",
+          "validUntil": "2026-12-02T00:00:00Z",
+          "credentialSubject": {
+            "id": "did:example:a",
+            "hostingService": "did:example:h"
+          },
+          "proof": {
+            "type": "DataIntegrityProof",
+            "verificationMethod": "did:example:vtc#k",
+            "proofPurpose": "assertionMethod",
+            "cryptosuite": "eddsa-jcs-2022",
+            "proofValue": "z3FqPoX3xdRbW"
+          }
+        }
+      }
+    }
+  },
+  {
+    "note": "An invite without its claim code — both halves are needed, so one intercepted channel is not enough.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "admission": {
+        "invite": {
+          "token": "inv_4b1f9c2e8a7d6e5f"
+        }
+      }
+    }
+  },
+  {
+    "note": "A voucher signed for authentication — a voucher is an attestation, so its proof purpose is assertionMethod.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "admission": {
+        "voucher": {
+          "type": [
+            "DidHostingVoucher"
+          ],
+          "id": "v1",
+          "issuer": "did:example:vtc",
+          "validUntil": "2026-12-02T00:00:00Z",
+          "credentialSubject": {
+            "id": "did:example:a",
+            "hostingService": "did:example:h"
+          },
+          "proof": {
+            "type": "DataIntegrityProof",
+            "verificationMethod": "did:example:vtc#k",
+            "proofPurpose": "authentication",
+            "cryptosuite": "eddsa-jcs-2022",
+            "proofValue": "z3FqPoX3xdRbW"
+          }
+        }
+      }
+    }
+  },
+  {
+    "note": "A voucher with no audience — a voucher not bound to one hosting service could be spent at any.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "admission": {
+        "voucher": {
+          "type": [
+            "DidHostingVoucher"
+          ],
+          "id": "v1",
+          "issuer": "did:example:vtc",
+          "validUntil": "2026-12-02T00:00:00Z",
+          "credentialSubject": {
+            "id": "did:example:a"
+          },
+          "proof": {
+            "type": "DataIntegrityProof",
+            "verificationMethod": "did:example:vtc#k",
+            "proofPurpose": "assertionMethod",
+            "cryptosuite": "eddsa-jcs-2022",
+            "proofValue": "z3FqPoX3xdRbW"
+          }
+        }
+      }
+    }
+  },
+  {
+    "note": "A non-self-certifying method — this version admits webvh only.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "web",
+      "didData": "{}",
+      "admission": {
+        "invite": {
+          "token": "inv_4b1f9c2e8a7d6e5f",
+          "claimCode": "K7QP-29XD"
+        }
+      }
+    }
+  },
+  {
+    "note": "`force` is not a member — a self-registration never replaces a slot.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "force": true,
+      "admission": {
+        "invite": {
+          "token": "inv_4b1f9c2e8a7d6e5f",
+          "claimCode": "K7QP-29XD"
+        }
+      }
+    }
+  },
+  {
+    "note": "An unknown member in the voucher's proof — refused, not dropped: a proof that lost a signed member could not be verified.",
+    "payload": {
+      "domain": "did.example.com",
+      "path": "g:a",
+      "method": "webvh",
+      "didData": "{}",
+      "admission": {
+        "voucher": {
+          "type": [
+            "DidHostingVoucher"
+          ],
+          "id": "v1",
+          "issuer": "did:example:vtc",
+          "validUntil": "2026-12-02T00:00:00Z",
+          "credentialSubject": {
+            "id": "did:example:a",
+            "hostingService": "did:example:h"
+          },
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:example:vtc#k",
+            "proofPurpose": "assertionMethod",
+            "proofValue": "z3FqPoX3xdRbW",
+            "challenge": "abc"
+          }
+        }
+      }
+    }
+  }
+]

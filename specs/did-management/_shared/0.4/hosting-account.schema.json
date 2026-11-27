@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.4/hosting-account",
+  "title": "HostingAccount and AccountInvite — shared definitions for did-management/account/*",
+  "description": "The account a DID hosting service keeps for a party that registered itself (did-management/account/register), as did-management/account/register, renew, status and expiry-notice report it; and the invite summary did-management/account/invite/issue and list report. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "HostingAccount": {
+      "title": "HostingAccount",
+      "description": "One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "role", "domain", "state", "registeredAt"],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "description": "The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only."
+        },
+        "state": {
+          "$ref": "#/$defs/AccountState"
+        },
+        "admission": {
+          "type": "string",
+          "enum": ["invite", "voucher"],
+          "description": "How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the account was created."
+        },
+        "lastActiveAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration."
+        },
+        "lastResolvedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none."
+        },
+        "disableAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one."
+        },
+        "purgeAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`."
+        },
+        "maxDidCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The most DIDs the account may hold. Absent when the service does not state one."
+        },
+        "maxTotalSizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The most bytes of DID content the account may hold in total. Absent when the service does not state one."
+        }
+      }
+    },
+    "AccountState": {
+      "title": "AccountState",
+      "type": "string",
+      "enum": ["active", "warned", "disabled"],
+      "description": "Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found."
+    },
+    "AccountInvite": {
+      "title": "AccountInvite",
+      "description": "An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inviteId", "domain", "state", "createdAt", "expiresAt"],
+      "properties": {
+        "inviteId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The service's identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "description": "The hosting domain the invite admits an account on."
+        },
+        "pathPrefix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "When present, the account's DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain's rules alone apply."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "The issuer's note on who the invite is for. Operator-facing; never shown to the invitee by this task family."
+        },
+        "state": {
+          "type": "string",
+          "enum": ["pending", "redeemed", "revoked", "expired"],
+          "description": "`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the invite was issued."
+        },
+        "createdBy": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The DID of the administrator who issued it."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The last instant the invite can be redeemed."
+        },
+        "redeemedBy": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The account subject that redeemed it. Present exactly when `state` is `redeemed`."
+        },
+        "redeemedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it was redeemed. Present exactly when `state` is `redeemed`."
+        }
+      }
+    }
+  }
+}

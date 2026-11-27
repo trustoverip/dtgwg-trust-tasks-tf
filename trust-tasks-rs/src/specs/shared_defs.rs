@@ -57,6 +57,13 @@ macro_rules! d_AccountId_77dd4962 {
 }
 pub(crate) use d_AccountId_77dd4962;
 
+macro_rules! d_AccountInvite_7dd8f79b {
+    () => {
+        "\"AccountInvite\":{\"additionalProperties\":false,\"description\":\"An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.\",\"properties\":{\"createdAt\":{\"description\":\"When the invite was issued.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"The DID of the administrator who issued it.\",\"maxLength\":2048,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain the invite admits an account on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"The last instant the invite can be redeemed.\",\"format\":\"date-time\",\"type\":\"string\"},\"inviteId\":{\"description\":\"The service's identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"The issuer's note on who the invite is for. Operator-facing; never shown to the invitee by this task family.\",\"maxLength\":256,\"type\":\"string\"},\"pathPrefix\":{\"description\":\"When present, the account's DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain's rules alone apply.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"redeemedAt\":{\"description\":\"When it was redeemed. Present exactly when `state` is `redeemed`.\",\"format\":\"date-time\",\"type\":\"string\"},\"redeemedBy\":{\"description\":\"The account subject that redeemed it. Present exactly when `state` is `redeemed`.\",\"maxLength\":2048,\"type\":\"string\"},\"state\":{\"description\":\"`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.\",\"enum\":[\"pending\",\"redeemed\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"required\":[\"inviteId\",\"domain\",\"state\",\"createdAt\",\"expiresAt\"],\"title\":\"AccountInvite\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AccountInvite_7dd8f79b;
+
 macro_rules! d_AccountProbeReport_264a1e61 {
     () => {
         "\"AccountProbeReport\":{\"additionalProperties\":false,\"properties\":{\"complete\":{\"description\":\"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\"type\":\"boolean\"},\"ok\":{\"description\":\"True when every step that ran succeeded.\",\"type\":\"boolean\"},\"probedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"steps\":{\"description\":\"In order; the first failing step ends the probe.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"durationMs\":{\"minimum\":0,\"type\":\"integer\"},\"ok\":{\"type\":\"boolean\"},\"providerError\":{\"description\":\"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\"maxLength\":2048,\"type\":\"string\"},\"providerRequestId\":{\"maxLength\":256,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"},\"step\":{\"$ref\":\"#/$defs/AccountProbeStep\"}},\"required\":[\"step\",\"ok\"],\"type\":\"object\"},\"maxItems\":8,\"type\":\"array\"}},\"required\":[\"probedAt\",\"ok\",\"complete\",\"steps\"],\"title\":\"AccountProbeReport\",\"type\":\"object\"}"
@@ -119,6 +126,13 @@ macro_rules! d_AccountState_514f817a {
     };
 }
 pub(crate) use d_AccountState_514f817a;
+
+macro_rules! d_AccountState_6f374f24 {
+    () => {
+        "\"AccountState\":{\"description\":\"Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.\",\"enum\":[\"active\",\"warned\",\"disabled\"],\"title\":\"AccountState\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_AccountState_6f374f24;
 
 macro_rules! d_AccountStats_b10e5916 {
     () => {
@@ -2541,6 +2555,13 @@ macro_rules! d_HostedRoom_d9c421e6 {
     };
 }
 pub(crate) use d_HostedRoom_d9c421e6;
+
+macro_rules! d_HostingAccount_bf8492c0 {
+    () => {
+        "\"HostingAccount\":{\"additionalProperties\":false,\"description\":\"One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.\",\"properties\":{\"admission\":{\"description\":\"How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly.\",\"enum\":[\"invite\",\"voucher\"],\"type\":\"string\"},\"disableAt\":{\"description\":\"When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one.\",\"format\":\"date-time\",\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"lastActiveAt\":{\"description\":\"The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastResolvedAt\":{\"description\":\"The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none.\",\"format\":\"date-time\",\"type\":\"string\"},\"maxDidCount\":{\"description\":\"The most DIDs the account may hold. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"maxTotalSizeBytes\":{\"description\":\"The most bytes of DID content the account may hold in total. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"purgeAt\":{\"description\":\"When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`.\",\"format\":\"date-time\",\"type\":\"string\"},\"registeredAt\":{\"description\":\"When the account was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"description\":\"The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/AccountState\"},\"subject\":{\"description\":\"The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"subject\",\"role\",\"domain\",\"state\",\"registeredAt\"],\"title\":\"HostingAccount\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_HostingAccount_bf8492c0;
 
 macro_rules! d_HpkeArmoredEnvelope_696eb5a0 {
     () => {
