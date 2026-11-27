@@ -6,6 +6,36 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.42.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.41.6...trust-tasks-tsp-v0.42.0) — 2026-11-27
+
+
+### Added
+
+- **tsp**: The TSP libraries implement binding tsp/0.3, and Rust refuses a TSP draft as UnsupportedTspVersion ([#1393](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1393))
+
+* fix(ts-tsp)!: speak TSP 1.0 on @openvtc/vti-tsp-js 0.4
+
+  @openvtc/trust-tasks-tsp now seals and opens TSP 1.0 (YTSP-BAA, HPKE-Base)
+  messages, the version the Rust trust-tasks-tsp crate (affinidi-tsp 0.5), the
+  VTA and Keyring speak. It moves @openvtc/vti-tsp-js from ^0.2.0, which spoke
+  only the Rev 2 draft, to ^0.4.0.
+
+  For consumers:
+  - A peer on a TSP draft (Rev 2 or Rev 3) can no longer exchange messages with
+    this package. Its message is refused from the version marker, before sender
+    resolution, as a TspEnvelopeError with the new failure kind
+    unsupportedTspVersion. TSP has no version negotiation.
+  - PackKeys and UnpackKeys (re-exported from vti-tsp-js) no longer take
+    senderEncryptionKey: HPKE-Base does not use the sender's X25519 key.
+    SenderPublicKeys.encryptionKey stays; it is what a reply is sealed to.
+  - New export TSP_VERSION ("1.0").
+
+  Tests open a TSP 1.0 message packed by the Rust affinidi-tsp 0.5.0 and refuse
+  a Rev 2 message packed by vti-tsp-js 0.2.0; test/fixtures.ts records how each
+  was produced.
+
+
+
 ## [0.41.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.41.5...trust-tasks-tsp-v0.41.6) — 2026-11-25
 
 
