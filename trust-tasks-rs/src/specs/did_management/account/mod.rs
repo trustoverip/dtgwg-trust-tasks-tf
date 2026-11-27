@@ -2,6 +2,7 @@
 
 pub mod expiry_notice;
 pub mod invite;
+pub mod policy;
 pub mod register;
 pub mod renew;
 pub mod status;

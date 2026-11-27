@@ -104,7 +104,7 @@ The hosting service sends the notice to the account holder; the payload validate
     "stage": "disablePending",
     "account": {
       "subject": "did:scid:vh:1:QmScidExample",
-      "role": "guest",
+      "role": "owner",
       "domain": "did.example.com",
       "state": "warned",
       "admission": "invite",
@@ -137,7 +137,7 @@ The hosting service sends the notice to the account holder; the payload validate
     "stage": "disabled",
     "account": {
       "subject": "did:scid:vh:1:QmScidExample",
-      "role": "guest",
+      "role": "owner",
       "domain": "did.example.com",
       "state": "disabled",
       "admission": "invite",

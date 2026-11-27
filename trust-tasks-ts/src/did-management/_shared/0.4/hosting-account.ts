@@ -14,4 +14,4 @@ export interface HostingAccountAndAccountInviteSharedDefinitionsForDidManagement
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AccountInvite, AccountState_DidManagementV0_4 as AccountState, HostingAccount } from "../../../_shared/components.js";
+export type { AccountInvite, AccountReferral, AccountState_DidManagementV0_4 as AccountState, HostingAccount, Referral } from "../../../_shared/components.js";

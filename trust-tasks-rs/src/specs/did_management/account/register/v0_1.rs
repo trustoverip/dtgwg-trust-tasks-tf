@@ -32,6 +32,144 @@ pub mod error {
         }
     }
 }
+///A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AccountReferral {
+    ///As in Referral.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<AccountReferralLabel>,
+    ///`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only.
+    pub verified: bool,
+    ///As in Referral.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub via: ::std::option::Option<AccountReferralVia>,
+}
+impl AccountReferral {
+    pub fn builder() -> builder::AccountReferral {
+        Default::default()
+    }
+}
+///As in Referral.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountReferralLabel(::std::string::String);
+impl ::std::ops::Deref for AccountReferralLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountReferralLabel> for ::std::string::String {
+    fn from(value: AccountReferralLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountReferralLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountReferralLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///As in Referral.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountReferralVia(::std::string::String);
+impl ::std::ops::Deref for AccountReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountReferralVia> for ::std::string::String {
+    fn from(value: AccountReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.
 ///
 #[derive(
@@ -311,10 +449,12 @@ pub struct HostingAccount {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<AccountReferral>,
     ///When the account was created.
     #[serde(rename = "registeredAt")]
     pub registered_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.
+    ///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.
     pub role: HostingAccountRole,
     pub state: AccountState,
     ///The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.
@@ -448,7 +588,7 @@ impl<'de> ::serde::Deserialize<'de> for HostingAccountDomain {
             })
     }
 }
-///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.
+///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1556,6 +1696,9 @@ pub struct Payload {
     pub method: PayloadMethod,
     ///The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.
     pub path: PayloadPath,
+    ///Optional: how the registrant came to the service, for attribution. Recorded on the account; never authority.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<Referral>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -1805,6 +1948,161 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPath {
             })
     }
 }
+///How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct Referral {
+    ///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<ReferralLabel>,
+    ///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub via: ::std::option::Option<ReferralVia>,
+}
+impl ::std::default::Default for Referral {
+    fn default() -> Self {
+        Self {
+            label: Default::default(),
+            via: Default::default(),
+        }
+    }
+}
+impl Referral {
+    pub fn builder() -> builder::Referral {
+        Default::default()
+    }
+}
+///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralLabel(::std::string::String);
+impl ::std::ops::Deref for ReferralLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralLabel> for ::std::string::String {
+    fn from(value: ReferralLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralVia(::std::string::String);
+impl ::std::ops::Deref for ReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralVia> for ::std::string::String {
+    fn from(value: ReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///The account the service created and the DID record it published. Failures use trust-task-error, not this shape.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -1836,6 +2134,80 @@ impl VoucherAdmission {
 }
 /// Types for composing complex structures.
 pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AccountReferral {
+        label: ::std::result::Result<
+            ::std::option::Option<super::AccountReferralLabel>,
+            ::std::string::String,
+        >,
+        verified: ::std::result::Result<bool, ::std::string::String>,
+        via: ::std::result::Result<
+            ::std::option::Option<super::AccountReferralVia>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AccountReferral {
+        fn default() -> Self {
+            Self {
+                label: Ok(Default::default()),
+                verified: Err("no value supplied for verified".to_string()),
+                via: Ok(Default::default()),
+            }
+        }
+    }
+    impl AccountReferral {
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferralLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn verified<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verified = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verified: {e}"));
+            self
+        }
+        pub fn via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for via: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AccountReferral> for super::AccountReferral {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AccountReferral,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                label: value.label?,
+                verified: value.verified?,
+                via: value.via?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AccountReferral> for AccountReferral {
+        fn from(value: super::AccountReferral) -> Self {
+            Self {
+                label: Ok(value.label),
+                verified: Ok(value.verified),
+                via: Ok(value.via),
+            }
+        }
+    }
     #[derive(Clone, Debug)]
     pub struct DidRecord {
         created_at:
@@ -2070,6 +2442,10 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
+        referral: ::std::result::Result<
+            ::std::option::Option<super::AccountReferral>,
+            ::std::string::String,
+        >,
         registered_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         role: ::std::result::Result<super::HostingAccountRole, ::std::string::String>,
@@ -2087,6 +2463,7 @@ pub mod builder {
                 max_did_count: Ok(Default::default()),
                 max_total_size_bytes: Ok(Default::default()),
                 purge_at: Ok(Default::default()),
+                referral: Ok(Default::default()),
                 registered_at: Err("no value supplied for registered_at".to_string()),
                 role: Err("no value supplied for role".to_string()),
                 state: Err("no value supplied for state".to_string()),
@@ -2183,6 +2560,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for purge_at: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
         pub fn registered_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -2238,6 +2625,7 @@ pub mod builder {
                 max_did_count: value.max_did_count?,
                 max_total_size_bytes: value.max_total_size_bytes?,
                 purge_at: value.purge_at?,
+                referral: value.referral?,
                 registered_at: value.registered_at?,
                 role: value.role?,
                 state: value.state?,
@@ -2256,6 +2644,7 @@ pub mod builder {
                 max_did_count: Ok(value.max_did_count),
                 max_total_size_bytes: Ok(value.max_total_size_bytes),
                 purge_at: Ok(value.purge_at),
+                referral: Ok(value.referral),
                 registered_at: Ok(value.registered_at),
                 role: Ok(value.role),
                 state: Ok(value.state),
@@ -2738,6 +3127,8 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         method: ::std::result::Result<super::PayloadMethod, ::std::string::String>,
         path: ::std::result::Result<super::PayloadPath, ::std::string::String>,
+        referral:
+            ::std::result::Result<::std::option::Option<super::Referral>, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -2748,6 +3139,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 method: Err("no value supplied for method".to_string()),
                 path: Err("no value supplied for path".to_string()),
+                referral: Ok(Default::default()),
             }
         }
     }
@@ -2812,6 +3204,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for path: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Referral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -2823,6 +3225,7 @@ pub mod builder {
                 ext: value.ext?,
                 method: value.method?,
                 path: value.path?,
+                referral: value.referral?,
             })
         }
     }
@@ -2835,6 +3238,63 @@ pub mod builder {
                 ext: Ok(value.ext),
                 method: Ok(value.method),
                 path: Ok(value.path),
+                referral: Ok(value.referral),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Referral {
+        label: ::std::result::Result<
+            ::std::option::Option<super::ReferralLabel>,
+            ::std::string::String,
+        >,
+        via:
+            ::std::result::Result<::std::option::Option<super::ReferralVia>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Referral {
+        fn default() -> Self {
+            Self {
+                label: Ok(Default::default()),
+                via: Ok(Default::default()),
+            }
+        }
+    }
+    impl Referral {
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for via: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Referral> for super::Referral {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Referral) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                label: value.label?,
+                via: value.via?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Referral> for Referral {
+        fn from(value: super::Referral) -> Self {
+            Self {
+                label: Ok(value.label),
+                via: Ok(value.via),
             }
         }
     }
@@ -2953,7 +3413,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(65536usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{\"Admission\":{\"description\":\"The evidence that admits the registrant. Exactly one of an operator invite or a trust community's voucher.\",\"oneOf\":[{\"$ref\":\"#/$defs/InviteAdmission\"},{\"$ref\":\"#/$defs/VoucherAdmission\"}],\"title\":\"Admission\"},", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"HostingVoucher\":{\"additionalProperties\":false,\"description\":\"A trust community's signed statement that one DID may register an account with one hosting service. It is a credential: its own proof, by the community, for `assertionMethod`, carries the community's authority; the envelope proof of the register document carries only the registrant's.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts, when the community issues the voucher as a JSON-LD credential. Absent: a plain JSON credential.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"credentialSubject\":{\"additionalProperties\":false,\"description\":\"Whom the voucher admits, and where.\",\"properties\":{\"domain\":{\"description\":\"When present, the only hosting domain the voucher admits on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"hostingService\":{\"description\":\"The DID of the hosting service the voucher is for: the register document's `recipient`. A voucher for one service is no use at another.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"description\":\"The DID the voucher admits, without any `src` query parameter. MUST be the identity the register document's `issuer` names.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"hostingService\"],\"type\":\"object\"},\"id\":{\"description\":\"The voucher's unique identifier. A consumer accepts each voucher once, keyed on (`issuer`, `id`), and keeps the record until `validUntil`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"The trust community's DID. The consumer accepts vouchers only from issuers the target domain lists as trusted.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"proof\":{\"additionalProperties\":false,\"description\":\"The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.\",\"properties\":{\"@context\":{\"description\":\"The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"created\":{\"description\":\"When the community signed the voucher.\",\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"The cryptosuite, e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"assertionMethod\",\"description\":\"Always `assertionMethod`: a voucher is an attestation.\",\"type\":\"string\"},\"proofValue\":{\"description\":\"The signature, multibase base58btc.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"description\":\"Always `DataIntegrityProof`.\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"The community key that signed the voucher: a verification method of `issuer`, under its `assertionMethod` relationship.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"type\":\"object\"},\"type\":{\"description\":\"Credential types. MUST include `DidHostingVoucher`; a validator does not check it.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"validFrom\":{\"description\":\"Before this instant the voucher is not yet valid. Absent: valid from issue.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"After this instant the voucher is no longer accepted. REQUIRED, so a consumer's single-use record is bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"type\",\"id\",\"issuer\",\"validUntil\",\"credentialSubject\",\"proof\"],\"title\":\"HostingVoucher\",\"type\":\"object\"},\"InviteAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by an operator invite.\",\"properties\":{\"invite\":{\"additionalProperties\":false,\"description\":\"Both halves of an invite from did-management/account/invite/issue.\",\"properties\":{\"claimCode\":{\"description\":\"The invite's claim code, delivered to the registrant separately from the token.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"token\":{\"description\":\"The invite's single-use token.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"token\",\"claimCode\"],\"type\":\"object\"}},\"required\":[\"invite\"],\"title\":\"InviteAdmission\",\"type\":\"object\"},\"VoucherAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by a trust community's voucher.\",\"properties\":{\"voucher\":{\"$ref\":\"#/$defs/HostingVoucher\"}},\"required\":[\"voucher\"],\"title\":\"VoucherAdmission\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/account/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A party with no account on a DID hosting service registers its own self-certifying DID there: it submits the DID's complete log and evidence that it is admitted (an operator invite or a trust community's voucher), and the service creates the account and publishes the DID in one commit. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"admission\":{\"$ref\":\"#/$defs/Admission\"},\"didData\":{\"description\":\"The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young.\",\"maxLength\":57344,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain to register on. REQUIRED here, unlike in did-management/did/register: a party with no account has no default domain to fall back on, and the DID's identifier already names the host.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method. This version admits `webvh` only, whose log is self-certifying: its SCID commits to the genesis entry, which names the DID and the keys that control it.\",\"enum\":[\"webvh\"],\"type\":\"string\"},\"path\":{\"description\":\"The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"domain\",\"path\",\"method\",\"didData\",\"admission\"],\"title\":\"DID Management — Account Register — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{\"Admission\":{\"description\":\"The evidence that admits the registrant. Exactly one of an operator invite or a trust community's voucher.\",\"oneOf\":[{\"$ref\":\"#/$defs/InviteAdmission\"},{\"$ref\":\"#/$defs/VoucherAdmission\"}],\"title\":\"Admission\"},", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"HostingVoucher\":{\"additionalProperties\":false,\"description\":\"A trust community's signed statement that one DID may register an account with one hosting service. It is a credential: its own proof, by the community, for `assertionMethod`, carries the community's authority; the envelope proof of the register document carries only the registrant's.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts, when the community issues the voucher as a JSON-LD credential. Absent: a plain JSON credential.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"credentialSubject\":{\"additionalProperties\":false,\"description\":\"Whom the voucher admits, and where.\",\"properties\":{\"domain\":{\"description\":\"When present, the only hosting domain the voucher admits on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"hostingService\":{\"description\":\"The DID of the hosting service the voucher is for: the register document's `recipient`. A voucher for one service is no use at another.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"description\":\"The DID the voucher admits, without any `src` query parameter. MUST be the identity the register document's `issuer` names.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"hostingService\"],\"type\":\"object\"},\"id\":{\"description\":\"The voucher's unique identifier. A consumer accepts each voucher once, keyed on (`issuer`, `id`), and keeps the record until `validUntil`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"The trust community's DID. The consumer accepts vouchers only from issuers the target domain lists as trusted.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"proof\":{\"additionalProperties\":false,\"description\":\"The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.\",\"properties\":{\"@context\":{\"description\":\"The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"created\":{\"description\":\"When the community signed the voucher.\",\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"The cryptosuite, e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"assertionMethod\",\"description\":\"Always `assertionMethod`: a voucher is an attestation.\",\"type\":\"string\"},\"proofValue\":{\"description\":\"The signature, multibase base58btc.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"description\":\"Always `DataIntegrityProof`.\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"The community key that signed the voucher: a verification method of `issuer`, under its `assertionMethod` relationship.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"type\":\"object\"},\"type\":{\"description\":\"Credential types. MUST include `DidHostingVoucher`; a validator does not check it.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"validFrom\":{\"description\":\"Before this instant the voucher is not yet valid. Absent: valid from issue.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"After this instant the voucher is no longer accepted. REQUIRED, so a consumer's single-use record is bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"type\",\"id\",\"issuer\",\"validUntil\",\"credentialSubject\",\"proof\"],\"title\":\"HostingVoucher\",\"type\":\"object\"},\"InviteAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by an operator invite.\",\"properties\":{\"invite\":{\"additionalProperties\":false,\"description\":\"Both halves of an invite from did-management/account/invite/issue.\",\"properties\":{\"claimCode\":{\"description\":\"The invite's claim code, delivered to the registrant separately from the token.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"token\":{\"description\":\"The invite's single-use token.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"token\",\"claimCode\"],\"type\":\"object\"}},\"required\":[\"invite\"],\"title\":\"InviteAdmission\",\"type\":\"object\"},", crate::specs::shared_defs::d_Referral_fb032f5d!(), ",\"VoucherAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by a trust community's voucher.\",\"properties\":{\"voucher\":{\"$ref\":\"#/$defs/HostingVoucher\"}},\"required\":[\"voucher\"],\"title\":\"VoucherAdmission\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/account/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A party with no account on a DID hosting service registers its own self-certifying DID there: it submits the DID's complete log and evidence that it is admitted (an operator invite or a trust community's voucher), and the service creates the account and publishes the DID in one commit. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"admission\":{\"$ref\":\"#/$defs/Admission\"},\"didData\":{\"description\":\"The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young.\",\"maxLength\":57344,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain to register on. REQUIRED here, unlike in did-management/did/register: a party with no account has no default domain to fall back on, and the DID's identifier already names the host.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method. This version admits `webvh` only, whose log is self-certifying: its SCID commits to the genesis entry, which names the DID and the keys that control it.\",\"enum\":[\"webvh\"],\"type\":\"string\"},\"path\":{\"description\":\"The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"referral\":{\"$ref\":\"#/$defs/Referral\",\"description\":\"Optional: how the registrant came to the service, for attribution. Recorded on the account; never authority.\"}},\"required\":[\"domain\",\"path\",\"method\",\"didData\",\"admission\"],\"title\":\"DID Management — Account Register — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -2963,7 +3423,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_DidRecord_e18b658b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_bf8492c0!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account the service created and the DID record it published. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\"}},\"required\":[\"account\",\"record\"],\"title\":\"DID Management — Account Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountReferral_e7a42fdb!(), ",", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_DidRecord_e18b658b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_a6fb4cad!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account the service created and the DID record it published. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\"}},\"required\":[\"account\",\"record\"],\"title\":\"DID Management — Account Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

@@ -3,7 +3,7 @@
  * Source: specs/did-management/account/register/0.1/payload.schema.json
  */
 
-import type { AccountState_DidManagementV0_4 as AccountState, DidRecord, Ext, HostingAccount } from "../../../../_shared/components.js";
+import type { AccountReferral, AccountState_DidManagementV0_4 as AccountState, DidRecord, Ext, HostingAccount, Referral } from "../../../../_shared/components.js";
 
 
 /**
@@ -33,6 +33,10 @@ export interface DIDManagementAccountRegisterPayload {
   didData: string;
   admission: Admission;
   ext?: Ext;
+  /**
+   * Optional: how the registrant came to the service, for attribution. Recorded on the account; never authority.
+   */
+  referral?: Referral;
 }
 /**
  * Admission by an operator invite.
@@ -180,7 +184,7 @@ export interface DIDManagementAccountRegisterResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AccountState, DidRecord, Ext, HostingAccount };
+export type { AccountReferral, AccountState, DidRecord, Ext, HostingAccount, Referral };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/account/register/0.1" as const;
@@ -269,6 +273,10 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "ext": {
       "$ref": "#/$defs/Ext"
+    },
+    "referral": {
+      "$ref": "#/$defs/Referral",
+      "description": "Optional: how the registrant came to the service, for attribution. Recorded on the account; never authority."
     }
   },
   "$defs": {
@@ -490,6 +498,27 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "Referral": {
+      "title": "Referral",
+      "description": "How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "via": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "A short note on the source — a campaign, an invitation's origin. Free text, never interpreted."
+        }
+      }
     }
   }
 };
@@ -622,7 +651,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 64,
-          "description": "The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it."
+          "description": "The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names."
         },
         "domain": {
           "type": "string",
@@ -675,6 +704,34 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "integer",
           "minimum": 0,
           "description": "The most bytes of DID content the account may hold in total. Absent when the service does not state one."
+        },
+        "referral": {
+          "$ref": "#/$defs/AccountReferral"
+        }
+      }
+    },
+    "AccountReferral": {
+      "title": "AccountReferral",
+      "description": "A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified"
+      ],
+      "properties": {
+        "via": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "As in Referral."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "As in Referral."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only."
         }
       }
     },

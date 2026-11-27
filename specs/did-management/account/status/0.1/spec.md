@@ -123,7 +123,7 @@ The service answers with the issuer's account, validating against the `$anchor: 
   "payload": {
     "account": {
       "subject": "did:scid:vh:1:QmScidExample",
-      "role": "guest",
+      "role": "owner",
       "domain": "did.example.com",
       "state": "disabled",
       "admission": "invite",

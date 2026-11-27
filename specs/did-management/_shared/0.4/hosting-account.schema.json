@@ -9,7 +9,13 @@
       "description": "One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["subject", "role", "domain", "state", "registeredAt"],
+      "required": [
+        "subject",
+        "role",
+        "domain",
+        "state",
+        "registeredAt"
+      ],
       "properties": {
         "subject": {
           "type": "string",
@@ -22,7 +28,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 64,
-          "description": "The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it."
+          "description": "The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names."
         },
         "domain": {
           "type": "string",
@@ -35,7 +41,10 @@
         },
         "admission": {
           "type": "string",
-          "enum": ["invite", "voucher"],
+          "enum": [
+            "invite",
+            "voucher"
+          ],
           "description": "How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly."
         },
         "registeredAt": {
@@ -72,13 +81,20 @@
           "type": "integer",
           "minimum": 0,
           "description": "The most bytes of DID content the account may hold in total. Absent when the service does not state one."
+        },
+        "referral": {
+          "$ref": "#/$defs/AccountReferral"
         }
       }
     },
     "AccountState": {
       "title": "AccountState",
       "type": "string",
-      "enum": ["active", "warned", "disabled"],
+      "enum": [
+        "active",
+        "warned",
+        "disabled"
+      ],
       "description": "Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found."
     },
     "AccountInvite": {
@@ -86,7 +102,13 @@
       "description": "An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["inviteId", "domain", "state", "createdAt", "expiresAt"],
+      "required": [
+        "inviteId",
+        "domain",
+        "state",
+        "createdAt",
+        "expiresAt"
+      ],
       "properties": {
         "inviteId": {
           "type": "string",
@@ -113,7 +135,12 @@
         },
         "state": {
           "type": "string",
-          "enum": ["pending", "redeemed", "revoked", "expired"],
+          "enum": [
+            "pending",
+            "redeemed",
+            "revoked",
+            "expired"
+          ],
           "description": "`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use."
         },
         "createdAt": {
@@ -140,6 +167,56 @@
           "type": "string",
           "format": "date-time",
           "description": "When it was redeemed. Present exactly when `state` is `redeemed`."
+        },
+        "referral": {
+          "$ref": "#/$defs/Referral",
+          "description": "The referral the administrator recorded on the invite. An account the invite admits carries it as verified."
+        }
+      }
+    },
+    "Referral": {
+      "title": "Referral",
+      "description": "How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "via": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "A short note on the source — a campaign, an invitation's origin. Free text, never interpreted."
+        }
+      }
+    },
+    "AccountReferral": {
+      "title": "AccountReferral",
+      "description": "A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified"
+      ],
+      "properties": {
+        "via": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "As in Referral."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "As in Referral."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only."
         }
       }
     }

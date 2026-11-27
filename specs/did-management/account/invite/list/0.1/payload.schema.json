@@ -14,7 +14,12 @@
     },
     "state": {
       "type": "string",
-      "enum": ["pending", "redeemed", "revoked", "expired"],
+      "enum": [
+        "pending",
+        "redeemed",
+        "revoked",
+        "expired"
+      ],
       "description": "Only invites in this state. Absent: every state."
     },
     "cursor": {
@@ -31,6 +36,13 @@
     },
     "ext": {
       "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    },
+    "referralVia": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "Only invites whose referral names this DID as `via`. Absent: any."
     }
   },
   "$defs": {
@@ -40,7 +52,9 @@
       "description": "One page of invites, newest first. Failures use trust-task-error, not this shape.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["invites"],
+      "required": [
+        "invites"
+      ],
       "properties": {
         "invites": {
           "type": "array",

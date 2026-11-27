@@ -67,7 +67,7 @@ A conforming hosting service:
 2. Answers with `serviceDid` = its own DID, which **MUST** also be the response's `issuer`, and signs the response with a key that DID's document lists under `authentication`.
 3. Sets `recipient` on the response to the request's `issuer` when the request named one, and omits it otherwise.
 4. **MUST NOT** include in the response anything about a DID it hosts, about its fleet, or about its configuration beyond the members of the schema.
-5. **MUST** list in `selfRegistration` every domain on which did-management/account/register can succeed, with the terms it applies there, and no other. A domain it lists **MUST** accept a registration that meets the terms it states, capacity permitting.
+5. **MUST** list in `selfRegistration` every domain on which did-management/account/register can succeed, with the terms it applies there, and no other: a domain whose terms are closed (did-management/account/policy/set, `enabled: false`) is not listed. It publishes the trusted issuers' DIDs, never the operator's labels for them. A domain it lists **MUST** accept a registration that meets the terms it states, capacity permitting.
 
 A conforming client **MUST** verify the response's proof, and that its `issuer` equals `serviceDid`, before addressing anything to `serviceDid`.
 

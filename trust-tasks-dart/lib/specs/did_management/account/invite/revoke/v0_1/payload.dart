@@ -7,6 +7,36 @@ library;
 
 import 'package:trust_tasks/trust_tasks.dart';
 
+/// How a self-registered account came to the service, as attribution: who sent it
+/// (`via`) and a free-text note (`label`). Never authority — a service MUST NOT
+/// authorise anything on it.
+class Referral {
+  const Referral({
+    this.via,
+    this.label,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Referral.fromJson(Map<String, dynamic> json) => Referral(
+        via: json['via'] as String?,
+        label: json['label'] as String?,
+      );
+
+  /// The DID of the party that sent the registrant, usually a trust community. Absent
+  /// when only a `label` was given.
+  final String? via;
+
+  /// A short note on the source — a campaign, an invitation's origin. Free text, never
+  /// interpreted.
+  final String? label;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (via != null) 'via': via!,
+        if (label != null) 'label': label!,
+      };
+}
+
 /// `pending`: redeemable. `redeemed`: an account was registered with it. `revoked`:
 /// withdrawn before use. `expired`: `expiresAt` passed before use.
 ///
@@ -43,6 +73,7 @@ class AccountInvite {
     required this.expiresAt,
     this.redeemedBy,
     this.redeemedAt,
+    this.referral,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -57,6 +88,9 @@ class AccountInvite {
         expiresAt: json['expiresAt'] as String,
         redeemedBy: json['redeemedBy'] as String?,
         redeemedAt: json['redeemedAt'] as String?,
+        referral: json['referral'] == null
+            ? null
+            : Referral.fromJson(json['referral'] as Map<String, dynamic>),
       );
 
   /// The service's identifier for the invite. Not a secret: knowing it does not let
@@ -93,6 +127,10 @@ class AccountInvite {
   /// When it was redeemed. Present exactly when `state` is `redeemed`.
   final String? redeemedAt;
 
+  /// The referral the administrator recorded on the invite. An account the invite admits
+  /// carries it as verified.
+  final Referral? referral;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'inviteId': inviteId,
@@ -105,6 +143,7 @@ class AccountInvite {
         'expiresAt': expiresAt,
         if (redeemedBy != null) 'redeemedBy': redeemedBy!,
         if (redeemedAt != null) 'redeemedAt': redeemedAt!,
+        if (referral != null) 'referral': referral!.toJson(),
       };
 }
 
@@ -206,7 +245,7 @@ const String payloadSchemaJson =
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"DID Management — Account Invite Revoke — response payload","description":"The invite after the request. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["invite","changed"],"properties":{"invite":{"\$ref":"#/\$defs/AccountInvite"},"changed":{"type":"boolean","description":"`true` when this request revoked a pending invite; `false` when it was already revoked."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"AccountInvite":{"title":"AccountInvite","description":"An invite to register an account, as the issuing service describes it. Never carries the invite\'s token or claim code, which are returned once, by did-management/account/invite/issue.","type":"object","additionalProperties":false,"required":["inviteId","domain","state","createdAt","expiresAt"],"properties":{"inviteId":{"type":"string","minLength":1,"maxLength":128,"description":"The service\'s identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite."},"domain":{"type":"string","minLength":1,"maxLength":253,"description":"The hosting domain the invite admits an account on."},"pathPrefix":{"type":"string","minLength":1,"maxLength":255,"description":"When present, the account\'s DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain\'s rules alone apply."},"label":{"type":"string","maxLength":256,"description":"The issuer\'s note on who the invite is for. Operator-facing; never shown to the invitee by this task family."},"state":{"type":"string","enum":["pending","redeemed","revoked","expired"],"description":"`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use."},"createdAt":{"type":"string","format":"date-time","description":"When the invite was issued."},"createdBy":{"type":"string","maxLength":2048,"description":"The DID of the administrator who issued it."},"expiresAt":{"type":"string","format":"date-time","description":"The last instant the invite can be redeemed."},"redeemedBy":{"type":"string","maxLength":2048,"description":"The account subject that redeemed it. Present exactly when `state` is `redeemed`."},"redeemedAt":{"type":"string","format":"date-time","description":"When it was redeemed. Present exactly when `state` is `redeemed`."}}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"DID Management — Account Invite Revoke — response payload","description":"The invite after the request. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["invite","changed"],"properties":{"invite":{"\$ref":"#/\$defs/AccountInvite"},"changed":{"type":"boolean","description":"`true` when this request revoked a pending invite; `false` when it was already revoked."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"AccountInvite":{"title":"AccountInvite","description":"An invite to register an account, as the issuing service describes it. Never carries the invite\'s token or claim code, which are returned once, by did-management/account/invite/issue.","type":"object","additionalProperties":false,"required":["inviteId","domain","state","createdAt","expiresAt"],"properties":{"inviteId":{"type":"string","minLength":1,"maxLength":128,"description":"The service\'s identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite."},"domain":{"type":"string","minLength":1,"maxLength":253,"description":"The hosting domain the invite admits an account on."},"pathPrefix":{"type":"string","minLength":1,"maxLength":255,"description":"When present, the account\'s DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain\'s rules alone apply."},"label":{"type":"string","maxLength":256,"description":"The issuer\'s note on who the invite is for. Operator-facing; never shown to the invitee by this task family."},"state":{"type":"string","enum":["pending","redeemed","revoked","expired"],"description":"`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use."},"createdAt":{"type":"string","format":"date-time","description":"When the invite was issued."},"createdBy":{"type":"string","maxLength":2048,"description":"The DID of the administrator who issued it."},"expiresAt":{"type":"string","format":"date-time","description":"The last instant the invite can be redeemed."},"redeemedBy":{"type":"string","maxLength":2048,"description":"The account subject that redeemed it. Present exactly when `state` is `redeemed`."},"redeemedAt":{"type":"string","format":"date-time","description":"When it was redeemed. Present exactly when `state` is `redeemed`."},"referral":{"\$ref":"#/\$defs/Referral","description":"The referral the administrator recorded on the invite. An account the invite admits carries it as verified."}}},"Referral":{"title":"Referral","description":"How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.","type":"object","additionalProperties":false,"properties":{"via":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^did:","description":"The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given."},"label":{"type":"string","minLength":1,"maxLength":128,"description":"A short note on the source — a campaign, an invitation\'s origin. Free text, never interpreted."}}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

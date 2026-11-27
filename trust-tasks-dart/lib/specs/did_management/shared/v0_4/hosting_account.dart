@@ -27,6 +27,42 @@ extension type const AccountState(String value) {
   ];
 }
 
+/// A Referral as the service recorded it on an account, with whether anything other
+/// than the registrant's own word supports it.
+class AccountReferral {
+  const AccountReferral({
+    this.via,
+    this.label,
+    required this.verified,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AccountReferral.fromJson(Map<String, dynamic> json) =>
+      AccountReferral(
+        via: json['via'] as String?,
+        label: json['label'] as String?,
+        verified: json['verified'] as bool,
+      );
+
+  /// As in Referral.
+  final String? via;
+
+  /// As in Referral.
+  final String? label;
+
+  /// `true` when the admission evidence supports it: a voucher whose issuer is `via`, or
+  /// an invite whose administrator set the referral when issuing it. `false`: the
+  /// registrant's own claim, recorded for attribution only.
+  final bool verified;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (via != null) 'via': via!,
+        if (label != null) 'label': label!,
+        'verified': verified,
+      };
+}
+
 /// How the account was admitted: `invite`, an operator-issued invite; `voucher`, a
 /// voucher from a trust community the domain trusts. Absent for an account an
 /// administrator created directly.
@@ -63,6 +99,7 @@ class HostingAccount {
     this.purgeAt,
     this.maxDidCount,
     this.maxTotalSizeBytes,
+    this.referral,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -81,6 +118,10 @@ class HostingAccount {
         purgeAt: json['purgeAt'] as String?,
         maxDidCount: json['maxDidCount'] as int?,
         maxTotalSizeBytes: json['maxTotalSizeBytes'] as int?,
+        referral: json['referral'] == null
+            ? null
+            : AccountReferral.fromJson(
+                json['referral'] as Map<String, dynamic>),
       );
 
   /// The DID that holds the account, exactly as it authenticated when it registered. A
@@ -89,9 +130,10 @@ class HostingAccount {
   final String subject;
 
   /// The role the hosting service holds the account under, in the service's own role
-  /// vocabulary (opaque here, as in the acl/* family). A self-registered account starts
-  /// under the service's most restricted DID-owner role; an administrator may later
-  /// change it.
+  /// vocabulary (opaque here, as in the acl/* family) — for a self-registered account,
+  /// its ordinary DID-owner role. What sets a self-registered account apart is not its
+  /// role but its terms: its domain's path prefixes, quotas and inactivity lifecycle,
+  /// and no agent names.
   final String role;
 
   /// The hosting domain the account was admitted on. A self-registered account may hold
@@ -134,6 +176,7 @@ class HostingAccount {
   /// The most bytes of DID content the account may hold in total. Absent when the
   /// service does not state one.
   final int? maxTotalSizeBytes;
+  final AccountReferral? referral;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -149,6 +192,37 @@ class HostingAccount {
         if (purgeAt != null) 'purgeAt': purgeAt!,
         if (maxDidCount != null) 'maxDidCount': maxDidCount!,
         if (maxTotalSizeBytes != null) 'maxTotalSizeBytes': maxTotalSizeBytes!,
+        if (referral != null) 'referral': referral!.toJson(),
+      };
+}
+
+/// How a self-registered account came to the service, as attribution: who sent it
+/// (`via`) and a free-text note (`label`). Never authority — a service MUST NOT
+/// authorise anything on it.
+class Referral {
+  const Referral({
+    this.via,
+    this.label,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Referral.fromJson(Map<String, dynamic> json) => Referral(
+        via: json['via'] as String?,
+        label: json['label'] as String?,
+      );
+
+  /// The DID of the party that sent the registrant, usually a trust community. Absent
+  /// when only a `label` was given.
+  final String? via;
+
+  /// A short note on the source — a campaign, an invitation's origin. Free text, never
+  /// interpreted.
+  final String? label;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (via != null) 'via': via!,
+        if (label != null) 'label': label!,
       };
 }
 
@@ -188,6 +262,7 @@ class AccountInvite {
     required this.expiresAt,
     this.redeemedBy,
     this.redeemedAt,
+    this.referral,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -202,6 +277,9 @@ class AccountInvite {
         expiresAt: json['expiresAt'] as String,
         redeemedBy: json['redeemedBy'] as String?,
         redeemedAt: json['redeemedAt'] as String?,
+        referral: json['referral'] == null
+            ? null
+            : Referral.fromJson(json['referral'] as Map<String, dynamic>),
       );
 
   /// The service's identifier for the invite. Not a secret: knowing it does not let
@@ -238,6 +316,10 @@ class AccountInvite {
   /// When it was redeemed. Present exactly when `state` is `redeemed`.
   final String? redeemedAt;
 
+  /// The referral the administrator recorded on the invite. An account the invite admits
+  /// carries it as verified.
+  final Referral? referral;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'inviteId': inviteId,
@@ -250,5 +332,6 @@ class AccountInvite {
         'expiresAt': expiresAt,
         if (redeemedBy != null) 'redeemedBy': redeemedBy!,
         if (redeemedAt != null) 'redeemedAt': redeemedAt!,
+        if (referral != null) 'referral': referral!.toJson(),
       };
 }

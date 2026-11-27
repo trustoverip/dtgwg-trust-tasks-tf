@@ -417,6 +417,14 @@ mod did_management {
                 mod v0_1;
             }
         }
+        mod policy {
+            mod list {
+                mod v0_1;
+            }
+            mod set {
+                mod v0_1;
+            }
+        }
         mod register {
             mod v0_1;
         }

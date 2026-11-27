@@ -80,6 +80,9 @@ pub struct AccountInvite {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redeemed_by: ::std::option::Option<AccountInviteRedeemedBy>,
+    ///The referral the administrator recorded on the invite. An account the invite admits carries it as verified.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<Referral>,
     ///`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.
     pub state: AccountInviteState,
 }
@@ -621,6 +624,13 @@ pub struct Payload {
     ///The most invites to return. Absent: the consumer's default, at most 100.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
+    ///Only invites whose referral names this DID as `via`. Absent: any.
+    #[serde(
+        rename = "referralVia",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub referral_via: ::std::option::Option<PayloadReferralVia>,
     ///Only invites in this state. Absent: every state.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub state: ::std::option::Option<PayloadState>,
@@ -632,6 +642,7 @@ impl ::std::default::Default for Payload {
             domain: Default::default(),
             ext: Default::default(),
             limit: Default::default(),
+            referral_via: Default::default(),
             state: Default::default(),
         }
     }
@@ -765,6 +776,73 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDomain {
             })
     }
 }
+///Only invites whose referral names this DID as `via`. Absent: any.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadReferralVia(::std::string::String);
+impl ::std::ops::Deref for PayloadReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadReferralVia> for ::std::string::String {
+    fn from(value: PayloadReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Only invites in this state. Absent: every state.
 ///
 #[derive(
@@ -832,6 +910,161 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadState {
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
+    }
+}
+///How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct Referral {
+    ///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<ReferralLabel>,
+    ///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub via: ::std::option::Option<ReferralVia>,
+}
+impl ::std::default::Default for Referral {
+    fn default() -> Self {
+        Self {
+            label: Default::default(),
+            via: Default::default(),
+        }
+    }
+}
+impl Referral {
+    pub fn builder() -> builder::Referral {
+        Default::default()
+    }
+}
+///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralLabel(::std::string::String);
+impl ::std::ops::Deref for ReferralLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralLabel> for ::std::string::String {
+    fn from(value: ReferralLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralVia(::std::string::String);
+impl ::std::ops::Deref for ReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralVia> for ::std::string::String {
+    fn from(value: ReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///One page of invites, newest first. Failures use trust-task-error, not this shape.
@@ -949,6 +1182,8 @@ pub mod builder {
             ::std::option::Option<super::AccountInviteRedeemedBy>,
             ::std::string::String,
         >,
+        referral:
+            ::std::result::Result<::std::option::Option<super::Referral>, ::std::string::String>,
         state: ::std::result::Result<super::AccountInviteState, ::std::string::String>,
     }
     impl ::std::default::Default for AccountInvite {
@@ -963,6 +1198,7 @@ pub mod builder {
                 path_prefix: Ok(Default::default()),
                 redeemed_at: Ok(Default::default()),
                 redeemed_by: Ok(Default::default()),
+                referral: Ok(Default::default()),
                 state: Err("no value supplied for state".to_string()),
             }
         }
@@ -1060,6 +1296,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for redeemed_by: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Referral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
         pub fn state<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::AccountInviteState>,
@@ -1086,6 +1332,7 @@ pub mod builder {
                 path_prefix: value.path_prefix?,
                 redeemed_at: value.redeemed_at?,
                 redeemed_by: value.redeemed_by?,
+                referral: value.referral?,
                 state: value.state?,
             })
         }
@@ -1102,6 +1349,7 @@ pub mod builder {
                 path_prefix: Ok(value.path_prefix),
                 redeemed_at: Ok(value.redeemed_at),
                 redeemed_by: Ok(value.redeemed_by),
+                referral: Ok(value.referral),
                 state: Ok(value.state),
             }
         }
@@ -1121,6 +1369,10 @@ pub mod builder {
             ::std::option::Option<::std::num::NonZeroU64>,
             ::std::string::String,
         >,
+        referral_via: ::std::result::Result<
+            ::std::option::Option<super::PayloadReferralVia>,
+            ::std::string::String,
+        >,
         state: ::std::result::Result<
             ::std::option::Option<super::PayloadState>,
             ::std::string::String,
@@ -1133,6 +1385,7 @@ pub mod builder {
                 domain: Ok(Default::default()),
                 ext: Ok(Default::default()),
                 limit: Ok(Default::default()),
+                referral_via: Ok(Default::default()),
                 state: Ok(Default::default()),
             }
         }
@@ -1178,6 +1431,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for limit: {e}"));
             self
         }
+        pub fn referral_via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral_via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral_via: {e}"));
+            self
+        }
         pub fn state<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<super::PayloadState>>,
@@ -1197,6 +1460,7 @@ pub mod builder {
                 domain: value.domain?,
                 ext: value.ext?,
                 limit: value.limit?,
+                referral_via: value.referral_via?,
                 state: value.state?,
             })
         }
@@ -1208,7 +1472,64 @@ pub mod builder {
                 domain: Ok(value.domain),
                 ext: Ok(value.ext),
                 limit: Ok(value.limit),
+                referral_via: Ok(value.referral_via),
                 state: Ok(value.state),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Referral {
+        label: ::std::result::Result<
+            ::std::option::Option<super::ReferralLabel>,
+            ::std::string::String,
+        >,
+        via:
+            ::std::result::Result<::std::option::Option<super::ReferralVia>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Referral {
+        fn default() -> Self {
+            Self {
+                label: Ok(Default::default()),
+                via: Ok(Default::default()),
+            }
+        }
+    }
+    impl Referral {
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for via: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Referral> for super::Referral {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Referral) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                label: value.label?,
+                via: value.via?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Referral> for Referral {
+        fn from(value: super::Referral) -> Self {
+            Self {
+                label: Ok(value.label),
+                via: Ok(value.via),
             }
         }
     }
@@ -1289,7 +1610,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/did-management/account/invite/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator of a DID hosting service lists the account invites on the domains they administer, without their secrets. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"Opaque position from a previous response's `nextCursor`. Absent: the first page.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"Only invites for this domain. Absent: every domain the issuer administers.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"The most invites to return. Absent: the consumer's default, at most 100.\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"state\":{\"description\":\"Only invites in this state. Absent: every state.\",\"enum\":[\"pending\",\"redeemed\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"title\":\"DID Management — Account Invite List — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/did-management/account/invite/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator of a DID hosting service lists the account invites on the domains they administer, without their secrets. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"Opaque position from a previous response's `nextCursor`. Absent: the first page.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"Only invites for this domain. Absent: every domain the issuer administers.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"The most invites to return. Absent: the consumer's default, at most 100.\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"referralVia\":{\"description\":\"Only invites whose referral names this DID as `via`. Absent: any.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"state\":{\"description\":\"Only invites in this state. Absent: every state.\",\"enum\":[\"pending\",\"redeemed\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"title\":\"DID Management — Account Invite List — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -1298,7 +1619,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountInvite_7dd8f79b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of invites, newest first. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invites\":{\"description\":\"The page's invites, newest first. Empty when none match.\",\"items\":{\"$ref\":\"#/$defs/AccountInvite\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Pass as `cursor` for the next page. Absent on the last page.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"invites\"],\"title\":\"DID Management — Account Invite List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountInvite_17bbffd4!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Referral_fb032f5d!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of invites, newest first. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invites\":{\"description\":\"The page's invites, newest first. Empty when none match.\",\"items\":{\"$ref\":\"#/$defs/AccountInvite\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Pass as `cursor` for the next page. Absent on the last page.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"invites\"],\"title\":\"DID Management — Account Invite List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

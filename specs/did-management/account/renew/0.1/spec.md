@@ -135,7 +135,7 @@ The service answers with the account as it now stands and whether the renewal ch
   "payload": {
     "account": {
       "subject": "did:scid:vh:1:QmScidExample",
-      "role": "guest",
+      "role": "owner",
       "domain": "did.example.com",
       "state": "active",
       "admission": "invite",

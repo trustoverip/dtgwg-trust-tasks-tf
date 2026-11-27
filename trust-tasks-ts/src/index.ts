@@ -574,6 +574,9 @@ export import ServiceInstanceShared_v0_3 = _ServiceInstanceShared_v0_3;
 import * as _HostingAccountShared_v0_4 from "./did-management/_shared/0.4/hosting-account.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import HostingAccountShared_v0_4 = _HostingAccountShared_v0_4;
+import * as _SelfRegistrationPolicyShared_v0_4 from "./did-management/_shared/0.4/self-registration-policy.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import SelfRegistrationPolicyShared_v0_4 = _SelfRegistrationPolicyShared_v0_4;
 import * as _DidManagementAccountExpiryNotice_v0_1 from "./did-management/account/expiry-notice/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementAccountExpiryNotice_v0_1 = _DidManagementAccountExpiryNotice_v0_1;
@@ -586,6 +589,12 @@ export import DidManagementAccountInviteList_v0_1 = _DidManagementAccountInviteL
 import * as _DidManagementAccountInviteRevoke_v0_1 from "./did-management/account/invite/revoke/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementAccountInviteRevoke_v0_1 = _DidManagementAccountInviteRevoke_v0_1;
+import * as _DidManagementAccountPolicyList_v0_1 from "./did-management/account/policy/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DidManagementAccountPolicyList_v0_1 = _DidManagementAccountPolicyList_v0_1;
+import * as _DidManagementAccountPolicySet_v0_1 from "./did-management/account/policy/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DidManagementAccountPolicySet_v0_1 = _DidManagementAccountPolicySet_v0_1;
 import * as _DidManagementAccountRegister_v0_1 from "./did-management/account/register/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementAccountRegister_v0_1 = _DidManagementAccountRegister_v0_1;

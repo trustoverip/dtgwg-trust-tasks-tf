@@ -3,7 +3,7 @@
  * Source: specs/did-management/account/invite/list/0.1/payload.schema.json
  */
 
-import type { AccountInvite, Ext } from "../../../../../_shared/components.js";
+import type { AccountInvite, Ext, Referral } from "../../../../../_shared/components.js";
 
 
 /**
@@ -27,6 +27,10 @@ export interface DIDManagementAccountInviteListPayload {
    */
   limit?: number;
   ext?: Ext;
+  /**
+   * Only invites whose referral names this DID as `via`. Absent: any.
+   */
+  referralVia?: string;
 }
 /**
  * One page of invites, newest first. Failures use trust-task-error, not this shape.
@@ -44,7 +48,7 @@ export interface DIDManagementAccountInviteListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AccountInvite, Ext };
+export type { AccountInvite, Ext, Referral };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/account/invite/list/0.1" as const;
@@ -126,6 +130,13 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "ext": {
       "$ref": "#/$defs/Ext"
+    },
+    "referralVia": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "Only invites whose referral names this DID as `via`. Absent: any."
     }
   },
   "$defs": {
@@ -255,6 +266,31 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "format": "date-time",
           "description": "When it was redeemed. Present exactly when `state` is `redeemed`."
+        },
+        "referral": {
+          "$ref": "#/$defs/Referral",
+          "description": "The referral the administrator recorded on the invite. An account the invite admits carries it as verified."
+        }
+      }
+    },
+    "Referral": {
+      "title": "Referral",
+      "description": "How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "via": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "A short note on the source — a campaign, an invitation's origin. Free text, never interpreted."
         }
       }
     }

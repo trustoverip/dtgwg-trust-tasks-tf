@@ -26,9 +26,10 @@ type HostingAccount struct {
 	Subject string `json:"subject"`
 
 	// The role the hosting service holds the account under, in the service's own role
-	// vocabulary (opaque here, as in the acl/* family). A self-registered account starts
-	// under the service's most restricted DID-owner role; an administrator may later change
-	// it.
+	// vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its
+	// ordinary DID-owner role. What sets a self-registered account apart is not its role but
+	// its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent
+	// names.
 	Role string `json:"role"`
 
 	// The hosting domain the account was admitted on. A self-registered account may hold DIDs
@@ -69,7 +70,8 @@ type HostingAccount struct {
 
 	// The most bytes of DID content the account may hold in total. Absent when the service
 	// does not state one.
-	MaxTotalSizeBytes *int64 `json:"maxTotalSizeBytes,omitempty"`
+	MaxTotalSizeBytes *int64           `json:"maxTotalSizeBytes,omitempty"`
+	Referral          *AccountReferral `json:"referral,omitempty"`
 }
 
 // AccountState Where an account stands in the inactivity lifecycle. `active`: its DIDs
@@ -135,4 +137,36 @@ type AccountInvite struct {
 
 	// When it was redeemed. Present exactly when `state` is `redeemed`.
 	RedeemedAt *string `json:"redeemedAt,omitempty"`
+
+	// The referral the administrator recorded on the invite. An account the invite admits
+	// carries it as verified.
+	Referral *Referral `json:"referral,omitempty"`
+}
+
+// Referral How a self-registered account came to the service, as attribution: who sent it
+// (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise
+// anything on it.
+type Referral struct {
+	// The DID of the party that sent the registrant, usually a trust community. Absent when
+	// only a `label` was given.
+	Via *string `json:"via,omitempty"`
+
+	// A short note on the source — a campaign, an invitation's origin. Free text, never
+	// interpreted.
+	Label *string `json:"label,omitempty"`
+}
+
+// AccountReferral A Referral as the service recorded it on an account, with whether
+// anything other than the registrant's own word supports it.
+type AccountReferral struct {
+	// As in Referral.
+	Via *string `json:"via,omitempty"`
+
+	// As in Referral.
+	Label *string `json:"label,omitempty"`
+
+	// `true` when the admission evidence supports it: a voucher whose issuer is `via`, or an
+	// invite whose administrator set the referral when issuing it. `false`: the registrant's
+	// own claim, recorded for attribution only.
+	Verified bool `json:"verified"`
 }

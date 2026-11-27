@@ -162,7 +162,12 @@ A conforming **consumer** (the hosting service):
 5. **MUST** accept `issuer` only if it is that DID, or its `did:scid` alias **and** the latest document lists that alias in `alsoKnownAs`; and **MUST** verify the document's proof against the document the log implies, never one resolved over the network, with the key in its `authentication` relationship. Otherwise `issuerNotSubject` (or `proofInvalid`, where the proof itself fails). A voucher's `type` MUST include `DidHostingVoucher`.
 6. **MUST** refuse with `capacityReached` when the domain already holds the most self-registered accounts it admits, and with `pathNotAllowed` or `pathTaken` as their meanings say. It **MUST NOT** replace any existing slot.
 7. **MUST** create the account, publish the log and consume the invite or record the voucher in one atomic commit: a failure anywhere leaves the invite redeemable and the voucher unused. The account's `subject` is the identity `issuer` names, without any `src`.
-8. **SHOULD** create the account under its most restricted DID-owner role, with quotas, and subject to its inactivity lifecycle (did-management/account/renew).
+8. **MUST** create the account under the service's ordinary DID-owner role: admission decides who may register, not what an account may do. What sets a self-registered account apart is its terms, which the consumer **MUST** apply to every DID the account holds, not only the first: its domain's path prefixes, its quotas (the service's ordinary limits where the terms state none), and its inactivity lifecycle (did-management/account/renew). A consumer **MAY** hold such an account to further limits of its own, which it **SHOULD** document.
+9. **MUST** record a `referral` as stated, with `verified: false`, unless the admission evidence supports it: a voucher whose `issuer` is `referral.via` (the consumer **MAY** fill an absent `via` from the voucher's `issuer`), or an invite that carries a referral of its own, which then replaces the registrant's with `verified: true`. A consumer **MUST NOT** authorise anything on a referral.
+
+### Referral
+
+`referral` is attribution, not authority: who sent the registrant (`via`, usually a trust community's DID) and a short note (`label`). An operator reads it to know where its accounts come from; nothing is decided on it. It is `verified` only when the evidence that admitted the account says the same thing — a voucher signed by `via`, or an invite on which the administrator recorded the referral.
 
 After the commit the DID resolves from the service, and the holder publishes later log entries with did-management/did/register like any other account holder.
 
@@ -276,7 +281,7 @@ The hosting service answers with the account it created and the DID record it pu
   "payload": {
     "account": {
       "subject": "did:scid:vh:1:QmScidExample",
-      "role": "guest",
+      "role": "owner",
       "domain": "did.example.com",
       "state": "active",
       "admission": "invite",
@@ -335,6 +340,8 @@ The hosting service answers with the account it created and the DID record it pu
 The request carries the registrant's DID log, which is public once published, and its admission evidence. The invite's token and claim code are secrets: a consumer **MUST** store only slow hashes of them and **MUST NOT** log either. A voucher is not a secret, but it is single-use and names its subject, so a copy is no use to anyone else. The response carries the account and DID record, which describe only the registrant's own hosting. A producer **MUST NOT** put anything in `ext` it would not publish with its DID.
 
 ### Correlation
+
+A `referral` links the account to the party that sent it. The registrant chooses whether to state one; a voucher or an invite carrying one states it for them.
 
 `issuer` is the registrant's public DID (`identifierScope: public`): the task exists to publish it, so pairwise identifiers do not apply. A voucher links the registrant to the community that issued it; the hosting service learns that membership, and a registrant that does not want it known uses an invite instead. The service learns nothing from an invite beyond which one was used.
 

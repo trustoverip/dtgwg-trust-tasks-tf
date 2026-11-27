@@ -55,7 +55,7 @@ export interface SelfRegistration {
    */
   pathPrefixes?: string[];
   /**
-   * The most DIDs a self-registered account may hold. Absent when the service does not state one.
+   * The most DIDs a self-registered account may hold. Absent: the service's ordinary per-account limit applies, which this task does not state.
    */
   maxDidCount?: number;
   /**
@@ -194,7 +194,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "maxDidCount": {
           "type": "integer",
           "minimum": 0,
-          "description": "The most DIDs a self-registered account may hold. Absent when the service does not state one."
+          "description": "The most DIDs a self-registered account may hold. Absent: the service's ordinary per-account limit applies, which this task does not state."
         },
         "maxTotalSizeBytes": {
           "type": "integer",

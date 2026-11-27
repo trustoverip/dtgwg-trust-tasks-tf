@@ -32,6 +32,144 @@ pub mod error {
         }
     }
 }
+///A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AccountReferral {
+    ///As in Referral.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<AccountReferralLabel>,
+    ///`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only.
+    pub verified: bool,
+    ///As in Referral.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub via: ::std::option::Option<AccountReferralVia>,
+}
+impl AccountReferral {
+    pub fn builder() -> builder::AccountReferral {
+        Default::default()
+    }
+}
+///As in Referral.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountReferralLabel(::std::string::String);
+impl ::std::ops::Deref for AccountReferralLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountReferralLabel> for ::std::string::String {
+    fn from(value: AccountReferralLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountReferralLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountReferralLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///As in Referral.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountReferralVia(::std::string::String);
+impl ::std::ops::Deref for AccountReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountReferralVia> for ::std::string::String {
+    fn from(value: AccountReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.
 ///
 #[derive(
@@ -234,10 +372,12 @@ pub struct HostingAccount {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<AccountReferral>,
     ///When the account was created.
     #[serde(rename = "registeredAt")]
     pub registered_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.
+    ///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.
     pub role: HostingAccountRole,
     pub state: AccountState,
     ///The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.
@@ -371,7 +511,7 @@ impl<'de> ::serde::Deserialize<'de> for HostingAccountDomain {
             })
     }
 }
-///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service's most restricted DID-owner role; an administrator may later change it.
+///The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -539,6 +679,80 @@ impl Response {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
+    pub struct AccountReferral {
+        label: ::std::result::Result<
+            ::std::option::Option<super::AccountReferralLabel>,
+            ::std::string::String,
+        >,
+        verified: ::std::result::Result<bool, ::std::string::String>,
+        via: ::std::result::Result<
+            ::std::option::Option<super::AccountReferralVia>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AccountReferral {
+        fn default() -> Self {
+            Self {
+                label: Ok(Default::default()),
+                verified: Err("no value supplied for verified".to_string()),
+                via: Ok(Default::default()),
+            }
+        }
+    }
+    impl AccountReferral {
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferralLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn verified<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verified = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verified: {e}"));
+            self
+        }
+        pub fn via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for via: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AccountReferral> for super::AccountReferral {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AccountReferral,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                label: value.label?,
+                verified: value.verified?,
+                via: value.via?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AccountReferral> for AccountReferral {
+        fn from(value: super::AccountReferral) -> Self {
+            Self {
+                label: Ok(value.label),
+                verified: Ok(value.verified),
+                via: Ok(value.via),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct HostingAccount {
         admission: ::std::result::Result<
             ::std::option::Option<super::HostingAccountAdmission>,
@@ -564,6 +778,10 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
+        referral: ::std::result::Result<
+            ::std::option::Option<super::AccountReferral>,
+            ::std::string::String,
+        >,
         registered_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         role: ::std::result::Result<super::HostingAccountRole, ::std::string::String>,
@@ -581,6 +799,7 @@ pub mod builder {
                 max_did_count: Ok(Default::default()),
                 max_total_size_bytes: Ok(Default::default()),
                 purge_at: Ok(Default::default()),
+                referral: Ok(Default::default()),
                 registered_at: Err("no value supplied for registered_at".to_string()),
                 role: Err("no value supplied for role".to_string()),
                 state: Err("no value supplied for state".to_string()),
@@ -677,6 +896,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for purge_at: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountReferral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
         pub fn registered_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -732,6 +961,7 @@ pub mod builder {
                 max_did_count: value.max_did_count?,
                 max_total_size_bytes: value.max_total_size_bytes?,
                 purge_at: value.purge_at?,
+                referral: value.referral?,
                 registered_at: value.registered_at?,
                 role: value.role?,
                 state: value.state?,
@@ -750,6 +980,7 @@ pub mod builder {
                 max_did_count: Ok(value.max_did_count),
                 max_total_size_bytes: Ok(value.max_total_size_bytes),
                 purge_at: Ok(value.purge_at),
+                referral: Ok(value.referral),
                 registered_at: Ok(value.registered_at),
                 role: Ok(value.role),
                 state: Ok(value.state),
@@ -858,7 +1089,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_bf8492c0!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issuer's account. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"account\"],\"title\":\"DID Management — Account Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountReferral_e7a42fdb!(), ",", crate::specs::shared_defs::d_AccountState_6f374f24!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_HostingAccount_a6fb4cad!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issuer's account. Failures use trust-task-error, not this shape.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/HostingAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"account\"],\"title\":\"DID Management — Account Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

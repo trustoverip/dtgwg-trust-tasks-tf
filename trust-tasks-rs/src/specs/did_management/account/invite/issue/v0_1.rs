@@ -80,6 +80,9 @@ pub struct AccountInvite {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redeemed_by: ::std::option::Option<AccountInviteRedeemedBy>,
+    ///The referral the administrator recorded on the invite. An account the invite admits carries it as verified.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<Referral>,
     ///`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.
     pub state: AccountInviteState,
 }
@@ -624,6 +627,9 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path_prefix: ::std::option::Option<PayloadPathPrefix>,
+    ///Optional: the source this invite stands for (a community, a campaign). The account it admits carries this referral as verified, in place of any the registrant states.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub referral: ::std::option::Option<Referral>,
     ///How long the invite stays redeemable, in seconds (at most 30 days). REQUIRED, with no default: how long an unredeemed invite may wait is the operator's policy. A consumer MAY cap it lower.
     #[serde(rename = "ttlSeconds")]
     pub ttl_seconds: i64,
@@ -816,6 +822,161 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPathPrefix {
             })
     }
 }
+///How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct Referral {
+    ///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<ReferralLabel>,
+    ///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub via: ::std::option::Option<ReferralVia>,
+}
+impl ::std::default::Default for Referral {
+    fn default() -> Self {
+        Self {
+            label: Default::default(),
+            via: Default::default(),
+        }
+    }
+}
+impl Referral {
+    pub fn builder() -> builder::Referral {
+        Default::default()
+    }
+}
+///A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralLabel(::std::string::String);
+impl ::std::ops::Deref for ReferralLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralLabel> for ::std::string::String {
+    fn from(value: ReferralLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ReferralVia(::std::string::String);
+impl ::std::ops::Deref for ReferralVia {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReferralVia> for ::std::string::String {
+    fn from(value: ReferralVia) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ReferralVia {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ReferralVia {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ReferralVia {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///The issued invite and, once only, its two secrets. Failures use trust-task-error, not this shape.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -990,6 +1151,8 @@ pub mod builder {
             ::std::option::Option<super::AccountInviteRedeemedBy>,
             ::std::string::String,
         >,
+        referral:
+            ::std::result::Result<::std::option::Option<super::Referral>, ::std::string::String>,
         state: ::std::result::Result<super::AccountInviteState, ::std::string::String>,
     }
     impl ::std::default::Default for AccountInvite {
@@ -1004,6 +1167,7 @@ pub mod builder {
                 path_prefix: Ok(Default::default()),
                 redeemed_at: Ok(Default::default()),
                 redeemed_by: Ok(Default::default()),
+                referral: Ok(Default::default()),
                 state: Err("no value supplied for state".to_string()),
             }
         }
@@ -1101,6 +1265,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for redeemed_by: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Referral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
         pub fn state<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::AccountInviteState>,
@@ -1127,6 +1301,7 @@ pub mod builder {
                 path_prefix: value.path_prefix?,
                 redeemed_at: value.redeemed_at?,
                 redeemed_by: value.redeemed_by?,
+                referral: value.referral?,
                 state: value.state?,
             })
         }
@@ -1143,6 +1318,7 @@ pub mod builder {
                 path_prefix: Ok(value.path_prefix),
                 redeemed_at: Ok(value.redeemed_at),
                 redeemed_by: Ok(value.redeemed_by),
+                referral: Ok(value.referral),
                 state: Ok(value.state),
             }
         }
@@ -1159,6 +1335,8 @@ pub mod builder {
             ::std::option::Option<super::PayloadPathPrefix>,
             ::std::string::String,
         >,
+        referral:
+            ::std::result::Result<::std::option::Option<super::Referral>, ::std::string::String>,
         ttl_seconds: ::std::result::Result<i64, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -1168,6 +1346,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 label: Ok(Default::default()),
                 path_prefix: Ok(Default::default()),
+                referral: Ok(Default::default()),
                 ttl_seconds: Err("no value supplied for ttl_seconds".to_string()),
             }
         }
@@ -1213,6 +1392,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for path_prefix: {e}"));
             self
         }
+        pub fn referral<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Referral>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.referral = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for referral: {e}"));
+            self
+        }
         pub fn ttl_seconds<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<i64>,
@@ -1232,6 +1421,7 @@ pub mod builder {
                 ext: value.ext?,
                 label: value.label?,
                 path_prefix: value.path_prefix?,
+                referral: value.referral?,
                 ttl_seconds: value.ttl_seconds?,
             })
         }
@@ -1243,7 +1433,64 @@ pub mod builder {
                 ext: Ok(value.ext),
                 label: Ok(value.label),
                 path_prefix: Ok(value.path_prefix),
+                referral: Ok(value.referral),
                 ttl_seconds: Ok(value.ttl_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Referral {
+        label: ::std::result::Result<
+            ::std::option::Option<super::ReferralLabel>,
+            ::std::string::String,
+        >,
+        via:
+            ::std::result::Result<::std::option::Option<super::ReferralVia>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Referral {
+        fn default() -> Self {
+            Self {
+                label: Ok(Default::default()),
+                via: Ok(Default::default()),
+            }
+        }
+    }
+    impl Referral {
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn via<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ReferralVia>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.via = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for via: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Referral> for super::Referral {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Referral) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                label: value.label?,
+                via: value.via?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Referral> for Referral {
+        fn from(value: super::Referral) -> Self {
+            Self {
+                label: Ok(value.label),
+                via: Ok(value.via),
             }
         }
     }
@@ -1335,7 +1582,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/did-management/account/invite/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator of a DID hosting service issues a single-use invite that lets a party with no account register one (did-management/account/register). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"domain\":{\"description\":\"The hosting domain the invite admits an account on. The domain must accept self-registration by invite.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"An operator note on who the invite is for, shown by did-management/account/invite/list. Never sent to the invitee by this family.\",\"maxLength\":256,\"type\":\"string\"},\"pathPrefix\":{\"description\":\"When present, the account's DIDs must be hosted under this path prefix, in addition to the domain's own path rules. Absent: the domain's rules alone apply.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"ttlSeconds\":{\"description\":\"How long the invite stays redeemable, in seconds (at most 30 days). REQUIRED, with no default: how long an unredeemed invite may wait is the operator's policy. A consumer MAY cap it lower.\",\"maximum\":2592000,\"minimum\":60,\"type\":\"integer\"}},\"required\":[\"domain\",\"ttlSeconds\"],\"title\":\"DID Management — Account Invite Issue — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Referral_fb032f5d!(), "},\"$id\":\"https://trusttasks.org/spec/did-management/account/invite/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator of a DID hosting service issues a single-use invite that lets a party with no account register one (did-management/account/register). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"domain\":{\"description\":\"The hosting domain the invite admits an account on. The domain must accept self-registration by invite.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"An operator note on who the invite is for, shown by did-management/account/invite/list. Never sent to the invitee by this family.\",\"maxLength\":256,\"type\":\"string\"},\"pathPrefix\":{\"description\":\"When present, the account's DIDs must be hosted under this path prefix, in addition to the domain's own path rules. Absent: the domain's rules alone apply.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"referral\":{\"$ref\":\"#/$defs/Referral\",\"description\":\"Optional: the source this invite stands for (a community, a campaign). The account it admits carries this referral as verified, in place of any the registrant states.\"},\"ttlSeconds\":{\"description\":\"How long the invite stays redeemable, in seconds (at most 30 days). REQUIRED, with no default: how long an unredeemed invite may wait is the operator's policy. A consumer MAY cap it lower.\",\"maximum\":2592000,\"minimum\":60,\"type\":\"integer\"}},\"required\":[\"domain\",\"ttlSeconds\"],\"title\":\"DID Management — Account Invite Issue — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -1345,7 +1592,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountInvite_7dd8f79b!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite and, once only, its two secrets. Failures use trust-task-error, not this shape.\",\"properties\":{\"claimCode\":{\"description\":\"A short code the invitee presents with the token. The administrator delivers it over a different channel from the token, so that intercepting one is not enough to redeem. Returned only here; the service keeps a slow hash of it.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"$ref\":\"#/$defs/AccountInvite\"},\"token\":{\"description\":\"The invite's single-use token, of at least 128 bits of entropy. Returned only here; the service keeps a slow hash of it.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"invite\",\"token\",\"claimCode\"],\"title\":\"DID Management — Account Invite Issue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AccountInvite_17bbffd4!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Referral_fb032f5d!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite and, once only, its two secrets. Failures use trust-task-error, not this shape.\",\"properties\":{\"claimCode\":{\"description\":\"A short code the invitee presents with the token. The administrator delivers it over a different channel from the token, so that intercepting one is not enough to redeem. Returned only here; the service keeps a slow hash of it.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"$ref\":\"#/$defs/AccountInvite\"},\"token\":{\"description\":\"The invite's single-use token, of at least 128 bits of entropy. Returned only here; the service keeps a slow hash of it.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"invite\",\"token\",\"claimCode\"],\"title\":\"DID Management — Account Invite Issue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

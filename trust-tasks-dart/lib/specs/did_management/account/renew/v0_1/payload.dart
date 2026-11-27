@@ -29,6 +29,42 @@ extension type const AccountState(String value) {
   ];
 }
 
+/// A Referral as the service recorded it on an account, with whether anything other
+/// than the registrant's own word supports it.
+class AccountReferral {
+  const AccountReferral({
+    this.via,
+    this.label,
+    required this.verified,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AccountReferral.fromJson(Map<String, dynamic> json) =>
+      AccountReferral(
+        via: json['via'] as String?,
+        label: json['label'] as String?,
+        verified: json['verified'] as bool,
+      );
+
+  /// As in Referral.
+  final String? via;
+
+  /// As in Referral.
+  final String? label;
+
+  /// `true` when the admission evidence supports it: a voucher whose issuer is `via`, or
+  /// an invite whose administrator set the referral when issuing it. `false`: the
+  /// registrant's own claim, recorded for attribution only.
+  final bool verified;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (via != null) 'via': via!,
+        if (label != null) 'label': label!,
+        'verified': verified,
+      };
+}
+
 /// How the account was admitted: `invite`, an operator-issued invite; `voucher`, a
 /// voucher from a trust community the domain trusts. Absent for an account an
 /// administrator created directly.
@@ -65,6 +101,7 @@ class HostingAccount {
     this.purgeAt,
     this.maxDidCount,
     this.maxTotalSizeBytes,
+    this.referral,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -83,6 +120,10 @@ class HostingAccount {
         purgeAt: json['purgeAt'] as String?,
         maxDidCount: json['maxDidCount'] as int?,
         maxTotalSizeBytes: json['maxTotalSizeBytes'] as int?,
+        referral: json['referral'] == null
+            ? null
+            : AccountReferral.fromJson(
+                json['referral'] as Map<String, dynamic>),
       );
 
   /// The DID that holds the account, exactly as it authenticated when it registered. A
@@ -91,9 +132,10 @@ class HostingAccount {
   final String subject;
 
   /// The role the hosting service holds the account under, in the service's own role
-  /// vocabulary (opaque here, as in the acl/* family). A self-registered account starts
-  /// under the service's most restricted DID-owner role; an administrator may later
-  /// change it.
+  /// vocabulary (opaque here, as in the acl/* family) — for a self-registered account,
+  /// its ordinary DID-owner role. What sets a self-registered account apart is not its
+  /// role but its terms: its domain's path prefixes, quotas and inactivity lifecycle,
+  /// and no agent names.
   final String role;
 
   /// The hosting domain the account was admitted on. A self-registered account may hold
@@ -136,6 +178,7 @@ class HostingAccount {
   /// The most bytes of DID content the account may hold in total. Absent when the
   /// service does not state one.
   final int? maxTotalSizeBytes;
+  final AccountReferral? referral;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -151,6 +194,7 @@ class HostingAccount {
         if (purgeAt != null) 'purgeAt': purgeAt!,
         if (maxDidCount != null) 'maxDidCount': maxDidCount!,
         if (maxTotalSizeBytes != null) 'maxTotalSizeBytes': maxTotalSizeBytes!,
+        if (referral != null) 'referral': referral!.toJson(),
       };
 }
 
@@ -250,7 +294,7 @@ const String payloadSchemaJson =
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"DID Management — Account Renew — response payload","description":"The account after renewal. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["account","changed"],"properties":{"account":{"\$ref":"#/\$defs/HostingAccount"},"changed":{"type":"boolean","description":"`true` when the renewal restored a `disabled` or `warned` account to `active`; `false` when it was already `active` and only its inactivity period restarted."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"HostingAccount":{"title":"HostingAccount","description":"One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service\'s inactivity lifecycle.","type":"object","additionalProperties":false,"required":["subject","role","domain","state","registeredAt"],"properties":{"subject":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^did:","description":"The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity."},"role":{"type":"string","minLength":1,"maxLength":64,"description":"The role the hosting service holds the account under, in the service\'s own role vocabulary (opaque here, as in the acl/* family). A self-registered account starts under the service\'s most restricted DID-owner role; an administrator may later change it."},"domain":{"type":"string","minLength":1,"maxLength":253,"description":"The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only."},"state":{"\$ref":"#/\$defs/AccountState"},"admission":{"type":"string","enum":["invite","voucher"],"description":"How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly."},"registeredAt":{"type":"string","format":"date-time","description":"When the account was created."},"lastActiveAt":{"type":"string","format":"date-time","description":"The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration."},"lastResolvedAt":{"type":"string","format":"date-time","description":"The last time any of the account\'s DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none."},"disableAt":{"type":"string","format":"date-time","description":"When the account\'s DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one."},"purgeAt":{"type":"string","format":"date-time","description":"When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`."},"maxDidCount":{"type":"integer","minimum":0,"description":"The most DIDs the account may hold. Absent when the service does not state one."},"maxTotalSizeBytes":{"type":"integer","minimum":0,"description":"The most bytes of DID content the account may hold in total. Absent when the service does not state one."}}},"AccountState":{"title":"AccountState","type":"string","enum":["active","warned","disabled"],"description":"Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"DID Management — Account Renew — response payload","description":"The account after renewal. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["account","changed"],"properties":{"account":{"\$ref":"#/\$defs/HostingAccount"},"changed":{"type":"boolean","description":"`true` when the renewal restored a `disabled` or `warned` account to `active`; `false` when it was already `active` and only its inactivity period restarted."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"HostingAccount":{"title":"HostingAccount","description":"One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service\'s inactivity lifecycle.","type":"object","additionalProperties":false,"required":["subject","role","domain","state","registeredAt"],"properties":{"subject":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^did:","description":"The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity."},"role":{"type":"string","minLength":1,"maxLength":64,"description":"The role the hosting service holds the account under, in the service\'s own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain\'s path prefixes, quotas and inactivity lifecycle, and no agent names."},"domain":{"type":"string","minLength":1,"maxLength":253,"description":"The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only."},"state":{"\$ref":"#/\$defs/AccountState"},"admission":{"type":"string","enum":["invite","voucher"],"description":"How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly."},"registeredAt":{"type":"string","format":"date-time","description":"When the account was created."},"lastActiveAt":{"type":"string","format":"date-time","description":"The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration."},"lastResolvedAt":{"type":"string","format":"date-time","description":"The last time any of the account\'s DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none."},"disableAt":{"type":"string","format":"date-time","description":"When the account\'s DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one."},"purgeAt":{"type":"string","format":"date-time","description":"When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`."},"maxDidCount":{"type":"integer","minimum":0,"description":"The most DIDs the account may hold. Absent when the service does not state one."},"maxTotalSizeBytes":{"type":"integer","minimum":0,"description":"The most bytes of DID content the account may hold in total. Absent when the service does not state one."},"referral":{"\$ref":"#/\$defs/AccountReferral"}}},"AccountReferral":{"title":"AccountReferral","description":"A Referral as the service recorded it on an account, with whether anything other than the registrant\'s own word supports it.","type":"object","additionalProperties":false,"required":["verified"],"properties":{"via":{"type":"string","maxLength":2048,"description":"As in Referral."},"label":{"type":"string","maxLength":128,"description":"As in Referral."},"verified":{"type":"boolean","description":"`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant\'s own claim, recorded for attribution only."}}},"AccountState":{"title":"AccountState","type":"string","enum":["active","warned","disabled"],"description":"Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found."}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.
