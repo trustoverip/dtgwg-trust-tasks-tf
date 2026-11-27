@@ -31,6 +31,25 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.43.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.42.0...trust-tasks-rs-v0.43.0) — 2026-11-27
+
+
+### Fixed
+
+- **rs,go,dart**: Validate the payload as received on the typed consume paths ([#1398](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1398))
+
+* test(rs): show generated payload types losing member presence on a round trip
+
+  An optional array decodes [] as absent and re-encodes it absent; an
+  optional nullable member decodes null as absent (acl/update 0.3's
+  "label: null clears it" becomes "leave it unchanged"); an optional
+  {"type": "null"} member is written back as null when absent. The
+  trust-tasks-rs tests round-trip acl/show 0.3 and acl/update 0.3; the
+  trust-tasks-build tests pin the field shapes on a fixture module. Both
+  fail until the generator keeps presence.
+
+
+
 ## [0.42.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.6...trust-tasks-rs-v0.42.0) — 2026-11-27
 
 

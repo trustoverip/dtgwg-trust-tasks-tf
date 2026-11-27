@@ -4,6 +4,8 @@ All notable changes to `trust-tasks-go/capabilityclient` are documented here.
 Entries are generated from conventional commits by the release automation (see
 RELEASING.md).
 
+## 0.3.1 — 2026-11-27
+
 ## 0.3.0 — 2026-11-27
 
 
