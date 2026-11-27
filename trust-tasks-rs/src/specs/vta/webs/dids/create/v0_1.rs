@@ -539,9 +539,9 @@ pub struct Payload {
     #[serde(
         rename = "additionalServices",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub additional_services: ::std::vec::Vec<DesignatedService>,
+    pub additional_services: ::std::option::Option<::std::vec::Vec<DesignatedService>>,
     ///Further DIDs to designate as aliases, such as the subject's did:webvh. The DID itself is always designated, first, and is not listed here.
     #[serde(
         rename = "alsoKnownAs",
@@ -925,9 +925,9 @@ pub struct Response {
     #[serde(
         rename = "serviceIds",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub service_ids: ::std::vec::Vec<::std::string::String>,
+    pub service_ids: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///The signing key in CESR. Its verification method is `<did>#<signingKey>`.
     #[serde(rename = "signingKey")]
     pub signing_key: ::std::string::String,
@@ -1276,8 +1276,10 @@ pub mod builder {
         add_mediator_service:
             ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         add_tsp_service: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        additional_services:
-            ::std::result::Result<::std::vec::Vec<super::DesignatedService>, ::std::string::String>,
+        additional_services: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::DesignatedService>>,
+            ::std::string::String,
+        >,
         also_known_as: ::std::result::Result<
             ::std::option::Option<Vec<super::PayloadAlsoKnownAsItem>>,
             ::std::string::String,
@@ -1339,7 +1341,9 @@ pub mod builder {
         }
         pub fn additional_services<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DesignatedService>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DesignatedService>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.additional_services = value.try_into().map_err(|e| {
@@ -1482,8 +1486,10 @@ pub mod builder {
         primary: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         sequence_number: ::std::result::Result<u64, ::std::string::String>,
         server_id: ::std::result::Result<::std::string::String, ::std::string::String>,
-        service_ids:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        service_ids: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         signing_key: ::std::result::Result<::std::string::String, ::std::string::String>,
         signing_key_id: ::std::result::Result<::std::string::String, ::std::string::String>,
         slot: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -1668,7 +1674,9 @@ pub mod builder {
         }
         pub fn service_ids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.service_ids = value

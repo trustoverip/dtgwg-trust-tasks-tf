@@ -2,15 +2,26 @@
 //! framework.
 //!
 //! Wraps [`affinidi-tsp`](https://crates.io/crates/affinidi-tsp) so a Trust Task
-//! document can ride as the authenticated, encrypted payload of a TSP message —
-//! sealed with HPKE authenticated encryption and signed from the producer's
-//! *Verifiable Identifier* (VID) to the recipient's VID. On unwrap, the
+//! document can ride as the authenticated, encrypted payload of a TSP 1.0
+//! message — sealed to the recipient's *Verifiable Identifier* (VID) with
+//! HPKE-Base, the producer's VID inside the sealed payload (ESSR), and signed
+//! from the producer's VID. On unwrap, the
 //! authenticated sender VID becomes the framework's transport-authenticated
 //! sender for [SPEC §4.8.1] precedence.
 //!
 //! ## Binding URI
 //!
-//! `https://trusttasks.org/binding/tsp/0.1`
+//! `https://trusttasks.org/binding/tsp/0.3` ([`BINDING_URI`]). The envelope
+//! `type` is unchanged since `tsp/0.1` ([`ENVELOPE_TYPE`]).
+//!
+//! ## TSP version
+//!
+//! The crate speaks TSP 1.0 ([`TSP_VERSION`]) and nothing else, as binding
+//! `tsp/0.3` §2.2 requires. A message from a peer still on a TSP draft (Rev 2
+//! or Rev 3) is refused from its version marker, before any key is used, as
+//! [`TspError::UnsupportedTspVersion`] — by [`advertised_sender`] before the
+//! sender is resolved, and by [`unpack_trust_task`] and [`TspConsumer`]. It
+//! must not be answered. An unknown 1.x MINOR is not refused.
 //!
 //! ## Wire shape
 //!
@@ -89,7 +100,7 @@
 //! ```
 //!
 //! [SPEC §4.8.1]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity
-//! [SPEC binding §5]: ../../bindings/tsp/0.1/spec.md
+//! [SPEC binding §5]: ../../bindings/tsp/0.3/spec.md
 //!
 //! # Versioning
 //!
@@ -116,5 +127,6 @@ pub use error::TspError;
 pub use handler::{TspHandler, BINDING_URI};
 pub use inbound::TspConsumer;
 pub use pack::{
-    pack_trust_task, pack_trust_task_nested, pack_trust_task_routed, unpack_trust_task,
+    advertised_sender, pack_trust_task, pack_trust_task_nested, pack_trust_task_routed,
+    unpack_trust_task, TSP_VERSION,
 };

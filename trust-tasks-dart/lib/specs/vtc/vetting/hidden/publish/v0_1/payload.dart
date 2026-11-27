@@ -321,7 +321,7 @@ class Response {
     required this.criterionId,
     required this.stored,
     required this.published,
-    this.requirementsDigest,
+    required this.requirementsDigest,
     this.ext,
   });
 
@@ -352,8 +352,7 @@ class Response {
         'criterionId': criterionId,
         'stored': stored.toJson(),
         'published': published.toJson(),
-        if (requirementsDigest != null)
-          'requirementsDigest': requirementsDigest!,
+        'requirementsDigest': requirementsDigest,
         if (ext != null) 'ext': ext!,
       };
 }

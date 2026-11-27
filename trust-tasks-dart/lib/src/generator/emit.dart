@@ -683,15 +683,35 @@ _Desc _declareExtensionType(
   return _Desc(name, (e) => '$name($e as String)', (e) => '$e.value');
 }
 
+/// The `toJson` value of a required nullable member [field], whose non-null
+/// conversion (applied to `field!`) is [to]. Written whatever its value.
+///
+/// `field?.toJson()`, not `field == null ? null : field!.toJson()`, which the
+/// prefer_null_aware_operators lint refuses; null-shorting covers a chain such
+/// as `field?.map(...).toList()`. A conversion that does not start with
+/// `field!.` gets the null-guarded ternary: no schema produces one today, so
+/// test/generator_test.dart calls this directly to pin it.
+String keptNullValue(String field, String to) {
+  final bang = '$field!';
+  if (to == bang) return field;
+  if (to.startsWith('$bang.')) return '$field?${to.substring(bang.length)}';
+  return '$field == null ? null : $to';
+}
+
 String _nullable(String type, bool isRequired) =>
     isRequired || type.endsWith('?') ? type : '$type?';
 
 class _Field {
-  _Field(this.wireName, this.fieldName, this.desc, this.isRequired, this.doc);
+  _Field(this.wireName, this.fieldName, this.desc, this.isRequired,
+      this.keepsNull, this.doc);
   final String wireName;
   final String fieldName;
   final _Desc desc;
   final bool isRequired;
+
+  /// Required, and its schema admits null: nullable, but a `required`
+  /// constructor parameter and always written.
+  final bool keepsNull;
   final Object? doc;
 }
 
@@ -722,8 +742,12 @@ _Desc _declareClass(
     final desc =
         _dartTypeFor(em, member, '$name${_dartClassName(wireName)}', defNames);
     final isRequired = required.contains(wireName) && !nullable;
-    fields.add(_Field(
-        wireName, fieldName, desc, isRequired, memberNode['description']));
+    // A required member whose schema admits null keeps its key when null: the
+    // schema gives `null` a meaning, and a document without the key fails
+    // `required`.
+    final keepsNull = required.contains(wireName) && nullable;
+    fields.add(_Field(wireName, fieldName, desc, isRequired, keepsNull,
+        memberNode['description']));
   }
 
   final lines = <String>[
@@ -732,8 +756,10 @@ _Desc _declareClass(
         '$name, generated from its schema.'),
     'class $name {',
     '  const $name({',
+    // A required nullable member is `required` too: the caller states `null`
+    // rather than getting it by leaving the argument out.
     for (final f in fields)
-      '    ${f.isRequired ? 'required ' : ''}this.${f.fieldName},',
+      '    ${f.isRequired || f.keepsNull ? 'required ' : ''}this.${f.fieldName},',
     '  });',
     '',
     '  /// Read this payload from a decoded JSON object.',
@@ -774,6 +800,9 @@ _Desc _declareClass(
     if (f.isRequired) {
       lines
           .add('        ${dartString(f.wireName)}: ${f.desc.to(f.fieldName)},');
+    } else if (f.keepsNull) {
+      final value = keptNullValue(f.fieldName, f.desc.to('${f.fieldName}!'));
+      lines.add('        ${dartString(f.wireName)}: $value,');
     } else {
       final value = f.desc.to('${f.fieldName}!');
       lines.add(

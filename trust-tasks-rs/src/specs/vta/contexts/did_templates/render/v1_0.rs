@@ -133,8 +133,8 @@ pub struct Payload {
     ///Resource id of the template to render within the context scope.
     pub name: PayloadName,
     ///Caller-supplied variables; the VTA also injects ambient VTA_DID, VTA_URL, NOW, CONTEXT_ID, and CONTEXT_DID (if set on the context) server-side.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub vars: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -285,7 +285,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         name: ::std::result::Result<super::PayloadName, ::std::string::String>,
         vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -333,7 +333,9 @@ pub mod builder {
         pub fn vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

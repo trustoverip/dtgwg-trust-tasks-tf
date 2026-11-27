@@ -433,9 +433,9 @@ pub struct TimelineEvent {
     #[serde(
         rename = "claimTypes",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub claim_types: ::std::vec::Vec<ClaimType>,
+    pub claim_types: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     #[serde(
         rename = "contextId",
         default,
@@ -1045,8 +1045,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct TimelineEvent {
-        claim_types:
-            ::std::result::Result<::std::vec::Vec<super::ClaimType>, ::std::string::String>,
+        claim_types: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ClaimType>>,
+            ::std::string::String,
+        >,
         context_id: ::std::result::Result<
             ::std::option::Option<super::TimelineEventContextId>,
             ::std::string::String,
@@ -1081,7 +1083,7 @@ pub mod builder {
     impl TimelineEvent {
         pub fn claim_types<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ClaimType>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ClaimType>>>,
             T::Error: ::std::fmt::Display,
         {
             self.claim_types = value

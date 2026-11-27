@@ -335,9 +335,11 @@ pub struct Response {
     #[serde(
         rename = "credentialValidUntil",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub credential_valid_until:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -501,7 +503,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         credential_valid_until: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         entry_id: ::std::result::Result<super::EntryId, ::std::string::String>,
@@ -524,7 +526,9 @@ pub mod builder {
         pub fn credential_valid_until<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

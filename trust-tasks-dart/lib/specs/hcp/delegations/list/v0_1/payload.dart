@@ -322,7 +322,7 @@ class DelegationScope {
 /// where `atMajority` is true (HCP 17.2).
 class DelegationTerm {
   const DelegationTerm({
-    this.endsAt,
+    required this.endsAt,
     required this.atMajority,
   });
 
@@ -341,7 +341,7 @@ class DelegationTerm {
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (endsAt != null) 'endsAt': endsAt!,
+        'endsAt': endsAt,
         'atMajority': atMajority,
       };
 }

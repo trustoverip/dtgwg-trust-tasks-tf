@@ -73,32 +73,39 @@ mod auth {
         mod claim {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod grant {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod identify {
             mod v0_1;
+            mod v0_2;
         }
         mod prove {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod redeem {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod request {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod respond {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
     }
     mod passkey {

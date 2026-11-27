@@ -7,6 +7,6 @@
 // each one in two modules and the go command refuses the import as ambiguous.
 module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs
 
-go 1.22
+go 1.24
 
 require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3

@@ -60,9 +60,9 @@ pub struct Attribute {
     #[serde(
         rename = "retainedVersions",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub retained_versions: ::std::vec::Vec<AttributeRetainedVersionsItem>,
+    pub retained_versions: ::std::option::Option<::std::vec::Vec<AttributeRetainedVersionsItem>>,
     ///Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub sensitivity: ::std::option::Option<Sensitivity>,
@@ -84,8 +84,12 @@ pub struct Attribute {
     The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.
 
     OPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub value: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     #[serde(rename = "valueType")]
     pub value_type: ValueType,
     pub version: Version,
@@ -1499,7 +1503,7 @@ pub mod builder {
             ::std::string::String,
         >,
         retained_versions: ::std::result::Result<
-            ::std::vec::Vec<super::AttributeRetainedVersionsItem>,
+            ::std::option::Option<::std::vec::Vec<super::AttributeRetainedVersionsItem>>,
             ::std::string::String,
         >,
         sensitivity:
@@ -1513,7 +1517,7 @@ pub mod builder {
         updated_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         value_type: ::std::result::Result<super::ValueType, ::std::string::String>,
@@ -1607,7 +1611,9 @@ pub mod builder {
         }
         pub fn retained_versions<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AttributeRetainedVersionsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AttributeRetainedVersionsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.retained_versions = value
@@ -1667,7 +1673,9 @@ pub mod builder {
         }
         pub fn value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.value = value

@@ -1616,7 +1616,7 @@ class Response {
     required this.entry,
     required this.retrievalId,
     required this.minimization,
-    this.directives,
+    required this.directives,
     required this.respondedAt,
   });
 
@@ -1662,8 +1662,7 @@ class Response {
         'entry': entry,
         'retrievalId': retrievalId,
         'minimization': minimization.toJson(),
-        if (directives != null)
-          'directives': directives!.map((e) => e.toJson()).toList(),
+        'directives': directives?.map((e) => e.toJson()).toList(),
         'respondedAt': respondedAt,
       };
 }

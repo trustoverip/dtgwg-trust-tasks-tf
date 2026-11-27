@@ -44,8 +44,8 @@ pub struct AuditDisclosed {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub provenance: ::std::option::Option<bool>,
     ///Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revealed: ::std::vec::Vec<AuditDisclosedRevealedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub revealed: ::std::option::Option<::std::vec::Vec<AuditDisclosedRevealedItem>>,
     ///The use-until time the disclosure was given (HCP 7.6).
     #[serde(rename = "useUntil")]
     pub use_until: Instant,
@@ -137,14 +137,14 @@ impl<'de> ::serde::Deserialize<'de> for AuditDisclosedRevealedItemClaimsItem {
 #[non_exhaustive]
 pub struct AuditEvent {
     ///The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub data: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub disclosed: ::std::vec::Vec<AuditDisclosed>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub disclosed: ::std::option::Option<::std::vec::Vec<AuditDisclosed>>,
     ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
     #[serde(rename = "entryId")]
     pub entry_id: ::std::option::Option<AuditEventEntryId>,
@@ -883,8 +883,8 @@ impl Delegation {
 #[non_exhaustive]
 pub struct DelegationBasis {
     ///The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub covers: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub covers: ::std::option::Option<::std::vec::Vec<Category>>,
     ///What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
     pub description: DelegationBasisDescription,
     ///When the delegation was established (HCP 17.2).
@@ -894,8 +894,8 @@ pub struct DelegationBasis {
     #[serde(rename = "establishedBy")]
     pub established_by: DelegationBasisEstablishedBy,
     ///The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<EvidenceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<::std::vec::Vec<EvidenceItem>>,
     ///How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
     pub method: DelegationBasisMethod,
     ///For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).
@@ -1591,8 +1591,8 @@ pub struct Directive {
     ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub action: DirectiveAction,
     ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///Set by the provider: when the directive was set (HCP 6.4).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
@@ -1602,8 +1602,8 @@ pub struct Directive {
     ///`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
     pub effect: DirectiveEffect,
     ///The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<DirectiveOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<DirectiveOperatorsItem>>,
     ///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
     #[serde(rename = "setBy")]
     pub set_by: DirectiveSetBy,
@@ -1945,8 +1945,12 @@ impl<'de> ::serde::Deserialize<'de> for DirectiveText {
 #[non_exhaustive]
 pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
@@ -2229,17 +2233,17 @@ impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemVerification
 #[non_exhaustive]
 pub struct Export {
     ///The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub audit: ::std::vec::Vec<AuditEvent>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub audit: ::std::option::Option<::std::vec::Vec<AuditEvent>>,
     ///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
     #[serde(rename = "@context")]
     pub context: ExportContext,
     ///The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub delegations: ::std::vec::Vec<Delegation>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub delegations: ::std::option::Option<::std::vec::Vec<Delegation>>,
     ///The Context Subject's directives (HCP 5.4.1, 6.4).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub directives: ::std::vec::Vec<Directive>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub directives: ::std::option::Option<::std::vec::Vec<Directive>>,
     ///The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
     pub entries: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the export was made (HCP 5.4.1).
@@ -2259,8 +2263,10 @@ pub struct Export {
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
     ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub versions: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub versions: ::std::option::Option<
+        ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
 }
 impl Export {
     pub fn builder() -> builder::Export {
@@ -2618,19 +2624,19 @@ impl Response {
 #[non_exhaustive]
 pub struct StandingRule {
     ///The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///Set by the provider: when the rule was set (HCP 6.3).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
     ///`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
     pub effect: StandingRuleEffect,
     ///The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<StandingRuleOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<StandingRuleOperatorsItem>>,
     ///Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub requires: ::std::vec::Vec<Uri>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub requires: ::std::option::Option<::std::vec::Vec<Uri>>,
     ///Stable for the life of the rule (HCP 6.3).
     #[serde(rename = "ruleId")]
     pub rule_id: Urn,
@@ -2935,7 +2941,7 @@ pub mod builder {
         entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
         provenance: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         revealed: ::std::result::Result<
-            ::std::vec::Vec<super::AuditDisclosedRevealedItem>,
+            ::std::option::Option<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
             ::std::string::String,
         >,
         use_until: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -2975,7 +2981,9 @@ pub mod builder {
         }
         pub fn revealed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.revealed = value
@@ -3090,13 +3098,18 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct AuditEvent {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        data: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
             ::std::string::String,
         >,
-        disclosed:
-            ::std::result::Result<::std::vec::Vec<super::AuditDisclosed>, ::std::string::String>,
+        data: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        disclosed: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AuditDisclosed>>,
+            ::std::string::String,
+        >,
         entry_id: ::std::result::Result<
             ::std::option::Option<super::AuditEventEntryId>,
             ::std::string::String,
@@ -3143,7 +3156,7 @@ pub mod builder {
     impl AuditEvent {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -3154,7 +3167,9 @@ pub mod builder {
         pub fn data<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -3165,7 +3180,9 @@ pub mod builder {
         }
         pub fn disclosed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosed>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AuditDisclosed>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed = value
@@ -3679,14 +3696,19 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct DelegationBasis {
-        covers: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        covers: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         description:
             ::std::result::Result<super::DelegationBasisDescription, ::std::string::String>,
         established_at: ::std::result::Result<super::Instant, ::std::string::String>,
         established_by:
             ::std::result::Result<super::DelegationBasisEstablishedBy, ::std::string::String>,
-        evidence:
-            ::std::result::Result<::std::vec::Vec<super::EvidenceItem>, ::std::string::String>,
+        evidence: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EvidenceItem>>,
+            ::std::string::String,
+        >,
         method: ::std::result::Result<super::DelegationBasisMethod, ::std::string::String>,
         parent: ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
     }
@@ -3706,7 +3728,7 @@ pub mod builder {
     impl DelegationBasis {
         pub fn covers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.covers = value
@@ -3746,7 +3768,7 @@ pub mod builder {
         }
         pub fn evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EvidenceItem>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EvidenceItem>>>,
             T::Error: ::std::fmt::Display,
         {
             self.evidence = value
@@ -4065,12 +4087,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Directive {
         action: ::std::result::Result<super::DirectiveAction, ::std::string::String>,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
         effect: ::std::result::Result<super::DirectiveEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::DirectiveOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
             ::std::string::String,
         >,
         set_by: ::std::result::Result<super::DirectiveSetBy, ::std::string::String>,
@@ -4103,7 +4128,7 @@ pub mod builder {
         }
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -4143,7 +4168,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -4206,7 +4233,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EvidenceItem {
         credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<super::EvidenceItemRole, ::std::string::String>,
@@ -4229,7 +4256,9 @@ pub mod builder {
     impl EvidenceItem {
         pub fn credential<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential = value
@@ -4364,11 +4393,19 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Export {
-        audit: ::std::result::Result<::std::vec::Vec<super::AuditEvent>, ::std::string::String>,
+        audit: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AuditEvent>>,
+            ::std::string::String,
+        >,
         context: ::std::result::Result<super::ExportContext, ::std::string::String>,
-        delegations:
-            ::std::result::Result<::std::vec::Vec<super::Delegation>, ::std::string::String>,
-        directives: ::std::result::Result<::std::vec::Vec<super::Directive>, ::std::string::String>,
+        delegations: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Delegation>>,
+            ::std::string::String,
+        >,
+        directives: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Directive>>,
+            ::std::string::String,
+        >,
         entries: ::std::result::Result<
             ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
@@ -4381,7 +4418,9 @@ pub mod builder {
         subject: ::std::result::Result<super::ExportSubject, ::std::string::String>,
         type_: ::std::result::Result<::std::string::String, ::std::string::String>,
         versions: ::std::result::Result<
-            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
             ::std::string::String,
         >,
     }
@@ -4407,7 +4446,7 @@ pub mod builder {
     impl Export {
         pub fn audit<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditEvent>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::AuditEvent>>>,
             T::Error: ::std::fmt::Display,
         {
             self.audit = value
@@ -4427,7 +4466,7 @@ pub mod builder {
         }
         pub fn delegations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Delegation>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Delegation>>>,
             T::Error: ::std::fmt::Display,
         {
             self.delegations = value
@@ -4437,7 +4476,7 @@ pub mod builder {
         }
         pub fn directives<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Directive>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Directive>>>,
             T::Error: ::std::fmt::Display,
         {
             self.directives = value
@@ -4530,7 +4569,9 @@ pub mod builder {
         pub fn versions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                ::std::option::Option<
+                    ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -4806,14 +4847,20 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct StandingRule {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         effect: ::std::result::Result<super::StandingRuleEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::StandingRuleOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
             ::std::string::String,
         >,
-        requires: ::std::result::Result<::std::vec::Vec<super::Uri>, ::std::string::String>,
+        requires: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Uri>>,
+            ::std::string::String,
+        >,
         rule_id: ::std::result::Result<super::Urn, ::std::string::String>,
         set_by: ::std::result::Result<super::StandingRuleSetBy, ::std::string::String>,
     }
@@ -4833,7 +4880,7 @@ pub mod builder {
     impl StandingRule {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -4863,7 +4910,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -4873,7 +4922,7 @@ pub mod builder {
         }
         pub fn requires<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Uri>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Uri>>>,
             T::Error: ::std::fmt::Display,
         {
             self.requires = value

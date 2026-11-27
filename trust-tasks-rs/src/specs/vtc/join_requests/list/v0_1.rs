@@ -127,26 +127,32 @@ pub struct JoinRequest {
     #[serde(rename = "applicantDid")]
     pub applicant_did: JoinRequestApplicantDid,
     ///What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub attributes: ::std::vec::Vec<JoinRequestAttributesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub attributes: ::std::option::Option<::std::vec::Vec<JoinRequestAttributesItem>>,
     /**
     Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.
 
     Distinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub decision: ::std::option::Option<JoinRequestDecision>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub decision: ::std::option::Option<::std::option::Option<JoinRequestDecision>>,
     ///Opaque community-defined extension bag.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Stable id of this join request (a UUID).
     pub id: JoinRequestId,
     ///The community policy verdict recorded for this request (opaque here); absent while pending.
     #[serde(
         rename = "policyDecision",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub policy_decision: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub policy_decision:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Whether the applicant consented to trust-registry publication.
     #[serde(
         rename = "registryConsent",
@@ -163,10 +169,12 @@ pub struct JoinRequest {
     #[serde(
         rename = "vpClaims",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub vp_claims:
+    pub vp_claims: ::std::option::Option<
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
 }
 impl JoinRequest {
     pub fn builder() -> builder::JoinRequest {
@@ -335,8 +343,12 @@ pub struct JoinRequestDecision {
     #[serde(rename = "decidedAt")]
     pub decided_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Elaboration in prose, when the decider gave one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<JoinRequestDecisionReason>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub reason: ::std::option::Option<::std::option::Option<JoinRequestDecisionReason>>,
 }
 impl JoinRequestDecision {
     pub fn builder() -> builder::JoinRequestDecision {
@@ -654,15 +666,17 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub next_cursor: ::std::option::Option<::std::string::String>,
+    pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(
         rename = "totalEstimate",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub total_estimate: ::std::option::Option<i64>,
+    pub total_estimate: ::std::option::Option<::std::option::Option<i64>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -675,20 +689,20 @@ pub mod builder {
     pub struct JoinRequest {
         applicant_did: ::std::result::Result<super::JoinRequestApplicantDid, ::std::string::String>,
         attributes: ::std::result::Result<
-            ::std::vec::Vec<super::JoinRequestAttributesItem>,
+            ::std::option::Option<::std::vec::Vec<super::JoinRequestAttributesItem>>,
             ::std::string::String,
         >,
         decision: ::std::result::Result<
-            ::std::option::Option<super::JoinRequestDecision>,
+            ::std::option::Option<::std::option::Option<super::JoinRequestDecision>>,
             ::std::string::String,
         >,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         id: ::std::result::Result<super::JoinRequestId, ::std::string::String>,
         policy_decision: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         registry_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -700,7 +714,11 @@ pub mod builder {
             ::std::string::String,
         >,
         vp_claims: ::std::result::Result<
-            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
+            >,
             ::std::string::String,
         >,
     }
@@ -734,7 +752,9 @@ pub mod builder {
         }
         pub fn attributes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::JoinRequestAttributesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::JoinRequestAttributesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.attributes = value
@@ -744,7 +764,9 @@ pub mod builder {
         }
         pub fn decision<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::JoinRequestDecision>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::JoinRequestDecision>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.decision = value
@@ -755,7 +777,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -777,7 +801,9 @@ pub mod builder {
         pub fn policy_decision<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -832,7 +858,9 @@ pub mod builder {
         where
             T: ::std::convert::TryInto<
                 ::std::option::Option<
-                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    ::std::option::Option<
+                        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -940,7 +968,7 @@ pub mod builder {
         decided_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         reason: ::std::result::Result<
-            ::std::option::Option<super::JoinRequestDecisionReason>,
+            ::std::option::Option<::std::option::Option<super::JoinRequestDecisionReason>>,
             ::std::string::String,
         >,
     }
@@ -976,7 +1004,9 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::JoinRequestDecisionReason>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::JoinRequestDecisionReason>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -1100,10 +1130,13 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         items: ::std::result::Result<::std::vec::Vec<super::JoinRequest>, ::std::string::String>,
         next_cursor: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
-        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        total_estimate: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<i64>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -1138,7 +1171,9 @@ pub mod builder {
         }
         pub fn next_cursor<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.next_cursor = value
@@ -1148,7 +1183,7 @@ pub mod builder {
         }
         pub fn total_estimate<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<i64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.total_estimate = value

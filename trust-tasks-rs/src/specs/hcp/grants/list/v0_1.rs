@@ -45,9 +45,10 @@ pub struct AccessDetail {
     #[serde(
         rename = "narrowedTo",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub narrowed_to: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub narrowed_to:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).
     #[serde(
         rename = "onwardSharing",
@@ -374,8 +375,8 @@ pub struct Grant {
     )]
     pub requesting_party: ::std::option::Option<RequestingParty>,
     ///Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<GrantScopesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scopes: ::std::option::Option<::std::vec::Vec<GrantScopesItem>>,
     ///`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.
     pub status: GrantStatus,
     ///The Context Subject, by a pseudonym specific to the client (HCP 3.4).
@@ -2067,7 +2068,7 @@ pub mod builder {
         actions: ::std::result::Result<Vec<super::AccessDetailActionsItem>, ::std::string::String>,
         categories: ::std::result::Result<Vec<super::Category>, ::std::string::String>,
         narrowed_to: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         onward_sharing: ::std::result::Result<
@@ -2113,7 +2114,9 @@ pub mod builder {
         pub fn narrowed_to<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2256,8 +2259,10 @@ pub mod builder {
             ::std::option::Option<super::RequestingParty>,
             ::std::string::String,
         >,
-        scopes:
-            ::std::result::Result<::std::vec::Vec<super::GrantScopesItem>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::GrantScopesItem>>,
+            ::std::string::String,
+        >,
         status: ::std::result::Result<super::GrantStatus, ::std::string::String>,
         subject: ::std::result::Result<super::GrantParty, ::std::string::String>,
     }
@@ -2365,7 +2370,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::GrantScopesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::GrantScopesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value

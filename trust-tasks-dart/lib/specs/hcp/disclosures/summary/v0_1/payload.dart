@@ -198,7 +198,7 @@ class ClientSummary {
     required this.retrievals,
     required this.firstAt,
     required this.lastAt,
-    this.usableUntil,
+    required this.usableUntil,
     required this.notification,
     this.legalRetention,
   });
@@ -282,7 +282,7 @@ class ClientSummary {
         'retrievals': retrievals,
         'firstAt': firstAt,
         'lastAt': lastAt,
-        if (usableUntil != null) 'usableUntil': usableUntil!,
+        'usableUntil': usableUntil,
         'notification': notification.value,
         if (legalRetention != null) 'legalRetention': legalRetention!.toJson(),
       };

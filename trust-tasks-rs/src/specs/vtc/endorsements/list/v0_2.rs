@@ -108,9 +108,11 @@ pub struct CredentialReference {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub expires_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///When the credential was minted.
     #[serde(
         rename = "issuedAt",
@@ -131,8 +133,8 @@ impl CredentialReference {
 #[non_exhaustive]
 pub struct Endorsement {
     ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub claim: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
     #[serde(rename = "endorsementId")]
     pub endorsement_id: EndorsementEndorsementId,
@@ -142,9 +144,11 @@ pub struct Endorsement {
     #[serde(
         rename = "revokedAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub revoked_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.
     #[serde(rename = "statusListIndex")]
     pub status_list_index: u64,
@@ -622,9 +626,10 @@ pub struct Response {
     #[serde(
         rename = "totalEstimate",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub total_estimate: ::std::option::Option<i64>,
+    pub total_estimate: ::std::option::Option<::std::option::Option<i64>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -637,7 +642,7 @@ pub mod builder {
     pub struct CredentialReference {
         credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
         expires_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         issued_at: ::std::result::Result<
@@ -668,7 +673,9 @@ pub mod builder {
         pub fn expires_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -714,14 +721,14 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Endorsement {
         claim: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         endorsement_id:
             ::std::result::Result<super::EndorsementEndorsementId, ::std::string::String>,
         issued: ::std::result::Result<super::CredentialReference, ::std::string::String>,
         revoked_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         status_list_index: ::std::result::Result<u64, ::std::string::String>,
@@ -745,7 +752,9 @@ pub mod builder {
         pub fn claim<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -777,7 +786,9 @@ pub mod builder {
         pub fn revoked_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -974,7 +985,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        total_estimate: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<i64>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -1019,7 +1033,7 @@ pub mod builder {
         }
         pub fn total_estimate<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<i64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.total_estimate = value

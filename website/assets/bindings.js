@@ -10,6 +10,36 @@
 
 window.TT_BINDINGS = [
   {
+    id: "tsp/0.3",
+    slug: "tsp",
+    version: "0.3",
+    title: "Trust Spanning Protocol (TSP)",
+    summary:
+      "Carries Trust Task documents inside ToIP Trust Spanning Protocol 1.0 messages, with the 0.2 envelope and optional deliveryId unchanged. Requires TSP 1.0: a consumer refuses a TSP MAJOR other than 1 (the Rev 2 and Rev 3 drafts among them) without answering, and never refuses on the TSP MINOR.",
+    bindingURI: "https://trusttasks.org/binding/tsp/0.3",
+    envelopeType: "https://trusttasks.org/binding/tsp/0.1/envelope",
+    status: "draft",
+    accent: "sky",
+    prosePath: "/bindings/tsp/0.3/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
+        language: "Rust",
+      },
+      {
+        name: "@openvtc/trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ts-tsp",
+        language: "TypeScript",
+      },
+      {
+        name: "trust-tasks-go/tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
+        language: "Go",
+      },
+    ],
+  },
+  {
     id: "tsp/0.2",
     slug: "tsp",
     version: "0.2",
@@ -35,23 +65,7 @@ window.TT_BINDINGS = [
     status: "draft",
     accent: "sky",
     prosePath: "/bindings/tsp/0.1/spec.md",
-    implementations: [
-      {
-        name: "trust-tasks-tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
-        language: "Rust",
-      },
-      {
-        name: "@openvtc/trust-tasks-tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ts-tsp",
-        language: "TypeScript",
-      },
-      {
-        name: "trust-tasks-go/tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
-        language: "Go",
-      },
-    ],
+    implementations: [],
   },
   {
     id: "https/0.3",

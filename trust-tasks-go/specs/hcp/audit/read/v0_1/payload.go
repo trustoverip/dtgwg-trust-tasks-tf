@@ -57,13 +57,13 @@ type AuditEvent struct {
 	// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For
 	// conflict events, the conflicted entry (HCP 8.2). Required, and null in an event
 	// redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
-	EntryID *string `json:"entryId,omitempty"`
+	EntryID *string `json:"entryId"`
 
 	// For conflict events, the authoritative entry (or the other entry where neither or both
 	// are authoritative); null for every other event type (HCP 8.2). Required, and null in an
 	// event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question
 	// 42).
-	RelatedEntryID *string `json:"relatedEntryId,omitempty"`
+	RelatedEntryID *string `json:"relatedEntryId"`
 
 	// The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP
 	// requirement.
@@ -74,15 +74,15 @@ type AuditEvent struct {
 	// 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required,
 	// pending HCP confirmation (question 42). The minLength and maxLength are framework
 	// bounds, not HCP requirements.
-	Purpose *string `json:"purpose,omitempty"`
+	Purpose *string `json:"purpose"`
 
 	// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP
 	// confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-	PurposeDescription *string `json:"purposeDescription,omitempty"`
+	PurposeDescription *string `json:"purposeDescription"`
 
 	// The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending
 	// HCP confirmation (question 42).
-	GrantID *string `json:"grantId,omitempty"`
+	GrantID *string `json:"grantId"`
 
 	// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval
 	// discloses at most 20 entries (HCP 7.2).

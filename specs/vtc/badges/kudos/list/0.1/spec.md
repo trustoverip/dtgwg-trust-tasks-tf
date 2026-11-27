@@ -83,7 +83,7 @@ A conforming **consumer** (the community) **MUST**:
 
 **Authority: being a party to the kudos.** A member lists only awards they gave or received; the task has no `entryId`. **`all` takes `vtc.badges.admin`** at the community, read from the signer's access-control entry at execution time. The proof establishes who asked ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10); it never establishes that they may.
 
-A member's own listing is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms. The administrator's `all` **MUST NOT** be accepted from such a key.
+A member's own listing is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms. The administrator's `all` **MUST NOT** be accepted from such a key.
 
 ## Definitions
 

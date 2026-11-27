@@ -655,7 +655,10 @@ function mergeAllOf(node) {
  *
  * `["string", "null"]` is a nullable string, which in Go is a `*string` — the
  * same representation an *absent* member gets, which is why nullability needs no
- * type of its own here.
+ * type of its own here. The cost is that an *optional* nullable member cannot
+ * tell `null` from absent (both are nil, and `omitempty` writes neither). A
+ * *required* nullable member has no such problem: it is never absent, so its
+ * tag has no `omitempty` and a nil writes `null`.
  */
 function typeOf(node) {
   const raw = node.type;
@@ -871,8 +874,11 @@ function declareStruct(em, node, hint, defNames) {
     if (pointer) goType = `*${goType}`;
 
     // `omitempty` exactly where the member is optional. On a required member it
-    // would drop a legitimate zero value from the wire.
-    const tag = isRequired && !nullable ? wireName : `${wireName},omitempty`;
+    // would drop a legitimate zero value from the wire, and on a required
+    // *nullable* member (a pointer, so that nil can stand for `null`) it would
+    // drop the key whenever the value is `null`, leaving a document its own
+    // schema's `required` rejects.
+    const tag = isRequired ? wireName : `${wireName},omitempty`;
 
     fields.push({
       name: fieldName,

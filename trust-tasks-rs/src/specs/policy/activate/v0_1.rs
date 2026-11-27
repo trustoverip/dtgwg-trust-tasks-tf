@@ -342,9 +342,10 @@ pub struct Response {
     #[serde(
         rename = "previousPolicyId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub previous_policy_id: ::std::option::Option<::std::string::String>,
+    pub previous_policy_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Echoed from the request.
     pub purpose: ResponsePurpose,
 }
@@ -627,7 +628,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         previous_policy_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         purpose: ::std::result::Result<super::ResponsePurpose, ::std::string::String>,
@@ -676,7 +677,9 @@ pub mod builder {
         }
         pub fn previous_policy_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.previous_policy_id = value.try_into().map_err(|e| {

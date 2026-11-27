@@ -43,9 +43,11 @@ pub struct AclEntry {
     #[serde(
         rename = "allowedKeys",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub allowed_keys: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    pub allowed_keys:
+        ::std::option::Option<::std::option::Option<::std::vec::Vec<::std::string::String>>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub approve: ::std::option::Option<AclEntryApprove>,
     #[serde(
@@ -77,8 +79,8 @@ pub struct AclEntry {
     ///Opaque role identifier interpreted by the ACL maintainer.
     pub role: ::std::string::String,
     ///Opaque scope identifiers (e.g. contexts, domains, resource prefixes).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scopes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(
         rename = "stepUp",
         default,
@@ -121,8 +123,8 @@ pub struct AclEntryApprove {
     #[serde(default)]
     pub all: bool,
     ///Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scopes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl ::std::default::Default for AclEntryApprove {
     fn default() -> Self {
@@ -381,8 +383,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<PayloadScopesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scopes: ::std::option::Option<::std::vec::Vec<PayloadScopesItem>>,
     ///VID of the party being revoked (or scope-reduced).
     pub subject: ::std::string::String,
 }
@@ -532,7 +534,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct AclEntry {
         allowed_keys: ::std::result::Result<
-            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::option::Option<::std::option::Option<::std::vec::Vec<::std::string::String>>>,
             ::std::string::String,
         >,
         approve: ::std::result::Result<
@@ -557,8 +559,10 @@ pub mod builder {
             ::std::string::String,
         >,
         role: ::std::result::Result<::std::string::String, ::std::string::String>,
-        scopes:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         step_up: ::std::result::Result<
             ::std::option::Option<super::AclEntryStepUp>,
             ::std::string::String,
@@ -596,7 +600,9 @@ pub mod builder {
         pub fn allowed_keys<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+                ::std::option::Option<
+                    ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -681,7 +687,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value
@@ -774,8 +782,10 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct AclEntryApprove {
         all: ::std::result::Result<bool, ::std::string::String>,
-        scopes:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for AclEntryApprove {
         fn default() -> Self {
@@ -798,7 +808,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value
@@ -893,8 +905,10 @@ pub mod builder {
             ::std::option::Option<super::PayloadReason>,
             ::std::string::String,
         >,
-        scopes:
-            ::std::result::Result<::std::vec::Vec<super::PayloadScopesItem>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PayloadScopesItem>>,
+            ::std::string::String,
+        >,
         subject: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -930,7 +944,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadScopesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadScopesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value

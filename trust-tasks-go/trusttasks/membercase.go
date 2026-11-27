@@ -31,8 +31,9 @@ import (
 // other way ("thread_id", "issuerNote") are ordinary unrecognised members and
 // are kept, as everywhere else.
 //
-// The check follows T into nested structs, pointers, slices, arrays and map
-// values. A type that decodes itself ([json.Unmarshaler] or
+// The check follows T into nested structs, pointers, slices, arrays, map
+// values and [Nullable] members (a null one has nothing to check). A type
+// that decodes itself ([json.Unmarshaler] or
 // [encoding.TextUnmarshaler]) is that type's responsibility, and is not entered.
 // [Document] and [Proof] decode through this check already; call it yourself
 // when you decode a payload outside a [Document] — as a binding's payload
@@ -56,7 +57,16 @@ func checkMemberNames(data []byte, t reflect.Type) error {
 var (
 	jsonUnmarshalerType = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
 	textUnmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
+	nullableMemberType  = reflect.TypeOf((*nullableMember)(nil)).Elem()
 )
+
+// nullableMember is what a [Nullable] tells the walk: the T it decodes with a
+// plain encoding/json decode, which matches member names without regard to
+// case just as a bare T would. Nullable is a json.Unmarshaler, so without
+// this the walk would stop at it and leave everything inside unchecked.
+type nullableMember interface {
+	nullableElem() reflect.Type
+}
 
 // maxMemberNameDepth bounds the walk; encoding/json itself refuses nesting
 // deeper than 10000, and no Trust Task schema comes near this.
@@ -72,6 +82,15 @@ func walkMemberNamesAt(value any, t reflect.Type, path string, depth int) error 
 	}
 	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
+	}
+	// Before the Unmarshaler short-circuit: Nullable decodes itself, but only
+	// by handing a non-null member to encoding/json as a T.
+	if t.Implements(nullableMemberType) {
+		if value == nil {
+			return nil
+		}
+		elem := reflect.Zero(t).Interface().(nullableMember).nullableElem()
+		return walkMemberNamesAt(value, elem, path, depth+1)
 	}
 	if reflect.PointerTo(t).Implements(jsonUnmarshalerType) ||
 		reflect.PointerTo(t).Implements(textUnmarshalerType) ||

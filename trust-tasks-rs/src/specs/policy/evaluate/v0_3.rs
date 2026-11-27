@@ -1079,12 +1079,12 @@ pub struct Response {
     #[serde(
         rename = "matchedPolicies",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub matched_policies: ::std::vec::Vec<::std::string::String>,
+    pub matched_policies: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub trace: ::std::vec::Vec<ResponseTraceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub trace: ::std::option::Option<::std::vec::Vec<ResponseTraceItem>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -2236,10 +2236,14 @@ pub mod builder {
     pub struct Response {
         decision: ::std::result::Result<super::PolicyDecision, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        matched_policies:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        trace:
-            ::std::result::Result<::std::vec::Vec<super::ResponseTraceItem>, ::std::string::String>,
+        matched_policies: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+        trace: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ResponseTraceItem>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -2274,7 +2278,9 @@ pub mod builder {
         }
         pub fn matched_policies<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.matched_policies = value
@@ -2284,7 +2290,9 @@ pub mod builder {
         }
         pub fn trace<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseTraceItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseTraceItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.trace = value

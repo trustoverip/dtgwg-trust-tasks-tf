@@ -922,8 +922,8 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub profile: ::std::option::Option<RoomProfile>,
     ///Records at a profile location that the recipient refused, newest first, up to eight. Present when there was at least one. A profile refused at a newer epoch than the one returned is somebody writing what the room is called without the standing to — which is why it is reported rather than dropped.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub rejected: ::std::vec::Vec<ResponseRejectedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub rejected: ::std::option::Option<::std::vec::Vec<ResponseRejectedItem>>,
     #[serde(rename = "roomId")]
     pub room_id: ResponseRoomId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1951,7 +1951,7 @@ pub mod builder {
         profile:
             ::std::result::Result<::std::option::Option<super::RoomProfile>, ::std::string::String>,
         rejected: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseRejectedItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseRejectedItem>>,
             ::std::string::String,
         >,
         room_id: ::std::result::Result<super::ResponseRoomId, ::std::string::String>,
@@ -2043,7 +2043,9 @@ pub mod builder {
         }
         pub fn rejected<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRejectedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseRejectedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.rejected = value
