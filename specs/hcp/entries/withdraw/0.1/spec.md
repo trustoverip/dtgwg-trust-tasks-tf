@@ -60,6 +60,13 @@ errorCodes:
       failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
       [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+uncheckedRules:
+  - member: "/properties/ref"
+    rule: "Exactly one of `ref` and `entryId` is present. A request with both or neither is refused with `malformedRequest` (pending HCP confirmation, question 6)."
+    source: "HCP 5.2.5"
+  - member: "/$defs/Response"
+    rule: "Exactly one of `ref` and `entryId` is present. It is the one the request used."
+    source: "HCP 5.2.5, 9.4.5"
 related:
   - hcp/entries/create
   - hcp/entries/revise

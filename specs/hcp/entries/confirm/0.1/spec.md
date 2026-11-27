@@ -77,6 +77,28 @@ errorCodes:
       Client shows the person the current version, before deciding whether to ask again. Defined once for the family
       in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/entry/properties/type"
+    rule: "An entry's `type` array includes `ContextEntry`."
+    source: "HCP 4.2"
+  - member: "/$defs/Response/properties/entry/properties/content"
+    rule: "Under the General Context Profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/$defs/Response/properties/entry/properties/content"
+    rule: "Under the VC Evidence Profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/$defs/Response/properties/entry/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entry/properties/evidence"
+    rule: "At most one evidence item has `role` `content`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/properties/record/properties/relationships/items/properties/proposal"
+    rule: "Only a `contradicts` relationship carries a `proposal`."
+    source: "HCP 4.7.4"
 related:
   - hcp/entries/query
   - hcp/entries/set-categories

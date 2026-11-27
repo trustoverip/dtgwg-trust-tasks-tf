@@ -69,6 +69,16 @@ errorCodes:
       failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
       [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/grants/items/properties/expiresAt"
+    rule: "`expiresAt` is an instant for a `temporary` grant and null for a `persistent` one."
+    source: "HCP 6.1.4, 6.1.5"
+  - member: "/$defs/Response/properties/grants/items/properties/access/items/properties/onwardSharing"
+    rule: "`onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low."
+    source: "HCP 6.1.5"
+  - member: "/$defs/Response/properties/grants/items/properties/access/items/properties/actions"
+    rule: "`provenance` is an action only alongside `read`."
+    source: "HCP 6.1.5, 7.4.1"
 related:
   - hcp/grants/revoke
   - hcp/audit/read
