@@ -7,4 +7,4 @@ module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclie
 
 go 1.24
 
-require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3
+require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.4
