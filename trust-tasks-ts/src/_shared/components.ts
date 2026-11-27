@@ -331,6 +331,10 @@ export type AccountSettings =
  */
 export type AccountState = "active" | "suspended" | "archived";
 /**
+ * Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.
+ */
+export type AccountState_DidManagementV0_4 = "active" | "warned" | "disabled";
+/**
  * The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
@@ -3364,6 +3368,55 @@ export interface AccountBinding {
       ];
   grantedAt?: string;
 }
+/**
+ * An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.
+ */
+export interface AccountInvite {
+  /**
+   * The service's identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite.
+   */
+  inviteId: string;
+  /**
+   * The hosting domain the invite admits an account on.
+   */
+  domain: string;
+  /**
+   * When present, the account's DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain's rules alone apply.
+   */
+  pathPrefix?: string;
+  /**
+   * The issuer's note on who the invite is for. Operator-facing; never shown to the invitee by this task family.
+   */
+  label?: string;
+  /**
+   * `pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.
+   */
+  state: "pending" | "redeemed" | "revoked" | "expired";
+  /**
+   * When the invite was issued.
+   */
+  createdAt: string;
+  /**
+   * The DID of the administrator who issued it.
+   */
+  createdBy?: string;
+  /**
+   * The last instant the invite can be redeemed.
+   */
+  expiresAt: string;
+  /**
+   * The account subject that redeemed it. Present exactly when `state` is `redeemed`.
+   */
+  redeemedBy?: string;
+  /**
+   * When it was redeemed. Present exactly when `state` is `redeemed`.
+   */
+  redeemedAt?: string;
+  /**
+   * The referral the administrator recorded on the invite. An account the invite admits carries it as verified.
+   */
+  referral?: Referral;
+}
 export interface AccountProbeReport_ExternalV0_1 {
   at: string;
   /**
@@ -4187,6 +4240,23 @@ export interface AccountPublicMaterial {
    * During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.
    */
   pendingKeyFingerprint?: DigestMultibase;
+}
+/**
+ * A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.
+ */
+export interface AccountReferral {
+  /**
+   * As in Referral.
+   */
+  via?: string;
+  /**
+   * As in Referral.
+   */
+  label?: string;
+  /**
+   * `true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only.
+   */
+  verified: boolean;
 }
 /**
  * That a static model's secret is set, and which one. Never its value.
@@ -14744,6 +14814,61 @@ export interface HostedRoom_VtcV0_3 {
   updatedAt: string;
 }
 /**
+ * One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.
+ */
+export interface HostingAccount {
+  /**
+   * The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.
+   */
+  subject: string;
+  /**
+   * The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.
+   */
+  role: string;
+  /**
+   * The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.
+   */
+  domain: string;
+  state: AccountState_DidManagementV0_4;
+  /**
+   * How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly.
+   */
+  admission?: "invite" | "voucher";
+  /**
+   * When the account was created.
+   */
+  registeredAt: string;
+  /**
+   * The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.
+   */
+  lastActiveAt?: string;
+  /**
+   * The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none.
+   */
+  lastResolvedAt?: string;
+  /**
+   * When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one.
+   */
+  disableAt?: string;
+  /**
+   * When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`.
+   */
+  purgeAt?: string;
+  /**
+   * The most DIDs the account may hold. Absent when the service does not state one.
+   */
+  maxDidCount?: number;
+  /**
+   * The most bytes of DID content the account may hold in total. Absent when the service does not state one.
+   */
+  maxTotalSizeBytes?: number;
+  referral?: AccountReferral;
+  /**
+   * `true` when an administrator has exempted the account from its domain's terms (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered account.
+   */
+  exempt?: boolean;
+}
+/**
  * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
  *
  * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
@@ -18275,6 +18400,19 @@ export interface RecoverySigningRequest {
   expiresAt?: string;
 }
 /**
+ * How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.
+ */
+export interface Referral {
+  /**
+   * The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.
+   */
+  via?: string;
+  /**
+   * A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.
+   */
+  label?: string;
+}
+/**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
  */
 export interface RegisteredCredential {
@@ -20453,6 +20591,66 @@ export interface SealedShare {
   recipient: TrusteeIndex;
   share: SealedPayload;
 }
+export interface SelfRegistrationPolicy {
+  /**
+   * The hosting domain the terms apply to.
+   */
+  domain: string;
+  /**
+   * Whether the domain admits new registrations now. `false` closes it without discarding its terms: registrations are refused with `registrationClosed`, while existing accounts keep their DIDs, renew and expire as before.
+   */
+  enabled: boolean;
+  /**
+   * The admission evidence the domain accepts: `invite`, an invite from did-management/account/invite/issue; `voucher`, a voucher from one of `trustedIssuers`. Empty only when `enabled` is `false`.
+   *
+   * @maxItems 2
+   */
+  admissions: [] | ["invite" | "voucher"] | ["invite" | "voucher", "invite" | "voucher"];
+  /**
+   * The authorising parties — trust communities, or any other party the operator chooses — whose vouchers admit a registrant here. Non-empty exactly when `admissions` includes `voucher`; no DID appears twice.
+   *
+   * @maxItems 256
+   */
+  trustedIssuers: TrustedIssuer[];
+  /**
+   * Every DID a self-registered account holds sits under one of these `/`-separated prefixes, matched on whole segments. Empty: any path the domain's grammar admits.
+   *
+   * @maxItems 32
+   */
+  pathPrefixes: string[];
+  /**
+   * The most self-registered accounts the domain holds at once.
+   */
+  maxRegistrations: number;
+  /**
+   * The most DIDs one self-registered account may hold, its own included. Absent: the service's ordinary per-account limit, as for any account an administrator creates.
+   */
+  maxDidCount?: number;
+  /**
+   * The most bytes of DID content one self-registered account may hold. Absent: the service's ordinary per-account limit.
+   */
+  maxTotalSizeBytes?: number;
+  /**
+   * Days an account may go without a liveness signal before its DIDs are disabled. `0`: accounts on this domain do not expire.
+   */
+  inactivityDays: number;
+  /**
+   * Days a disabled account is kept, and can be restored by its holder's renewal, before it is purged.
+   */
+  graceDays: number;
+  /**
+   * The most invites that may be pending for the domain at once.
+   */
+  maxPendingInvites: number;
+  /**
+   * When the terms last changed. Set by the service; ignored in a `set` request.
+   */
+  updatedAt?: string;
+  /**
+   * The administrator who last changed them, or `operator` for terms seeded from the service's configuration. Set by the service; ignored in a `set` request.
+   */
+  updatedBy?: string;
+}
 /**
  * Who the service says it is.
  */
@@ -21656,6 +21854,19 @@ export interface TrustRecord_RegistryV0_2 {
    * The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.
    */
   validUntil?: string;
+}
+/**
+ * An authorising party whose `DidHostingVoucher`s admit a registrant.
+ */
+export interface TrustedIssuer {
+  /**
+   * The party's DID: a voucher's `issuer`. A `did:scid` is compared without its `src`.
+   */
+  did: string;
+  /**
+   * The operator's name for the party. Not published.
+   */
+  label?: string;
 }
 /**
  * The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.

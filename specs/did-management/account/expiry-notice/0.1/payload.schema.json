@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/expiry-notice/0.1",
+  "title": "DID Management — Account Expiry Notice — payload",
+  "description": "A DID hosting service tells an account holder that its account is about to be disabled for inactivity, has been, or is about to be purged. Fire-and-forget: there is no success response. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["stage", "account"],
+  "properties": {
+    "stage": {
+      "type": "string",
+      "enum": ["disablePending", "disabled", "purgePending"],
+      "description": "Which notice this is. `disablePending`: the account will be disabled at `account.disableAt` unless renewed. `disabled`: its DIDs no longer resolve, and it will be purged at `account.purgeAt` unless renewed. `purgePending`: the last notice before `account.purgeAt`."
+    },
+    "account": {
+      "$ref": "../../../_shared/0.4/hosting-account.schema.json#/$defs/HostingAccount"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

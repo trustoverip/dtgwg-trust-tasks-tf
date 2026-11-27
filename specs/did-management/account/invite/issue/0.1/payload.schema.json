@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/invite/issue/0.1",
+  "title": "DID Management — Account Invite Issue — payload",
+  "description": "An administrator of a DID hosting service issues a single-use invite that lets a party with no account register one (did-management/account/register). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "ttlSeconds"
+  ],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "The hosting domain the invite admits an account on. The domain must accept self-registration by invite."
+    },
+    "pathPrefix": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "When present, the account's DIDs must be hosted under this path prefix, in addition to the domain's own path rules. Absent: the domain's rules alone apply."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "An operator note on who the invite is for, shown by did-management/account/invite/list. Never sent to the invitee by this family."
+    },
+    "ttlSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 2592000,
+      "description": "How long the invite stays redeemable, in seconds (at most 30 days). REQUIRED, with no default: how long an unredeemed invite may wait is the operator's policy. A consumer MAY cap it lower."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    },
+    "referral": {
+      "$ref": "../../../../_shared/0.4/hosting-account.schema.json#/$defs/Referral",
+      "description": "Optional: the source this invite stands for (a community, a campaign). The account it admits carries this referral as verified, in place of any the registrant states."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Account Invite Issue — response payload",
+      "description": "The issued invite and, once only, its two secrets. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invite",
+        "token",
+        "claimCode"
+      ],
+      "properties": {
+        "invite": {
+          "$ref": "../../../../_shared/0.4/hosting-account.schema.json#/$defs/AccountInvite"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 256,
+          "description": "The invite's single-use token, of at least 128 bits of entropy. Returned only here; the service keeps a slow hash of it."
+        },
+        "claimCode": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 64,
+          "description": "A short code the invitee presents with the token. The administrator delivers it over a different channel from the token, so that intercepting one is not enough to redeem. Returned only here; the service keeps a slow hash of it."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
