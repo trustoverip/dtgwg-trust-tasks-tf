@@ -954,10 +954,11 @@ impl Shared {
             return self.refuse(&doc, Self::invalid_token()).await;
         }
         // 4. The purpose or a category is outside the grant.
-        let asked: Vec<String> = if p.categories.is_empty() {
-            categories.clone()
-        } else {
-            p.categories.iter().map(|c| c.to_string()).collect()
+        // Absent means every category the grant covers; `minItems: 1` keeps
+        // a present list from being empty.
+        let asked: Vec<String> = match &p.categories {
+            None => categories.clone(),
+            Some(asked) => asked.iter().map(|c| c.to_string()).collect(),
         };
         if !purposes.contains(&p.purpose.0) || asked.iter().any(|c| !categories.contains(c)) {
             return self.refuse(&doc, Self::denied()).await;

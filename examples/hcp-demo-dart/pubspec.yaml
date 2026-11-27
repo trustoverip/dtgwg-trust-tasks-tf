@@ -36,11 +36,8 @@ dev_dependencies:
   test: ^1.26.3
 
 # The siblings name the published core; build all three against this
-# checkout's. affinidi_tsp is overridden to 0.2 (TSP 1.0) because this
-# checkout's trust_tasks_tsp still declares ^0.1.0 (TSP Rev 3); its move to 0.2
-# (#1388) makes this override unnecessary. An application outside this
-# repository depends on published versions and needs no override.
+# checkout's. An application outside this repository depends on published
+# versions and needs no override.
 dependency_overrides:
   trust_tasks:
     path: ../../trust-tasks-dart
-  affinidi_tsp: ^0.2.0

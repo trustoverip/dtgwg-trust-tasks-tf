@@ -332,13 +332,11 @@ reason.
 
 Differences that print nothing:
 
-- **TSP version.** The Rust (`affinidi-tsp` 0.5), Go (`affinidi-tsp-go` v0.2.0) and Dart
-  (`affinidi_tsp` 0.2) ports speak TSP 1.0 (`YTSP-BAA`): HPKE-Base sealed and signed, the sender
-  authenticated by the signature and the ESSR sender field. The TypeScript port is still on TSP
-  Rev 2 (HPKE-Auth sealed, signed), through this checkout's `@openvtc/trust-tasks-tsp`, which
-  depends on `@openvtc/vti-tsp-js` ^0.2.0; it moves to TSP 1.0 when that package moves to
-  `vti-tsp-js` ^0.4 (#1387), and the demo then drops `senderEncryptionKey` from its pack and unpack
-  keys. The ports exchange no TSP bytes with each other, so the transcript is the same either way.
+- **TSP version.** Every port speaks TSP 1.0 (`YTSP-BAA`) under binding `tsp/0.3`: Rust through
+  `affinidi-tsp` 0.5, TypeScript through `@openvtc/vti-tsp-js` 0.4, Go through `affinidi-tsp-go`
+  v0.2.0 and Dart through `affinidi_tsp` 0.2. A message is HPKE-Base sealed and signed, the sender
+  authenticated by the signature and the ESSR sender field. The ports exchange no TSP bytes with
+  each other, so the transcript does not depend on the TSP version.
 - **Dart** (`hcp-demo-dart`): its `TspConsumer` mints the
   `id` of an error the library builds (tests 3 and 4) with a random `urn:uuid`, as it has no id
   hook; those tests check only the code.

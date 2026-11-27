@@ -679,8 +679,8 @@ final class World {
         access: grant.access,
         grantType: grant_request.GrantGrantType.temporary,
         issuedAt: grant.issuedAt,
-        // A temporary grant's expiresAt is never null, so the generated
-        // encoder's omission of a null member does not arise here.
+        // Required and nullable: a temporary grant's expiresAt is never
+        // null, but the generated encoder would write a null one as `null`.
         expiresAt: grant.expiresAt,
         status: grant_request.GrantStatus(grant.status),
       ),

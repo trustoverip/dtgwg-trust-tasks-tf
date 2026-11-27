@@ -9,8 +9,8 @@
 //
 // Every document is built with the generated types, signed with
 // @openvtc/trust-tasks-proof, sealed with @openvtc/trust-tasks-tsp (a Direct
-// TSP Rev 2 message: HPKE-Auth, signed; TSP 1.0 once trust-tasks-ts-tsp moves to
-// @openvtc/vti-tsp-js 0.4), opened, and run through the SPEC §7.2
+// TSP 1.0 message: HPKE-Base sealed and signed, the sender authenticated by the
+// signature and the ESSR sender field), opened, and run through the SPEC §7.2
 // pipeline (proof verified over the document as received, payload validated
 // against its schema) before anything acts on it. Nothing touches the network.
 
@@ -238,7 +238,7 @@ export class World {
     const wire = await packTrustTask(doc as Record<string, unknown>, {
       senderVid: from.vid,
       receiverVid: to.vid,
-      keys: { senderSigningKey: from.sigPriv, senderEncryptionKey: from.encPriv, receiverEncryptionKey: to.encPub },
+      keys: { senderSigningKey: from.sigPriv, receiverEncryptionKey: to.encPub },
     });
 
     // ── receiving side ──
@@ -246,7 +246,7 @@ export class World {
     const sender = this.byVid(advertisedSender(wire)!);
     const unpacked = await unpackTrustTask(wire, {
       recipientVid: to.vid,
-      keys: { receiverDecryptionKey: to.encPriv, senderEncryptionKey: sender.encPub, senderSigningKey: sender.sigPub },
+      keys: { receiverDecryptionKey: to.encPriv, senderSigningKey: sender.sigPub },
     });
     const spec = SPECS[unpacked.document.type.split("#")[0]!];
     if (spec === undefined) throw new Error(`no handler for ${unpacked.document.type}`);
@@ -257,7 +257,7 @@ export class World {
     const replyWire = await consumer.packReply(received);
     const opened = await unpackTrustTask(replyWire, {
       recipientVid: from.vid,
-      keys: { receiverDecryptionKey: from.encPriv, senderEncryptionKey: to.encPub, senderSigningKey: to.sigPub },
+      keys: { receiverDecryptionKey: from.encPriv, senderSigningKey: to.sigPub },
     });
     const reply = opened.document as unknown as TrustTaskDocument<any>;
     const sent = doc as TrustTaskDocument<unknown>;

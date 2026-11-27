@@ -35,7 +35,7 @@ type Response struct {
 	// directives (question 5). HCP's own shape leaves the member optional; the carriage
 	// requires it, as a list or null, so that "none applies" is never confused with "not a
 	// Context Client", pending HCP confirmation (question 42).
-	Directives *[]Directive `json:"directives,omitempty"`
+	Directives *[]Directive `json:"directives"`
 
 	// HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.1).
 	RespondedAt Instant `json:"respondedAt"`
