@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/announcements/send/0.1",
+  "title": "VTC Events — Announcements — Send — payload",
+  "description": "A host posts an announcement to an event's registrants. It never moves the event, and its text is never in a notification. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "text"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Announcements — Send — response payload",
+      "description": "The success response to a vtc/events/announcements/send/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/announcements/send/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "announcement"
+      ],
+      "properties": {
+        "announcement": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventAnnouncement"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

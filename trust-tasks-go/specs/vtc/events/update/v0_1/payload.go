@@ -13,6 +13,8 @@ import (
 
 // Response The success response to a vtc/events/update/0.1 request. Carried in a Trust
 // Task document whose type is https://trusttasks.org/spec/vtc/events/update/0.1#response.
+//
+// Deprecated: superseded by vtc/events/update/0.2
 type Response struct {
 	// The event as it now is, as its host sees it.
 	Event Event `json:"event"`
@@ -444,6 +446,8 @@ type EntryID = string
 
 // Payload Change an event. Members present replace what is stored. The outer document
 // members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/events/update/0.2
 type Payload struct {
 	EventID EventID     `json:"eventId"`
 	Title   *EventTitle `json:"title,omitempty"`
@@ -498,7 +502,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/events/update/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/update/0.1#response"

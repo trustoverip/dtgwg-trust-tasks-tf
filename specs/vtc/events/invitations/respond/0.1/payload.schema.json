@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/invitations/respond/0.1",
+  "title": "VTC Events — Invitations — Respond — payload",
+  "description": "An invited member answers: going or maybe, which registers them as vtc/events/registrations/register would, or decline, which records that they will not come and registers nothing. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "answer"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "answer": {
+      "type": "string",
+      "enum": [
+        "going",
+        "maybe",
+        "decline"
+      ],
+      "description": "`going` or `maybe` registers; `decline` registers nothing."
+    },
+    "guests": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Going or maybe: plus-ones."
+    },
+    "answers": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/RegistrationAnswers",
+      "description": "Going or maybe: answers to the event's questions."
+    },
+    "codeOfConductAcknowledged": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Going or maybe: the digest of the code of conduct acknowledged."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Invitations — Respond — response payload",
+      "description": "The success response to a vtc/events/invitations/respond/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/invitations/respond/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invitation",
+        "event"
+      ],
+      "properties": {
+        "invitation": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventInvitation"
+        },
+        "registration": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/Registration",
+          "description": "Going or maybe: the registration, the member's receipt."
+        },
+        "event": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventRef"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

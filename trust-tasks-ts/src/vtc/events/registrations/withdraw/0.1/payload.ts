@@ -8,6 +8,8 @@ import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTit
 
 /**
  * A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.2
  */
 export interface VTCEventsRegistrationsWithdrawPayload {
   eventId: EventId;
@@ -15,6 +17,8 @@ export interface VTCEventsRegistrationsWithdrawPayload {
 }
 /**
  * The success response to a vtc/events/registrations/withdraw/0.1 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.1#response.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.2
  */
 export interface VTCEventsRegistrationsWithdrawResponsePayload {
   /**
@@ -52,15 +56,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/withdraw/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.2
+ */
 export type Payload = VTCEventsRegistrationsWithdrawPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.2
+ */
 export type Response = VTCEventsRegistrationsWithdrawResponsePayload;
 
 /**

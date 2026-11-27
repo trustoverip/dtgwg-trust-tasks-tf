@@ -80,7 +80,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Access — Show** Trust Task reads where an event happens and how to join it: its places (name, address, directions, a door code), its online links (a video call and its passcode) and its notes. An event's access details are **released, not published** (VTI-EVT-060, VTI-EVT-061): they are never in [`vtc/events/list`](../../../list/0.1/spec.md), never in [`vtc/events/show`](../../../show/0.1/spec.md) unless the hosts made them public, never in a notification, a calendar feed or a public page. The audience sees the event's `placeSummary` — `Central London`, `Online` — and a registrant who is going reads the rest here, from the moment the hosts chose.
+The **VTC Events — Access — Show** Trust Task reads where an event happens and how to join it: its places (name, address, directions, a door code), its online links (a video call and its passcode) and its notes. An event's access details are **released, not published** (VTI-EVT-060, VTI-EVT-061): they are never in [`vtc/events/list`](../../../list/0.2/spec.md), never in [`vtc/events/show`](../../../show/0.2/spec.md) unless the hosts made them public, never in a notification, a calendar feed or a public page. The audience sees the event's `placeSummary` — `Central London`, `Online` — and a registrant who is going reads the rest here, from the moment the hosts chose.
 
 ## Status of this Document
 
@@ -102,7 +102,7 @@ A conforming **consumer** (the community) **MUST**:
 4. Otherwise answer only a caller whose registration for the event is `going` (VTI-EVT-060); refuse any other caller who may see the event with `notGoing`, naming their status. Guests the registrant brings are covered by the registrant's answer; they hold no registration of their own.
 5. Refuse a going registrant before the event's `revealAt` with `notYet`, naming it; and refuse one for a cancelled event with `eventCancelled`.
 6. Answer the access details as they stand and the event's current `sequence`, so a reader holding an older copy knows it changed (VTI-EVT-063). Leave `public` and `revealAt` in the answer: they are the hosts' settings, not secrets.
-7. Answer an event whose access details are `public` to every caller who may see it, as [`vtc/events/show`](../../../show/0.1/spec.md) already does.
+7. Answer an event whose access details are `public` to every caller who may see it, as [`vtc/events/show`](../../../show/0.2/spec.md) already does.
 
 ## Authorization
 

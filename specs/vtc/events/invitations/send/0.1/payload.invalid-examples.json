@@ -1,0 +1,81 @@
+[
+  {
+    "note": "`entryIds` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "Invitees are entries, never DIDs.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryIds": [
+        "did:example:ada"
+      ]
+    }
+  },
+  {
+    "note": "At most 50 per request.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryIds": [
+        "dir_Member00000000000",
+        "dir_Member00000000001",
+        "dir_Member00000000002",
+        "dir_Member00000000003",
+        "dir_Member00000000004",
+        "dir_Member00000000005",
+        "dir_Member00000000006",
+        "dir_Member00000000007",
+        "dir_Member00000000008",
+        "dir_Member00000000009",
+        "dir_Member00000000010",
+        "dir_Member00000000011",
+        "dir_Member00000000012",
+        "dir_Member00000000013",
+        "dir_Member00000000014",
+        "dir_Member00000000015",
+        "dir_Member00000000016",
+        "dir_Member00000000017",
+        "dir_Member00000000018",
+        "dir_Member00000000019",
+        "dir_Member00000000020",
+        "dir_Member00000000021",
+        "dir_Member00000000022",
+        "dir_Member00000000023",
+        "dir_Member00000000024",
+        "dir_Member00000000025",
+        "dir_Member00000000026",
+        "dir_Member00000000027",
+        "dir_Member00000000028",
+        "dir_Member00000000029",
+        "dir_Member00000000030",
+        "dir_Member00000000031",
+        "dir_Member00000000032",
+        "dir_Member00000000033",
+        "dir_Member00000000034",
+        "dir_Member00000000035",
+        "dir_Member00000000036",
+        "dir_Member00000000037",
+        "dir_Member00000000038",
+        "dir_Member00000000039",
+        "dir_Member00000000040",
+        "dir_Member00000000041",
+        "dir_Member00000000042",
+        "dir_Member00000000043",
+        "dir_Member00000000044",
+        "dir_Member00000000045",
+        "dir_Member00000000046",
+        "dir_Member00000000047",
+        "dir_Member00000000048",
+        "dir_Member00000000049",
+        "dir_Member00000000050"
+      ]
+    }
+  },
+  {
+    "note": "`invitations` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

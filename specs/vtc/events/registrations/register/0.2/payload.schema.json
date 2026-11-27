@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/registrations/register/0.2",
+  "title": "VTC Events — Registrations — Register — payload",
+  "description": "A member registers for an event, or changes their registration: going or maybe, how many guests, their answers to the event's questions, and the code of conduct they acknowledge. The community decides whether that makes them going, pending a host's decision or waitlisted, and its signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "status"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "going",
+        "maybe"
+      ],
+      "description": "What the member says. Only `going` or `maybe`: whether `going` makes them going, pending or waitlisted is the community's to decide (VTI-EVT-031 – 033). To stop going, use vtc/events/registrations/withdraw."
+    },
+    "guests": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Plus-ones the member brings, at most the event's `plusOnes`. Absent means 0 on a new registration and unchanged on a change."
+    },
+    "answers": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/RegistrationAnswers",
+      "description": "Answers to the event's questions, keyed by `questionId`. On a change, the answers given replace the ones held; absent leaves them unchanged."
+    },
+    "codeOfConductAcknowledged": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The `sha256` of the event's code of conduct, which the member read and acknowledges. REQUIRED by the community where the event names one (VTI-EVT-035)."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/MembershipPresentation",
+      "description": "Only from a party who is not a member of this community, for an event whose audience names partners: their presentation of the membership credential a named partner issued them (VTI-EVT-132). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Registrations — Register — response payload",
+      "description": "The success response to a vtc/events/registrations/register/0.2 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/register/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/Registration",
+          "description": "The registration as it now stands: `going`, `maybe`, `pending` or `waitlisted`, with the roster setting it was made under."
+        },
+        "event": {
+          "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventRef",
+          "description": "The event as it stood when the community answered."
+        },
+        "wasCreated": {
+          "type": "boolean",
+          "description": "True when this request created the registration rather than changing one held."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

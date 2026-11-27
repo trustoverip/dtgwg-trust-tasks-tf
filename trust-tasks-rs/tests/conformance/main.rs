@@ -2900,6 +2900,14 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod announcements {
+            mod list {
+                mod v0_1;
+            }
+            mod send {
+                mod v0_1;
+            }
+        }
         mod calendars {
             mod create {
                 mod v0_1;
@@ -2916,6 +2924,7 @@ mod vtc {
         }
         mod create {
             mod v0_1;
+            mod v0_2;
         }
         mod delete {
             mod v0_1;
@@ -2931,11 +2940,43 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod invitations {
+            mod links {
+                mod create {
+                    mod v0_1;
+                }
+                mod redeem {
+                    mod v0_1;
+                }
+                mod revoke {
+                    mod v0_1;
+                }
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod respond {
+                mod v0_1;
+            }
+            mod send {
+                mod v0_1;
+            }
+        }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod mine {
             mod list {
+                mod v0_1;
+                mod v0_2;
+            }
+        }
+        mod optouts {
+            mod list {
+                mod v0_1;
+            }
+            mod set {
                 mod v0_1;
             }
         }
@@ -2945,18 +2986,23 @@ mod vtc {
         mod registrations {
             mod decide {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod register {
                 mod v0_1;
+                mod v0_2;
             }
             mod remove {
                 mod v0_1;
+                mod v0_2;
             }
             mod withdraw {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod report {
@@ -2964,9 +3010,11 @@ mod vtc {
         }
         mod show {
             mod v0_1;
+            mod v0_2;
         }
         mod update {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod groups {

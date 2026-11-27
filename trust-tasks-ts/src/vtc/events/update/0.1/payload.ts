@@ -8,6 +8,8 @@ import type { AccessDetails, Accessibility, CalendarId, CodeOfConduct, Count, Dy
 
 /**
  * Change an event. Members present replace what is stored. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/update/0.2
  */
 export interface VTCEventsUpdatePayload {
   eventId: EventId;
@@ -66,6 +68,8 @@ export interface VTCEventsUpdatePayload {
 }
 /**
  * The success response to a vtc/events/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/update/0.1#response.
+ *
+ * @deprecated superseded by vtc/events/update/0.2
  */
 export interface VTCEventsUpdateResponsePayload {
   /**
@@ -95,15 +99,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/update/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/update/0.2
+ */
 export type Payload = VTCEventsUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/update/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/update/0.2
+ */
 export type Response = VTCEventsUpdateResponsePayload;
 
 /**

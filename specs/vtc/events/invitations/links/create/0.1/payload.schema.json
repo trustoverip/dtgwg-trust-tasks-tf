@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/invitations/links/create/0.1",
+  "title": "VTC Events — Invitations — Links — Create — payload",
+  "description": "A host makes an invitation link for an event: a code an active member redeems to be invited by name, kept by the community only as a digest, with an expiry and a most number of redemptions. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "maxRedemptions",
+    "expiresAt"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "What the hosts call it. Plain text."
+    },
+    "maxRedemptions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000,
+      "description": "The most members who may redeem it."
+    },
+    "expiresAt": {
+      "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventInstant",
+      "description": "Not after the event ends."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Invitations — Links — Create — response payload",
+      "description": "The success response to a vtc/events/invitations/links/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/invitations/links/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link",
+        "code"
+      ],
+      "properties": {
+        "link": {
+          "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventInvitationLink"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43,86}$",
+          "description": "The code, answered this once; it goes in the trigger link the host shares (VTI-LNK)."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

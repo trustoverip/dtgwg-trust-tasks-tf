@@ -1,0 +1,18 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "At most 100 a page.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "limit": 1000
+    }
+  },
+  {
+    "note": "`items` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]
