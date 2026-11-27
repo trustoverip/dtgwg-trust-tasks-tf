@@ -36,6 +36,20 @@ macro_rules! d_AccessDetail_770259fe {
 }
 pub(crate) use d_AccessDetail_770259fe;
 
+macro_rules! d_AccessDetails_d64d030c {
+    () => {
+        "\"AccessDetails\":{\"additionalProperties\":false,\"description\":\"Where the event happens and how to join it (VTI-EVT-060 – 063). Answered by vtc/events/access/show to a registrant who is going, from `revealAt` if set; included in the event itself only where `public` is true.\",\"properties\":{\"notes\":{\"description\":\"Anything else attendees need. Plain text.\",\"maxLength\":2000,\"minLength\":1,\"type\":\"string\"},\"places\":{\"items\":{\"$ref\":\"#/$defs/Place\"},\"maxItems\":8,\"type\":\"array\"},\"public\":{\"description\":\"Show the access details with the event to its whole audience. Absent means false.\",\"type\":\"boolean\"},\"revealAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Not before this, even to a registrant who is going. Absent means on acceptance.\"},\"virtualPlaces\":{\"items\":{\"$ref\":\"#/$defs/VirtualPlace\"},\"maxItems\":8,\"type\":\"array\"}},\"title\":\"AccessDetails\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AccessDetails_d64d030c;
+
+macro_rules! d_Accessibility_cd111cc8 {
+    () => {
+        "\"Accessibility\":{\"additionalProperties\":false,\"description\":\"What the event offers for access, as the host states it (VTI-EVT-036). Each flag absent means not stated, not that it is missing.\",\"properties\":{\"captions\":{\"type\":\"boolean\"},\"hearingLoop\":{\"type\":\"boolean\"},\"notes\":{\"description\":\"Anything else. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"quietSpace\":{\"type\":\"boolean\"},\"remoteOption\":{\"type\":\"boolean\"},\"stepFree\":{\"type\":\"boolean\"}},\"title\":\"Accessibility\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Accessibility_cd111cc8;
+
 macro_rules! d_AccountBinding_4188c14e {
     () => {
         "\"AccountBinding\":{\"additionalProperties\":false,\"description\":\"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\"properties\":{\"consumer\":{\"description\":\"The DID of the integration allowed to use the account.\",\"maxLength\":2048,\"minLength\":7,\"pattern\":\"^did:[a-z0-9]+:\\\\S+$\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"maxTtlSeconds\":{\"description\":\"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\"maximum\":3600,\"minimum\":60,\"type\":\"integer\"},\"ratePerMinute\":{\"description\":\"Issuances or signatures per minute for this binding.\",\"maximum\":600,\"minimum\":1,\"type\":\"integer\"},\"scopeCeiling\":{\"$ref\":\"#/$defs/CredentialScopeCeiling\",\"description\":\"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"},\"sourceCidrs\":{\"description\":\"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\"items\":{\"maxLength\":49,\"pattern\":\"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"}},\"required\":[\"consumer\",\"maxTtlSeconds\",\"ratePerMinute\"],\"title\":\"AccountBinding\",\"type\":\"object\"}"
@@ -806,6 +820,20 @@ macro_rules! d_CalendarDate_6959b257 {
 }
 pub(crate) use d_CalendarDate_6959b257;
 
+macro_rules! d_CalendarId_496c49b1 {
+    () => {
+        "\"CalendarId\":{\"description\":\"Opaque identifier of a calendar: `cal_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-010).\",\"pattern\":\"^cal_[A-Za-z0-9_-]{16,64}$\",\"title\":\"CalendarId\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_CalendarId_496c49b1;
+
+macro_rules! d_Calendar_247bf9f2 {
+    () => {
+        "\"Calendar\":{\"additionalProperties\":false,\"description\":\"A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.\",\"properties\":{\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"color\":{\"$ref\":\"#/$defs/Color\"},\"community\":{\"description\":\"True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).\",\"type\":\"boolean\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"defaultReminderMinutes\":{\"description\":\"The reminders a new event in this calendar suggests, as minutes before its start.\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"defaultRoster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting a new event in this calendar starts with. Absent means `hidden`.\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The group whose calendar this is. Absent for the community's own calendar.\"},\"name\":{\"$ref\":\"#/$defs/EventTitle\"},\"state\":{\"description\":\"`archived`: takes no new events; its events are kept.\",\"enum\":[\"active\",\"archived\"],\"type\":\"string\"}},\"required\":[\"calendarId\",\"name\",\"state\",\"createdAt\"],\"title\":\"Calendar\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Calendar_247bf9f2;
+
 macro_rules! d_CapabilityGrant_b7831816 {
     () => {
         "\"CapabilityGrant\":{\"additionalProperties\":false,\"description\":\"A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.\",\"properties\":{\"additive\":{\"description\":\"`true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change.\",\"type\":\"boolean\"},\"capability\":{\"$ref\":\"#/$defs/Capability\"},\"resource\":{\"$ref\":\"#/$defs/ResourceQualifier\",\"description\":\"Optional qualifier. Absent covers every resource of the capability's kind.\"}},\"required\":[\"capability\"],\"title\":\"CapabilityGrant\",\"type\":\"object\"}"
@@ -1030,6 +1058,13 @@ macro_rules! d_ClientDescription_b9e66f88 {
 }
 pub(crate) use d_ClientDescription_b9e66f88;
 
+macro_rules! d_CodeOfConduct_fe0f0541 {
+    () => {
+        "\"CodeOfConduct\":{\"additionalProperties\":false,\"description\":\"A code of conduct a registrant acknowledges before the registration is accepted (VTI-EVT-035). `sha256` pins the text acknowledged.\",\"properties\":{\"sha256\":{\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"url\":{\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"url\",\"sha256\"],\"title\":\"CodeOfConduct\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_CodeOfConduct_fe0f0541;
+
 macro_rules! d_CollectionSetting_5648f015 {
     () => {
         "\"CollectionSetting\":{\"additionalProperties\":false,\"dependentSchemas\":{\"changedAt\":{\"required\":[\"changedBy\"]},\"changedBy\":{\"required\":[\"changedAt\"]}},\"description\":\"Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.\",\"properties\":{\"changedAt\":{\"description\":\"When `collectByDefault` was last changed.\",\"format\":\"date-time\",\"type\":\"string\"},\"changedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096).\"},\"collectByDefault\":{\"description\":\"The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts.\",\"type\":\"boolean\"},\"contextId\":{\"$ref\":\"#/$defs/ContextId\",\"description\":\"The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094).\"},\"suspendedByOperator\":{\"description\":\"Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension.\",\"type\":\"boolean\"}},\"required\":[\"contextId\",\"collectByDefault\",\"suspendedByOperator\"],\"title\":\"CollectionSetting\",\"type\":\"object\"}"
@@ -1043,6 +1078,13 @@ macro_rules! d_Collector_20fdf866 {
     };
 }
 pub(crate) use d_Collector_20fdf866;
+
+macro_rules! d_Color_1d45208a {
+    () => {
+        "\"Color\":{\"description\":\"A colour as `#RRGGBB`, for showing a calendar's events apart from another's.\",\"pattern\":\"^#[0-9A-Fa-f]{6}$\",\"title\":\"Color\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Color_1d45208a;
 
 macro_rules! d_CommunityBranding_2905df5f {
     () => {
@@ -1219,6 +1261,13 @@ macro_rules! d_Context_7aaaef56 {
 }
 pub(crate) use d_Context_7aaaef56;
 
+macro_rules! d_Count_2fbe0580 {
+    () => {
+        "\"Count\":{\"additionalProperties\":false,\"description\":\"A number of registrants as shown to someone who is not a host: `exact` at or above the event's count threshold, `fewerThan` (the threshold) below it, so a small count does not single anyone out (VTI-EVT-054). Exactly one of the two.\",\"maxProperties\":1,\"minProperties\":1,\"properties\":{\"exact\":{\"minimum\":0,\"type\":\"integer\"},\"fewerThan\":{\"maximum\":100,\"minimum\":2,\"type\":\"integer\"}},\"title\":\"Count\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Count_2fbe0580;
+
 macro_rules! d_CredentialCreationOptions_9fe9cef5 {
     () => {
         "\"CredentialCreationOptions\":{\"$anchor\":\"credentialCreationOptions\",\"additionalProperties\":false,\"description\":\"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\"properties\":{\"attestation\":{\"enum\":[\"none\",\"indirect\",\"direct\",\"enterprise\"]},\"authenticatorSelection\":{\"additionalProperties\":false,\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"requireResidentKey\":{\"type\":\"boolean\"},\"residentKey\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]},\"userVerification\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]}},\"type\":\"object\"},\"challenge\":{\"description\":\"base64url-encoded one-time nonce.\",\"type\":\"string\"},\"excludeCredentials\":{\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"extensions\":{\"description\":\"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\"type\":\"object\"},\"pubKeyCredParams\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"alg\":{\"description\":\"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\"type\":\"integer\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"type\",\"alg\"],\"type\":\"object\"},\"minItems\":1,\"type\":\"array\"},\"rp\":{\"additionalProperties\":false,\"properties\":{\"id\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"timeout\":{\"minimum\":1,\"type\":\"integer\"},\"user\":{\"additionalProperties\":false,\"properties\":{\"displayName\":{\"maxLength\":64,\"type\":\"string\"},\"id\":{\"description\":\"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\"type\":\"string\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\",\"displayName\"],\"type\":\"object\"}},\"required\":[\"challenge\",\"rp\",\"user\",\"pubKeyCredParams\"],\"title\":\"PublicKeyCredentialCreationOptions\",\"type\":\"object\"}"
@@ -1379,6 +1428,13 @@ macro_rules! d_Dealing_37d661ed {
     };
 }
 pub(crate) use d_Dealing_37d661ed;
+
+macro_rules! d_Decision_332eb377 {
+    () => {
+        "\"Decision\":{\"description\":\"`approve`: the registration becomes going, or waitlisted where the event is full and keeps a waitlist. `decline`: the registration is declined; the registrant cannot re-open it.\",\"enum\":[\"approve\",\"decline\"],\"title\":\"Decision\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Decision_332eb377;
 
 macro_rules! d_Decision_6071b874 {
     () => {
@@ -2037,6 +2093,76 @@ macro_rules! d_EpochLink_3162eb88 {
     };
 }
 pub(crate) use d_EpochLink_3162eb88;
+
+macro_rules! d_EventAudienceScope_cfe64ee2 {
+    () => {
+        "\"EventAudienceScope\":{\"description\":\"Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.\",\"enum\":[\"members\",\"groups\",\"roles\"],\"title\":\"EventAudienceScope\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventAudienceScope_cfe64ee2;
+
+macro_rules! d_EventAudience_ff1e5c43 {
+    () => {
+        "\"EventAudience\":{\"additionalProperties\":false,\"description\":\"Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.\",\"properties\":{\"groups\":{\"description\":\"Present exactly when `scope` is `groups`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"roles\":{\"description\":\"Present exactly when `scope` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/RoleName\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.\"},\"scope\":{\"$ref\":\"#/$defs/EventAudienceScope\"}},\"required\":[\"scope\"],\"title\":\"EventAudience\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EventAudience_ff1e5c43;
+
+macro_rules! d_EventDescription_70968dca {
+    () => {
+        "\"EventDescription\":{\"description\":\"What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":10000,\"minLength\":1,\"title\":\"EventDescription\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventDescription_70968dca;
+
+macro_rules! d_EventId_949f8f11 {
+    () => {
+        "\"EventId\":{\"description\":\"Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).\",\"pattern\":\"^evt_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventId\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventId_949f8f11;
+
+macro_rules! d_EventInstant_9cf8a7cf {
+    () => {
+        "\"EventInstant\":{\"description\":\"An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.\",\"format\":\"date-time\",\"title\":\"EventInstant\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventInstant_9cf8a7cf;
+
+macro_rules! d_EventKind_5e885bff {
+    () => {
+        "\"EventKind\":{\"description\":\"`event`: anything that happens at a time — a meetup, a workshop, a social. `meeting`: an event that may also carry an agenda, a chair, a quorum, minutes and motions; tasks that only mean something for a meeting refuse an event. Fixed for the event's life (VTI-EVT-003).\",\"enum\":[\"event\",\"meeting\"],\"title\":\"EventKind\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventKind_5e885bff;
+
+macro_rules! d_EventLifecycle_3d99bf37 {
+    () => {
+        "\"EventLifecycle\":{\"description\":\"`draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).\",\"enum\":[\"draft\",\"published\",\"cancelled\"],\"title\":\"EventLifecycle\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventLifecycle_3d99bf37;
+
+macro_rules! d_EventRef_10be7eb2 {
+    () => {
+        "\"EventRef\":{\"additionalProperties\":false,\"description\":\"What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"sequence\":{\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"title\",\"when\",\"status\",\"sequence\"],\"title\":\"EventRef\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EventRef_10be7eb2;
+
+macro_rules! d_EventTitle_7ed66703 {
+    () => {
+        "\"EventTitle\":{\"description\":\"A short name. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":200,\"minLength\":1,\"title\":\"EventTitle\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_EventTitle_7ed66703;
+
+macro_rules! d_Event_dc4cfcc7 {
+    () => {
+        "\"Event\":{\"additionalProperties\":false,\"description\":\"An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"Only where the access details are public, or the caller is a host.\"},\"accessibility\":{\"$ref\":\"#/$defs/Accessibility\"},\"audience\":{\"$ref\":\"#/$defs/EventAudience\"},\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"cancelReason\":{\"description\":\"Present once cancelled, where the host gave one. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"cancelledAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"countThreshold\":{\"description\":\"Below this many going, a count is shown as `fewerThan`. Absent means 5.\",\"maximum\":100,\"minimum\":2,\"type\":\"integer\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"full\":{\"description\":\"True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.\",\"type\":\"boolean\"},\"goingCount\":{\"$ref\":\"#/$defs/Count\",\"description\":\"People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.\"},\"hosts\":{\"description\":\"The event's appointed hosts. Its creator is the first.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/EventKind\"},\"listed\":{\"description\":\"Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).\",\"type\":\"boolean\"},\"placeSummary\":{\"$ref\":\"#/$defs/PlaceSummary\"},\"publishedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"registration\":{\"$ref\":\"#/$defs/RegistrationSettings\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\"},\"sequence\":{\"description\":\"Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).\",\"minimum\":0,\"type\":\"integer\"},\"showCount\":{\"description\":\"Show the number going to the audience, subject to `countThreshold`. Absent means false.\",\"type\":\"boolean\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"suggestedReminderMinutes\":{\"description\":\"Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"calendarId\",\"kind\",\"status\",\"title\",\"when\",\"audience\",\"registration\",\"roster\",\"listed\",\"sequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Event\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Event_dc4cfcc7;
 
 macro_rules! d_EvidenceDocument_14af4a63 {
     () => {
@@ -2752,6 +2878,13 @@ macro_rules! d_Issued_43396018 {
 }
 pub(crate) use d_Issued_43396018;
 
+macro_rules! d_JSCalendarDuration_1512b122 {
+    () => {
+        "\"JSCalendarDuration\":{\"description\":\"A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).\",\"maxLength\":32,\"minLength\":3,\"pattern\":\"^P(?!$)([0-9]+W)?([0-9]+D)?(T(?=[0-9])([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$\",\"title\":\"JSCalendarDuration\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_JSCalendarDuration_1512b122;
+
 macro_rules! d_JSContactCard_1820fb15 {
     () => {
         "\"JSContactCard\":{\"additionalProperties\":true,\"description\":\"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\"title\":\"JSContactCard\",\"type\":\"object\"}"
@@ -3094,6 +3227,13 @@ macro_rules! d_Listing_57d1f4c7 {
     };
 }
 pub(crate) use d_Listing_57d1f4c7;
+
+macro_rules! d_LocalDateTime_1e3e06f7 {
+    () => {
+        "\"LocalDateTime\":{\"description\":\"A local date and time with no offset, `YYYY-MM-DDTHH:MM:SS`, as JSCalendar's LocalDateTime. Read in the event's `timeZone`.\",\"pattern\":\"^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$\",\"title\":\"LocalDateTime\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_LocalDateTime_1e3e06f7;
 
 macro_rules! d_LocalSettings_cd510bad {
     () => {
@@ -3711,6 +3851,20 @@ macro_rules! d_PlaceName_95cfdec7 {
 }
 pub(crate) use d_PlaceName_95cfdec7;
 
+macro_rules! d_PlaceSummary_3534e514 {
+    () => {
+        "\"PlaceSummary\":{\"description\":\"A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text.\",\"maxLength\":200,\"minLength\":1,\"title\":\"PlaceSummary\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_PlaceSummary_3534e514;
+
+macro_rules! d_Place_37d00bf7 {
+    () => {
+        "\"Place\":{\"additionalProperties\":false,\"description\":\"A physical location, as JSCalendar's Location.\",\"properties\":{\"address\":{\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"description\":{\"description\":\"Directions, a door code. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\"],\"title\":\"Place\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Place_37d00bf7;
+
 macro_rules! d_PolicyChangedEvent_4fa7e5e4 {
     () => {
         "\"PolicyChangedEvent\":{\"additionalProperties\":false,\"properties\":{\"change\":{\"enum\":[\"created\",\"updated\",\"deleted\"],\"type\":\"string\"},\"kind\":{\"const\":\"policyChanged\"},\"occurredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"policyId\":{\"type\":\"string\"},\"seq\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"kind\",\"seq\",\"occurredAt\",\"policyId\",\"change\"],\"title\":\"PolicyChangedEvent\",\"type\":\"object\"}"
@@ -4320,6 +4474,76 @@ macro_rules! d_RegistrarState_0ac4473b {
 }
 pub(crate) use d_RegistrarState_0ac4473b;
 
+macro_rules! d_RegistrationAnswer_aa96e019 {
+    () => {
+        "\"RegistrationAnswer\":{\"anyOf\":[{\"maxLength\":500,\"type\":\"string\"},{\"type\":\"boolean\"}],\"description\":\"An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.\",\"title\":\"RegistrationAnswer\"}"
+    };
+}
+pub(crate) use d_RegistrationAnswer_aa96e019;
+
+macro_rules! d_RegistrationAnswers_94e05d0e {
+    () => {
+        "\"RegistrationAnswers\":{\"additionalProperties\":{\"$ref\":\"#/$defs/RegistrationAnswer\"},\"description\":\"Answers keyed by `questionId`.\",\"maxProperties\":20,\"propertyNames\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"title\":\"RegistrationAnswers\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationAnswers_94e05d0e;
+
+macro_rules! d_RegistrationId_aadbc7a5 {
+    () => {
+        "\"RegistrationId\":{\"description\":\"Opaque identifier of one registrant's registration for one event: `reg_` followed by 16 to 64 base64url characters. Random and unique within the community; a registrant has at most one registration per event (VTI-EVT-030).\",\"pattern\":\"^reg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"RegistrationId\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationId_aadbc7a5;
+
+macro_rules! d_RegistrationMode_085109d4 {
+    () => {
+        "\"RegistrationMode\":{\"description\":\"`open`: a member of the audience who registers is going at once (or waitlisted when full). `approval`: a registration is pending until a host decides it. `closed`: no registrations; the event is for information only (VTI-EVT-031).\",\"enum\":[\"open\",\"approval\",\"closed\"],\"title\":\"RegistrationMode\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationMode_085109d4;
+
+macro_rules! d_RegistrationQuestionId_2b2977be {
+    () => {
+        "\"RegistrationQuestionId\":{\"description\":\"A question's key within its event.\",\"pattern\":\"^[a-z][a-z0-9-]{0,31}$\",\"title\":\"RegistrationQuestionId\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationQuestionId_2b2977be;
+
+macro_rules! d_RegistrationQuestionKind_addaa298 {
+    () => {
+        "\"RegistrationQuestionKind\":{\"description\":\"`text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.\",\"enum\":[\"text\",\"choice\",\"boolean\"],\"title\":\"RegistrationQuestionKind\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationQuestionKind_addaa298;
+
+macro_rules! d_RegistrationQuestion_df1f5f45 {
+    () => {
+        "\"RegistrationQuestion\":{\"additionalProperties\":false,\"description\":\"A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).\",\"properties\":{\"choices\":{\"description\":\"Present exactly when `kind` is `choice`.\",\"items\":{\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"maxItems\":20,\"minItems\":2,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/RegistrationQuestionKind\"},\"label\":{\"description\":\"The question as shown. Plain text.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"questionId\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"required\":{\"description\":\"The registration is refused without an answer. Absent means false.\",\"type\":\"boolean\"}},\"required\":[\"questionId\",\"label\",\"kind\"],\"title\":\"RegistrationQuestion\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationQuestion_df1f5f45;
+
+macro_rules! d_RegistrationSettings_e3ff7b85 {
+    () => {
+        "\"RegistrationSettings\":{\"additionalProperties\":false,\"description\":\"How the event takes registrations (VTI-EVT-031 – 036).\",\"properties\":{\"capacity\":{\"description\":\"The most people who may be going, plus-ones included. Absent means no limit.\",\"maximum\":100000,\"minimum\":1,\"type\":\"integer\"},\"closesAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.\"},\"codeOfConduct\":{\"$ref\":\"#/$defs/CodeOfConduct\"},\"mode\":{\"$ref\":\"#/$defs/RegistrationMode\"},\"opensAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations are refused before this. Absent means from publication.\"},\"plusOnes\":{\"description\":\"The most guests a registrant may bring. Absent means 0.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/RegistrationQuestion\"},\"maxItems\":20,\"type\":\"array\"},\"waitlist\":{\"description\":\"Registrations beyond `capacity` are waitlisted, and the first on the waitlist becomes going when a place frees (VTI-EVT-033). Absent means false: a registration beyond capacity is refused.\",\"type\":\"boolean\"}},\"required\":[\"mode\"],\"title\":\"RegistrationSettings\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RegistrationSettings_e3ff7b85;
+
+macro_rules! d_RegistrationStatus_acc918c7 {
+    () => {
+        "\"RegistrationStatus\":{\"description\":\"Where a registration stands (VTI-EVT-032). `going`: has a place. `maybe`: has said maybe; holds no place. `pending`: awaits a host's decision. `waitlisted`: waits for a place, in order. `withdrawn`: the registrant withdrew. `declined`: a host declined a pending registration. `removed`: a host removed it.\",\"enum\":[\"going\",\"maybe\",\"pending\",\"waitlisted\",\"withdrawn\",\"declined\",\"removed\"],\"title\":\"RegistrationStatus\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RegistrationStatus_acc918c7;
+
+macro_rules! d_Registration_50244eab {
+    () => {
+        "\"Registration\":{\"additionalProperties\":false,\"description\":\"One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).\",\"properties\":{\"answers\":{\"$ref\":\"#/$defs/RegistrationAnswers\",\"description\":\"The registrant's and the hosts' view only.\"},\"codeOfConductAcknowledged\":{\"description\":\"The `sha256` of the code of conduct the registrant acknowledged.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"eventSequence\":{\"description\":\"The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.\",\"minimum\":0,\"type\":\"integer\"},\"guests\":{\"description\":\"Plus-ones the registrant brings.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"note\":{\"description\":\"A host's note on a decline or removal, shown to the registrant. Plain text.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"$ref\":\"#/$defs/RegistrationId\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting the registration was made under (VTI-EVT-052).\"},\"status\":{\"$ref\":\"#/$defs/RegistrationStatus\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"waitlistPosition\":{\"description\":\"While `waitlisted`: the registrant's place in the queue, 1 first.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"registrationId\",\"eventId\",\"entryId\",\"status\",\"guests\",\"roster\",\"eventSequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Registration\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Registration_50244eab;
+
 macro_rules! d_ReissuanceFollowUp_f5768d3e {
     () => {
         "\"ReissuanceFollowUp\":{\"additionalProperties\":false,\"description\":\"What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.\",\"properties\":{\"artefactsToReissue\":{\"description\":\"Attestation artefacts still in force that the VTA's signing record shows the key signed, which the node MUST re-issue with identical claims and expiry.\",\"minimum\":0,\"type\":\"integer\"},\"statusListsToResign\":{\"description\":\"Status lists signed by the revoked or lost key, which the node MUST re-sign at once under a sound attestation key.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ReissuanceFollowUp\",\"type\":\"object\"}"
@@ -4361,6 +4585,13 @@ macro_rules! d_ReleaseRequirement_bddc3a3e {
     };
 }
 pub(crate) use d_ReleaseRequirement_bddc3a3e;
+
+macro_rules! d_ReminderMinutes_e2ca1103 {
+    () => {
+        "\"ReminderMinutes\":{\"description\":\"A reminder's offset: how many minutes before the event's start it is due. At most four weeks.\",\"maximum\":40320,\"minimum\":1,\"title\":\"ReminderMinutes\",\"type\":\"integer\"}"
+    };
+}
+pub(crate) use d_ReminderMinutes_e2ca1103;
 
 macro_rules! d_RenewalCredentials_c0c37d2b {
     () => {
@@ -5776,6 +6007,13 @@ macro_rules! d_RootRequest_533f6109 {
 }
 pub(crate) use d_RootRequest_533f6109;
 
+macro_rules! d_RosterSetting_f5d25358 {
+    () => {
+        "\"RosterSetting\":{\"description\":\"Who may see who is registered (VTI-EVT-050). `visible`: registrants who are going or maybe see each other. `hidden`: no registrant sees another; the event's hosts do. Fixed once the event is published (VTI-EVT-051) and recorded on each registration (VTI-EVT-052).\",\"enum\":[\"visible\",\"hidden\"],\"title\":\"RosterSetting\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RosterSetting_f5d25358;
+
 macro_rules! d_RotationKind_58732040 {
     () => {
         "\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\"enum\":[\"planned\",\"compromise\",\"addition\"],\"title\":\"RotationKind\",\"type\":\"string\"}"
@@ -6455,6 +6693,13 @@ macro_rules! d_Tier_c778cdf8 {
 }
 pub(crate) use d_Tier_c778cdf8;
 
+macro_rules! d_TimeZoneId_d7536905 {
+    () => {
+        "\"TimeZoneId\":{\"description\":\"An IANA time zone name, such as `Europe/London`, or `Etc/UTC`. A responder MUST refuse a name its time zone database does not know.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+){0,2}$\",\"title\":\"TimeZoneId\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_TimeZoneId_d7536905;
+
 macro_rules! d_TokenBundle_eb16e850 {
     () => {
         "\"TokenBundle\":{\"$anchor\":\"tokenBundle\",\"additionalProperties\":false,\"description\":\"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\"properties\":{\"accessToken\":{\"description\":\"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\"minLength\":1,\"type\":\"string\"},\"expiresIn\":{\"description\":\"Seconds from issuance until the access token expires.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"refreshExpiresIn\":{\"description\":\"Seconds from issuance until the refresh token expires, when one was issued.\",\"minimum\":1,\"type\":\"integer\"},\"refreshToken\":{\"description\":\"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"description\":\"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"tokenType\":{\"description\":\"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"accessToken\",\"tokenType\",\"expiresIn\"],\"title\":\"TokenBundle\",\"type\":\"object\"}"
@@ -6903,6 +7148,20 @@ macro_rules! d_Vid_354245ac {
 }
 pub(crate) use d_Vid_354245ac;
 
+macro_rules! d_VirtualFeature_522d40e1 {
+    () => {
+        "\"VirtualFeature\":{\"description\":\"What a virtual location offers, as JSCalendar's VirtualLocation `features`.\",\"enum\":[\"audio\",\"chat\",\"feed\",\"moderator\",\"phone\",\"screen\",\"video\"],\"title\":\"VirtualFeature\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_VirtualFeature_522d40e1;
+
+macro_rules! d_VirtualPlace_dc4c8311 {
+    () => {
+        "\"VirtualPlace\":{\"additionalProperties\":false,\"description\":\"A way to join online, as JSCalendar's VirtualLocation.\",\"properties\":{\"description\":{\"description\":\"A passcode, dial-in numbers. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"features\":{\"items\":{\"$ref\":\"#/$defs/VirtualFeature\"},\"maxItems\":7,\"type\":\"array\",\"uniqueItems\":true},\"name\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"How to join: an `https` link, or a `tel`, `sip` or `sips` URI for a dial-in. No other scheme.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^(https|tel|sip|sips):\",\"type\":\"string\"}},\"required\":[\"uri\"],\"title\":\"VirtualPlace\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_VirtualPlace_dc4c8311;
+
 macro_rules! d_Visibility_c9eee55b {
     () => {
         "\"Visibility\":{\"description\":\"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\"enum\":[\"open\",\"attributed\",\"private\"],\"title\":\"Visibility\",\"type\":\"string\"}"
@@ -7000,6 +7259,13 @@ macro_rules! d_WebvhServerRecord_112e8b1e {
     };
 }
 pub(crate) use d_WebvhServerRecord_112e8b1e;
+
+macro_rules! d_When_a8906ca9 {
+    () => {
+        "\"When\":{\"additionalProperties\":false,\"description\":\"When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days (VTI-EVT-005).\",\"properties\":{\"duration\":{\"$ref\":\"#/$defs/JSCalendarDuration\"},\"showWithoutTime\":{\"description\":\"An all-day event. Absent means false.\",\"type\":\"boolean\"},\"start\":{\"$ref\":\"#/$defs/LocalDateTime\"},\"timeZone\":{\"$ref\":\"#/$defs/TimeZoneId\"}},\"required\":[\"start\",\"timeZone\",\"duration\"],\"title\":\"When\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_When_a8906ca9;
 
 macro_rules! d_Window_85bd7e01 {
     () => {

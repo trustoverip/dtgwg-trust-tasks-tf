@@ -2920,6 +2920,81 @@ mod vtc {
             mod v0_1;
         }
     }
+    mod events {
+        mod access {
+            mod show {
+                mod v0_1;
+            }
+        }
+        mod calendars {
+            mod create {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+        mod cancel {
+            mod v0_1;
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod delete {
+            mod v0_1;
+        }
+        mod hosts {
+            mod appoint {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod mine {
+            mod list {
+                mod v0_1;
+            }
+        }
+        mod publish {
+            mod v0_1;
+        }
+        mod registrations {
+            mod decide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod register {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod report {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
     mod groups {
         mod bindings {
             mod add {

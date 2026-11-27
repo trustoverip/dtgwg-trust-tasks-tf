@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/delete/0.1",
+  "title": "VTC Events — Delete — payload",
+  "description": "Delete a draft event. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Delete — response payload",
+      "description": "The success response to a vtc/events/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventId",
+          "description": "The draft deleted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

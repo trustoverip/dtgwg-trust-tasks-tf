@@ -1,0 +1,39 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_FreeLaserCutting001",
+      "note": "Looks like spam."
+    }
+  },
+  {
+    "note": "`reason` is one of the ReportReason values.",
+    "payload": {
+      "eventId": "evt_FreeLaserCutting001",
+      "reason": "boring"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — a report is never anonymous to the community; there is no `anonymous` flag (who reported is shown to administrators only).",
+    "payload": {
+      "eventId": "evt_FreeLaserCutting001",
+      "reason": "spam",
+      "anonymous": true
+    }
+  },
+  {
+    "note": "An empty note is refused; omit it instead.",
+    "payload": {
+      "eventId": "evt_FreeLaserCutting001",
+      "reason": "other",
+      "note": ""
+    }
+  },
+  {
+    "note": "Reports are identified by ReportId (`rpt_…`).",
+    "variant": "response",
+    "payload": {
+      "reportId": "evt_FreeLaserCutting001"
+    }
+  }
+]

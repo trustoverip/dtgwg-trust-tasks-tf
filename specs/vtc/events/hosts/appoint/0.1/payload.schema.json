@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/hosts/appoint/0.1",
+  "title": "VTC Events — Hosts — Appoint — payload",
+  "description": "A host of an event, or a holder of authority over its calendar, appoints a community member a co-host of that event: an access-control resource grant of `vtc.events.manage` qualified `event:<eventId>`. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "entryId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventId"
+    },
+    "entryId": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "The member appointed."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Hosts — Appoint — response payload",
+      "description": "The success response to a vtc/events/hosts/appoint/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/hosts/appoint/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "hosts"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventId"
+        },
+        "hosts": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+          },
+          "description": "The event's hosts after the appointment: entries holding `vtc.events.manage` qualified to this event, its creator first. Holders of authority over the whole calendar are not listed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

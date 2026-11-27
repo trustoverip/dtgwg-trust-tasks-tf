@@ -557,6 +557,10 @@ export type BundleId = string;
  */
 export type CalendarDate = string;
 /**
+ * Opaque identifier of a calendar: `cal_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-010).
+ */
+export type CalendarId = string;
+/**
  * An explicit statement of the capabilities an entry holds. Exactly one of three shapes, discriminated by `scope`: `ceiling` (the role's full ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityGrant. The empty list is invalid, not a fourth shape.
  */
 export type CapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | CapabilityScopeListed;
@@ -666,6 +670,10 @@ export type ClaimType = string;
  * Who collects for an identifier: `vta`, the VTA itself; `client`, the claimant of a collection claim in force; or `none`, nobody, for the reason given in `notCollectedReason`.
  */
 export type Collector = "vta" | "client" | "none";
+/**
+ * A colour as `#RRGGBB`, for showing a calendar's events apart from another's.
+ */
+export type Color = string;
 /**
  * The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
  */
@@ -933,6 +941,34 @@ export type EntryState = "listed" | "acknowledged" | "repudiated" | "suspended" 
  */
 export type EpochFloor = number;
 /**
+ * Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.
+ */
+export type EventAudienceScope = "members" | "groups" | "roles";
+/**
+ * What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type EventDescription = string;
+/**
+ * Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).
+ */
+export type EventId = string;
+/**
+ * An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.
+ */
+export type EventInstant = string;
+/**
+ * `event`: anything that happens at a time — a meetup, a workshop, a social. `meeting`: an event that may also carry an agenda, a chair, a quorum, minutes and motions; tasks that only mean something for a meeting refuse an event. Fixed for the event's life (VTI-EVT-003).
+ */
+export type EventKind = "event" | "meeting";
+/**
+ * `draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).
+ */
+export type EventLifecycle = "draft" | "published" | "cancelled";
+/**
+ * A short name. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type EventTitle = string;
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;
@@ -1162,6 +1198,10 @@ export type InviteKind = "wallet" | "passkey";
  */
 export type InviteStatus = "issued" | "consumed" | "expired";
 /**
+ * A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).
+ */
+export type JSCalendarDuration = string;
+/**
  * How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.
  */
 export type JoinPolicy = "closed" | "request" | "open";
@@ -1286,6 +1326,10 @@ export type ListOrder_RoomsV0_2 = "oldestFirst" | "newestFirst";
  * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
  */
 export type Listing = "listed" | "findable" | "hidden";
+/**
+ * A local date and time with no offset, `YYYY-MM-DDTHH:MM:SS`, as JSCalendar's LocalDateTime. Read in the event's `timeZone`.
+ */
+export type LocalDateTime = string;
 /**
  * The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.
  */
@@ -1802,6 +1846,10 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
+ * A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text.
+ */
+export type PlaceSummary = string;
+/**
  * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).
  */
 export type PreviewWarning =
@@ -2101,6 +2149,30 @@ export type RecoveryCommitmentOrThreshold = RecoveryCommitment | ThresholdRecove
  */
 export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
 /**
+ * An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.
+ */
+export type RegistrationAnswer = string | boolean;
+/**
+ * Opaque identifier of one registrant's registration for one event: `reg_` followed by 16 to 64 base64url characters. Random and unique within the community; a registrant has at most one registration per event (VTI-EVT-030).
+ */
+export type RegistrationId = string;
+/**
+ * `open`: a member of the audience who registers is going at once (or waitlisted when full). `approval`: a registration is pending until a host decides it. `closed`: no registrations; the event is for information only (VTI-EVT-031).
+ */
+export type RegistrationMode = "open" | "approval" | "closed";
+/**
+ * A question's key within its event.
+ */
+export type RegistrationQuestionId = string;
+/**
+ * `text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.
+ */
+export type RegistrationQuestionKind = "text" | "choice" | "boolean";
+/**
+ * Where a registration stands (VTI-EVT-032). `going`: has a place. `maybe`: has said maybe; holds no place. `pending`: awaits a host's decision. `waitlisted`: waits for a place, in order. `withdrawn`: the registrant withdrew. `declined`: a host declined a pending registration. `removed`: a host removed it.
+ */
+export type RegistrationStatus = "going" | "maybe" | "pending" | "waitlisted" | "withdrawn" | "declined" | "removed";
+/**
  * How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.
  */
 export type RelationshipType = "derivedFrom" | "supersedes" | "contradicts" | "duplicates";
@@ -2115,6 +2187,10 @@ export type RelationshipType = "derivedFrom" | "supersedes" | "contradicts" | "d
  */
 export type ReleaseRequirement = "consent" | "stepUp";
 /**
+ * A reminder's offset: how many minutes before the event's start it is due. At most four weeks.
+ */
+export type ReminderMinutes = number;
+/**
  * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
  */
 export type RepoResource_GitNsV0_1 = string;
@@ -2126,6 +2202,10 @@ export type RepoResource_GitNsV0_6 = string;
  * Repository visibility on the forge.
  */
 export type RepoVisibility = "public" | "private";
+/**
+ * Opaque identifier of one member's report of an event: `rpt_` followed by 16 to 64 base64url characters.
+ */
+export type ReportId = string;
 /**
  * The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.
  */
@@ -2230,6 +2310,10 @@ export type RoomTags =
   | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag]
   | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag]
   | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag];
+/**
+ * Who may see who is registered (VTI-EVT-050). `visible`: registrants who are going or maybe see each other. `hidden`: no registrant sees another; the event's hosts do. Fixed once the event is published (VTI-EVT-051) and recorded on each registration (VTI-EVT-052).
+ */
+export type RosterSetting = "visible" | "hidden";
 /**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
  */
@@ -2677,6 +2761,10 @@ export type TaskFamily = string;
  */
 export type TickLength = string;
 /**
+ * An IANA time zone name, such as `Europe/London`, or `Etc/UTC`. A responder MUST refuse a name its time zone database does not know.
+ */
+export type TimeZoneId = string;
+/**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_1 =
@@ -2989,6 +3077,10 @@ export type VettingRelationship = "none" | "communityColleague" | "sameEmployer"
  */
 export type Vid = string;
 /**
+ * What a virtual location offers, as JSCalendar's VirtualLocation `features`.
+ */
+export type VirtualFeature = "audio" | "chat" | "feed" | "moderator" | "phone" | "screen" | "video";
+/**
  * How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
  */
 export type Visibility = "open" | "attributed" | "private";
@@ -3104,6 +3196,63 @@ export interface AccessDetail {
    */
   onwardSharing?: OnwardSharing;
   [k: string]: unknown | undefined;
+}
+/**
+ * Where the event happens and how to join it (VTI-EVT-060 – 063). Answered by vtc/events/access/show to a registrant who is going, from `revealAt` if set; included in the event itself only where `public` is true.
+ */
+export interface AccessDetails {
+  /**
+   * @maxItems 8
+   */
+  places?:
+    | []
+    | [Place]
+    | [Place, Place]
+    | [Place, Place, Place]
+    | [Place, Place, Place, Place]
+    | [Place, Place, Place, Place, Place]
+    | [Place, Place, Place, Place, Place, Place]
+    | [Place, Place, Place, Place, Place, Place, Place]
+    | [Place, Place, Place, Place, Place, Place, Place, Place];
+  /**
+   * @maxItems 8
+   */
+  virtualPlaces?:
+    | []
+    | [VirtualPlace]
+    | [VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace]
+    | [VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace, VirtualPlace];
+  /**
+   * Anything else attendees need. Plain text.
+   */
+  notes?: string;
+  /**
+   * Show the access details with the event to its whole audience. Absent means false.
+   */
+  public?: boolean;
+  /**
+   * Not before this, even to a registrant who is going. Absent means on acceptance.
+   */
+  revealAt?: EventInstant;
+}
+/**
+ * What the event offers for access, as the host states it (VTI-EVT-036). Each flag absent means not stated, not that it is missing.
+ */
+export interface Accessibility {
+  stepFree?: boolean;
+  captions?: boolean;
+  hearingLoop?: boolean;
+  quietSpace?: boolean;
+  remoteOption?: boolean;
+  /**
+   * Anything else. Plain text.
+   */
+  notes?: string;
 }
 /**
  * Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.
@@ -9595,6 +9744,43 @@ export interface BroadcastRecord {
   reached: number;
 }
 /**
+ * A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.
+ */
+export interface Calendar {
+  calendarId: CalendarId;
+  name: EventTitle;
+  description?: EventDescription;
+  color?: Color;
+  /**
+   * The group whose calendar this is. Absent for the community's own calendar.
+   */
+  groupId?: GroupId;
+  /**
+   * True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).
+   */
+  community?: boolean;
+  /**
+   * The roster setting a new event in this calendar starts with. Absent means `hidden`.
+   */
+  defaultRoster?: RosterSetting;
+  /**
+   * The reminders a new event in this calendar suggests, as minutes before its start.
+   *
+   * @maxItems 4
+   */
+  defaultReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * `archived`: takes no new events; its events are kept.
+   */
+  state: "active" | "archived";
+  createdAt: EventInstant;
+}
+/**
  * A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.
  */
 export interface CapabilityGrant {
@@ -9919,6 +10105,13 @@ export interface ClientDescription {
     [k: string]: unknown | undefined;
   };
   [k: string]: unknown | undefined;
+}
+/**
+ * A code of conduct a registrant acknowledges before the registration is accepted (VTI-EVT-035). `sha256` pins the text acknowledged.
+ */
+export interface CodeOfConduct {
+  url: string;
+  sha256: string;
 }
 /**
  * The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.
@@ -10504,6 +10697,13 @@ export interface ContextRecord {
    */
   updatedAt: string;
   ext?: Ext;
+}
+/**
+ * A number of registrants as shown to someone who is not a host: `exact` at or above the event's count threshold, `fewerThan` (the threshold) below it, so a small count does not single anyone out (VTI-EVT-054). Exactly one of the two.
+ */
+export interface Count {
+  exact?: number;
+  fewerThan?: number;
 }
 /**
  * HCP `record.provenance`, as a create supplies it (HCP 5.2.3): `source` is REQUIRED, and `assertedBy.id` is REQUIRED unless the declaration type is `person-declared` or the content is a credential (HCP 5.2.3); that rule depends on the content and is not checked by the schema.
@@ -13139,6 +13339,110 @@ export interface EpochLink {
    * AEAD nonce, base64url.
    */
   nonce: string;
+}
+/**
+ * An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
+ */
+export interface Event {
+  eventId: EventId;
+  calendarId: CalendarId;
+  kind: EventKind;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
+  when: When;
+  placeSummary?: PlaceSummary;
+  /**
+   * Only where the access details are public, or the caller is a host.
+   */
+  access?: AccessDetails;
+  audience: EventAudience;
+  registration: RegistrationSettings;
+  roster: RosterSetting;
+  /**
+   * Show the number going to the audience, subject to `countThreshold`. Absent means false.
+   */
+  showCount?: boolean;
+  /**
+   * Below this many going, a count is shown as `fewerThan`. Absent means 5.
+   */
+  countThreshold?: number;
+  /**
+   * Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).
+   */
+  listed: boolean;
+  accessibility?: Accessibility;
+  /**
+   * Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).
+   *
+   * @maxItems 4
+   */
+  suggestedReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * The event's appointed hosts. Its creator is the first.
+   *
+   * @maxItems 32
+   */
+  hosts?: EntryId[];
+  /**
+   * People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.
+   */
+  goingCount?: Count;
+  /**
+   * True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.
+   */
+  full?: boolean;
+  /**
+   * Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).
+   */
+  sequence: number;
+  /**
+   * Present once cancelled, where the host gave one. Plain text.
+   */
+  cancelReason?: string;
+  publishedAt?: EventInstant;
+  cancelledAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.
+ */
+export interface EventAudience {
+  scope: EventAudienceScope;
+  /**
+   * Present exactly when `scope` is `groups`.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  groups?: [GroupId, ...GroupId[]];
+  /**
+   * Present exactly when `scope` is `roles`.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  roles?: [RoleName, ...RoleName[]];
+  /**
+   * Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.
+   */
+  rule?: DynamicRule;
+}
+/**
+ * What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).
+ */
+export interface EventRef {
+  eventId: EventId;
+  title: EventTitle;
+  when: When;
+  status: EventLifecycle;
+  sequence: number;
 }
 /**
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
@@ -16484,6 +16788,17 @@ export interface PersonhoodGovernance {
    */
   governanceFrameworkUrl?: string | null;
 }
+/**
+ * A physical location, as JSCalendar's Location.
+ */
+export interface Place {
+  name: string;
+  address?: string;
+  /**
+   * Directions, a door code. Plain text.
+   */
+  description?: string;
+}
 export interface PolicyChangedEvent_SyncV0_1 {
   kind: "policy.changed";
   seq: number;
@@ -17962,6 +18277,465 @@ export interface RegisteredInstance {
   servedDomains?: string[];
   lastSeenAt?: string;
   ext?: Ext;
+}
+/**
+ * One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).
+ */
+export interface Registration {
+  registrationId: RegistrationId;
+  eventId: EventId;
+  entryId: EntryId;
+  status: RegistrationStatus;
+  /**
+   * Plus-ones the registrant brings.
+   */
+  guests: number;
+  /**
+   * The registrant's and the hosts' view only.
+   */
+  answers?: RegistrationAnswers;
+  /**
+   * The `sha256` of the code of conduct the registrant acknowledged.
+   */
+  codeOfConductAcknowledged?: string;
+  /**
+   * While `waitlisted`: the registrant's place in the queue, 1 first.
+   */
+  waitlistPosition?: number;
+  /**
+   * The roster setting the registration was made under (VTI-EVT-052).
+   */
+  roster: RosterSetting;
+  /**
+   * The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.
+   */
+  eventSequence: number;
+  /**
+   * A host's note on a decline or removal, shown to the registrant. Plain text.
+   */
+  note?: string;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * Answers keyed by `questionId`.
+ */
+export interface RegistrationAnswers {
+  [k: string]: RegistrationAnswer | undefined;
+}
+/**
+ * A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).
+ */
+export interface RegistrationQuestion {
+  questionId: RegistrationQuestionId;
+  /**
+   * The question as shown. Plain text.
+   */
+  label: string;
+  kind: RegistrationQuestionKind;
+  /**
+   * Present exactly when `kind` is `choice`.
+   *
+   * @minItems 2
+   * @maxItems 20
+   */
+  choices?:
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+  /**
+   * The registration is refused without an answer. Absent means false.
+   */
+  required?: boolean;
+}
+/**
+ * How the event takes registrations (VTI-EVT-031 – 036).
+ */
+export interface RegistrationSettings {
+  mode: RegistrationMode;
+  /**
+   * The most people who may be going, plus-ones included. Absent means no limit.
+   */
+  capacity?: number;
+  /**
+   * Registrations beyond `capacity` are waitlisted, and the first on the waitlist becomes going when a place frees (VTI-EVT-033). Absent means false: a registration beyond capacity is refused.
+   */
+  waitlist?: boolean;
+  /**
+   * The most guests a registrant may bring. Absent means 0.
+   */
+  plusOnes?: number;
+  /**
+   * Registrations are refused before this. Absent means from publication.
+   */
+  opensAt?: EventInstant;
+  /**
+   * Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.
+   */
+  closesAt?: EventInstant;
+  /**
+   * @maxItems 20
+   */
+  questions?:
+    | []
+    | [RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ];
+  codeOfConduct?: CodeOfConduct;
 }
 /**
  * What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.
@@ -21442,6 +22216,32 @@ export interface VettingRequirements {
   [k: string]: unknown | undefined;
 }
 /**
+ * A way to join online, as JSCalendar's VirtualLocation.
+ */
+export interface VirtualPlace {
+  /**
+   * How to join: an `https` link, or a `tel`, `sip` or `sips` URI for a dial-in. No other scheme.
+   */
+  uri: string;
+  name?: string;
+  /**
+   * A passcode, dial-in numbers. Plain text.
+   */
+  description?: string;
+  /**
+   * @maxItems 7
+   */
+  features?:
+    | []
+    | [VirtualFeature]
+    | [VirtualFeature, VirtualFeature]
+    | [VirtualFeature, VirtualFeature, VirtualFeature]
+    | [VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature]
+    | [VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature]
+    | [VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature]
+    | [VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature, VirtualFeature];
+}
+/**
  * The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.
  */
 export interface VotingParameters {
@@ -21660,6 +22460,18 @@ export interface WebvhServerRecord {
   createdAt: string;
   updatedAt: string;
   ext?: Ext;
+}
+/**
+ * When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days (VTI-EVT-005).
+ */
+export interface When {
+  start: LocalDateTime;
+  timeZone: TimeZoneId;
+  duration: JSCalendarDuration;
+  /**
+   * An all-day event. Absent means false.
+   */
+  showWithoutTime?: boolean;
 }
 /**
  * A period, open from `opensAt` until `closesAt`. `closesAt` is after `opensAt` (a consumer check; JSON Schema cannot compare them).

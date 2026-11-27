@@ -1,0 +1,21 @@
+[
+  {
+    "note": "`limit` is at most 200.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "Unknown member.",
+    "payload": {
+      "includeDeleted": true
+    }
+  },
+  {
+    "note": "`items` is REQUIRED on the response.",
+    "variant": "response",
+    "payload": {
+      "nextCursor": "abc"
+    }
+  }
+]

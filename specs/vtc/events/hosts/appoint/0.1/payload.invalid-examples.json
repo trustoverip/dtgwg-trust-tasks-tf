@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`entryId` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "Hosts are named by community-scoped EntryId, never by DID.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryId": "did:example:tom"
+    }
+  },
+  {
+    "note": "One host per appointment; there is no `entryIds` array.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryIds": ["dir_TomAshworth000000", "dir_KofiOsei000000000"]
+    }
+  },
+  {
+    "note": "`hosts` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  }
+]

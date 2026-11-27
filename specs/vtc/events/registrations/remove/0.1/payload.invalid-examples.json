@@ -1,0 +1,45 @@
+[
+  {
+    "note": "`registrationId` is REQUIRED.",
+    "payload": {
+      "note": "Not for this event."
+    }
+  },
+  {
+    "note": "Registrations are addressed by RegistrationId (`reg_…`), not by the registrant's entry.",
+    "payload": {
+      "registrationId": "dir_DevSharma00000000"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — a removal has no `ban`; it ends this registration only.",
+    "payload": {
+      "registrationId": "reg_Mp5tW2nQx8Rv4Ck9",
+      "ban": true
+    }
+  },
+  {
+    "note": "`changed` is REQUIRED: a host must know whether the removal did anything.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Mp5tW2nQx8Rv4Ck9",
+        "eventId": "evt_IntroSoldering2611",
+        "entryId": "dir_DevSharma00000000",
+        "status": "removed",
+        "guests": 0,
+        "roster": "hidden",
+        "eventSequence": 1,
+        "createdAt": "2026-11-24T20:11:03Z",
+        "updatedAt": "2026-11-25T12:00:01Z"
+      },
+      "event": {
+        "eventId": "evt_IntroSoldering2611",
+        "title": "Intro to Soldering",
+        "when": { "start": "2026-11-30T18:30:00", "timeZone": "Europe/London", "duration": "PT1H30M" },
+        "status": "published",
+        "sequence": 1
+      }
+    }
+  }
+]

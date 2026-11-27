@@ -1,0 +1,55 @@
+[
+  {
+    "note": "`updatedSince` is an RFC 3339 instant, never Unix seconds.",
+    "payload": {
+      "updatedSince": 1795804800
+    }
+  },
+  {
+    "note": "`statuses` are RegistrationStatus values; `attended` is not one in 0.1.",
+    "payload": {
+      "statuses": ["attended"]
+    }
+  },
+  {
+    "note": "A page holds at most 100 items.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — the task lists the caller's own registrations only; there is no `entryId` to ask for someone else's.",
+    "payload": {
+      "entryId": "dir_BenOkafor0000000"
+    }
+  },
+  {
+    "note": "Each item pairs a registration with its EventRef; the event summary is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "registration": {
+            "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+            "eventId": "evt_IntroSoldering2611",
+            "entryId": "dir_AdaLovelace000000",
+            "status": "going",
+            "guests": 1,
+            "roster": "hidden",
+            "eventSequence": 2,
+            "createdAt": "2026-11-20T19:02:11Z",
+            "updatedAt": "2026-11-27T09:15:40Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "`nextCursor` is absent on the last page — never `null`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]

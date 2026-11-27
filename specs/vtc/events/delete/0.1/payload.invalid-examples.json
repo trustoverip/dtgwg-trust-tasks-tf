@@ -1,0 +1,20 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Only a draft is deleted; there is no force option (VTI-EVT-093).",
+    "payload": {
+      "eventId": "evt_S0lderIntroNov2026",
+      "force": true
+    }
+  },
+  {
+    "note": "The response names the deleted draft by EventId.",
+    "variant": "response",
+    "payload": {
+      "eventId": "S0lderIntroNov2026"
+    }
+  }
+]
