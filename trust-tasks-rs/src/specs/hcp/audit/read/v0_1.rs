@@ -44,8 +44,8 @@ pub struct AuditDisclosed {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub provenance: ::std::option::Option<bool>,
     ///Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revealed: ::std::vec::Vec<AuditDisclosedRevealedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub revealed: ::std::option::Option<::std::vec::Vec<AuditDisclosedRevealedItem>>,
     ///The use-until time the disclosure was given (HCP 7.6).
     #[serde(rename = "useUntil")]
     pub use_until: Instant,
@@ -137,14 +137,14 @@ impl<'de> ::serde::Deserialize<'de> for AuditDisclosedRevealedItemClaimsItem {
 #[non_exhaustive]
 pub struct AuditEvent {
     ///The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub data: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub disclosed: ::std::vec::Vec<AuditDisclosed>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub disclosed: ::std::option::Option<::std::vec::Vec<AuditDisclosed>>,
     ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
     #[serde(rename = "entryId")]
     pub entry_id: ::std::option::Option<AuditEventEntryId>,
@@ -1353,7 +1353,7 @@ pub mod builder {
         entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
         provenance: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         revealed: ::std::result::Result<
-            ::std::vec::Vec<super::AuditDisclosedRevealedItem>,
+            ::std::option::Option<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
             ::std::string::String,
         >,
         use_until: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -1393,7 +1393,9 @@ pub mod builder {
         }
         pub fn revealed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.revealed = value
@@ -1508,13 +1510,18 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct AuditEvent {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        data: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
             ::std::string::String,
         >,
-        disclosed:
-            ::std::result::Result<::std::vec::Vec<super::AuditDisclosed>, ::std::string::String>,
+        data: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        disclosed: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AuditDisclosed>>,
+            ::std::string::String,
+        >,
         entry_id: ::std::result::Result<
             ::std::option::Option<super::AuditEventEntryId>,
             ::std::string::String,
@@ -1561,7 +1568,7 @@ pub mod builder {
     impl AuditEvent {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -1572,7 +1579,9 @@ pub mod builder {
         pub fn data<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1583,7 +1592,9 @@ pub mod builder {
         }
         pub fn disclosed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosed>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AuditDisclosed>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed = value

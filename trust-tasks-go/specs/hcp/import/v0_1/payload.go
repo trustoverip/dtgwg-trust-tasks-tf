@@ -317,7 +317,7 @@ type ImportedDelegationScope struct {
 // ImportedDelegationTerm The delegation's term (HCP 17.2).
 type ImportedDelegationTerm struct {
 	// When the delegation ends, or null (HCP 17.2).
-	EndsAt *string `json:"endsAt,omitempty"`
+	EndsAt *string `json:"endsAt"`
 
 	// Whether it ends when the Context Subject reaches majority (HCP 17.2).
 	AtMajority bool `json:"atMajority"`

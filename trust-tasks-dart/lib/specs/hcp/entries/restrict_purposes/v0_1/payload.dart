@@ -1236,7 +1236,7 @@ class Response {
 class Payload {
   const Payload({
     required this.entryId,
-    this.permittedPurposes,
+    required this.permittedPurposes,
     required this.expectedVersion,
     this.accessToken,
   });
@@ -1284,7 +1284,7 @@ class Payload {
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'entryId': entryId,
-        if (permittedPurposes != null) 'permittedPurposes': permittedPurposes!,
+        'permittedPurposes': permittedPurposes,
         'expectedVersion': expectedVersion,
         if (accessToken != null) 'accessToken': accessToken!,
       };

@@ -224,11 +224,8 @@ nullable `language`, `confidence`, `validUntil` and `dimension`. A new `hcp`
 member whose empty or null value means something follows the same rule.
 
 An entry subject's `relationship` is `"type": "null"`, as HCP reserves it.
-typify renders a member of that type `()`, and its builder's
-`Ok(Default::default())` and `Ok(value.relationship)` trip `clippy::unit_arg`,
-which `src/specs/mod.rs` therefore allows on the generated tree. A generator
-that renders such a member as anything else makes the allow unnecessary, not
-wrong.
+The presence pass renders it `Option<()>`: `None` when absent, `Some(())` for
+`null`, so the reserved member round-trips as received.
 
 ## `trust-tasks-rs` unit tests see only the `acl` family
 

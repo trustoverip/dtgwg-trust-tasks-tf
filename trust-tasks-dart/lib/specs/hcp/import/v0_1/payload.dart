@@ -707,7 +707,7 @@ class ImportedDelegationScope {
 /// The delegation's term (HCP 17.2).
 class ImportedDelegationTerm {
   const ImportedDelegationTerm({
-    this.endsAt,
+    required this.endsAt,
     required this.atMajority,
   });
 
@@ -726,7 +726,7 @@ class ImportedDelegationTerm {
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (endsAt != null) 'endsAt': endsAt!,
+        'endsAt': endsAt,
         'atMajority': atMajority,
       };
 }
