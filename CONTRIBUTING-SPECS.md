@@ -523,7 +523,13 @@ and meet the seven rules of §9.4:
 - **No departures.** Anything the protocol does not define, such as an extra check or step, is a separate spec without `carries`, which a ceremony can compose with this one.
 - **The protocol's conformance is the protocol's.**
 
-`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
+`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. `hcp/*` shows a family that carries several operations of one protocol: one slug per operation, under one namespace, with the protocol's shared object shapes in its `_shared/` folder. When HCP moves, or after changing an `hcp/*` schema, run `npm run check-hcp-drift -- --hcp <hcp-spec checkout>` ([what it compares](docs/DEVELOPMENT.md#what-the-ci-checks-actually-assert)); a difference the family makes on purpose goes in `scripts/lib/hcp-drift-allowlist.json` with its reason and the field-mapping row or editors' question behind it. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
+
+Give the operations of one kind in a family one front-matter profile, so that a reader can tell a deliberate difference from drift. `hcp/*` declares one for every Management Client read (List grants, the audit log, the disclosure summary, export, and the delegation, standing-rule and directive lists):
+
+- `actsAsSubject: false`: a read produces no attributable effect in the person's name ([SPEC §7.3](SPEC.md#73-specification-requirements) item 14), even though it is a governance operation.
+- A request `proof` **REQUIRED**, so that the provider can refuse an access token sent from a VID other than the client's. This holds beyond the Management Client reads, on every `hcp/*` request that carries `accessToken`, whether the response is `discloses: secret` (export, the audit log, the disclosure summary, the delegation list, and the context reads Query and Get) or `metadata` (grants, read own grant, standing rules, directives). It is a carriage rule, stricter than HCP's bearer model, and pending HCP confirmation like the family's other assumptions.
+- `retention.class: transient`, unless HCP requires an audit event for the read, as it does for export (`durable`). Read own grant, the Context Client's counterpart of List grants, is `transient` too.
 
 ## Task-specific error codes (optional)
 

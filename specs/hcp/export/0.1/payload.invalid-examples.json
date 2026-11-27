@@ -1,0 +1,99 @@
+[
+  {
+    "note": "An export option as a string — HCP 5.4.1's options are booleans; the `include=audit` query parameter of HCP 9.4.8 maps to `includeAudit: true`.",
+    "payload": {
+      "includeAudit": "audit",
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Unknown top-level request member — HCP's export has no category filter (HCP 5.4.1, 9.4.8).",
+    "payload": {
+      "categories": [
+        "general_preferences"
+      ],
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Empty `accessToken` — a token is at least one character.",
+    "payload": {
+      "accessToken": ""
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member beside `export` — the payload carries only the export, whose own `options` member records the options used (HCP 5.4.1).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
+        "entries": [],
+        "rules": []
+      },
+      "options": {
+        "excludeDeleted": true
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An export without `rules` — HCP's export always carries the Context Subject's standing rules (HCP 5.4.1).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
+        "entries": []
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A different export `schema` — HCP 2.0-draft-3's export structure is `https://hcp.example/spec/export/2.0`, compared as an exact string (HCP 5.4.1, 1.7).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/1.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
+        "entries": [],
+        "rules": []
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An export without `options` — the carriage requires it, so that the export says whether `versions` and `audit` were asked for (HCP 5.4.1; question 42).",
+    "payload": {"export": {"@context": ["https://hcp.example/contexts/v2"], "type": "ContextExport", "schema": "https://hcp.example/spec/export/2.0", "subject": {"id": "did:web:person.example"}, "exportedBy": "https://context.provider.example", "exportedAt": "2026-11-25T09:00:02Z", "entries": [], "rules": []}}
+  },
+  {
+    "variant": "response",
+    "note": "An export whose `options` omits `includeAudit` — the carriage requires `includeVersions` and `includeAudit`, each true or false (HCP 5.4.1; question 42).",
+    "payload": {"export": {"@context": ["https://hcp.example/contexts/v2"], "type": "ContextExport", "schema": "https://hcp.example/spec/export/2.0", "subject": {"id": "did:web:person.example"}, "exportedBy": "https://context.provider.example", "exportedAt": "2026-11-25T09:00:02Z", "options": {"includeVersions": false}, "entries": [], "rules": []}}
+  }
+]

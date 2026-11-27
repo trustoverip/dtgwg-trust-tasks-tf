@@ -1,0 +1,215 @@
+{
+  "$comment": "Differences between the hcp/* schemas and HCP's own JSON schemas that the family makes on purpose, for scripts/check-hcp-drift.mjs. Each entry names the mapped object (scripts/lib/hcp-drift-map.json id; `*` matches anything), the member path as the check prints it, and the kind; `reason` says why, and `ref` points at the spec's field-mapping row (`specs/<slug>/0.1/spec.md#hcp-field-mapping`) or the editors' question (`Q<n>`, the numbering of each spec's `## Pending HCP confirmation`). An entry that matches no difference any more is reported as stale. Never add an entry for a difference that is a mistake: fix the schema.",
+  "entries": [
+    {
+      "object": "hcp/*:request",
+      "path": "accessToken",
+      "kind": "ours-only",
+      "reason": "HCP sends the access token in the `Authorization: Bearer` header (HCP 9.3); every carried request moves it into the payload unchanged.",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (the `Authorization: Bearer` row every carried spec's table has)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "entryId",
+      "kind": "required",
+      "reason": "Required, null where the event concerns no entry: the carriage makes presence a signal where HCP leaves the member optional.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "relatedEntryId",
+      "kind": "required",
+      "reason": "Required and nullable, as for `entryId`.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "purpose",
+      "kind": "required",
+      "reason": "Required, null where no purpose was stated.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "purposeDescription",
+      "kind": "required",
+      "reason": "Required, null where none was given.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "grantId",
+      "kind": "required",
+      "reason": "Required, null where the event concerns no grant.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:Export",
+      "path": "options",
+      "kind": "required",
+      "reason": "Required so that the export says whether `versions` and `audit` were requested; HCP leaves `options` optional.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:Export",
+      "path": "options.includeVersions",
+      "kind": "required",
+      "reason": "Required, true or false, so an empty or absent `versions` reads as requested-and-none or not requested.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:Export",
+      "path": "options.includeAudit",
+      "kind": "required",
+      "reason": "Required, as for `includeVersions`, for `audit`.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/_shared:StandingRule",
+      "path": "(root)",
+      "kind": "alternatives",
+      "reason": "HCP's standing-rule schema requires `operators`, `requires`, or both. The shared def leaves the `anyOf` out so that it stays fully typed in all four libraries (an `anyOf` of `required` clauses only at a payload root); hcp/rules/set checks it at its request root, where a rule is written, and hcp/import's provider refuses an export holding a rule with neither with `malformedRequest`.",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping (the request body `operators`, `requires`, `categories` row); specs/hcp/import/0.1/spec.md#request"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "classification.permittedPurposes",
+      "kind": "hcp-only",
+      "reason": "Not carried on a create: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.6); a create carrying it is refused with `malformedRequest`.",
+      "ref": "Q7"
+    },
+    {
+      "object": "hcp/entries/get:response",
+      "path": "directives",
+      "kind": "required",
+      "reason": "Required: a list, empty when none applies, for a Context Client; HCP leaves it optional.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/entries/get:response",
+      "path": "directives",
+      "kind": "nullable",
+      "reason": "Null for a requester that is not a Context Client, which receives whole entries and no directives.",
+      "ref": "Q5"
+    },
+    {
+      "object": "hcp/entries/query:response",
+      "path": "directives",
+      "kind": "required",
+      "reason": "Required: a list, empty when none applies, for a Context Client; HCP leaves it optional.",
+      "ref": "Q42"
+    },
+    {
+      "object": "hcp/entries/query:response",
+      "path": "directives",
+      "kind": "nullable",
+      "reason": "Null for a requester that is not a Context Client (a Management Client), which receives whole entries and no directives.",
+      "ref": "Q5"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "assertion.basis",
+      "kind": "ours-only",
+      "reason": "Carried \"as for create\", as HCP 5.2.4's text says, although HCP's revise request schema omits it.",
+      "ref": "Q8"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "assertion.permittedPurposes",
+      "kind": "ours-only",
+      "reason": "Carried as HCP 5.2.4's text says (\"as for create\"), although HCP's revise request schema omits it.",
+      "ref": "Q8"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "record.relationships[].proposal",
+      "kind": "ours-only",
+      "reason": "A revision's relationship may carry a proposal, as for create (HCP 4.7.4, 5.2.4); HCP's revise request schema omits it.",
+      "ref": "Q8"
+    },
+    {
+      "object": "hcp/entries/withdraw:response",
+      "path": "hardDeleted",
+      "kind": "enum",
+      "reason": "Always `false`: a withdrawal is never a hard deletion (HCP 5.4.2); HCP's HTTP Binding returns the member (9.4.5), its Core text does not list it.",
+      "ref": "Q10"
+    },
+    {
+      "object": "hcp/entries/withdraw:response",
+      "path": "(root)",
+      "kind": "alternatives",
+      "reason": "Exactly one of `ref` and `entryId`, the one the request used, is stated in the response schema's description, not as a schema `oneOf`, which the framework's generators do not support.",
+      "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.rules[]",
+      "kind": "alternatives",
+      "reason": "HCP's standing-rule schema requires `operators`, `requires`, or both. `ImportedStandingRule`, HCP's own standing-rule shape as hcp/import takes it, leaves the `anyOf` out, as the shared StandingRule does, so that it stays fully typed in all four libraries; the provider refuses an export holding a rule with neither with `malformedRequest`.",
+      "ref": "specs/hcp/import/0.1/spec.md#request"
+    },
+    {
+      "object": "hcp/import:response",
+      "path": "ext",
+      "kind": "ours-only",
+      "reason": "The framework's extension member (SPEC §4.5.1), not an HCP member; the family's own namespace `vnd.trusttasks.hcp-carriage` carries `rulesNotApplied`, the standing rules a delegate's import did not apply (HCP 6.3, 17.4 against 5.4.3), so that the result itself stays HCP's `outcomes` and `dryRun`.",
+      "ref": "Q40"
+    },
+    {
+      "object": "hcp/rules/set:request",
+      "path": "ruleId",
+      "kind": "hcp-only",
+      "reason": "Set by the provider, never taken from the request (HCP 6.3, 9.4.14).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/rules/set:request",
+      "path": "effect",
+      "kind": "hcp-only",
+      "reason": "Set by the provider, always `deny` (HCP 6.3, 9.4.14).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/rules/set:request",
+      "path": "setBy",
+      "kind": "hcp-only",
+      "reason": "Set by the provider (HCP 6.3, 9.4.14).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/rules/set:request",
+      "path": "createdAt",
+      "kind": "hcp-only",
+      "reason": "Set by the provider (HCP 6.3, 9.4.14).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "directiveId",
+      "kind": "hcp-only",
+      "reason": "Set by the provider, never taken from the request (HCP 6.4, 9.4.15).",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "setBy",
+      "kind": "hcp-only",
+      "reason": "Set by the provider (HCP 6.4, 9.4.15).",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "createdAt",
+      "kind": "hcp-only",
+      "reason": "Set by the provider (HCP 6.4, 9.4.15).",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/disclosures/summary:response",
+      "path": "nextCursor",
+      "kind": "ours-only",
+      "reason": "The summary \"MAY be paginated\" (HCP 9.4.12, 9.5); HCP's result schema has no cursor. Absent, not null, on the last page.",
+      "ref": "Q3"
+    }
+  ]
+}

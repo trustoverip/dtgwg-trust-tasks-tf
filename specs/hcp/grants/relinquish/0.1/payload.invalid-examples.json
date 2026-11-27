@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Non-urn `grantId` — HCP grant identifiers are urn:uuid.",
+    "payload": {
+      "grantId": "grant-42",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `grantId` — a client relinquishes the grant it names, which must be its own (HCP 5.2.7, 9.4.6).",
+    "payload": {
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the token is the evidence that the grant is the client's own.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f"
+    }
+  },
+  {
+    "note": "A `reason` member — HCP's relinquishment takes no reason.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "accessToken": "hcp_at_x",
+      "reason": "done"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the relinquish response — HCP answers 204 No Content, so the payload is the empty object.",
+    "payload": {
+      "relinquished": true
+    }
+  }
+]

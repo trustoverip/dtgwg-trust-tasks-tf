@@ -1,0 +1,95 @@
+[
+  {
+    "note": "Non-urn `grantId` — HCP grant identifiers are urn:uuid.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "grant-42",
+      "revokedAt": "2026-11-24T11:00:01Z"
+    }
+  },
+  {
+    "note": "Missing `revokedAt` — the grant-revoked event carries when the revocation took effect.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f"
+    }
+  },
+  {
+    "note": "`revokedAt` as Unix seconds — instants are RFC 3339 strings, even though the SET's own `iat` is numeric.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": 1795604401
+    }
+  },
+  {
+    "note": "A SET `events` wrapper in the payload, beside the members it would wrap — the Type URI replaces it, and the payload admits no other member.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2026-11-24T11:00:01Z",
+      "events": {
+        "https://hcp.example/spec/events/grant-revoked": {
+          "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+          "revokedAt": "2026-11-24T11:00:01Z"
+        }
+      }
+    }
+  },
+  {
+    "note": "`reason` outside the enumeration — the delegation's own reason for ending (HCP 17.6) is never sent; only `revoked` or `delegation-ended`.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2027-03-01T00:00:00Z",
+      "reason": "majority"
+    }
+  },
+  {
+    "note": "`reason` in another casing — `delegation-ended` is HCP's value (HCP 8.2, 17.6) and is carried verbatim.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2027-03-01T00:00:00Z",
+      "reason": "delegationEnded"
+    }
+  },
+  {
+    "note": "A `delegation-ended` notice without `revokedAt` — it carries the instant the delegation ended.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "reason": "delegation-ended"
+    }
+  },
+  {
+    "note": "Missing `grantId` — the notice names the grant that ended.",
+    "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "revokedAt": "2026-11-24T11:00:01Z",
+      "reason": "revoked"
+    }
+  },
+  {
+    "note": "Missing `noticeId` — every notice carries the SET's `jti`, the same on every delivery attempt, so the client can deduplicate (HCP 9.9).",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2026-11-24T11:00:01Z"
+    }
+  },
+  {
+    "note": "Non-urn `noticeId` — the SET's `jti` is carried as a urn:uuid, the form HCP 9.9's own `jti` and every other HCP identifier take.",
+    "payload": {
+      "noticeId": "notice-7",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2026-11-24T11:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the acknowledgement — RFC 8935's 202 Accepted has no body, so the payload is the empty object.",
+    "payload": {
+      "accepted": true
+    }
+  }
+]

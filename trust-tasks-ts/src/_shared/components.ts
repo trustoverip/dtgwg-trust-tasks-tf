@@ -379,6 +379,10 @@ export type ApproverLabel = string;
  */
 export type ArchiveAccess = "readOnly" | "noAccess";
 /**
+ * How a Context Asserter's identity was established (HCP 3.6). HCP's own values, carried verbatim.
+ */
+export type Assurance = "unverified" | "authenticated" | "cryptographically-verified";
+/**
  * The metadata of one attestation: what a Vetting Statement would have said, minus its issuer, as vetting/attestation/0.1 defines it.
  */
 export type AttestationMeta = StatementMeta;
@@ -619,6 +623,10 @@ export type Capability_DeviceV0_2 =
   | "pcsTrustee"
   | "credentialPresent";
 /**
+ * An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
+ */
+export type Category = string;
+/**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
 export type ChunkCount = number;
@@ -833,6 +841,10 @@ export type DigestMultibase = string;
  * A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.
  */
 export type DirectoryEntryId = string;
+/**
+ * An evidence item as disclosed (HCP 7.4). An item carrying a derived credential adds `revealed`.
+ */
+export type DisclosedEvidenceItem = EvidenceItem;
 /**
  * A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
  *
@@ -1129,6 +1141,10 @@ export type IdentityKeyRole = "attestation" | "operational" | "messaging" | "upd
  * The media types a directory image may have — those a `CardBlobRef` admits.
  */
 export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
+/**
+ * An RFC 3339 instant.
+ */
+export type Instant = string;
 /**
  * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
  */
@@ -1926,6 +1942,10 @@ export type ProviderObjectPrefix = string;
  */
 export type Purpose = "login";
 /**
+ * An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).
+ */
+export type PurposeCode = string;
+/**
  * An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.
  */
 export type PurposeScope = PurposeScopeAny | PurposeScopeListed;
@@ -2076,6 +2096,10 @@ export type RecoveryCommitmentOrThreshold = RecoveryCommitment | ThresholdRecove
  * The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.
  */
 export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
+/**
+ * How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.
+ */
+export type RelationshipType = "derivedFrom" | "supersedes" | "contradicts" | "duplicates";
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -2738,9 +2762,17 @@ export type UpdateKeyClass = "routine" | "recovery";
  */
 export type UploadId = string;
 /**
+ * An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).
+ */
+export type Uri = string;
+/**
  * The party's public address.
  */
 export type Url = string;
+/**
+ * An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.
+ */
+export type Urn = string;
 /**
  * The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
  */
@@ -3030,6 +3062,44 @@ export interface AcceptsCriterion_VtcV0_2 {
    * The administrator who last registered the criterion.
    */
   createdByDid: string;
+}
+/**
+ * An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.
+ */
+export interface AccessDetail {
+  /**
+   * The HCP authorization detail type (HCP 6.1.5).
+   */
+  type: "https://hcp.example/spec/authorization/context-access";
+  /**
+   * What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.
+   *
+   * @minItems 1
+   */
+  actions: ["read" | "write" | "provenance", ...("read" | "write" | "provenance")[]];
+  /**
+   * The categories the detail covers (HCP 4.5).
+   *
+   * @minItems 1
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * The purposes the person approved for these categories; never empty (HCP 6.1.5.2).
+   *
+   * @minItems 1
+   */
+  purposes: [Purpose_HcpV0_1, ...Purpose_HcpV0_1[]];
+  /**
+   * An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).
+   */
+  narrowedTo?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).
+   */
+  onwardSharing?: OnwardSharing;
+  [k: string]: unknown | undefined;
 }
 /**
  * Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.
@@ -6104,6 +6174,44 @@ export interface ApproverBinding {
   routeHint?: string;
 }
 /**
+ * HCP `record.provenance.assertedBy`, as a request supplies it: the Context Asserter's identifier only. The provider assigns `assurance` (HCP 3.5, 5.2.3).
+ */
+export interface AssertedBy {
+  /**
+   * The Context Asserter (HCP 3.2.6).
+   */
+  id: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ */
+export interface Assertion {
+  /**
+   * What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values, carried verbatim.
+   */
+  declarationType: "person-declared" | "model-inferred" | "issuer-attested";
+  /**
+   * How confident an inferring model is (HCP 4.2, 4.4).
+   */
+  confidence?: "high" | "medium" | "low" | null;
+  /**
+   * The instant after which the content no longer holds; absent or null means it does not expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable, which is a disclosure's `useUntil` (HCP 7.6).
+   */
+  validUntil?: string | null;
+  /**
+   * What the assertion was drawn from (HCP 4.2.5).
+   */
+  basis?: Basis;
+  /**
+   * The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
+}
+/**
  * A member DID's statement that the named principal may carry its traffic on one connection — the one whose `sessionId` and `muxNonce` it names — until `exp`, within `scope`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
  */
 export interface AttachStatement {
@@ -6300,6 +6408,1835 @@ export interface Attribute {
   updatedAt: string;
 }
 /**
+ * One entry a retrieval disclosed (HCP 8.2).
+ */
+export interface AuditDisclosed {
+  /**
+   * The entry's stable `id`.
+   */
+  entryId: Urn;
+  /**
+   * The version disclosed.
+   */
+  version: number;
+  /**
+   * The use-until time the disclosure was given (HCP 7.6).
+   */
+  useUntil: Instant;
+  /**
+   * True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
+   */
+  provenance?: boolean;
+  /**
+   * Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  revealed?:
+    | []
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ];
+  [k: string]: unknown | undefined;
+}
+/**
  * One record in the mediator's privileged-change audit log: one change, by one actor, at one time.
  */
 export interface AuditEntry {
@@ -6403,6 +8340,336 @@ export interface AuditEvent {
   reason?: string;
 }
 /**
+ * One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
+ */
+export interface AuditEvent_HcpV0_1 {
+  /**
+   * The event's identifier (HCP 8.2).
+   */
+  eventId: Urn;
+  /**
+   * The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
+   */
+  eventType: string;
+  /**
+   * When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).
+   */
+  timestamp: Instant;
+  /**
+   * Who took part (HCP 8.2, 3.9).
+   */
+  participants: AuditParticipants;
+  /**
+   * The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
+   */
+  entryId: string | null;
+  /**
+   * For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
+   */
+  relatedEntryId: string | null;
+  /**
+   * The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  categories?: Category[];
+  /**
+   * The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements.
+   */
+  purpose: string | null;
+  /**
+   * The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
+   */
+  purposeDescription: string | null;
+  /**
+   * The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
+   */
+  grantId: string | null;
+  /**
+   * Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
+   *
+   * @maxItems 20
+   */
+  disclosed?:
+    | []
+    | [AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ];
+  /**
+   * The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
+   */
+  data?: {
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
+ * The participants in an audit event (HCP 8.2, 3.9). No event names "system" (HCP 8.2).
+ */
+export interface AuditParticipants {
+  /**
+   * Who initiated the event.
+   */
+  initiator: {
+    /**
+     * Their role (HCP 8.2). HCP's own values, carried verbatim.
+     */
+    role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
+    /**
+     * Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The Client Operator, where a client took part (HCP 3.9).
+   */
+  clientOperator?: AuditParty;
+  /**
+   * The Requesting Party, where there is one (HCP 3.9).
+   */
+  requestingParty?: AuditParty;
+  /**
+   * The Authorizing Principal (HCP 3.9).
+   */
+  authorizingPrincipal?: AuditParty;
+  /**
+   * The HCP Provider (HCP 8.2).
+   */
+  provider: AuditParty;
+  /**
+   * The retrieval, on a read (HCP 8.2).
+   */
+  retrievalId?: Urn;
+  /**
+   * The model, where one took part (HCP 3.9).
+   */
+  model?: AuditParty;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A participant named by its identifier (HCP 8.2).
+ */
+export interface AuditParty {
+  /**
+   * The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
+   */
+  id: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
  */
 export interface AuthenticatorAssertionResponseLogin {
@@ -6500,6 +8767,20 @@ export interface AuthorityScopeContexts {
  */
 export interface AuthorityScopeNone {
   scope: "none";
+}
+/**
+ * The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).
+ */
+export interface AuthorizingPrincipal {
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).
+   */
+  delegation?: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * The effective configuration — defaults filled in — and the last sweep.
@@ -6722,6 +9003,30 @@ export interface Ballot {
    * @maxItems 128
    */
   answers: [Answer, ...Answer[]];
+}
+/**
+ * What an assertion was drawn from (HCP 4.2.5). It identifies no party but the Context Subject.
+ */
+export interface Basis {
+  /**
+   * The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  drawnFrom?: string[];
+  /**
+   * The task during which the assertion was made.
+   */
+  task?: string;
+  /**
+   * The setting in which the assertion was made.
+   */
+  setting?: string;
+  /**
+   * Why the asserter drew the conclusion.
+   */
+  rationale?: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * The ciphertext manifest of one blob, committed by the uploader before any byte moves. Its digest is the BlobRef. Every chunk is checked against `chunks.chunkDigests` on arrival and the reassembled blob against `digest`, so a host can neither accept nor serve bytes the uploader did not commit to. The manifest also appears, by its BlobRef, inside the sealed FileManifest the author signs; a reader who opens the record therefore knows which ciphertext its author meant, and a host cannot substitute a different blob under the same record.
@@ -7519,6 +9824,54 @@ export interface ClaimSelector {
   issuers?: string[];
 }
 /**
+ * HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it covers any one of the entry's categories (HCP 4.5).
+ */
+export interface Classification {
+  /**
+   * One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4).
+   *
+   * @minItems 1
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
+   */
+  dimension?: string | null;
+  /**
+   * The Authorizing Principal's narrowing of the entry's purposes; absent means no limit (HCP 4.2.6).
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).
+ */
+export interface ClientDescription {
+  /**
+   * The client's identifier.
+   */
+  id: string;
+  /**
+   * The client's name.
+   */
+  name: string;
+  /**
+   * The Client Operator.
+   */
+  operator: {
+    /**
+     * The operator's identifier.
+     */
+    id: string;
+    /**
+     * The operator's name.
+     */
+    name: string;
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
  * The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.
  */
 export interface CollectionEntry {
@@ -8016,6 +10369,28 @@ export interface ContactRevision {
   document?: ContactDocument;
 }
 /**
+ * Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ */
+export interface Content {
+  /**
+   * The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).
+   */
+  profile: Uri;
+  /**
+   * The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
+   */
+  value?: string | {};
+  /**
+   * The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
+   */
+  language?: string | null;
+  /**
+   * Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
+   */
+  evidence?: number;
+  [k: string]: unknown | undefined;
+}
+/**
  * Per-context restrictions the VTA enforces. Every member is optional, and **absence means unrestricted, not empty** — a policy that omits `presentableTypes` permits every type, while one that sets it to `[]` permits none. The two are opposite instructions and a consumer MUST NOT collapse them.
  */
 export interface ContextPolicy {
@@ -8080,6 +10455,40 @@ export interface ContextRecord {
    */
   updatedAt: string;
   ext?: Ext;
+}
+/**
+ * HCP `record.provenance`, as a create supplies it (HCP 5.2.3): `source` is REQUIRED, and `assertedBy.id` is REQUIRED unless the declaration type is `person-declared` or the content is a credential (HCP 5.2.3); that rule depends on the content and is not checked by the schema.
+ */
+export interface CreateProvenance {
+  /**
+   * The Context Asserter.
+   */
+  assertedBy?: AssertedBy;
+  /**
+   * When the assertion was made. Omitted means the provider records `recordedAt` (HCP 5.2.3).
+   */
+  assertedAt?: Instant;
+  /**
+   * The origin of the entry: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3).
+   */
+  source: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record`, as a create supplies it: provenance and relationships only. The provider assigns `status`, `version` and the rest (HCP 5.2.3).
+ */
+export interface CreateRecord {
+  /**
+   * The provenance the client supplies (HCP 5.2.3).
+   */
+  provenance: CreateProvenance;
+  /**
+   * Relationships to assert (HCP 4.2.3). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  relationships?: WriteRelationship[];
+  [k: string]: unknown | undefined;
 }
 /**
  * A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers.
@@ -8295,6 +10704,276 @@ export interface DeferredPresentation {
    * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
    */
   expiresAt: string;
+}
+/**
+ * One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).
+ */
+export interface Delegation {
+  /**
+   * Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).
+   */
+  delegationId: Urn;
+  /**
+   * The Context Subject (HCP 17.2).
+   */
+  subject: {
+    /**
+     * The Context Subject's identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).
+   */
+  delegate: {
+    /**
+     * The delegate's identifier.
+     */
+    id: string;
+    /**
+     * A name the Context Subject can recognize.
+     */
+    name: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
+   */
+  relationship: string;
+  /**
+   * What the authority rests on, and how the Authorization Service established it (HCP 17.3).
+   */
+  basis: DelegationBasis;
+  /**
+   * The categories and actions the delegate may authorize (HCP 17.4).
+   */
+  scope: DelegationScope;
+  /**
+   * When the delegation ends (HCP 17.2).
+   */
+  term: DelegationTerm;
+  /**
+   * True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).
+   */
+  mayDelegate?: boolean;
+  /**
+   * Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).
+   */
+  ended?: DelegationEnded;
+  [k: string]: unknown | undefined;
+}
+/**
+ * What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.
+ */
+export interface DelegationBasis {
+  /**
+   * How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
+   */
+  method: "appointed" | "attested" | "evidence" | "delegated" | "unspecified";
+  /**
+   * What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
+   */
+  description: string;
+  /**
+   * For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).
+   */
+  parent?: Urn;
+  /**
+   * The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  evidence?:
+    | []
+    | [EvidenceItem]
+    | [EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ];
+  /**
+   * The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  covers?: Category[];
+  /**
+   * The Authorization Service that established the delegation (HCP 17.2).
+   */
+  establishedBy: string;
+  /**
+   * When the delegation was established (HCP 17.2).
+   */
+  establishedAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
+ * How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.
+ */
+export interface DelegationEnded {
+  /**
+   * When the delegation ended (HCP 17.2, 17.6).
+   */
+  at: Instant;
+  /**
+   * Why it ended (HCP 17.6). HCP's own values, carried verbatim.
+   */
+  reason:
+    "majority" | "expiry" | "basis-ended" | "relinquished" | "ended-by-subject" | "parent-ended" | "ended-by-delegate";
+  [k: string]: unknown | undefined;
+}
+/**
+ * The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).
+ */
+export interface DelegationScope {
+  /**
+   * The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * The actions in scope (HCP 17.2, 6.1.5).
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  actions: ["read" | "write"] | ["read" | "write", "read" | "write"];
+  [k: string]: unknown | undefined;
+}
+/**
+ * When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).
+ */
+export interface DelegationTerm {
+  /**
+   * When the delegation ends; null where no end is known (HCP 17.2).
+   */
+  endsAt: string | null;
+  /**
+   * True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).
+   */
+  atMajority: boolean;
+  [k: string]: unknown | undefined;
 }
 /**
  * A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.
@@ -9106,6 +11785,50 @@ export interface DidcommAuthcryptEnvelope_VaultV0_2 {
   jwe: string;
 }
 /**
+ * What a client may do with context it received, or on the Context Subject's behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).
+ */
+export interface Directive {
+  /**
+   * Stable for the life of the directive (HCP 6.4).
+   */
+  directiveId: Urn;
+  /**
+   * What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
+   */
+  action: string;
+  /**
+   * `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
+   */
+  effect: "deny" | "ask-first" | "permit";
+  /**
+   * The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.
+   */
+  text: string;
+  /**
+   * The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories?: [Category, ...Category[]];
+  /**
+   * The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  operators?: [string, ...string[]];
+  /**
+   * Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
+   */
+  setBy: string;
+  /**
+   * Set by the provider: when the directive was set (HCP 6.4).
+   */
+  createdAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.
  */
 export interface DirectoryCard {
@@ -9283,6 +12006,52 @@ export interface DisclosedField {
   facet?: boolean;
 }
 /**
+ * Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an identifier of a client, a Client Operator, a grant, a conversation or a document, nor `confirmedBy`.
+ */
+export interface DisclosedProvenance {
+  /**
+   * The names of the client that submitted the version disclosed and of its Client Operator.
+   */
+  submittedBy: {
+    /**
+     * The client's name.
+     */
+    name: string;
+    /**
+     * The Client Operator's name.
+     */
+    operator: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's own values, carried verbatim.
+   */
+  source: "conversation" | "document" | "person-input" | "integration";
+  /**
+   * When the assertion was made.
+   */
+  assertedAt: Instant;
+  /**
+   * When the provider recorded the version.
+   */
+  recordedAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A relationship as disclosed (HCP 7.4).
+ */
+export interface DisclosedRelationship {
+  /**
+   * The kind of relationship.
+   */
+  type: RelationshipType;
+  /**
+   * The `ref` of the related entry, disclosed in the same response.
+   */
+  target: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand.
  */
 export interface Disclosure {
@@ -9306,6 +12075,56 @@ export interface Disclosure {
    * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
    */
   coercionResistance: false;
+}
+/**
+ * A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`, never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the whole of `record` (status, provenance, relationships, conversion, metadata): those members describe the person's activity with other systems, which no grant authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it receives in `standing`.
+ */
+export interface Disclosure_HcpV0_1 {
+  /**
+   * A reference to the entry, opaque to the client, stable for one grant and one entry and different under every other grant, and never derivable into the entry's `id` (HCP 7.4). The client names the entry by it in get entry, revise and withdraw; under any other grant it fails with not authorized.
+   */
+  ref: string;
+  /**
+   * The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).
+   */
+  version: number;
+  /**
+   * The content, as stored for the version disclosed (HCP 7.4).
+   */
+  content: Content;
+  /**
+   * The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2), including each item's `verification`, except that a credential may be disclosed in derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The one-`content`-item rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.
+   */
+  evidence?: DisclosedEvidenceItem[];
+  /**
+   * The assertion, as stored for the version disclosed, including `basis` and `permittedPurposes` (HCP 7.4).
+   */
+  assertion: Assertion;
+  /**
+   * Only the entry's categories the requesting grant covers, with its dimension and its `permittedPurposes` where present; its other categories are withheld (HCP 7.4).
+   */
+  classification: Classification;
+  /**
+   * What the client needs to judge the entry's standing (HCP 7.4, 3.8).
+   */
+  standing: Standing;
+  /**
+   * The instant after which the client MUST NOT use the copy, or pass it on, without fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit time that applies (such as `assertion.validUntil`), else a heuristic of at least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of High default sensitivity, or 1 hour where the client has no registered notification endpoint (HCP 7.6).
+   */
+  useUntil: Instant;
+  /**
+   * Present, and true, only where the client may share from this entry under HCP 3.12: the detail of the grant that reaches the entry carries `onwardSharing` and every category of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4).
+   */
+  onwardSharing?: true;
+  /**
+   * Only the relationships whose target is disclosed in the same response, with the target named by its `ref` (HCP 7.4, 4.2.3).
+   */
+  relationships?: DisclosedRelationship[];
+  /**
+   * Present only where the requesting grant includes the `provenance` action for a category of the entry (HCP 7.4.1).
+   */
+  provenance?: DisclosedProvenance;
+  [k: string]: unknown | undefined;
 }
 /**
  * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand. Under a `credential` roll it also says whose membership credential counts (`rollCredential`).
@@ -10022,6 +12841,68 @@ export interface EntryProfile {
   url?: Url;
   tags?: Tags;
 }
+/**
+ * The subject of an entry (HCP 4.2).
+ */
+export interface EntrySubject {
+  /**
+   * A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2).
+   */
+  id: string;
+  /**
+   * Reserved by HCP (HCP 4.2, 11.3); null where present.
+   */
+  relationship?: null;
+  [k: string]: unknown | undefined;
+}
+/**
+ * An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry, with its stable `id`, reaches only the Context Subject's own access (HCP 7.4).
+ */
+export interface Entry_HcpV0_1 {
+  /**
+   * The entry's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 4.2).
+   */
+  "@context"?: unknown[] | string;
+  /**
+   * The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3 defines this one value.
+   */
+  schema: "https://hcp.example/spec/entry/2.0";
+  /**
+   * The entry's stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).
+   */
+  id: Urn;
+  /**
+   * The entry's types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.
+   *
+   * @minItems 1
+   */
+  type: [string, ...string[]];
+  /**
+   * The Context Subject the entry is about.
+   */
+  subject: EntrySubject;
+  /**
+   * What is said about the Context Subject, shaped by its content profile (HCP 4.2).
+   */
+  content: Content;
+  /**
+   * What the submitting client states about the assertion (HCP 4.2, 4.4).
+   */
+  assertion: Assertion;
+  /**
+   * HCP's classification of the entry: its categories, dimension and purpose limits (HCP 4.2, 4.5).
+   */
+  classification: Classification;
+  /**
+   * Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.
+   */
+  evidence?: EvidenceItem[];
+  /**
+   * The provider's record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2).
+   */
+  record: Record;
+  [k: string]: unknown | undefined;
+}
 export interface EnumOption {
   /**
    * The stored value.
@@ -10214,6 +13095,224 @@ export interface EpochLink {
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
  */
 export interface EvidenceDocument {}
+/**
+ * One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ */
+export interface EvidenceItem {
+  /**
+   * `content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+   */
+  role: "content" | "supports";
+  /**
+   * The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
+   */
+  type: string;
+  /**
+   * The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
+   */
+  credential?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.
+   */
+  verification?: {
+    /**
+     * The outcome.
+     */
+    result: "verified" | "failed";
+    /**
+     * When the provider verified.
+     */
+    at: Instant;
+    /**
+     * Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+     */
+    by?: "provider" | "trust-domain";
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
+ * An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an hcp/import request) is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp/export:tooLarge` (hcp/export), never cut short by an item count.
+ */
+export interface Export {
+  /**
+   * The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  "@context":
+    | []
+    | [unknown]
+    | [unknown, unknown]
+    | [unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | string;
+  /**
+   * `ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.
+   */
+  type: "ContextExport";
+  /**
+   * The export structure version, compared as an exact string (HCP 5.4.1, 1.7).
+   */
+  schema: "https://hcp.example/spec/export/2.0";
+  /**
+   * The Context Subject (HCP 5.4.1).
+   */
+  subject: {
+    /**
+     * The Context Subject's identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The exporting HCP Provider (HCP 5.4.1).
+   */
+  exportedBy: string;
+  /**
+   * When the export was made (HCP 5.4.1).
+   */
+  exportedAt: Instant;
+  /**
+   * The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional, and hcp/import accepts an export without it; requiring it of an export the provider produces is pending HCP confirmation (question 42).
+   */
+  options: ExportOptions;
+  /**
+   * The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
+   *
+   * @maxItems 100000
+   */
+  entries: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.
+   *
+   * @maxItems 1000000
+   */
+  versions?: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * The Context Subject's standing rules (HCP 5.4.1, 6.3).
+   *
+   * @maxItems 1000000
+   */
+  rules: StandingRule[];
+  /**
+   * The Context Subject's directives (HCP 5.4.1, 6.4).
+   *
+   * @maxItems 1000000
+   */
+  directives?: Directive[];
+  /**
+   * The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
+   *
+   * @maxItems 1000000
+   */
+  delegations?: Delegation[];
+  /**
+   * The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.
+   *
+   * @maxItems 1000000
+   */
+  audit?: AuditEvent_HcpV0_1[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.
+ */
+export interface ExportOptions {
+  /**
+   * Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
+   */
+  excludeDeleted?: boolean;
+  /**
+   * Also return superseded versions of each entry returned (HCP 5.4.1).
+   */
+  includeVersions: boolean;
+  /**
+   * Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
+   */
+  includeAudit: boolean;
+  [k: string]: unknown | undefined;
+}
 /**
  * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
  */
@@ -10665,6 +13764,94 @@ export interface GitNamespace_GitNsV0_6 {
    * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
    */
   state: "pending" | "bound";
+}
+/**
+ * A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).
+ */
+export interface Grant {
+  /**
+   * Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2).
+   */
+  grantId: Urn;
+  /**
+   * The Context Subject, by a pseudonym specific to the client (HCP 3.4).
+   */
+  subject: GrantParty;
+  /**
+   * Who authorized the grant (HCP 3.4, 6.1.5).
+   */
+  authorizingPrincipal: AuthorizingPrincipal;
+  /**
+   * The HCP Client the grant was issued to (HCP 6.1.5).
+   */
+  client: GrantClient;
+  /**
+   * The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4).
+   */
+  requestingParty?: RequestingParty;
+  /**
+   * What the grant authorizes: one or more authorization details (HCP 6.1.5).
+   *
+   * @minItems 1
+   */
+  access: [AccessDetail, ...AccessDetail[]];
+  /**
+   * Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).
+   */
+  scopes?: string[];
+  /**
+   * Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
+   */
+  grantType: "temporary" | "persistent";
+  /**
+   * When the grant was issued.
+   */
+  issuedAt: Instant;
+  /**
+   * For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5).
+   */
+  expiresAt: string | null;
+  /**
+   * `expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.
+   */
+  status: "active" | "revoked" | "expired";
+  [k: string]: unknown | undefined;
+}
+/**
+ * The client a grant was issued to (HCP 6.1.5).
+ */
+export interface GrantClient {
+  /**
+   * Its client identifier.
+   */
+  id: string;
+  /**
+   * A name the person can recognize (HCP 6.1.5).
+   */
+  name: string;
+  /**
+   * The Client Operator (HCP 3.2.8).
+   */
+  operator: Named;
+  /**
+   * Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5).
+   */
+  legalRetention?: LegalRetention;
+  /**
+   * The client conformance claims it declared at registration (HCP 18.1); absent where it declared none.
+   */
+  claims?: Uri[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * An actor a grant binds, named by identifier (HCP 3.4).
+ */
+export interface GrantParty {
+  /**
+   * Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.
+   */
+  id: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * Identifies one stored grant and the two parties to it.
@@ -11857,6 +15044,24 @@ export interface KudosMakers {
   groups?: GroupId[];
 }
 /**
+ * A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).
+ */
+export interface LegalRetention {
+  /**
+   * The record kept.
+   */
+  record: string;
+  /**
+   * The law or rule that requires it.
+   */
+  obligation: string;
+  /**
+   * How long it is kept.
+   */
+  period: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.
  */
 export interface LimitTarget {
@@ -12355,6 +15560,16 @@ export interface MetricsSnapshot {
   ext?: Ext;
 }
 /**
+ * The minimization report a query or get-entry result carries (HCP 7.5). It MUST NOT carry the number of entries considered, the number available within scope, or any other measure of what was withheld (HCP 7.5); no schema can check that by name.
+ */
+export interface MinimizationReport {
+  /**
+   * The relevance method that determined the final ordering (HCP 7.3): the method the provider declares as `minimization_method` in its discovery document (HCP 19.3), such as `lexical`, `semantic` or `llm`, or `none` for a get-entry result. The set of values is open.
+   */
+  method: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
  */
 export interface MonitorEvent_MessagingV0_1 {
@@ -12683,6 +15898,20 @@ export interface MyBadge {
   credentialId?: GroupCredentialId;
   credentialValidUntil?: string;
 }
+/**
+ * An organization, by identifier and a name a person can recognize.
+ */
+export interface Named {
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * Its name. The minLength is a framework bound, not an HCP requirement.
+   */
+  name: string;
+  [k: string]: unknown | undefined;
+}
 export interface NetworkMembership {
   /**
    * The network's DID.
@@ -12914,6 +16143,20 @@ export interface OfferV2 {
    */
   state: "open" | "accepted";
   credentials: OfferCredentials;
+}
+/**
+ * Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).
+ */
+export interface OnwardSharing {
+  /**
+   * Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5).
+   */
+  domains?: string[];
+  /**
+   * Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3).
+   */
+  notTo?: string[];
+  [k: string]: unknown | undefined;
 }
 /**
  * A delivery waiting to be retried.
@@ -13413,6 +16656,31 @@ export interface Profile {
   updatedAt: string;
 }
 /**
+ * A proposal for resolving a conflict the client asserts, carried on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. `proposedBy` and `proposedAt` are set by the provider, never taken from a request (HCP 4.7.4).
+ */
+export interface Proposal {
+  /**
+   * The act proposed (HCP 4.7.3).
+   */
+  act: "reject" | "accept" | "supersede";
+  /**
+   * The entry the act applies to: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).
+   */
+  entry: string;
+  /**
+   * Why, in words the Context Subject can read (HCP 4.7.4).
+   */
+  rationale: string;
+  /**
+   * What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4).
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  weighed: [string, ...string[]];
+  [k: string]: unknown | undefined;
+}
+/**
  * Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.
  */
 export interface ProtocolCounts {
@@ -13432,6 +16700,88 @@ export interface ProtocolCounts {
    * Anything the mediator could not classify.
    */
   other?: number;
+}
+/**
+ * The provenance of one version of an entry (HCP 4.2, 3.5).
+ */
+export interface Provenance_HcpV0_1 {
+  /**
+   * The Context Asserter (HCP 3.5, 3.6).
+   */
+  assertedBy: {
+    /**
+     * The Context Asserter's identifier.
+     */
+    id: string;
+    /**
+     * How the asserter's identity was established.
+     */
+    assurance: Assurance;
+    /**
+     * Present only where a client attested for an issuer under the issuer's authorization (HCP 3.7).
+     */
+    via?: {
+      /**
+       * What the client attested under. HCP's own values, carried verbatim.
+       */
+      kind: "authorization-credential" | "arrangement";
+      /**
+       * The identifier of the attestation authorization or the recorded arrangement.
+       */
+      id: string;
+      [k: string]: unknown | undefined;
+    };
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * When the assertion was made, as the submitting client states it.
+   */
+  assertedAt: Instant;
+  /**
+   * The origin of the entry, as the submitting client states it: a conversation or document identifier, `person-input` or `integration` (HCP 4.2).
+   */
+  source: string;
+  /**
+   * The HCP Client that submitted this version, and its Client Operator (HCP 3.5).
+   */
+  submittedByClient: ClientDescription;
+  /**
+   * The grant under which this version was written.
+   */
+  authorizedUnder: string;
+  /**
+   * The HCP Provider that recorded this version.
+   */
+  recordedByProvider: string;
+  /**
+   * When the provider recorded this version.
+   */
+  recordedAt: Instant;
+  /**
+   * Confirmation records for this version (HCP 3.8). Absent or empty when there are none.
+   */
+  confirmations?: {
+    /**
+     * Whether the Context Subject confirmed or rejected the version.
+     */
+    disposition: "confirmed" | "rejected";
+    /**
+     * Who confirmed or rejected it.
+     */
+    confirmedBy: {
+      /**
+       * Their identifier.
+       */
+      id: string;
+      [k: string]: unknown | undefined;
+    };
+    /**
+     * When.
+     */
+    confirmedAt: Instant;
+    [k: string]: unknown | undefined;
+  }[];
+  [k: string]: unknown | undefined;
 }
 /**
  * Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.
@@ -13619,6 +16969,20 @@ export interface PurposeScopeListed {
    * @maxItems 32
    */
   purposes: [Purpose_AclV0_3, ...Purpose_AclV0_3[]];
+}
+/**
+ * A purpose with a description the person can read (HCP 6.1.5.2).
+ */
+export interface Purpose_HcpV0_1 {
+  /**
+   * The purpose code.
+   */
+  code: PurposeCode;
+  /**
+   * The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).
+   */
+  description: string;
+  [k: string]: unknown | undefined;
 }
 export interface Apns {
   platform: "apns";
@@ -13968,6 +17332,58 @@ export interface Recipients {
   role?: string;
 }
 /**
+ * The provider's record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).
+ */
+export interface Record {
+  /**
+   * The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.
+   */
+  status: "active" | "deprecated" | "conflicted" | "expired" | "revoked" | "suspended" | "deleted";
+  /**
+   * The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).
+   */
+  version: number;
+  /**
+   * Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).
+   */
+  provenance: Provenance_HcpV0_1;
+  /**
+   * Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.
+   */
+  relationships?: Relationship[];
+  /**
+   * Present only on an entry converted from HCP v1 (HCP 4.3).
+   */
+  conversion?: {
+    /**
+     * What the entry was converted from.
+     */
+    from: string;
+    /**
+     * When it was converted.
+     */
+    convertedAt: Instant;
+    /**
+     * Who converted it.
+     */
+    convertedBy: string;
+    /**
+     * v1 members the conversion did not map.
+     */
+    unmapped?: {
+      [k: string]: unknown | undefined;
+    };
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).
+   */
+  metadata?: {
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
  * Cites a credential.
  */
 export interface RecordEvidenceCredential {
@@ -14218,6 +17634,49 @@ export interface RecordedApproval {
   recordedAt?: string;
 }
 /**
+ * A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.
+ */
+export interface RecordedProposal {
+  /**
+   * The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+   */
+  act: "reject" | "accept" | "supersede";
+  /**
+   * The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+   */
+  entry: string;
+  /**
+   * Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+   */
+  rationale: string;
+  /**
+   * What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  weighed: [string, ...string[]];
+  /**
+   * Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.
+   */
+  proposedBy: {
+    /**
+     * Their role (HCP 3.9). HCP's own values, carried verbatim.
+     */
+    role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
+    /**
+     * Their identifier. The maxLength is a framework bound, not an HCP requirement.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request.
+   */
+  proposedAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).
  */
 export interface RecoveryCommitment {
@@ -14427,6 +17886,42 @@ export interface RejectedKey {
    * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
    */
   reason: string;
+}
+/**
+ * A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ */
+export interface Relationship {
+  /**
+   * The kind of relationship.
+   */
+  type: RelationshipType;
+  /**
+   * The related entry's `id`.
+   */
+  target: string;
+  /**
+   * Who asserted the relationship.
+   */
+  assertedBy: {
+    /**
+     * Their role (HCP 3.9). HCP's own values, carried verbatim.
+     */
+    role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
+    /**
+     * Their identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * When the provider recorded the relationship.
+   */
+  recordedAt: Instant;
+  /**
+   * A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).
+   */
+  proposal?: RecordedProposal;
+  [k: string]: unknown | undefined;
 }
 /**
  * One administrator's decision to relay a received notification, as the community records it (VTI-NTF-073). It records the selection and how many parties it added, never who they are: the record of whom the community relayed to exists only to relay later revisions to them (VTI-NTF-044).
@@ -14653,6 +18148,24 @@ export interface Requester {
   sameNetwork: SameNetwork;
 }
 /**
+ * The Requesting Party (HCP 3.2.7).
+ */
+export interface RequestingParty {
+  /**
+   * A person or an organization. HCP's own values, carried verbatim.
+   */
+  type: "person" | "organization";
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * Its name.
+   */
+  name?: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.
  *
  * Distinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.
@@ -14697,6 +18210,34 @@ export interface ResolvedClaim {
    * When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.
    */
   updatedAt?: string;
+}
+/**
+ * The assertion members a revision may supply (HCP 5.2.4). `declarationType` omitted means unchanged. `confidence` is REQUIRED and non-null when the revised declaration type is `model-inferred`, and null or absent otherwise (HCP 4.2, 5.2.3); not checked by the schema, since the registry's Rust generator does not support `if`/`then`/`else`.
+ */
+export interface RevisionAssertion {
+  /**
+   * The declaration type of the revised assertion (HCP 4.4). HCP's own values, carried verbatim.
+   */
+  declarationType?: "person-declared" | "model-inferred" | "issuer-attested";
+  /**
+   * As for create (HCP 5.2.3).
+   */
+  confidence?: "high" | "medium" | "low" | null;
+  /**
+   * As for create: when the content stops holding (HCP 4.2).
+   */
+  validUntil?: string | null;
+  /**
+   * As for create: what the assertion was drawn from (HCP 4.2.5).
+   */
+  basis?: Basis;
+  /**
+   * As for create: the purposes the asserter permits the entry to be used for (HCP 4.2.6). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
 }
 /**
  * Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.
@@ -16383,6 +19924,63 @@ export interface Slot_VtcBoardsV0_1 {
   endsAt: string;
 }
 /**
+ * The standing of the disclosed version (HCP 7.4).
+ */
+export interface Standing {
+  /**
+   * The stored `record.provenance.assertedBy.assurance`.
+   */
+  assurance: Assurance;
+  /**
+   * True where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8).
+   */
+  confirmed: boolean;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; in this shared definition it is not checked by the schema, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.
+ */
+export interface StandingRule {
+  /**
+   * Stable for the life of the rule (HCP 6.3).
+   */
+  ruleId: Urn;
+  /**
+   * `deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
+   */
+  effect: "deny";
+  /**
+   * The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  operators?: [string, ...string[]];
+  /**
+   * Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  requires?: [Uri, ...Uri[]];
+  /**
+   * The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories?: [Category, ...Category[]];
+  /**
+   * Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
+   */
+  setBy: string;
+  /**
+   * Set by the provider: when the rule was set (HCP 6.3).
+   */
+  createdAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * One transition in an entry's lifecycle.
  */
 export interface StateChange {
@@ -17991,6 +21589,75 @@ export interface WitnessKey {
   proofsSigned: number;
 }
 /**
+ * The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation (question 7); not checked by the schema.
+ */
+export interface WriteClassification {
+  /**
+   * HCP `classification.categories`: one or more categories, each one the grant authorizes the caller to write (HCP 4.5, 5.2.3). The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * HCP `classification.dimension`: the dimension within the entry's categories (HCP 4.2).
+   */
+  dimension?: string | null;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record.provenance`, as a revision supplies it (HCP 5.2.4): the members are as for create, for the revised assertion, and the provider assigns every other provenance member (HCP 3.5). The create rules for `source` and `assertedBy.id` apply to the revised assertion (HCP 5.2.3, 5.2.4); they depend on the content and are not checked by the schema.
+ */
+export interface WriteProvenance {
+  /**
+   * The Context Asserter.
+   */
+  assertedBy?: AssertedBy;
+  /**
+   * When the assertion was made. Omitted means the provider records `recordedAt` (HCP 5.2.3).
+   */
+  assertedAt?: Instant;
+  /**
+   * The origin of the entry: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3).
+   */
+  source?: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record`, as a revision supplies it: provenance and relationships only (HCP 5.2.4). The provider assigns `status`, `version` and the rest.
+ */
+export interface WriteRecord {
+  /**
+   * The provenance the client supplies (HCP 5.2.3).
+   */
+  provenance?: WriteProvenance;
+  /**
+   * Relationships to assert (HCP 4.2.3). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  relationships?: WriteRelationship[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * A relationship to assert (HCP 4.2.3, 5.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4); not checked by the schema. The provider assigns `assertedBy` and `recordedAt` (HCP 5.2.3).
+ */
+export interface WriteRelationship {
+  /**
+   * The kind of relationship.
+   */
+  type: RelationshipType;
+  /**
+   * The related entry: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).
+   */
+  target: string;
+  /**
+   * A proposal for resolving the conflict, on a `contradicts` relationship only (HCP 4.7.4).
+   */
+  proposal?: Proposal;
+  [k: string]: unknown | undefined;
+}
+/**
  * The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.
  */
 export interface WriteResult_VtaV0_1 {
@@ -18069,4 +21736,14 @@ export interface WriteResult_VtaV0_7 {
    * On `tooLarge`: the size of the rejected value in bytes.
    */
   actualBytes?: number;
+}
+/**
+ * HCP `subject`, as a create supplies it (HCP 5.2.3): `subject.id` only. HCP reserves `subject.relationship` (HCP 4.2, 11.3); a request that carries it is passed through unchanged.
+ */
+export interface WriteSubject {
+  /**
+   * HCP `subject.id`: a URI identifying the Context Subject, which for a Context Client is the per-client pseudonym from its grant (HCP 3.4, 4.2).
+   */
+  id: string;
+  [k: string]: unknown | undefined;
 }
