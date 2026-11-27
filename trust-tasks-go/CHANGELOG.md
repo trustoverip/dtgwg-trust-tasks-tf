@@ -11,6 +11,41 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.15.0 — 2026-11-27
+
+
+### Fixed
+
+- **rs,go,dart**: Validate the payload as received on the typed consume paths (#1398)
+
+* test(rs): show generated payload types losing member presence on a round trip
+
+  An optional array decodes [] as absent and re-encodes it absent; an
+  optional nullable member decodes null as absent (acl/update 0.3's
+  "label: null clears it" becomes "leave it unchanged"); an optional
+  {"type": "null"} member is written back as null when absent. The
+  trust-tasks-rs tests round-trip acl/show 0.3 and acl/update 0.3; the
+  trust-tasks-build tests pin the field shapes on a fixture module. Both
+  fail until the generator keeps presence.
+
+
+
+### Specifications
+
+- **hcp**: A re-delivered grant request gets a new token; questions 58 and 59 for the HCP editors (#1401)
+
+* spec(hcp): a re-delivered or resubmitted grant request gets a new token, and the TSP references name binding 0.3
+
+  hcp/grants/request 0.1 told the provider both to answer a re-delivered request with
+  what the first delivery was answered with and to keep the access token in no record of
+  the exchange; after a response that carried a token it could not do both. SPEC §7.2 item
+  11 asks only that the document is not executed twice. A re-delivered copy of an answered
+  request is now answered as a resubmission within the hour is: the same grant with a newly
+  issued token, and a resubmission no longer MAY repeat the token it sent.
+
+  hcp/grants/request and hcp/grants/revoked cite TSP binding 0.3 §6 (the text is unchanged
+  from 0.2). QUESTIONS.md question 39 and its status line are reworded to match.
+
 ## 0.14.0 — 2026-11-27
 
 

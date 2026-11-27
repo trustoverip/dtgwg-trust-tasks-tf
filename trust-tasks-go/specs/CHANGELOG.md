@@ -4,6 +4,25 @@ All notable changes to `trust-tasks-go/specs` (the generated specification
 packages) are documented here. Entries are generated from conventional commits
 by the release automation (see RELEASING.md).
 
+## 0.3.0 — 2026-11-27
+
+
+### Specifications
+
+- **hcp**: A re-delivered grant request gets a new token; questions 58 and 59 for the HCP editors (#1401)
+
+* spec(hcp): a re-delivered or resubmitted grant request gets a new token, and the TSP references name binding 0.3
+
+  hcp/grants/request 0.1 told the provider both to answer a re-delivered request with
+  what the first delivery was answered with and to keep the access token in no record of
+  the exchange; after a response that carried a token it could not do both. SPEC §7.2 item
+  11 asks only that the document is not executed twice. A re-delivered copy of an answered
+  request is now answered as a resubmission within the hour is: the same grant with a newly
+  issued token, and a resubmission no longer MAY repeat the token it sent.
+
+  hcp/grants/request and hcp/grants/revoked cite TSP binding 0.3 §6 (the text is unchanged
+  from 0.2). QUESTIONS.md question 39 and its status line are reworded to match.
+
 ## 0.2.0 — 2026-11-27
 
 
