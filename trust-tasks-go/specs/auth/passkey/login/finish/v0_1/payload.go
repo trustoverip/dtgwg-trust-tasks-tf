@@ -105,10 +105,10 @@ type Session struct {
 
 // AssertionResponseResponse AssertionResponseResponse is a generated payload type.
 type AssertionResponseResponse struct {
-	ClientDataJSON    string  `json:"clientDataJSON"`
-	AuthenticatorData string  `json:"authenticatorData"`
-	Signature         string  `json:"signature"`
-	UserHandle        *string `json:"userHandle,omitempty"`
+	ClientDataJSON    string                      `json:"clientDataJSON"`
+	AuthenticatorData string                      `json:"authenticatorData"`
+	Signature         string                      `json:"signature"`
+	UserHandle        trusttasks.Nullable[string] `json:"userHandle,omitzero"`
 }
 
 // AssertionResponse The credential the client returns from `navigator.credentials.get`.

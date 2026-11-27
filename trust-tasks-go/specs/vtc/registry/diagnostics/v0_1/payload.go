@@ -47,14 +47,14 @@ type Response struct {
 	FailedCount int64 `json:"failedCount"`
 
 	// Seconds since the oldest dispatchable pending job; null when the queue is empty.
-	OldestPendingAgeSeconds *int64  `json:"oldestPendingAgeSeconds,omitempty"`
-	LastSuccessAt           *string `json:"lastSuccessAt,omitempty"`
-	LastFailureAt           *string `json:"lastFailureAt,omitempty"`
+	OldestPendingAgeSeconds trusttasks.Nullable[int64]  `json:"oldestPendingAgeSeconds,omitzero"`
+	LastSuccessAt           trusttasks.Nullable[string] `json:"lastSuccessAt,omitzero"`
+	LastFailureAt           trusttasks.Nullable[string] `json:"lastFailureAt,omitzero"`
 
 	// Error from the last registry failure. May include upstream URLs/codes — treat as
 	// potentially sensitive.
-	LastError *string `json:"lastError,omitempty"`
-	Ext       *Ext    `json:"ext,omitempty"`
+	LastError trusttasks.Nullable[string] `json:"lastError,omitzero"`
+	Ext       *Ext                        `json:"ext,omitempty"`
 
 	// Whether the membership syncer is configured to run at all — false when no trust
 	// registry is configured.
@@ -78,10 +78,10 @@ type Response struct {
 	VtaDID *string `json:"vtaDid,omitempty"`
 
 	// The mediator's endpoint, when one is configured.
-	MediatorURL *string `json:"mediatorUrl,omitempty"`
+	MediatorURL trusttasks.Nullable[string] `json:"mediatorUrl,omitzero"`
 
 	// The mediator's DID, when one is configured.
-	MediatorDID *string `json:"mediatorDid,omitempty"`
+	MediatorDID trusttasks.Nullable[string] `json:"mediatorDid,omitzero"`
 
 	// How this maintainer reaches its trust registry, and which protocol the last attempt
 	// actually chose.
@@ -111,7 +111,7 @@ type TransportStatus struct {
 	Serviceable bool `json:"serviceable"`
 
 	// The advertised endpoint, or null when not advertised — there is no endpoint to give.
-	Endpoint *string `json:"endpoint,omitempty"`
+	Endpoint trusttasks.Nullable[string] `json:"endpoint,omitzero"`
 }
 
 // RegistryTransport How a maintainer addresses its trust registry, and what the last
@@ -120,10 +120,10 @@ type TransportStatus struct {
 // at the same time, and one collapsed field cannot say so.
 type RegistryTransport struct {
 	// The registry's DID, when addressed by one.
-	DID *string `json:"did,omitempty"`
+	DID trusttasks.Nullable[string] `json:"did,omitzero"`
 
 	// The registry's endpoint, when addressed by one.
-	URL *string `json:"url,omitempty"`
+	URL trusttasks.Nullable[string] `json:"url,omitzero"`
 
 	// Protocols the registry's own document advertises, in preference order. Empty before the
 	// DID has been resolved, or when addressed by URL alone.
@@ -131,10 +131,10 @@ type RegistryTransport struct {
 
 	// The protocol the last selection chose. Null before the first call, or when selection
 	// failed — see `error`.
-	Active *string `json:"active,omitempty"`
+	Active trusttasks.Nullable[string] `json:"active,omitzero"`
 
 	// Why the last selection failed, if it did.
-	Error *string `json:"error,omitempty"`
+	Error trusttasks.Nullable[string] `json:"error,omitzero"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

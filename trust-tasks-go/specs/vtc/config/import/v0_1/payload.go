@@ -129,12 +129,12 @@ const (
 // exported state.
 type CommunityProfileSnapshot struct {
 	// DID of the community this document was taken from. Immutable, set at install.
-	CommunityDID string  `json:"communityDid"`
-	Name         string  `json:"name"`
-	Description  *string `json:"description,omitempty"`
-	LogoURL      *string `json:"logoUrl,omitempty"`
-	PublicURL    *string `json:"publicUrl,omitempty"`
-	ContactEmail *string `json:"contactEmail,omitempty"`
+	CommunityDID string                      `json:"communityDid"`
+	Name         string                      `json:"name"`
+	Description  *string                     `json:"description,omitempty"`
+	LogoURL      trusttasks.Nullable[string] `json:"logoUrl,omitzero"`
+	PublicURL    trusttasks.Nullable[string] `json:"publicUrl,omitzero"`
+	ContactEmail trusttasks.Nullable[string] `json:"contactEmail,omitzero"`
 
 	// BCP 47 language tag.
 	Language string `json:"language"`
@@ -190,7 +190,7 @@ type PersonhoodGovernance struct {
 	AcceptedIdvps *[]string `json:"acceptedIdvps,omitempty"`
 
 	// Where the governance framework these assertions refer to can be read.
-	GovernanceFrameworkURL *string `json:"governanceFrameworkUrl,omitempty"`
+	GovernanceFrameworkURL trusttasks.Nullable[string] `json:"governanceFrameworkUrl,omitzero"`
 }
 
 // Payload Apply a portable configuration document to this community, or preview what

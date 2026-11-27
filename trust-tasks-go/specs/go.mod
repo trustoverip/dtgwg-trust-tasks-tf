@@ -5,8 +5,11 @@
 // It must require a core published WITHOUT specs/ (v0.13.0 is the first).
 // Against an older core, which still contains these packages, an importer sees
 // each one in two modules and the go command refuses the import as ambiguous.
+//
+// It must also require a core that has every runtime API the generated tree
+// uses: trusttasks.Nullable is in v0.14.0 and later.
 module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs
 
 go 1.24
 
-require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3
+require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.14.0

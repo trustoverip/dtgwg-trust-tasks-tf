@@ -34,7 +34,7 @@ type Response struct {
 	// applicant would poll for a status, learn they were admitted, and then fetch the
 	// credential separately — a second round trip whose only purpose is to collect something
 	// the community already had in hand when it decided.
-	Vmc *map[string]json.RawMessage `json:"vmc,omitempty"`
+	Vmc trusttasks.Nullable[map[string]json.RawMessage] `json:"vmc,omitzero"`
 
 	// The role credential this decision issued: a Verifiable Authority Credential (`type`
 	// including `AuthorityCredential`) issued by the community with `issuerScope` `directed`
@@ -44,8 +44,8 @@ type Response struct {
 	// issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where
 	// the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are
 	// authority, not endorsements.
-	RoleVac *map[string]json.RawMessage `json:"roleVac,omitempty"`
-	Ext     *Ext                        `json:"ext,omitempty"`
+	RoleVac trusttasks.Nullable[map[string]json.RawMessage] `json:"roleVac,omitzero"`
+	Ext     *Ext                                            `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

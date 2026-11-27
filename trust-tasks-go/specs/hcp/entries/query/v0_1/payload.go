@@ -546,7 +546,7 @@ type Classification struct {
 
 	// A free-form identifier of the dimension the entry addresses, scoped within its
 	// categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
-	Dimension *string `json:"dimension,omitempty"`
+	Dimension trusttasks.Nullable[string] `json:"dimension,omitzero"`
 
 	// The Authorizing Principal's narrowing of the entry's purposes; absent means no limit
 	// (HCP 4.2.6).
@@ -579,12 +579,12 @@ type Assertion struct {
 	DeclarationType AssertionDeclarationType `json:"declarationType"`
 
 	// How confident an inferring model is (HCP 4.2, 4.4).
-	Confidence *string `json:"confidence,omitempty"`
+	Confidence trusttasks.Nullable[string] `json:"confidence,omitzero"`
 
 	// The instant after which the content no longer holds; absent or null means it does not
 	// expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable,
 	// which is a disclosure's `useUntil` (HCP 7.6).
-	ValidUntil *string `json:"validUntil,omitempty"`
+	ValidUntil trusttasks.Nullable[string] `json:"validUntil,omitzero"`
 
 	// What the assertion was drawn from (HCP 4.2.5).
 	Basis *Basis `json:"basis,omitempty"`
@@ -630,7 +630,7 @@ type Content struct {
 
 	// The BCP 47 language tag of a string `value`, under the General Context Profile (HCP
 	// 11.2). Optional; may be null.
-	Language *string `json:"language,omitempty"`
+	Language trusttasks.Nullable[string] `json:"language,omitzero"`
 
 	// Under the VC Evidence Profile, the index in `evidence` of the item whose credential is
 	// the content (HCP 4.2.2).

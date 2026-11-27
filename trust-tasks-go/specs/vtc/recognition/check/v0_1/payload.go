@@ -26,8 +26,8 @@ type Response struct {
 
 	// Lookup failure detail — a configured but unreachable registry, distinct from an
 	// unconfigured one.
-	Error *string `json:"error,omitempty"`
-	Ext   *Ext    `json:"ext,omitempty"`
+	Error trusttasks.Nullable[string] `json:"error,omitzero"`
+	Ext   *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vtcsharedconfigportabilityv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // ConfigExportDocument A community's portable configuration: its profile plus the
 // configuration overrides a maintainer stores for itself. Deliberately excludes per-host
@@ -60,12 +63,12 @@ const (
 // exported state.
 type CommunityProfileSnapshot struct {
 	// DID of the community this document was taken from. Immutable, set at install.
-	CommunityDID string  `json:"communityDid"`
-	Name         string  `json:"name"`
-	Description  *string `json:"description,omitempty"`
-	LogoURL      *string `json:"logoUrl,omitempty"`
-	PublicURL    *string `json:"publicUrl,omitempty"`
-	ContactEmail *string `json:"contactEmail,omitempty"`
+	CommunityDID string                      `json:"communityDid"`
+	Name         string                      `json:"name"`
+	Description  *string                     `json:"description,omitempty"`
+	LogoURL      trusttasks.Nullable[string] `json:"logoUrl,omitzero"`
+	PublicURL    trusttasks.Nullable[string] `json:"publicUrl,omitzero"`
+	ContactEmail trusttasks.Nullable[string] `json:"contactEmail,omitzero"`
 
 	// BCP 47 language tag.
 	Language string `json:"language"`
@@ -138,7 +141,7 @@ type PersonhoodGovernance struct {
 	AcceptedIdvps *[]string `json:"acceptedIdvps,omitempty"`
 
 	// Where the governance framework these assertions refer to can be read.
-	GovernanceFrameworkURL *string `json:"governanceFrameworkUrl,omitempty"`
+	GovernanceFrameworkURL trusttasks.Nullable[string] `json:"governanceFrameworkUrl,omitzero"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

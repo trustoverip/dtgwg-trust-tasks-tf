@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vtcsharedcommunityv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // CommunityProfileRelationshipIdentifierDefault Which identifier form the community
 // expects members to issue relationship credentials under. `attributed` means the
@@ -52,12 +55,12 @@ const (
 
 // CommunityProfile CommunityProfile
 type CommunityProfile struct {
-	Name         string  `json:"name"`
-	Description  *string `json:"description,omitempty"`
-	LogoURL      *string `json:"logoUrl,omitempty"`
-	PublicURL    *string `json:"publicUrl,omitempty"`
-	ContactEmail *string `json:"contactEmail,omitempty"`
-	Language     string  `json:"language"`
+	Name         string                      `json:"name"`
+	Description  *string                     `json:"description,omitempty"`
+	LogoURL      trusttasks.Nullable[string] `json:"logoUrl,omitzero"`
+	PublicURL    trusttasks.Nullable[string] `json:"publicUrl,omitzero"`
+	ContactEmail trusttasks.Nullable[string] `json:"contactEmail,omitzero"`
+	Language     string                      `json:"language"`
 
 	// Which identifier form the community expects members to issue relationship credentials
 	// under. `attributed` means the member's membership DID, so an edge names them;
@@ -121,7 +124,7 @@ type PersonhoodGovernance struct {
 	AcceptedIdvps *[]string `json:"acceptedIdvps,omitempty"`
 
 	// Where the governance framework these assertions refer to can be read.
-	GovernanceFrameworkURL *string `json:"governanceFrameworkUrl,omitempty"`
+	GovernanceFrameworkURL trusttasks.Nullable[string] `json:"governanceFrameworkUrl,omitzero"`
 }
 
 // CommunityProfileViewRelationshipIdentifierDefault Which identifier form the community
@@ -183,13 +186,13 @@ type CommunityProfileView struct {
 	CommunityDID string `json:"communityDid"`
 
 	// When the community was created. Immutable, like `communityDid`.
-	CreatedAt    *string `json:"createdAt,omitempty"`
-	Name         string  `json:"name"`
-	Description  *string `json:"description,omitempty"`
-	LogoURL      *string `json:"logoUrl,omitempty"`
-	PublicURL    *string `json:"publicUrl,omitempty"`
-	ContactEmail *string `json:"contactEmail,omitempty"`
-	Language     string  `json:"language"`
+	CreatedAt    *string                     `json:"createdAt,omitempty"`
+	Name         string                      `json:"name"`
+	Description  *string                     `json:"description,omitempty"`
+	LogoURL      trusttasks.Nullable[string] `json:"logoUrl,omitzero"`
+	PublicURL    trusttasks.Nullable[string] `json:"publicUrl,omitzero"`
+	ContactEmail trusttasks.Nullable[string] `json:"contactEmail,omitzero"`
+	Language     string                      `json:"language"`
 
 	// Which identifier form the community expects members to issue relationship credentials
 	// under. `attributed` means the member's membership DID, so an edge names them;

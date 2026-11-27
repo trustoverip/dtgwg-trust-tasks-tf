@@ -51,21 +51,21 @@ type Job struct {
 
 	// The registry's last answer, verbatim. Diagnostic prose for an operator; a consumer MUST
 	// NOT parse it.
-	LastError *string `json:"lastError,omitempty"`
+	LastError trusttasks.Nullable[string] `json:"lastError,omitzero"`
 
 	// When the job was enqueued.
 	CreatedAt string `json:"createdAt"`
 
 	// When it was last dispatched.
-	LastAttemptedAt *string `json:"lastAttemptedAt,omitempty"`
+	LastAttemptedAt trusttasks.Nullable[string] `json:"lastAttemptedAt,omitzero"`
 
 	// When it is next due. Null on a failed job: nothing is scheduled.
-	NextAttemptAt *string `json:"nextAttemptAt,omitempty"`
+	NextAttemptAt trusttasks.Nullable[string] `json:"nextAttemptAt,omitzero"`
 
 	// When the maintainer's retention sweep will delete this row. A deadline, not a fix — the
 	// member stays unpublished.
-	PurgeDueAt *string `json:"purgeDueAt,omitempty"`
-	Ext        *Ext    `json:"ext,omitempty"`
+	PurgeDueAt trusttasks.Nullable[string] `json:"purgeDueAt,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Response VTC Registry Sync Jobs List — response payload
@@ -75,8 +75,8 @@ type Response struct {
 	Items []Job `json:"items"`
 
 	// Continuation token for the next page, or null when this is the last.
-	NextCursor *string `json:"nextCursor,omitempty"`
-	Ext        *Ext    `json:"ext,omitempty"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

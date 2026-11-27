@@ -87,7 +87,7 @@ type Attestation struct {
 	Kind AttestationKind `json:"kind"`
 
 	// When it expires, if it says; null when it carries no expiry the maintainer reads.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt trusttasks.Nullable[string] `json:"expiresAt,omitzero"`
 }
 
 // IdentityKind The wallet ecosystem it is known to: `swiyu` (a DID registered in the
@@ -124,13 +124,13 @@ type Identity struct {
 
 	// The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi`
 	// identity has no certificate.
-	ClientID *string `json:"clientId,omitempty"`
+	ClientID trusttasks.Nullable[string] `json:"clientId,omitzero"`
 
 	// The identity's DID, for a `swiyu` identity.
-	DID *string `json:"did,omitempty"`
+	DID trusttasks.Nullable[string] `json:"did,omitzero"`
 
 	// The verification method that signs request objects, for an identity known by a DID.
-	KeyID *string `json:"keyId,omitempty"`
+	KeyID trusttasks.Nullable[string] `json:"keyId,omitzero"`
 
 	// Where the signing key is: `cached` by the community, kept by its `agent` (which signs
 	// every request object), or `invalid` when the record names neither or both.
@@ -163,7 +163,7 @@ type Response struct {
 
 	// The identity the community is configured to use when a session names no client
 	// identifier prefix; null when none is configured, and the first usable identity is used.
-	DefaultIdentity *string `json:"defaultIdentity,omitempty"`
+	DefaultIdentity trusttasks.Nullable[string] `json:"defaultIdentity,omitzero"`
 
 	// What is wrong with the community's verifier as a whole, rather than with one identity.
 	// Empty when nothing is.

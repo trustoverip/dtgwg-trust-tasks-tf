@@ -68,7 +68,7 @@ type GraphHalf struct {
 	// deliberate correlation becomes visible: two pairwise halves carrying the same
 	// `personaDid` are the same party, said so by that party. A consumer that cannot read it
 	// cannot honour a correlation its subject chose to publish.
-	PersonaDID *string `json:"personaDid,omitempty"`
+	PersonaDID trusttasks.Nullable[string] `json:"personaDid,omitzero"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
