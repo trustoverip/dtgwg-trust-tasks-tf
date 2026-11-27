@@ -623,9 +623,9 @@ pub struct Response {
     #[serde(
         rename = "mirrorsPending",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub mirrors_pending: ::std::vec::Vec<ResponseMirrorsPendingItem>,
+    pub mirrors_pending: ::std::option::Option<::std::vec::Vec<ResponseMirrorsPendingItem>>,
     ///The revocation list carrying the withdrawal, as `host` accepted it. Present exactly when `withdrawn` is true.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub revocation: ::std::option::Option<RevocationHead>,
@@ -1011,7 +1011,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         member: ::std::result::Result<super::ResponseMember, ::std::string::String>,
         mirrors_pending: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseMirrorsPendingItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseMirrorsPendingItem>>,
             ::std::string::String,
         >,
         revocation: ::std::result::Result<
@@ -1072,7 +1072,9 @@ pub mod builder {
         }
         pub fn mirrors_pending<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseMirrorsPendingItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseMirrorsPendingItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.mirrors_pending = value

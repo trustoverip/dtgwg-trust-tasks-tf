@@ -752,8 +752,8 @@ pub struct DidTemplateRef {
     ///Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.
     pub name: DidTemplateRefName,
     ///Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub vars: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl DidTemplateRef {
     pub fn builder() -> builder::DidTemplateRef {
@@ -2280,7 +2280,7 @@ pub mod builder {
     pub struct DidTemplateRef {
         name: ::std::result::Result<super::DidTemplateRefName, ::std::string::String>,
         vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -2306,7 +2306,9 @@ pub mod builder {
         pub fn vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

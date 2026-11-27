@@ -1029,8 +1029,8 @@ pub struct Response {
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
     ///Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub renewals: ::std::vec::Vec<Renewal>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub renewals: ::std::option::Option<::std::vec::Vec<Renewal>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -1832,7 +1832,10 @@ pub mod builder {
             ::std::option::Option<super::ResponseNextCursor>,
             ::std::string::String,
         >,
-        renewals: ::std::result::Result<::std::vec::Vec<super::Renewal>, ::std::string::String>,
+        renewals: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Renewal>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -1877,7 +1880,7 @@ pub mod builder {
         }
         pub fn renewals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Renewal>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Renewal>>>,
             T::Error: ::std::fmt::Display,
         {
             self.renewals = value

@@ -749,8 +749,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Facet filters: an entry matches when, for every filter, its value of the field is one of `values`. Only facets visible to the caller.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub filters: ::std::vec::Vec<PayloadFiltersItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub filters: ::std::option::Option<::std::vec::Vec<PayloadFiltersItem>>,
     ///Restrict to members of this community group, as far as the caller may see its members.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub group: ::std::option::Option<GroupId>,
@@ -984,8 +984,8 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Counts for the facets visible to the caller, over the whole result. Absent when none is.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub facets: ::std::vec::Vec<ResponseFacetsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub facets: ::std::option::Option<::std::vec::Vec<ResponseFacetsItem>>,
     pub items: ::std::vec::Vec<DirectoryEntry>,
     ///Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.
     #[serde(
@@ -1647,7 +1647,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         filters: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadFiltersItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadFiltersItem>>,
             ::std::string::String,
         >,
         group: ::std::result::Result<::std::option::Option<super::GroupId>, ::std::string::String>,
@@ -1695,7 +1695,9 @@ pub mod builder {
         }
         pub fn filters<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadFiltersItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadFiltersItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.filters = value
@@ -1820,7 +1822,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         facets: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseFacetsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseFacetsItem>>,
             ::std::string::String,
         >,
         items: ::std::result::Result<::std::vec::Vec<super::DirectoryEntry>, ::std::string::String>,
@@ -1852,7 +1854,9 @@ pub mod builder {
         }
         pub fn facets<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseFacetsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseFacetsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.facets = value

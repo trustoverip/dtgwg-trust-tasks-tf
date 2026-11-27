@@ -29,6 +29,109 @@ construction path). The consequence worth knowing:
   a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
   both type parameters — constraining it is an open follow-up.
 
+## Generated payload types keep absent, empty and `null` apart
+
+A schema can give an optional member three meanings: absent, present and empty
+(`[]`, `{}`), and present as `null`. `acl/update` 0.3 reads `"label": null` as
+"clear the label" and an absent `label` as "leave it unchanged". typify's own
+output folds these together (an empty `Vec` is skipped on the way out, and a
+`null` is read as `None`), so `trust-tasks-build` rewrites the optional
+members' fields after typify runs (`trust-tasks-build/src/presence.rs`):
+
+| Optional member's schema | Field type | absent | `null` | a value |
+|---|---|---|---|---|
+| array or map | `Option<Vec<T>>` / `Option<Map>` | `None` | `None` | `Some(v)`, `[]` included |
+| admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
+| `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
+| `true`, `{}` or annotations only | `Option<Option<Value>>` | `None` | `Some(None)` | `Some(Some(v))` |
+| anything else | `Option<T>`, unchanged | `None` | `None` | `Some(v)` |
+
+**Decoding does not refuse a `null` the schema forbids; schema validation
+does.** On an optional member with no null form, a `null` reads as absent:
+`{"subject": "…", "purposes": null}` on `acl/update` 0.3 ("There is no null
+form") decodes as "leave unchanged" and re-encodes without `purposes`. This is
+the decision recorded in [`runtime-parity.md`](../runtime-parity.md) for all
+four runtimes: such a `null` is refused by payload-schema validation, not by
+typed decoding. In Rust that means validating the payload **as received**:
+
+- `consume_dispatched` validates the received payload (`PayloadPolicy::Validate`)
+  before decoding it, so it refuses the document `malformedRequest`;
+- `ValidatedPayload::validate_value` on the received payload refuses it;
+- the typed `consume_inbound::<P>` does **not**: it validates `P` re-encoded,
+  from which the `null` is already gone. A typed consumer that must refuse it
+  calls `P::validate_value` on the received payload before decoding.
+
+(`trust-tasks-rs/tests/member_presence.rs` pins all three.) Refusing it at
+decode instead was tried in the change that introduced these shapes and
+dropped before release: a `deserialize_with` on each of the ~14,600 such
+fields in the prebuilt tree cost about 2 GiB of compiler memory, and it made
+Rust the only runtime refusing without a validator.
+
+Whether a schema admits `null` is decided from `type`, `const`, `enum`,
+`oneOf` / `anyOf` / `allOf`, `$ref` and a `not` of exactly `null`; a schema
+those keywords don't settle (no `type`, say) is taken to admit it, so the
+generator can keep a `null` the schema would refuse (validation still refuses
+it) but never loses one it accepts. A `$ref` is read with JSON Schema 2020-12
+semantics (its siblings apply too), which every registry schema uses. A `true`
+member is treated like `{}`: any value, `null` included.
+
+Generation fails rather than guess where a `null` the schema accepts could be
+lost (read as absent), and the error names the member:
+
+- A member that admits `null` but that typify renders as a bare collection
+  instead of an `Option` (a type-less `{"additionalProperties": …}`, say). The
+  error also names the owning struct. Give the member an explicit `type` that
+  includes `"null"`, or one that excludes it.
+- A member whose nullable tag typify dropped. Each tag carries its own id, and
+  every one must be read back off a generated field. Only a tag on a member
+  under a `oneOf` / `anyOf` branch can be accounted for by a required enum
+  variant field of the same name, since typify writes no doc on a variant's
+  fields. Move the member's schema into a `$defs` type, or report it as a
+  `trust-tasks-build` bug. One case is not caught: where typify copies a
+  description onto two fields, the tag read back off one copy also accounts
+  for the other.
+
+A member that admits `null` reads through one helper, `present`, which maps a
+present member, `null` included, to `Some`; the other rewritten fields
+(arrays and maps) need none. Every rewritten field is skipped on the way out
+only when it is `None`, so a decoded document re-encodes with the same members
+(except a forbidden `null`, which reads as absent). In `trust-tasks-rs` the
+helper is the crate-private `specs::__presence`, shared
+by every prebuilt module (the leading underscores keep it apart from the family
+modules beside it: a slug segment starts with a letter); a module an
+application generates carries its own private copy, so it needs nothing new
+from the runtime's `__private`.
+Required members are not touched. A member with a declared JSON Schema
+`default` is left as typify renders it, so an absent one reads as that
+default, **except** a default equal to the type's intrinsic one (`[]`, `{}`,
+`null`, `false`, `0`, `""`): typify treats that as no default, so the member is
+rewritten like any other and an absent one reads as `None`.
+
+The builder setters take the field's type through `TryInto`, so:
+
+- `.redacted_fields(vec)` still compiles and always sends the array, `[]`
+  included. Leave the setter out to omit the member.
+- On a nullable member, `.label(Some(x))` sends the value
+  (`Option<T>` converts into `Option<Option<T>>`), and
+  **`.label(None::<T>)` sends an explicit `null`**. The turbofish is needed:
+  a bare `None` no longer infers. Leave the setter out (or pass
+  `None::<Option<T>>`) to omit the member. A bare `T` no longer compiles; wrap
+  it in `Some`.
+- Reading: `p.label.flatten()` gives the value when you don't care why there
+  isn't one; match `Some(None)` to see an explicit `null`.
+- Any other optional member keeps its `Option<T>` setter, type and decoding.
+- Decoding a `null` on an optional array or map with no null form is now
+  **accepted** and read as absent. typify's bare `Vec` / map could not read a
+  `null`, so `{"redactedFields": null}` used to fail to decode, and a typed
+  consumer decoding `TrustTask<P>` before `consume_inbound::<P>` refused it
+  there. Like every
+  other forbidden `null`, it is now left to validation of the received payload
+  (above).
+
+These are public type changes, so the change that introduced them was a
+breaking release of `trust-tasks-rs`, and an application generating its own
+types through `trust-tasks-build` sees the same shapes.
+
 ## The per-module Rust generator lives in `trust-tasks-build`
 
 `trust-tasks-codegen` writes the tree, the indexes and the conformance tests,
@@ -101,6 +204,22 @@ Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 integration test file that uses a family opens with `#![cfg(feature = "…")]`
 for each one it names.
 
+
+## `trust-tasks-tsp` speaks TSP 1.0 only
+
+`trust-tasks-tsp` implements binding `tsp/0.3` (`BINDING_URI`) on
+`affinidi-tsp` 0.5, which speaks TSP 1.0 (`YTSP-BAA`, `TSP_VERSION`), as the
+TypeScript, Go and Dart TSP bindings do. A peer on a TSP draft (MAJOR other
+than 1) is refused `TspError::UnsupportedTspVersion` from the version marker,
+before any key is used: `advertised_sender` refuses it before the caller
+resolves the sender, which `affinidi_tsp::MetaEnvelope::parse` (it reads any
+version, as a relay must) does not. An unknown 1.x MINOR is not a version
+refusal (TSP 1.0 §3.1). TSP has no version negotiation, so moving
+`affinidi-tsp` across a TSP MAJOR is a wire break for every peer: do it
+deliberately, in a `!` PR scoped `tsp`. `tests/tsp_version.rs` opens the
+Rust-packed 1.0 fixture the other three libraries test against and refuses
+their Rev 2 and Rev 3 fixtures; `check-bindings` holds the four libraries'
+binding URI, envelope type and TSP version together.
 
 ## The Rust message bindings share one consumer — `GuardedConsumer`
 

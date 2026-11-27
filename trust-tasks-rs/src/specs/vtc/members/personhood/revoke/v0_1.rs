@@ -206,12 +206,13 @@ pub struct Response {
     #[serde(
         rename = "roleVac",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub role_vac: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub role_vac:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub vmc: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -337,11 +338,11 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         personhood: ::std::result::Result<bool, ::std::string::String>,
         role_vac: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         vmc: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -390,7 +391,9 @@ pub mod builder {
         pub fn role_vac<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -402,7 +405,9 @@ pub mod builder {
         pub fn vmc<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

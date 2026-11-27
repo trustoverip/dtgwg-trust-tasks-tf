@@ -694,16 +694,17 @@ pub struct Response {
     #[serde(
         rename = "enrolledVetters",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub enrolled_vetters: ::std::collections::HashMap<ResponseEnrolledVettersKey, u64>,
+    pub enrolled_vetters:
+        ::std::option::Option<::std::collections::HashMap<ResponseEnrolledVettersKey, u64>>,
     ///One entry per stored event, in stored order.
     #[serde(
         rename = "eventStatus",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub event_status: ::std::vec::Vec<EventStatus>,
+    pub event_status: ::std::option::Option<::std::vec::Vec<EventStatus>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1178,9 +1179,10 @@ pub struct StoredEvent {
     #[serde(
         rename = "approvedBy",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub approved_by: ::std::option::Option<::std::string::String>,
+    pub approved_by: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(rename = "endDate")]
     pub end_date: ::chrono::naive::NaiveDate,
     #[serde(rename = "eventId")]
@@ -1792,11 +1794,15 @@ pub mod builder {
         criterion_id: ::std::result::Result<super::ResponseCriterionId, ::std::string::String>,
         enabled: ::std::result::Result<bool, ::std::string::String>,
         enrolled_vetters: ::std::result::Result<
-            ::std::collections::HashMap<super::ResponseEnrolledVettersKey, u64>,
+            ::std::option::Option<
+                ::std::collections::HashMap<super::ResponseEnrolledVettersKey, u64>,
+            >,
             ::std::string::String,
         >,
-        event_status:
-            ::std::result::Result<::std::vec::Vec<super::EventStatus>, ::std::string::String>,
+        event_status: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EventStatus>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         published: ::std::result::Result<
             ::std::option::Option<super::PublishedConfig>,
@@ -1849,7 +1855,9 @@ pub mod builder {
         pub fn enrolled_vetters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::ResponseEnrolledVettersKey, u64>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<super::ResponseEnrolledVettersKey, u64>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1860,7 +1868,7 @@ pub mod builder {
         }
         pub fn event_status<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EventStatus>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EventStatus>>>,
             T::Error: ::std::fmt::Display,
         {
             self.event_status = value
@@ -2085,7 +2093,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct StoredEvent {
         approved_by: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         end_date: ::std::result::Result<::chrono::naive::NaiveDate, ::std::string::String>,
@@ -2111,7 +2119,9 @@ pub mod builder {
     impl StoredEvent {
         pub fn approved_by<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approved_by = value

@@ -42,9 +42,10 @@ pub struct EndorsementType {
     #[serde(
         rename = "claimSchema",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub claim_schema: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub claim_schema:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "createdAt",
         default,
@@ -330,7 +331,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EndorsementType {
         claim_schema: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         created_at: ::std::result::Result<
@@ -362,7 +363,9 @@ pub mod builder {
         pub fn claim_schema<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

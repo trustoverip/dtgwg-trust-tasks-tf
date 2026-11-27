@@ -61,7 +61,7 @@ mod rooms {
     fn chain_with_links_and_epoch_floor_round_trips() {
         let payload = chain_with(json!({ "links": rungs(), "epochFloor": 2 }));
         let parsed: chain::Payload = round_trips(payload);
-        assert_eq!(parsed.links.len(), 2);
+        assert_eq!(parsed.links.as_ref().map(Vec::len), Some(2));
         assert_eq!(parsed.epoch_floor.map(|f| f.get()), Some(2));
     }
 

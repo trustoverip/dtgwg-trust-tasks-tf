@@ -114,14 +114,23 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 #[non_exhaustive]
 pub struct Effect {
     ///OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub after: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub after: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub before: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub before: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///OPTIONAL kind-specific structured extras (e.g. `{ "commitments": 2 }` for `preRotationRefresh`).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub detail: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub detail:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.
     pub kind: EffectKind,
     ///OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).
@@ -436,8 +445,8 @@ pub struct Payload {
     ///Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.
     pub challenge: PayloadChallenge,
     ///Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub consequences: ::std::vec::Vec<PayloadConsequencesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub consequences: ::std::option::Option<::std::vec::Vec<PayloadConsequencesItem>>,
     ///What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.
     pub effects: ::std::vec::Vec<Effect>,
     ///When true, `requester` may not count toward the threshold — so a single compromised device cannot both propose and approve. A surface MUST NOT offer to approve a request whose `requester` is its own subject when this is set.
@@ -1017,15 +1026,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Effect {
         after: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         before: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         detail: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::EffectKind, ::std::string::String>,
@@ -1050,7 +1059,9 @@ pub mod builder {
     impl Effect {
         pub fn after<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.after = value
@@ -1060,7 +1071,9 @@ pub mod builder {
         }
         pub fn before<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.before = value
@@ -1071,7 +1084,9 @@ pub mod builder {
         pub fn detail<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1193,7 +1208,7 @@ pub mod builder {
         approver_set: ::std::result::Result<::std::string::String, ::std::string::String>,
         challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
         consequences: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadConsequencesItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadConsequencesItem>>,
             ::std::string::String,
         >,
         effects: ::std::result::Result<::std::vec::Vec<super::Effect>, ::std::string::String>,
@@ -1271,7 +1286,9 @@ pub mod builder {
         }
         pub fn consequences<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadConsequencesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadConsequencesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.consequences = value

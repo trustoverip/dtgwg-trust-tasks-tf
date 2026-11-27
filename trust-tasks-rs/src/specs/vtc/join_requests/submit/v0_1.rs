@@ -127,8 +127,9 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque applicant-supplied extension bag.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Whether the applicant consents to trust-registry publication.
     #[serde(
         rename = "registryConsent",
@@ -228,7 +229,7 @@ pub mod builder {
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         registry_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -261,7 +262,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

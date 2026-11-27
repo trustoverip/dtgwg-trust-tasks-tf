@@ -886,8 +886,8 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[deprecated(note = "superseded by git-ns/bridge/event/0.6")]
 pub struct Payload {
     ///The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub drift: ::std::vec::Vec<DriftItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub drift: ::std::option::Option<::std::vec::Vec<DriftItem>>,
     pub event: ForgeEvent,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -1171,7 +1171,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        drift: ::std::result::Result<::std::vec::Vec<super::DriftItem>, ::std::string::String>,
+        drift: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::DriftItem>>,
+            ::std::string::String,
+        >,
         event: ::std::result::Result<super::ForgeEvent, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         namespace: ::std::result::Result<super::NamespaceId, ::std::string::String>,
@@ -1189,7 +1192,7 @@ pub mod builder {
     impl Payload {
         pub fn drift<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DriftItem>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::DriftItem>>>,
             T::Error: ::std::fmt::Display,
         {
             self.drift = value

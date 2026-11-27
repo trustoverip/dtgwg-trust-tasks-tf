@@ -127,8 +127,9 @@ pub enum Payload {
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
-        #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-        header: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        header:
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
         ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
         #[serde(rename = "keyId")]
         key_id: PayloadVariant0KeyId,
@@ -140,8 +141,9 @@ pub enum Payload {
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
-        #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-        header: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        header:
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
         ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
         #[serde(rename = "keyId")]
         key_id: PayloadVariant1KeyId,

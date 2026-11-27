@@ -202,9 +202,9 @@ pub struct Response {
     #[serde(
         rename = "removedFromProfiles",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub removed_from_profiles: ::std::vec::Vec<Ulid>,
+    pub removed_from_profiles: ::std::option::Option<::std::vec::Vec<Ulid>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -364,8 +364,10 @@ pub mod builder {
         attribute_id: ::std::result::Result<super::Ulid, ::std::string::String>,
         existed: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        removed_from_profiles:
-            ::std::result::Result<::std::vec::Vec<super::Ulid>, ::std::string::String>,
+        removed_from_profiles: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Ulid>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -410,7 +412,7 @@ pub mod builder {
         }
         pub fn removed_from_profiles<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Ulid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Ulid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.removed_from_profiles = value.try_into().map_err(|e| {

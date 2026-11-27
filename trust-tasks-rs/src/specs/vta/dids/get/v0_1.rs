@@ -206,11 +206,13 @@ pub struct DidSummary {
     #[serde(
         rename = "methodDetails",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub method_details: ::std::collections::HashMap<
-        DidMethodName,
-        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub method_details: ::std::option::Option<
+        ::std::collections::HashMap<
+            DidMethodName,
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        >,
     >,
     ///Whether the identity is its context's own DID.
     pub primary: bool,
@@ -543,9 +545,11 @@ pub mod builder {
         level: ::std::result::Result<super::KeyAssuranceLevel, ::std::string::String>,
         method: ::std::result::Result<super::DidMethodName, ::std::string::String>,
         method_details: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::DidMethodName,
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::DidMethodName,
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             ::std::string::String,
         >,
@@ -697,9 +701,11 @@ pub mod builder {
         pub fn method_details<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::DidMethodName,
-                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::DidMethodName,
+                        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,

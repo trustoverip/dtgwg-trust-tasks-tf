@@ -200,8 +200,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub fanout: ::std::vec::Vec<ResponseFanoutItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub fanout: ::std::option::Option<::std::vec::Vec<ResponseFanoutItem>>,
     pub name: ::std::string::String,
     #[serde(rename = "purgedAt")]
     pub purged_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -359,7 +359,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         fanout: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseFanoutItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseFanoutItem>>,
             ::std::string::String,
         >,
         name: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -389,7 +389,9 @@ pub mod builder {
         }
         pub fn fanout<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseFanoutItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseFanoutItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.fanout = value

@@ -242,9 +242,9 @@ pub struct Response {
     #[serde(
         rename = "queuedOperations",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub queued_operations: ::std::vec::Vec<QueuedOperation>,
+    pub queued_operations: ::std::option::Option<::std::vec::Vec<QueuedOperation>>,
     ///Authoritative timestamp — consumers MAY use to detect clock drift.
     #[serde(rename = "respondedAt")]
     pub responded_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -454,8 +454,10 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        queued_operations:
-            ::std::result::Result<::std::vec::Vec<super::QueuedOperation>, ::std::string::String>,
+        queued_operations: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::QueuedOperation>>,
+            ::std::string::String,
+        >,
         responded_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         sync_hint: ::std::result::Result<
@@ -486,7 +488,9 @@ pub mod builder {
         }
         pub fn queued_operations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::QueuedOperation>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::QueuedOperation>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.queued_operations = value

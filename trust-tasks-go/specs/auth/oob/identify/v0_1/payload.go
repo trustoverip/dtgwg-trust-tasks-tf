@@ -33,6 +33,8 @@ type RequestID = string
 // verification signs exactly these three members and nothing else. The outer document
 // members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/identify/0.2
 type Payload struct {
 	// The request being proved for. MUST equal the requestId of the prove that carries this
 	// document.
@@ -61,7 +63,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by auth/oob/identify/0.2"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

@@ -330,18 +330,26 @@ pub struct Response {
     #[serde(
         rename = "roleVac",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub role_vac:
+    pub role_vac: ::std::option::Option<
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
     ///The request's post-decision state; echoes the decision.
     pub status: ResponseStatus,
     /**
     The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.
 
     Inline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub vmc: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub vmc: ::std::option::Option<
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -558,12 +566,20 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         request_id: ::std::result::Result<super::ResponseRequestId, ::std::string::String>,
         role_vac: ::std::result::Result<
-            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
+            >,
             ::std::string::String,
         >,
         status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
         vmc: ::std::result::Result<
-            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
+            >,
             ::std::string::String,
         >,
     }
@@ -603,7 +619,9 @@ pub mod builder {
         where
             T: ::std::convert::TryInto<
                 ::std::option::Option<
-                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    ::std::option::Option<
+                        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -627,7 +645,9 @@ pub mod builder {
         where
             T: ::std::convert::TryInto<
                 ::std::option::Option<
-                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    ::std::option::Option<
+                        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,

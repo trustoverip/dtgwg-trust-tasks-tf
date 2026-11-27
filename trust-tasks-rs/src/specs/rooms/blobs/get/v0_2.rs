@@ -738,11 +738,10 @@ pub struct TransferTarget {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub headers: ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub headers: ::std::option::Option<
+        ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    >,
     ///The part this target writes, or 0 for a read of the whole object.
     pub index: i64,
     pub method: TransferTargetMethod,
@@ -1355,9 +1354,11 @@ pub mod builder {
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         headers: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::TransferTargetHeadersKey,
-                super::TransferTargetHeadersValue,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::TransferTargetHeadersKey,
+                    super::TransferTargetHeadersValue,
+                >,
             >,
             ::std::string::String,
         >,
@@ -1390,9 +1391,11 @@ pub mod builder {
         pub fn headers<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::TransferTargetHeadersKey,
-                    super::TransferTargetHeadersValue,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::TransferTargetHeadersKey,
+                        super::TransferTargetHeadersValue,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,

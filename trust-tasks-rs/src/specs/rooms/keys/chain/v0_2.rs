@@ -212,8 +212,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The rungs, in any order. A recipient stores those numbered above the room's epoch floor — the higher of the one it holds and `epochFloor` — and reports how far back it can now reach; see the response's `earliestReadableEpoch`. Absent when the request only relays a floor.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub links: ::std::vec::Vec<EpochLink>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub links: ::std::option::Option<::std::vec::Vec<EpochLink>>,
     ///The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
@@ -327,7 +327,10 @@ pub mod builder {
         epoch_floor:
             ::std::result::Result<::std::option::Option<super::EpochFloor>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        links: ::std::result::Result<::std::vec::Vec<super::EpochLink>, ::std::string::String>,
+        links: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EpochLink>>,
+            ::std::string::String,
+        >,
         room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -363,7 +366,7 @@ pub mod builder {
         }
         pub fn links<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EpochLink>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EpochLink>>>,
             T::Error: ::std::fmt::Display,
         {
             self.links = value
