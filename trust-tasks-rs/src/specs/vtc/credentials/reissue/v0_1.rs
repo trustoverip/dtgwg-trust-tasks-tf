@@ -378,9 +378,9 @@ pub struct Response {
     #[serde(
         rename = "signedWith",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub signed_with: ::std::vec::Vec<::std::string::String>,
+    pub signed_with: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.
     pub state: ResponseState,
     #[serde(rename = "statusLists")]
@@ -752,8 +752,10 @@ pub mod builder {
         dry_run: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         job_id: ::std::result::Result<super::ResponseJobId, ::std::string::String>,
-        signed_with:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        signed_with: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         state: ::std::result::Result<super::ResponseState, ::std::string::String>,
         status_lists: ::std::result::Result<super::Progress, ::std::string::String>,
     }
@@ -813,7 +815,9 @@ pub mod builder {
         }
         pub fn signed_with<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.signed_with = value

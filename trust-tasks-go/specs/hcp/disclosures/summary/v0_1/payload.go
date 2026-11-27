@@ -68,7 +68,7 @@ type ClientSummary struct {
 	// the client (HCP 7.6) or, where a revocation notice was delivered, the time of delivery.
 	// Required, and admitting null, as in the result shape HCP publishes; HCP's text does not
 	// say when it is null.
-	UsableUntil *string `json:"usableUntil,omitempty"`
+	UsableUntil *string `json:"usableUntil"`
 
 	// HCP `notification` (HCP 8.6, 6.2.4): the outcome of the most recent revocation notice
 	// to the client, or `none` where there was none. HCP's own values, carried verbatim.

@@ -111,8 +111,8 @@ pub struct Directive {
     ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub action: DirectiveAction,
     ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///Set by the provider: when the directive was set (HCP 6.4).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
@@ -122,8 +122,8 @@ pub struct Directive {
     ///`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
     pub effect: DirectiveEffect,
     ///The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<DirectiveOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<DirectiveOperatorsItem>>,
     ///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
     #[serde(rename = "setBy")]
     pub set_by: DirectiveSetBy,
@@ -680,12 +680,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Directive {
         action: ::std::result::Result<super::DirectiveAction, ::std::string::String>,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
         effect: ::std::result::Result<super::DirectiveEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::DirectiveOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
             ::std::string::String,
         >,
         set_by: ::std::result::Result<super::DirectiveSetBy, ::std::string::String>,
@@ -718,7 +721,7 @@ pub mod builder {
         }
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -758,7 +761,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value

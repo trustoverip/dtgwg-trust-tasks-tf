@@ -318,8 +318,8 @@ pub struct ResponseEntriesItem {
     )]
     pub minimum_set: ::std::option::Option<bool>,
     ///OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub oidc: ::std::vec::Vec<ResponseEntriesItemOidcItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub oidc: ::std::option::Option<::std::vec::Vec<ResponseEntriesItemOidcItem>>,
     pub release: ReleaseRequirement,
     pub sensitivity: Sensitivity,
     #[serde(rename = "type")]
@@ -978,7 +978,7 @@ pub mod builder {
         mask: ::std::result::Result<super::ResponseEntriesItemMask, ::std::string::String>,
         minimum_set: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         oidc: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseEntriesItemOidcItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
             ::std::string::String,
         >,
         release: ::std::result::Result<super::ReleaseRequirement, ::std::string::String>,
@@ -1020,7 +1020,9 @@ pub mod builder {
         }
         pub fn oidc<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.oidc = value

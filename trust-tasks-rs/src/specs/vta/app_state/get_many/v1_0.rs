@@ -63,8 +63,12 @@ pub struct AppStateRecord {
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub value: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
     #[serde(
         rename = "valueBytes",
@@ -454,8 +458,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[non_exhaustive]
 pub struct Response {
     ///Requested keys the maintainer did not evaluate because the response had reached its size budget. The caller re-requests exactly these. This exists because the per-record cap multiplied by the key ceiling exceeds any sane response limit, and the alternative — refusing the whole batch — would make a caller guess at a batch size instead of being told one.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub deferred: ::std::vec::Vec<Key>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub deferred: ::std::option::Option<::std::vec::Vec<Key>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -532,7 +536,7 @@ pub mod builder {
         updated_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         value_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
@@ -631,7 +635,9 @@ pub mod builder {
         }
         pub fn value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.value = value
@@ -791,7 +797,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        deferred: ::std::result::Result<::std::vec::Vec<super::Key>, ::std::string::String>,
+        deferred: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Key>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         missing: ::std::result::Result<::std::vec::Vec<super::Key>, ::std::string::String>,
         records:
@@ -810,7 +819,7 @@ pub mod builder {
     impl Response {
         pub fn deferred<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Key>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Key>>>,
             T::Error: ::std::fmt::Display,
         {
             self.deferred = value

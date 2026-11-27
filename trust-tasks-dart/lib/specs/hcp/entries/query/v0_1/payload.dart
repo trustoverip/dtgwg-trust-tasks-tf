@@ -1617,7 +1617,7 @@ class Response {
     required this.retrievalId,
     required this.minimization,
     required this.categoriesSearched,
-    this.directives,
+    required this.directives,
     required this.respondedAt,
   });
 
@@ -1672,8 +1672,7 @@ class Response {
         'retrievalId': retrievalId,
         'minimization': minimization.toJson(),
         'categoriesSearched': categoriesSearched,
-        if (directives != null)
-          'directives': directives!.map((e) => e.toJson()).toList(),
+        'directives': directives?.map((e) => e.toJson()).toList(),
         'respondedAt': respondedAt,
       };
 }

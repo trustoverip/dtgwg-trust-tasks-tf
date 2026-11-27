@@ -138,8 +138,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<::std::string::String>,
     ///Optional scopes to attach on enrollment.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<PayloadScopesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scopes: ::std::option::Option<::std::vec::Vec<PayloadScopesItem>>,
     ///The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee controls a passkey and holds the claim code, but does NOT independently verify the subject — trust flows from the admin. For `purpose: stepUp` the consumer MUST already recognise the subject (a member, say).
     pub subject: PayloadSubject,
     ///Seconds the invite remains valid. Consumers SHOULD pick 15 min – 24 h, and MAY cap it lower; longer windows widen the attack surface.
@@ -634,8 +634,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        scopes:
-            ::std::result::Result<::std::vec::Vec<super::PayloadScopesItem>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PayloadScopesItem>>,
+            ::std::string::String,
+        >,
         subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
         ttl_seconds: ::std::result::Result<
             ::std::option::Option<::std::num::NonZeroU64>,
@@ -698,7 +700,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadScopesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadScopesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value

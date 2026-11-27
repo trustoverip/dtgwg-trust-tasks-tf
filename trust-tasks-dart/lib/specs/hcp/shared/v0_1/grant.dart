@@ -440,7 +440,7 @@ class Grant {
     this.scopes,
     required this.grantType,
     required this.issuedAt,
-    this.expiresAt,
+    required this.expiresAt,
     required this.status,
   });
 
@@ -519,7 +519,7 @@ class Grant {
         if (scopes != null) 'scopes': scopes!,
         'grantType': grantType.value,
         'issuedAt': issuedAt,
-        if (expiresAt != null) 'expiresAt': expiresAt!,
+        'expiresAt': expiresAt,
         'status': status.value,
       };
 }

@@ -71,6 +71,28 @@ errorCodes:
       failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
       [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+uncheckedRules:
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/evidence"
+    rule: "Where `method` is `evidence`, `evidence` is present with at least one item."
+    source: "HCP 17.3"
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/parent"
+    rule: "`parent` is present exactly where `method` is `delegated`."
+    source: "HCP 17.3, 17.10"
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/properties/categoryMap"
+    rule: "Each key of `categoryMap` is a category used by entries in the export that the provider does not hold."
+    source: "HCP 5.4.3"
+  - member: "/$defs/Response/properties/outcomes/items/properties/reason"
+    rule: "A `rejected` outcome carries `reason`."
+    source: "HCP 5.4.3"
+  - member: "/properties/export/properties/rules/items"
+    rule: "A standing rule carries `operators`, `requires`, or both. An export holding one with neither is refused with `malformedRequest`."
+    source: "HCP 6.3, 5.4.3"
+  - member: "/$defs/Response/properties/ext"
+    rule: "Where present, `ext[\"vnd.trusttasks.hcp-carriage\"]` validates against the `HcpCarriageImportExtension` definition in this schema (pending HCP confirmation, question 40)."
+    source: "This specification (Response); SPEC.md §4.5.1"
 related:
   - hcp/export
   - hcp/entries/set-categories

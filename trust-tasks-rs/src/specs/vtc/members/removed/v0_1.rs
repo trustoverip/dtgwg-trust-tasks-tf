@@ -154,9 +154,10 @@ pub struct RemovedMember {
     #[serde(
         rename = "statusListIndex",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub status_list_index: ::std::option::Option<u64>,
+    pub status_list_index: ::std::option::Option<::std::option::Option<u64>>,
 }
 impl RemovedMember {
     pub fn builder() -> builder::RemovedMember {
@@ -339,7 +340,10 @@ pub mod builder {
         removed_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         status: ::std::result::Result<super::RemovedMemberStatus, ::std::string::String>,
-        status_list_index: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        status_list_index: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<u64>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for RemovedMember {
         fn default() -> Self {
@@ -384,7 +388,7 @@ pub mod builder {
         }
         pub fn status_list_index<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<u64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.status_list_index = value

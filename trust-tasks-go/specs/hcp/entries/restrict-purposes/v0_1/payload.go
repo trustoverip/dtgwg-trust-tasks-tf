@@ -581,7 +581,7 @@ type Payload struct {
 	// value, carried verbatim. An empty list permits no purpose: the entry may then be
 	// disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP
 	// requirement.
-	PermittedPurposes *[]PurposeCode `json:"permittedPurposes,omitempty"`
+	PermittedPurposes *[]PurposeCode `json:"permittedPurposes"`
 
 	// HCP `expectedVersion`: the `record.version` the Management Client showed the person.
 	// Where it is not the entry's current version, the operation fails with version conflict

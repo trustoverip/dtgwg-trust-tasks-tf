@@ -293,9 +293,9 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "sharedWith",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub shared_with: ::std::vec::Vec<ResponseFindingsItemSharedWithItem>,
+    pub shared_with: ::std::option::Option<::std::vec::Vec<ResponseFindingsItemSharedWithItem>>,
     ///Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.
     pub why: ResponseFindingsItemWhy,
     ///The distinct worlds this linkage touches, so a consumer can name them — "Work and Home share your mobile number" is a sentence a holder can act on, where "a value is shared" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the world records and a name repeated on the wire is a second copy to keep correct.
@@ -456,9 +456,9 @@ pub struct ResponseFindingsItemSharedWithItem {
     #[serde(
         rename = "disclosedTo",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub disclosed_to: ::std::vec::Vec<::std::string::String>,
+    pub disclosed_to: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(
         rename = "personaDid",
         default,
@@ -911,7 +911,7 @@ pub mod builder {
         >,
         severity: ::std::result::Result<super::ResponseFindingsItemSeverity, ::std::string::String>,
         shared_with: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
             ::std::string::String,
         >,
         why: ::std::result::Result<super::ResponseFindingsItemWhy, ::std::string::String>,
@@ -974,7 +974,9 @@ pub mod builder {
         }
         pub fn shared_with<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.shared_with = value
@@ -1038,8 +1040,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        disclosed_to:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        disclosed_to: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         persona_did: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -1072,7 +1076,9 @@ pub mod builder {
         }
         pub fn disclosed_to<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed_to = value

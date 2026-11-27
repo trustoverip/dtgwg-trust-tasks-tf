@@ -24,7 +24,9 @@
 // `additionalProperties: false` on our closed payloads, and the conditionals
 // (`if`/`then`/`else`, `not`, `contains`) the framework's generators cannot
 // express. A member a `then`/`else` branch declares counts as an optional
-// member, since HCP declares some (`content.value`) only there.
+// member, since HCP declares some (`content.value`) only there. The bounds,
+// patterns, formats and closed payloads are compared by the second mode,
+// scripts/lib/hcp-drift-constraints.mjs, written independently of this one.
 //
 // A `$ref` pair that is itself a mapped object is compared once, as that
 // object, and not again wherever it is used.

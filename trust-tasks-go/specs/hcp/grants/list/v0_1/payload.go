@@ -84,7 +84,7 @@ type Grant struct {
 
 	// For a temporary grant, its absolute expiry, never null; for a persistent grant, null
 	// (HCP 6.1.4, 6.1.5).
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt *string `json:"expiresAt"`
 
 	// `expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's
 	// own values, carried verbatim.

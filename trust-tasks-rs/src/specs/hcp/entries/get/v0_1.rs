@@ -41,8 +41,12 @@ pub struct Assertion {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub basis: ::std::option::Option<Basis>,
     ///How confident an inferring model is (HCP 4.2, 4.4).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub confidence: ::std::option::Option<AssertionConfidence>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub confidence: ::std::option::Option<::std::option::Option<AssertionConfidence>>,
     ///What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values, carried verbatim.
     #[serde(rename = "declarationType")]
     pub declaration_type: AssertionDeclarationType,
@@ -57,9 +61,11 @@ pub struct Assertion {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub valid_until:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
 }
 impl Assertion {
     pub fn builder() -> builder::Assertion {
@@ -270,9 +276,9 @@ pub struct Basis {
     #[serde(
         rename = "drawnFrom",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub drawn_from: ::std::vec::Vec<BasisDrawnFromItem>,
+    pub drawn_from: ::std::option::Option<::std::vec::Vec<BasisDrawnFromItem>>,
     ///Why the asserter drew the conclusion.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub rationale: ::std::option::Option<BasisRationale>,
@@ -613,8 +619,12 @@ pub struct Classification {
     ///One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4).
     pub categories: Vec<Category>,
     ///A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub dimension: ::std::option::Option<ClassificationDimension>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub dimension: ::std::option::Option<::std::option::Option<ClassificationDimension>>,
     ///The Authorizing Principal's narrowing of the entry's purposes; absent means no limit (HCP 4.2.6).
     #[serde(
         rename = "permittedPurposes",
@@ -975,8 +985,12 @@ pub struct Content {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub evidence: ::std::option::Option<u64>,
     ///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub language: ::std::option::Option<ContentLanguage>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub language: ::std::option::Option<::std::option::Option<ContentLanguage>>,
     ///The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).
     pub profile: Uri,
     ///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
@@ -1071,8 +1085,8 @@ pub struct Directive {
     ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
     pub action: DirectiveAction,
     ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///Set by the provider: when the directive was set (HCP 6.4).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
@@ -1082,8 +1096,8 @@ pub struct Directive {
     ///`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
     pub effect: DirectiveEffect,
     ///The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<DirectiveOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<DirectiveOperatorsItem>>,
     ///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
     #[serde(rename = "setBy")]
     pub set_by: DirectiveSetBy,
@@ -1425,11 +1439,15 @@ impl<'de> ::serde::Deserialize<'de> for DirectiveText {
 #[non_exhaustive]
 pub struct DisclosedEvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///The JSON Pointers into the stored credential of the claims a derived credential reveals (HCP 7.4, 14.9).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revealed: ::std::vec::Vec<DisclosedEvidenceItemRevealedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub revealed: ::std::option::Option<::std::vec::Vec<DisclosedEvidenceItemRevealedItem>>,
     ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: DisclosedEvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
@@ -2084,8 +2102,8 @@ pub struct Disclosure {
     ///The content, as stored for the version disclosed (HCP 7.4).
     pub content: Content,
     ///The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2), including each item's `verification`, except that a credential may be disclosed in derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The one-`content`-item rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<DisclosedEvidenceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<::std::vec::Vec<DisclosedEvidenceItem>>,
     ///Present, and true, only where the client may share from this entry under HCP 3.12: the detail of the grant that reaches the entry carries `onwardSharing` and every category of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4).
     #[serde(
         rename = "onwardSharing",
@@ -2100,8 +2118,8 @@ pub struct Disclosure {
     #[serde(rename = "ref")]
     pub ref_: DisclosureRef,
     ///Only the relationships whose target is disclosed in the same response, with the target named by its `ref` (HCP 7.4, 4.2.3).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub relationships: ::std::vec::Vec<DisclosedRelationship>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub relationships: ::std::option::Option<::std::vec::Vec<DisclosedRelationship>>,
     ///What the client needs to judge the entry's standing (HCP 7.4, 3.8).
     pub standing: Standing,
     ///The instant after which the client MUST NOT use the copy, or pass it on, without fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit time that applies (such as `assertion.validUntil`), else a heuristic of at least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of High default sensitivity, or 1 hour where the client has no registered notification endpoint (HCP 7.6).
@@ -2196,8 +2214,8 @@ pub struct Entry {
     )]
     pub context: ::std::option::Option<EntryContext>,
     ///Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<EvidenceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<::std::vec::Vec<EvidenceItem>>,
     ///The entry's stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).
     pub id: Urn,
     ///The provider's record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2).
@@ -2237,8 +2255,12 @@ pub struct EntrySubject {
     ///A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2).
     pub id: EntrySubjectId,
     ///Reserved by HCP (HCP 4.2, 11.3); null where present.
-    #[serde(default)]
-    pub relationship: (),
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub relationship: ::std::option::Option<()>,
 }
 impl EntrySubject {
     pub fn builder() -> builder::EntrySubject {
@@ -2375,8 +2397,12 @@ impl<'de> ::serde::Deserialize<'de> for EntryTypeItem {
 #[non_exhaustive]
 pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
@@ -3010,8 +3036,8 @@ pub struct Provenance {
     #[serde(rename = "authorizedUnder")]
     pub authorized_under: ProvenanceAuthorizedUnder,
     ///Confirmation records for this version (HCP 3.8). Absent or empty when there are none.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub confirmations: ::std::vec::Vec<ProvenanceConfirmationsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub confirmations: ::std::option::Option<::std::vec::Vec<ProvenanceConfirmationsItem>>,
     ///When the provider recorded this version.
     #[serde(rename = "recordedAt")]
     pub recorded_at: Instant,
@@ -3628,13 +3654,14 @@ pub struct Record {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub conversion: ::std::option::Option<RecordConversion>,
     ///Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub metadata: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub metadata:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).
     pub provenance: Provenance,
     ///Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub relationships: ::std::vec::Vec<Relationship>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub relationships: ::std::option::Option<::std::vec::Vec<Relationship>>,
     ///The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.
     pub status: RecordStatus,
     ///The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).
@@ -3659,8 +3686,9 @@ pub struct RecordConversion {
     ///What the entry was converted from.
     pub from: RecordConversionFrom,
     ///v1 members the conversion did not map.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub unmapped: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub unmapped:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl RecordConversion {
     pub fn builder() -> builder::RecordConversion {
@@ -4768,7 +4796,7 @@ pub mod builder {
     pub struct Assertion {
         basis: ::std::result::Result<::std::option::Option<super::Basis>, ::std::string::String>,
         confidence: ::std::result::Result<
-            ::std::option::Option<super::AssertionConfidence>,
+            ::std::option::Option<::std::option::Option<super::AssertionConfidence>>,
             ::std::string::String,
         >,
         declaration_type:
@@ -4778,7 +4806,7 @@ pub mod builder {
             ::std::string::String,
         >,
         valid_until: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
     }
@@ -4806,7 +4834,9 @@ pub mod builder {
         }
         pub fn confidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::AssertionConfidence>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::AssertionConfidence>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.confidence = value
@@ -4837,7 +4867,9 @@ pub mod builder {
         pub fn valid_until<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -4875,7 +4907,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Basis {
         drawn_from: ::std::result::Result<
-            ::std::vec::Vec<super::BasisDrawnFromItem>,
+            ::std::option::Option<::std::vec::Vec<super::BasisDrawnFromItem>>,
             ::std::string::String,
         >,
         rationale: ::std::result::Result<
@@ -4901,7 +4933,9 @@ pub mod builder {
     impl Basis {
         pub fn drawn_from<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::BasisDrawnFromItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::BasisDrawnFromItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.drawn_from = value
@@ -4965,7 +4999,7 @@ pub mod builder {
     pub struct Classification {
         categories: ::std::result::Result<Vec<super::Category>, ::std::string::String>,
         dimension: ::std::result::Result<
-            ::std::option::Option<super::ClassificationDimension>,
+            ::std::option::Option<::std::option::Option<super::ClassificationDimension>>,
             ::std::string::String,
         >,
         permitted_purposes: ::std::result::Result<
@@ -4995,7 +5029,9 @@ pub mod builder {
         }
         pub fn dimension<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ClassificationDimension>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ClassificationDimension>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.dimension = value
@@ -5161,7 +5197,7 @@ pub mod builder {
     pub struct Content {
         evidence: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         language: ::std::result::Result<
-            ::std::option::Option<super::ContentLanguage>,
+            ::std::option::Option<::std::option::Option<super::ContentLanguage>>,
             ::std::string::String,
         >,
         profile: ::std::result::Result<super::Uri, ::std::string::String>,
@@ -5193,7 +5229,9 @@ pub mod builder {
         }
         pub fn language<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ContentLanguage>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ContentLanguage>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.language = value
@@ -5246,12 +5284,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Directive {
         action: ::std::result::Result<super::DirectiveAction, ::std::string::String>,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
         effect: ::std::result::Result<super::DirectiveEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::DirectiveOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
             ::std::string::String,
         >,
         set_by: ::std::result::Result<super::DirectiveSetBy, ::std::string::String>,
@@ -5284,7 +5325,7 @@ pub mod builder {
         }
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -5324,7 +5365,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DirectiveOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -5387,11 +5430,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct DisclosedEvidenceItem {
         credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         revealed: ::std::result::Result<
-            ::std::vec::Vec<super::DisclosedEvidenceItemRevealedItem>,
+            ::std::option::Option<::std::vec::Vec<super::DisclosedEvidenceItemRevealedItem>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<super::DisclosedEvidenceItemRole, ::std::string::String>,
@@ -5415,7 +5458,9 @@ pub mod builder {
     impl DisclosedEvidenceItem {
         pub fn credential<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential = value
@@ -5425,7 +5470,9 @@ pub mod builder {
         }
         pub fn revealed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DisclosedEvidenceItemRevealedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DisclosedEvidenceItemRevealedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.revealed = value
@@ -5776,7 +5823,7 @@ pub mod builder {
         classification: ::std::result::Result<super::Classification, ::std::string::String>,
         content: ::std::result::Result<super::Content, ::std::string::String>,
         evidence: ::std::result::Result<
-            ::std::vec::Vec<super::DisclosedEvidenceItem>,
+            ::std::option::Option<::std::vec::Vec<super::DisclosedEvidenceItem>>,
             ::std::string::String,
         >,
         onward_sharing: ::std::result::Result<
@@ -5789,7 +5836,7 @@ pub mod builder {
         >,
         ref_: ::std::result::Result<super::DisclosureRef, ::std::string::String>,
         relationships: ::std::result::Result<
-            ::std::vec::Vec<super::DisclosedRelationship>,
+            ::std::option::Option<::std::vec::Vec<super::DisclosedRelationship>>,
             ::std::string::String,
         >,
         standing: ::std::result::Result<super::Standing, ::std::string::String>,
@@ -5846,7 +5893,9 @@ pub mod builder {
         }
         pub fn evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DisclosedEvidenceItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DisclosedEvidenceItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.evidence = value
@@ -5886,7 +5935,9 @@ pub mod builder {
         }
         pub fn relationships<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DisclosedRelationship>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DisclosedRelationship>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.relationships = value
@@ -5971,8 +6022,10 @@ pub mod builder {
             ::std::option::Option<super::EntryContext>,
             ::std::string::String,
         >,
-        evidence:
-            ::std::result::Result<::std::vec::Vec<super::EvidenceItem>, ::std::string::String>,
+        evidence: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EvidenceItem>>,
+            ::std::string::String,
+        >,
         id: ::std::result::Result<super::Urn, ::std::string::String>,
         record: ::std::result::Result<super::Record, ::std::string::String>,
         schema: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -6038,7 +6091,7 @@ pub mod builder {
         }
         pub fn evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EvidenceItem>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EvidenceItem>>>,
             T::Error: ::std::fmt::Display,
         {
             self.evidence = value
@@ -6133,7 +6186,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EntrySubject {
         id: ::std::result::Result<super::EntrySubjectId, ::std::string::String>,
-        relationship: ::std::result::Result<(), ::std::string::String>,
+        relationship: ::std::result::Result<::std::option::Option<()>, ::std::string::String>,
     }
     impl ::std::default::Default for EntrySubject {
         fn default() -> Self {
@@ -6156,7 +6209,7 @@ pub mod builder {
         }
         pub fn relationship<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<()>,
+            T: ::std::convert::TryInto<::std::option::Option<()>>,
             T::Error: ::std::fmt::Display,
         {
             self.relationship = value
@@ -6187,7 +6240,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EvidenceItem {
         credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<super::EvidenceItemRole, ::std::string::String>,
@@ -6210,7 +6263,9 @@ pub mod builder {
     impl EvidenceItem {
         pub fn credential<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential = value
@@ -6505,7 +6560,7 @@ pub mod builder {
         authorized_under:
             ::std::result::Result<super::ProvenanceAuthorizedUnder, ::std::string::String>,
         confirmations: ::std::result::Result<
-            ::std::vec::Vec<super::ProvenanceConfirmationsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ProvenanceConfirmationsItem>>,
             ::std::string::String,
         >,
         recorded_at: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -6561,7 +6616,9 @@ pub mod builder {
         }
         pub fn confirmations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ProvenanceConfirmationsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ProvenanceConfirmationsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.confirmations = value
@@ -6890,12 +6947,14 @@ pub mod builder {
             ::std::string::String,
         >,
         metadata: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         provenance: ::std::result::Result<super::Provenance, ::std::string::String>,
-        relationships:
-            ::std::result::Result<::std::vec::Vec<super::Relationship>, ::std::string::String>,
+        relationships: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Relationship>>,
+            ::std::string::String,
+        >,
         status: ::std::result::Result<super::RecordStatus, ::std::string::String>,
         version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
     }
@@ -6925,7 +6984,9 @@ pub mod builder {
         pub fn metadata<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -6946,7 +7007,7 @@ pub mod builder {
         }
         pub fn relationships<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Relationship>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Relationship>>>,
             T::Error: ::std::fmt::Display,
         {
             self.relationships = value
@@ -7007,7 +7068,7 @@ pub mod builder {
             ::std::result::Result<super::RecordConversionConvertedBy, ::std::string::String>,
         from: ::std::result::Result<super::RecordConversionFrom, ::std::string::String>,
         unmapped: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -7055,7 +7116,9 @@ pub mod builder {
         pub fn unmapped<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

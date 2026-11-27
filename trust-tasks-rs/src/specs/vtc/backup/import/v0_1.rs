@@ -54,9 +54,10 @@ pub struct BackupEnvelope {
     #[serde(
         rename = "sourceDid",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub source_did: ::std::option::Option<::std::string::String>,
+    pub source_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Version of the software that produced the envelope.
     #[serde(rename = "sourceVersion")]
     pub source_version: BackupEnvelopeSourceVersion,
@@ -702,9 +703,10 @@ pub struct Response {
     #[serde(
         rename = "sourceDid",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub source_did: ::std::option::Option<::std::string::String>,
+    pub source_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///`preview` when `confirm` was not set; `imported` after a restore.
     pub status: ResponseStatus,
 }
@@ -845,7 +847,7 @@ pub mod builder {
         includes_audit: ::std::result::Result<bool, ::std::string::String>,
         kdf: ::std::result::Result<super::KdfParams, ::std::string::String>,
         source_did: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         source_version:
@@ -930,7 +932,9 @@ pub mod builder {
         }
         pub fn source_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.source_did = value
@@ -1231,7 +1235,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         message: ::std::result::Result<super::ResponseMessage, ::std::string::String>,
         source_did: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
@@ -1280,7 +1284,9 @@ pub mod builder {
         }
         pub fn source_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.source_did = value

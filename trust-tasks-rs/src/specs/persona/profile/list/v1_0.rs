@@ -379,9 +379,9 @@ pub struct Profile {
     #[serde(
         rename = "credentialRefs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_refs: ::std::vec::Vec<ProfileCredentialRefsItem>,
+    pub credential_refs: ::std::option::Option<::std::vec::Vec<ProfileCredentialRefsItem>>,
     pub entries: ::std::vec::Vec<ProfileEntry>,
     ///The holder's name for this profile — "Work", "Gaming". Not disclosed.
     pub name: ProfileName,
@@ -1658,7 +1658,7 @@ pub mod builder {
             ::std::string::String,
         >,
         credential_refs: ::std::result::Result<
-            ::std::vec::Vec<super::ProfileCredentialRefsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
             ::std::string::String,
         >,
         entries: ::std::result::Result<::std::vec::Vec<super::ProfileEntry>, ::std::string::String>,
@@ -1706,7 +1706,9 @@ pub mod builder {
         }
         pub fn credential_refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_refs = value

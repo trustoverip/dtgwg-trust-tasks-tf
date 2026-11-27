@@ -143,8 +143,8 @@ impl Delegation {
 #[non_exhaustive]
 pub struct DelegationBasis {
     ///The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub covers: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub covers: ::std::option::Option<::std::vec::Vec<Category>>,
     ///What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
     pub description: DelegationBasisDescription,
     ///When the delegation was established (HCP 17.2).
@@ -154,8 +154,8 @@ pub struct DelegationBasis {
     #[serde(rename = "establishedBy")]
     pub established_by: DelegationBasisEstablishedBy,
     ///The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<EvidenceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<::std::vec::Vec<EvidenceItem>>,
     ///How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
     pub method: DelegationBasisMethod,
     ///For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).
@@ -849,8 +849,12 @@ impl DelegationTerm {
 #[non_exhaustive]
 pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
@@ -1563,14 +1567,19 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct DelegationBasis {
-        covers: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        covers: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         description:
             ::std::result::Result<super::DelegationBasisDescription, ::std::string::String>,
         established_at: ::std::result::Result<super::Instant, ::std::string::String>,
         established_by:
             ::std::result::Result<super::DelegationBasisEstablishedBy, ::std::string::String>,
-        evidence:
-            ::std::result::Result<::std::vec::Vec<super::EvidenceItem>, ::std::string::String>,
+        evidence: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::EvidenceItem>>,
+            ::std::string::String,
+        >,
         method: ::std::result::Result<super::DelegationBasisMethod, ::std::string::String>,
         parent: ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
     }
@@ -1590,7 +1599,7 @@ pub mod builder {
     impl DelegationBasis {
         pub fn covers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.covers = value
@@ -1630,7 +1639,7 @@ pub mod builder {
         }
         pub fn evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EvidenceItem>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::EvidenceItem>>>,
             T::Error: ::std::fmt::Display,
         {
             self.evidence = value
@@ -1949,7 +1958,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EvidenceItem {
         credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<super::EvidenceItemRole, ::std::string::String>,
@@ -1972,7 +1981,9 @@ pub mod builder {
     impl EvidenceItem {
         pub fn credential<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential = value

@@ -1041,9 +1041,9 @@ pub struct Response {
     #[serde(
         rename = "manualSteps",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub manual_steps: ::std::vec::Vec<ResponseManualStepsItem>,
+    pub manual_steps: ::std::option::Option<::std::vec::Vec<ResponseManualStepsItem>>,
     ///The repository as recorded — normally `pendingCreate` at this point.
     pub repo: RepoSummary,
 }
@@ -1758,7 +1758,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         manual_steps: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseManualStepsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseManualStepsItem>>,
             ::std::string::String,
         >,
         repo: ::std::result::Result<super::RepoSummary, ::std::string::String>,
@@ -1785,7 +1785,9 @@ pub mod builder {
         }
         pub fn manual_steps<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseManualStepsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseManualStepsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.manual_steps = value

@@ -232,7 +232,8 @@ function fixture() {
     write(dir, 'allow.json', { entries });
     return path.join(dir, 'allow.json');
   };
-  const cli = (allowlist, ...args) => spawnSync(process.execPath, [CLI, '--hcp', hcpDir, '--repo', repo, '--map', map, '--allowlist', allowlist, ...args], { encoding: 'utf8' });
+  // The members mode only: the constraints mode has its own tests (hcp-drift-constraints.test.mjs).
+  const cli = (allowlist, ...args) => spawnSync(process.execPath, [CLI, '--mode', 'members', '--hcp', hcpDir, '--repo', repo, '--map', map, '--allowlist', allowlist, ...args], { encoding: 'utf8' });
   return { dir, repo, map, write, allow, cli, first, second };
 }
 

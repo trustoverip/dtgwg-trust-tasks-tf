@@ -1112,8 +1112,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Shares dealers revealed in answer to this trustee's complaints.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub justifications: ::std::vec::Vec<PayloadJustificationsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub justifications: ::std::option::Option<::std::vec::Vec<PayloadJustificationsItem>>,
     pub manifest: Manifest,
     ///The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.
     pub trustee: PayloadTrustee,
@@ -2810,7 +2810,7 @@ pub mod builder {
             ::std::result::Result<::std::option::Option<super::ElectionKey>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         justifications: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadJustificationsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadJustificationsItem>>,
             ::std::string::String,
         >,
         manifest: ::std::result::Result<super::Manifest, ::std::string::String>,
@@ -2894,7 +2894,9 @@ pub mod builder {
         }
         pub fn justifications<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadJustificationsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadJustificationsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.justifications = value

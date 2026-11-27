@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -315,7 +316,7 @@ func TestGeneratedPackagesCompile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod := "module example.com/app\n\ngo 1.22\n\n" +
+	mod := "module example.com/app\n\ngo 1.24\n\n" +
 		"require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.0.0-00010101000000-000000000000\n\n" +
 		"replace github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go => " + filepath.ToSlash(core) + "\n"
 	if err := os.WriteFile(filepath.Join(app, "go.mod"), []byte(mod), 0o644); err != nil {
@@ -538,6 +539,42 @@ func TestReservedNames(t *testing.T) {
 	}, tailIdentifiers...) {
 		if seen[want] != 1 {
 			t.Errorf("%s is declared %d times, want once:\n%s", want, seen[want], g.code)
+		}
+	}
+}
+
+// TestRequiredNullableMembersKeepTheirKey: a required member whose schema
+// admits null is a pointer, so nil can stand for null, and it has no
+// omitempty, so that null is written. With omitempty a nil pointer drops the
+// key and the document fails its own schema's `required`. An optional member
+// keeps omitempty, and a required non-nullable one stays a plain value.
+// specs/smoke/required_nullable_test.go holds the prebuilt generator to the
+// same tags, on a real specification.
+func TestRequiredNullableMembersKeepTheirKey(t *testing.T) {
+	schema := `{"type":"object","required":["expiresAt","grant","name"],"properties":{` +
+		`"expiresAt":{"type":["string","null"]},` +
+		`"grant":{"type":["object","null"],"properties":{"x":{"type":"string"}}},` +
+		`"name":{"type":"string"},` +
+		`"label":{"type":["string","null"]}},"$defs":{"Response":{"type":"object"}}}`
+	b := &bundle{
+		TypeURI:        "https://trusttasks.org/spec/probe/0.1",
+		Slug:           "probe",
+		Version:        "0.1",
+		Schema:         []byte(schema),
+		ResponseSchema: []byte(`{"type":"object"}`),
+	}
+	g, err := generatePackage(b, "", "sha256:00")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []*regexp.Regexp{
+		regexp.MustCompile("\tExpiresAt +\\*string +`json:\"expiresAt\"`\n"),
+		regexp.MustCompile("\tGrant +\\*PayloadGrant +`json:\"grant\"`\n"),
+		regexp.MustCompile("\tName +string +`json:\"name\"`\n"),
+		regexp.MustCompile("\tLabel +\\*string +`json:\"label,omitempty\"`\n"),
+	} {
+		if !want.Match(g.code) {
+			t.Errorf("no field matches %s:\n%s", want, g.code)
 		}
 	}
 }

@@ -51,6 +51,22 @@ maxDocumentBytes:
     The access token and one grant object, which is open as HCP's is, with envelope and proof. A grant issued
     through this task holds at most 16 authorization details as the request bounds them; 1 MiB is the room
     hcp/grants/read-own allows its grant. This is a framework bound, not an HCP requirement; HCP sets no size limit.
+uncheckedRules:
+  - member: "/properties/access/items/properties/actions"
+    rule: "`provenance` is an action only alongside `read`."
+    source: "HCP 6.1.5, 7.4.1"
+  - member: "/properties/access/items/properties/onwardSharing"
+    rule: "`onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low; a request that breaks this is refused with `malformedRequest`."
+    source: "HCP 6.1.5"
+  - member: "/$defs/Response/properties/grant/properties/expiresAt"
+    rule: "`expiresAt` is an instant for a `temporary` grant and null for a `persistent` one."
+    source: "HCP 6.1.4, 6.1.5"
+  - member: "/$defs/Response/properties/grant/properties/access/items/properties/onwardSharing"
+    rule: "`onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low."
+    source: "HCP 6.1.5"
+  - member: "/$defs/Response/properties/grant/properties/access/items/properties/actions"
+    rule: "`provenance` is an action only alongside `read`."
+    source: "HCP 6.1.5, 7.4.1"
 related:
   - hcp/entries/query
   - hcp/grants/revoke

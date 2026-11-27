@@ -214,8 +214,8 @@ pub struct ImportedAuditDisclosed {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub provenance: ::std::option::Option<bool>,
     ///Selectively disclosed evidence (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revealed: ::std::vec::Vec<ImportedAuditDisclosedRevealedItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub revealed: ::std::option::Option<::std::vec::Vec<ImportedAuditDisclosedRevealedItem>>,
     ///Until when the disclosed copy may be used (HCP 8.2, 7.6).
     #[serde(rename = "useUntil")]
     pub use_until: Instant,
@@ -248,21 +248,22 @@ impl ImportedAuditDisclosedRevealedItem {
 #[non_exhaustive]
 pub struct ImportedAuditEvent {
     ///The categories concerned (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<ImportedCategory>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<ImportedCategory>>,
     ///The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub data: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). Its maxItems of 20 is HCP's own limit on a retrieval (HCP 7.2), not a framework bound.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub disclosed: ::std::vec::Vec<ImportedAuditDisclosed>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub disclosed: ::std::option::Option<::std::vec::Vec<ImportedAuditDisclosed>>,
     ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
     #[serde(
         rename = "entryId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub entry_id: ::std::option::Option<ImportedAuditEventEntryId>,
+    pub entry_id: ::std::option::Option<::std::option::Option<ImportedAuditEventEntryId>>,
     ///The event's identifier (HCP 8.2).
     #[serde(rename = "eventId")]
     pub event_id: Urn,
@@ -273,28 +274,37 @@ pub struct ImportedAuditEvent {
     #[serde(
         rename = "grantId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub grant_id: ::std::option::Option<ImportedAuditEventGrantId>,
+    pub grant_id: ::std::option::Option<::std::option::Option<ImportedAuditEventGrantId>>,
     ///Who took part (HCP 8.2, 3.9).
     pub participants: ImportedAuditParticipants,
     ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub purpose: ::std::option::Option<ImportedAuditEventPurpose>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub purpose: ::std::option::Option<::std::option::Option<ImportedAuditEventPurpose>>,
     ///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
     #[serde(
         rename = "purposeDescription",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub purpose_description: ::std::option::Option<ImportedAuditEventPurposeDescription>,
+    pub purpose_description:
+        ::std::option::Option<::std::option::Option<ImportedAuditEventPurposeDescription>>,
     ///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
     #[serde(
         rename = "relatedEntryId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub related_entry_id: ::std::option::Option<ImportedAuditEventRelatedEntryId>,
+    pub related_entry_id:
+        ::std::option::Option<::std::option::Option<ImportedAuditEventRelatedEntryId>>,
     ///When the event occurred. HCP's member name (HCP 8.2), carried verbatim.
     pub timestamp: Instant,
 }
@@ -925,8 +935,8 @@ impl ImportedDelegation {
 #[non_exhaustive]
 pub struct ImportedDelegationBasis {
     ///The categories the basis covers (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub covers: ::std::vec::Vec<ImportedCategory>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub covers: ::std::option::Option<::std::vec::Vec<ImportedCategory>>,
     ///The basis in words (HCP 17.2). A string, which HCP's own shape allows to be empty. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
     pub description: ImportedDelegationBasisDescription,
     ///When the basis was established (HCP 17.2).
@@ -936,8 +946,8 @@ pub struct ImportedDelegationBasis {
     #[serde(rename = "establishedBy")]
     pub established_by: ::std::string::String,
     ///The evidence for the basis (HCP 17.2, 4.2.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<ImportedEvidenceItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<::std::vec::Vec<ImportedEvidenceItem>>,
     ///HCP's own values, carried verbatim (HCP 17.2). Where it is `evidence`, `evidence` holds at least one item, and `parent` is present exactly where it is `delegated`, as HCP's own schema requires; the provider checks these, since the schema does not.
     pub method: ImportedDelegationBasisMethod,
     ///For a sub-delegation, the parent delegation (HCP 17.2).
@@ -1435,8 +1445,8 @@ pub struct ImportedDirective {
     ///`share`, `sign`, `transact`, or a URI (HCP 6.4).
     pub action: ImportedDirectiveAction,
     ///The categories the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<ImportedCategory>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<ImportedCategory>>,
     ///When the directive was set (HCP 6.4).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
@@ -1446,8 +1456,8 @@ pub struct ImportedDirective {
     ///HCP's own values, carried verbatim (HCP 6.4).
     pub effect: ImportedDirectiveEffect,
     ///The Client Operators the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<ImportedDirectiveOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<ImportedDirectiveOperatorsItem>>,
     ///Who set the directive (HCP 6.4). A string, which HCP's own shape allows to be empty.
     #[serde(rename = "setBy")]
     pub set_by: ::std::string::String,
@@ -1718,8 +1728,12 @@ impl<'de> ::serde::Deserialize<'de> for ImportedDirectiveText {
 #[non_exhaustive]
 pub struct ImportedEvidenceItem {
     ///The credential, for `verifiable-credential`: a W3C Verifiable Credential, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///HCP's own values, carried verbatim (HCP 4.2.2).
     pub role: ImportedEvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
@@ -1940,17 +1954,17 @@ impl ::std::convert::TryFrom<::std::string::String> for ImportedEvidenceItemVeri
 #[non_exhaustive]
 pub struct ImportedExport {
     ///The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub audit: ::std::vec::Vec<ImportedAuditEvent>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub audit: ::std::option::Option<::std::vec::Vec<ImportedAuditEvent>>,
     ///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(rename = "@context")]
     pub context: ImportedExportContext,
     ///The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2). Each is an `ImportedDelegation`, HCP's own delegation shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub delegations: ::std::vec::Vec<ImportedDelegation>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub delegations: ::std::option::Option<::std::vec::Vec<ImportedDelegation>>,
     ///The Context Subject's directives (HCP 5.4.1, 6.4), each an `ImportedDirective`, HCP's own directive shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub directives: ::std::vec::Vec<ImportedDirective>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub directives: ::std::option::Option<::std::vec::Vec<ImportedDirective>>,
     ///The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     pub entries: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the export was made (HCP 5.4.1).
@@ -1971,8 +1985,10 @@ pub struct ImportedExport {
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
     ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub versions: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub versions: ::std::option::Option<
+        ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
 }
 impl ImportedExport {
     pub fn builder() -> builder::ImportedExport {
@@ -2053,19 +2069,19 @@ impl ImportedExportSubject {
 #[non_exhaustive]
 pub struct ImportedStandingRule {
     ///The categories the rule covers (HCP 6.3); absent means every category. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<ImportedCategory>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<ImportedCategory>>,
     ///When the rule was set (HCP 6.3).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
     ///Always `deny` (HCP 6.3).
     pub effect: ImportedStandingRuleEffect,
     ///The Client Operators denied (HCP 6.3). A rule carries `operators`, `requires`, or both, as HCP's own schema requires; the provider checks that, since the schema does not. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<ImportedStandingRuleOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<ImportedStandingRuleOperatorsItem>>,
     ///The commitments a client must have made (HCP 6.3). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub requires: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub requires: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///The rule's identifier (HCP 6.3).
     #[serde(rename = "ruleId")]
     pub rule_id: Urn,
@@ -2466,9 +2482,10 @@ pub struct Payload {
     #[serde(
         rename = "categoryMap",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub category_map: ::std::collections::HashMap<::std::string::String, Category>,
+    pub category_map:
+        ::std::option::Option<::std::collections::HashMap<::std::string::String, Category>>,
     ///HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.
     #[serde(
         rename = "dryRun",
@@ -2687,7 +2704,7 @@ pub mod builder {
         entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
         provenance: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         revealed: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>>,
             ::std::string::String,
         >,
         use_until: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -2727,7 +2744,9 @@ pub mod builder {
         }
         pub fn revealed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.revealed = value
@@ -2842,38 +2861,42 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ImportedAuditEvent {
-        categories:
-            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            ::std::string::String,
+        >,
         data: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         disclosed: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedAuditDisclosed>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedAuditDisclosed>>,
             ::std::string::String,
         >,
         entry_id: ::std::result::Result<
-            ::std::option::Option<super::ImportedAuditEventEntryId>,
+            ::std::option::Option<::std::option::Option<super::ImportedAuditEventEntryId>>,
             ::std::string::String,
         >,
         event_id: ::std::result::Result<super::Urn, ::std::string::String>,
         event_type: ::std::result::Result<::std::string::String, ::std::string::String>,
         grant_id: ::std::result::Result<
-            ::std::option::Option<super::ImportedAuditEventGrantId>,
+            ::std::option::Option<::std::option::Option<super::ImportedAuditEventGrantId>>,
             ::std::string::String,
         >,
         participants:
             ::std::result::Result<super::ImportedAuditParticipants, ::std::string::String>,
         purpose: ::std::result::Result<
-            ::std::option::Option<super::ImportedAuditEventPurpose>,
+            ::std::option::Option<::std::option::Option<super::ImportedAuditEventPurpose>>,
             ::std::string::String,
         >,
         purpose_description: ::std::result::Result<
-            ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+            ::std::option::Option<
+                ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+            >,
             ::std::string::String,
         >,
         related_entry_id: ::std::result::Result<
-            ::std::option::Option<super::ImportedAuditEventRelatedEntryId>,
+            ::std::option::Option<::std::option::Option<super::ImportedAuditEventRelatedEntryId>>,
             ::std::string::String,
         >,
         timestamp: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -2899,7 +2922,9 @@ pub mod builder {
     impl ImportedAuditEvent {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -2910,7 +2935,9 @@ pub mod builder {
         pub fn data<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2921,7 +2948,9 @@ pub mod builder {
         }
         pub fn disclosed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditDisclosed>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedAuditDisclosed>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed = value
@@ -2931,7 +2960,9 @@ pub mod builder {
         }
         pub fn entry_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventEntryId>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ImportedAuditEventEntryId>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.entry_id = value
@@ -2961,7 +2992,9 @@ pub mod builder {
         }
         pub fn grant_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventGrantId>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ImportedAuditEventGrantId>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.grant_id = value
@@ -2981,7 +3014,9 @@ pub mod builder {
         }
         pub fn purpose<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventPurpose>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ImportedAuditEventPurpose>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.purpose = value
@@ -2992,7 +3027,9 @@ pub mod builder {
         pub fn purpose_description<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+                ::std::option::Option<
+                    ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -3004,7 +3041,9 @@ pub mod builder {
         pub fn related_entry_id<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<super::ImportedAuditEventRelatedEntryId>,
+                ::std::option::Option<
+                    ::std::option::Option<super::ImportedAuditEventRelatedEntryId>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -3629,14 +3668,16 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ImportedDelegationBasis {
-        covers:
-            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        covers: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            ::std::string::String,
+        >,
         description:
             ::std::result::Result<super::ImportedDelegationBasisDescription, ::std::string::String>,
         established_at: ::std::result::Result<super::Instant, ::std::string::String>,
         established_by: ::std::result::Result<::std::string::String, ::std::string::String>,
         evidence: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedEvidenceItem>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedEvidenceItem>>,
             ::std::string::String,
         >,
         method: ::std::result::Result<super::ImportedDelegationBasisMethod, ::std::string::String>,
@@ -3658,7 +3699,9 @@ pub mod builder {
     impl ImportedDelegationBasis {
         pub fn covers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.covers = value
@@ -3698,7 +3741,9 @@ pub mod builder {
         }
         pub fn evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedEvidenceItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedEvidenceItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.evidence = value
@@ -4020,13 +4065,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ImportedDirective {
         action: ::std::result::Result<super::ImportedDirectiveAction, ::std::string::String>,
-        categories:
-            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
         effect: ::std::result::Result<super::ImportedDirectiveEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedDirectiveOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedDirectiveOperatorsItem>>,
             ::std::string::String,
         >,
         set_by: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -4059,7 +4106,9 @@ pub mod builder {
         }
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -4099,7 +4148,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDirectiveOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedDirectiveOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -4162,7 +4213,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ImportedEvidenceItem {
         credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<super::ImportedEvidenceItemRole, ::std::string::String>,
@@ -4185,7 +4236,9 @@ pub mod builder {
     impl ImportedEvidenceItem {
         pub fn credential<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential = value
@@ -4332,16 +4385,18 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ImportedExport {
         audit: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedAuditEvent>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedAuditEvent>>,
             ::std::string::String,
         >,
         context: ::std::result::Result<super::ImportedExportContext, ::std::string::String>,
         delegations: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedDelegation>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedDelegation>>,
             ::std::string::String,
         >,
-        directives:
-            ::std::result::Result<::std::vec::Vec<super::ImportedDirective>, ::std::string::String>,
+        directives: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ImportedDirective>>,
+            ::std::string::String,
+        >,
         entries: ::std::result::Result<
             ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
@@ -4360,7 +4415,9 @@ pub mod builder {
         subject: ::std::result::Result<super::ImportedExportSubject, ::std::string::String>,
         type_: ::std::result::Result<::std::string::String, ::std::string::String>,
         versions: ::std::result::Result<
-            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
             ::std::string::String,
         >,
     }
@@ -4386,7 +4443,9 @@ pub mod builder {
     impl ImportedExport {
         pub fn audit<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditEvent>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedAuditEvent>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.audit = value
@@ -4406,7 +4465,9 @@ pub mod builder {
         }
         pub fn delegations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDelegation>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedDelegation>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.delegations = value
@@ -4416,7 +4477,9 @@ pub mod builder {
         }
         pub fn directives<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDirective>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedDirective>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.directives = value
@@ -4509,7 +4572,9 @@ pub mod builder {
         pub fn versions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                ::std::option::Option<
+                    ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -4666,16 +4731,20 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ImportedStandingRule {
-        categories:
-            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         effect: ::std::result::Result<super::ImportedStandingRuleEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>>,
             ::std::string::String,
         >,
-        requires:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        requires: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         rule_id: ::std::result::Result<super::Urn, ::std::string::String>,
         set_by: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
@@ -4695,7 +4764,9 @@ pub mod builder {
     impl ImportedStandingRule {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedCategory>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -4725,7 +4796,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -4735,7 +4808,9 @@ pub mod builder {
         }
         pub fn requires<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.requires = value
@@ -4869,7 +4944,9 @@ pub mod builder {
             ::std::string::String,
         >,
         category_map: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, super::Category>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, super::Category>,
+            >,
             ::std::string::String,
         >,
         dry_run: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -4899,7 +4976,9 @@ pub mod builder {
         pub fn category_map<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, super::Category>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, super::Category>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

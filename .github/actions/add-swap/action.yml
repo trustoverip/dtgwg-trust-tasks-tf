@@ -9,11 +9,13 @@ description: >-
 inputs:
   mode:
     description: >-
-      `fixed`: a 10 GB /swapfile, the original margin for the test and clippy
-      jobs. `adaptive`: stops systemd-oomd and puts up to 16 GB on whichever of
+      `fixed`: a 10 GB /swapfile, the original margin, with systemd-oomd left
+      running; no job uses it now (oomd killed test and clippy at about
+      23 GiB with it). `adaptive`: stops systemd-oomd and puts up to 16 GB on whichever of
       / and /mnt has more room, leaving 8 GB for the build (none below 4 GB) —
-      the runner image's disk layout is not ours to assume. Used by the jobs
-      that were still killed with the fixed margin (doc, package, semver).
+      the runner image's disk layout is not ours to assume. Used by every Rust
+      job that compiles the whole generated tree (test, test-validate, clippy,
+      doc, package, semver), all of which were killed with the fixed margin.
     required: true
 
 runs:

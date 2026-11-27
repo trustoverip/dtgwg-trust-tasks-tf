@@ -112,7 +112,7 @@ type Instant = string
 // majority where `atMajority` is true (HCP 17.2).
 type DelegationTerm struct {
 	// When the delegation ends; null where no end is known (HCP 17.2).
-	EndsAt *string `json:"endsAt,omitempty"`
+	EndsAt *string `json:"endsAt"`
 
 	// True where the delegation ends at the Context Subject's age of majority, which the
 	// Authorization Service determines under the law that applies (HCP 17.2).

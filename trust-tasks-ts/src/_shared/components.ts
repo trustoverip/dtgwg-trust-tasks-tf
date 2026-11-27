@@ -1287,6 +1287,10 @@ export type Listing = "listed" | "findable" | "hidden";
  */
 export type MatchNumber = string;
 /**
+ * The number the service chooses at claim, shows only to the starter (through redeem), and the approver enters from the starter's screen: two digits for `login`, four digits for `deviceEnrol` (from 0.2; 0.1 allowed two only). A string so that a leading zero survives. A service MUST use the length its purpose sets, and MUST refuse an entered number of the other length as a mismatch.
+ */
+export type MatchNumber_AuthOobV0_2 = string;
+/**
  * What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
  */
 export type MemberAction = "read" | "write" | "curate";
@@ -1610,9 +1614,17 @@ export type ObjectPrefix = string;
  */
 export type OobKey = string;
 /**
+ * What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.2 defines `login` and `deviceEnrol`; version 0.1 defined `login` only. `stepUp` is a reserved name; adding a purpose is a new version of this component and of every task that references it, never an in-place edit. Named `OobPurpose` from 0.2, where 0.1 named it `Purpose`, so that it cannot be confused with the ACL family's `Purpose` (what content is used for), which the 0.2 scope records reference; the values on the wire are unchanged.
+ */
+export type OobPurpose = "login" | "deviceEnrol";
+/**
  * A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.
  */
 export type Origin = string;
+/**
+ * A web origin (`https://host[:port]`, no path, no trailing slash). For `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document. For `deviceEnrol`, the origin of the `serviceEndpoint` of the service's `TrustTaskHTTPS` service in its DID document: the VTA endpoint the starter opened the request at.
+ */
+export type Origin_AuthOobV0_2 = string;
 /**
  * What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.
  */
@@ -5497,6 +5509,46 @@ export interface AclEntry_AclV0_3 {
    * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
    */
   ext?: Ext;
+}
+/**
+ * The access a `deviceEnrol` grant lets the VTA write into its ACL for the starter key, chosen by the approver within the request's `RequestedScope`. Every member except `consumerKind` maps onto one member of the ACL entry (acl/_shared/0.3) the VTA creates; `consumerKind` is held by the VTA beside the entry, not in it. The entry never carries `approve` or `approveCapabilities` authority.
+ */
+export interface AclScope {
+  /**
+   * Where the client may act: the entry's act scope is `{"scope": "contexts", "contexts": [...]}` with exactly these. Chosen by the approver among the contexts it may itself grant in. Exactly one in this version; never `all`.
+   *
+   * @minItems 1
+   * @maxItems 1
+   */
+  contexts: [ContextPath];
+  /**
+   * The entry's role, in the VTA's own role vocabulary: a ceiling on the capabilities, as in the ACL family. Chosen by the approver; the VTA refuses a role it does not allow for an enrolled client or the approver could not confer.
+   */
+  role: string;
+  /**
+   * The capabilities the entry holds: `none`, or `listed` with every grant covered by the request's `capabilities` and none `additive`. `ceiling` is never valid here, because it would let the role, not the approver, decide; the schema refuses both `ceiling` and an `additive: true` grant (CONVENTIONS.md §7 A8).
+   */
+  capabilities: CapabilityScope;
+  /**
+   * The entry's purpose scope: within the request's `purposes`.
+   */
+  purposes: PurposeScope;
+  /**
+   * The entry's key scope: `none`, or `listed` within the request's `keys`, and intersected with the act scope as the ACL family defines. Never `all` (CONVENTIONS.md §7 A14).
+   */
+  keys: KeyScope;
+  /**
+   * When the entry stops conferring authority, as an RFC 3339 date-time: no later than the grant's `issuedAt` plus the request's `maxLifetimeDays`, checked at respond within the service's clock skew. Always present: an enrolment never lasts indefinitely.
+   */
+  expiresAt: string;
+  /**
+   * The entry's label, chosen by the approver; absent, the VTA uses the client's `displayName`. Confers nothing.
+   */
+  label?: string;
+  /**
+   * The request's `client.consumerKind`, unchanged. Repeated so that the signed grant states the kind of client the approver enrolled. The ACL entry has no such member: the VTA holds it beside the entry, and reads it when the client later sends device/register (auth/oob/redeem/0.3 service item 6, CONVENTIONS.md §7 A9).
+   */
+  consumerKind: ConsumerKind_DeviceV0_2;
 }
 /**
  * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
@@ -12718,6 +12770,19 @@ export interface EndorsementType {
   createdByDid?: string;
 }
 /**
+ * Who asks to be enrolled, as the client states it in an auth/oob/request for `deviceEnrol`. Revealed only in step 2, to the lock holder, after an admin identity and number proof.
+ */
+export interface EnrolClient {
+  /**
+   * What kind of client asks to be enrolled, in the device family's own terms: a `companion` (`browser`, `mobile`, `desktop`) or a `service` (`mediator`, `aiAgent`, `daemon`). Self-asserted by the starter. The grant repeats it, and the VTA holds it beside the ACL entry the enrolment creates (CONVENTIONS §7 A9).
+   */
+  consumerKind: ConsumerKind_DeviceV0_2;
+  /**
+   * The name the client gives itself (e.g. `Research agent on laptop`). Self-asserted and untrusted wherever rendered: an approver shows it as the client's own claim, never as a name the service vouches for.
+   */
+  displayName: string;
+}
+/**
  * An entry as its network's administrators see it.
  */
 export interface Entry {
@@ -18038,6 +18103,29 @@ export interface RequestedCredential {
   claims: string[];
 }
 /**
+ * The ceiling a client asks to be enrolled under, stated in an auth/oob/request for `deviceEnrol` and repeated in step 2. It is a ceiling, not a grant: the approver chooses the scope (`AclScope`) and the service refuses a grant that exceeds this. Where the client may act (the contexts) is not part of the ceiling; the approver chooses it.
+ */
+export interface RequestedScope {
+  /**
+   * The most capabilities the client asks to hold, in the VTA's capability registry. Empty asks for none. A grant may hold these or fewer, never others.
+   *
+   * @maxItems 32
+   */
+  capabilities: CapabilityRef[];
+  /**
+   * The most purposes the client asks to use content it reads for. A grant may name these or fewer; `any` here lets the approver choose any purpose except `modelTraining`, which is granted only by naming it. A wallet shows `any` to the person as any purpose (CONVENTIONS.md §7 A14).
+   */
+  purposes: PurposeScope;
+  /**
+   * The most keys the client asks to invoke the VTA's signing oracle on: `none`, or `listed`. Never `all` for `deviceEnrol` (CONVENTIONS.md §7 A14). A grant may name these or fewer.
+   */
+  keys: KeyScope;
+  /**
+   * The longest the client asks the enrolment to last, in days from the grant's `issuedAt`. The grant's `aclScope.expiresAt` may be earlier, never later. There is no unbounded enrolment.
+   */
+  maxLifetimeDays: number;
+}
+/**
  * What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.
  */
 export interface Requester {
@@ -19568,6 +19656,19 @@ export interface ServiceState_VtaV0_8 {
    */
   drainEndsAt?: string;
   ext?: Ext;
+}
+/**
+ * Who the service says it is.
+ */
+export interface Service_AuthOobV0_2 {
+  /**
+   * The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link. For `deviceEnrol`, the DID of the VTA the client is enrolled at.
+   */
+  did: string;
+  /**
+   * The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.
+   */
+  name: string;
 }
 /**
  * A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).

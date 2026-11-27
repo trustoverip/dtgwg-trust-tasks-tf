@@ -29,6 +29,30 @@ the same reason). TypeScript hoists because structural typing makes it free.
    can say it. `trust-tasks-go/specs/smoke` pins this, on `vta/contexts/update/1.0`'s
    `signableKeys` ("absent: every key; present-but-empty: no keys").
 
+   A member whose schema admits `null` is a pointer too, required or not, and
+   **`omitempty` goes on optional members only**. A required nullable member
+   (`vta/contexts/update-did` 1.2's `did`, where `null` means "no DID of its
+   own") is `*string` with a plain `json:"did"` tag, so a nil writes
+   `"did": null`; with `omitempty` it dropped the key and the document failed
+   its own schema's `required`. `specs/smoke/required_nullable_test.go` pins
+   the prebuilt package, `TestRequiredNullableMembersKeepTheirKey` in
+   `cmd/trust-tasks-gen` the per-module generator. So a nil on a required
+   nullable member is now a deliberate `null`, not a default: `update-did`'s
+   `DID` left unset sends `"did": null`, which clears the context's DID (it
+   used to drop the key, and the document was rejected). Set such a field
+   explicitly.
+
+   An *optional* nullable member is still `*T` with `omitempty`, so Go cannot
+   tell `null` from absent: both decode to nil, and nil writes neither.
+   `acl/update` 0.3 reads `"label": null` as "clear the label" and an absent
+   `label` as "leave it unchanged"; a Go client can only send the second.
+   Saying both needs a different field type (a public API change), so it is
+   an open decision ([runtime-parity.md](../runtime-parity.md)). A member the
+   generator renders as `json.RawMessage` (a `oneOf` with `null`, for example)
+   is not affected: an explicit `null` survives in it. The same smoke file pins
+   the optional side on the prebuilt package: a nil `acl/update` 0.3 `label`
+   writes no key.
+
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
    `scripts/release-bump-go.sh` refuses to propose such a bump and tells you what to
@@ -97,7 +121,7 @@ and `didcomm.NewMessageID` remain, as forwarders to it.
 
 ### The `trust-tasks-go/tsp` nested module
 
-The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
+The TSP transport binding (`tsp/0.3`) is a **separate Go module** under `trust-tasks-go/tsp`,
 not a package of the core. The core module has zero dependencies (its selling
 point, and what the website claims), and this one pulls in `affinidi-tsp-go` and
 its crypto. Keeping them apart is the whole point.
@@ -107,12 +131,20 @@ its crypto. Keeping them apart is the whole point.
   dependency. A dedicated `tsp` job in `go.yml` builds and tests it on its own
   floor (`go 1.27`, inherited from `affinidi-tsp-go`). `gofmt -l .` in the core
   job does recurse into the subdir, so keep the tsp files gofmt-clean.
-- **It is not released yet.** `affinidi-tsp-go` has no tag, so `go.mod` requires
-  it at a pseudo-version and there is no `trust-tasks-go/tsp/v*` release wiring in
-  `publish.yml`. `go get` of the module still works (the proxy resolves the
-  pseudo-version from the public repo). When `affinidi-tsp-go` is tagged: bump the
-  requirement to the tag and add a `publish-go`-style tag job for
-  `trust-tasks-go/tsp/vX.Y.Z`.
+- **It speaks TSP 1.0 only.** It requires the tagged `affinidi-tsp-go` v0.2.0
+  (`YTSP-BAA`), as the Rust and TypeScript TSP bindings speak 1.0. A peer on a TSP
+  draft (MAJOR other than 1) is refused `FailUnsupportedTSPVersion` from the
+  version marker, before `Open`; an unknown 1.x MINOR is not a version refusal
+  (TSP 1.0 §3.1). TSP has no version negotiation, so moving `affinidi-tsp-go` across
+  a TSP version is a wire break for every peer: do it deliberately, and
+  regenerate the fixtures in `interop_test.go` (each records how it was
+  produced) when the TSP version moves, not when the library does.
+- **It is not released yet.** Its dependency is tagged now, so nothing upstream
+  blocks a release, but there is no `trust-tasks-go/tsp/v*` release wiring in
+  `publish.yml` yet. `go get` of the module resolves a pseudo-version of this
+  repository. Wiring it is a follow-up: a `publish-go`-style leg and a
+  `GO_MODULES` entry, a `version.go`, and its scope in the bump script and
+  commit-lint's package list, like `didcomm`.
 - **The Go TSP library signs Ed25519 only** and does no DID resolution — the
   caller supplies the sender `*tsp.Identity` (read `AdvertisedSender`, look it up
   in your own store). The sealed `{type, document}` envelope matches the Rust
@@ -147,7 +179,7 @@ written in the module. Its only requirement is the core module whose
   as `proofInvalid` (§10.4). `did:key` only, no network.
 - **The core CI jobs do not reach it** (`./...` in `trust-tasks-go` excludes a
   nested module); a dedicated `proof` job in `go.yml` builds/vets/tests it on its
-  `go 1.22` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
+  `go 1.24` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
   so keep these files gofmt-clean.
 - **Released on its own `trust-tasks-go/proof/vX.Y.Z` tag**, independently of the
   core. It carries a `version.go` with a `const Version` (the manifest surrogate,
@@ -197,7 +229,7 @@ authcrypt on the standard library.
   header and the parsed document), and a disagreement is `malformedRequest`
   routed to the sender, never `identityMismatch`.
 - **Core CI does not reach it**; a `didcomm` job in `go.yml` builds/vets/tests on
-  the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
+  the `go 1.24` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
   recurses in). **Released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag** the
   same way `proof` is — a `version.go`, a `publish-go` matrix leg, and a
   `GO_MODULES` entry in `release-pr.sh` — independent of the core. **Cross-library interop is now
@@ -227,7 +259,7 @@ classification. No third-party dependency (only the core, for `Document` and
   attempt, distinct from a bit-for-bit retry the consumer's item-11 record
   absorbs. Sign built documents with `trust-tasks-go/proof`.
 - **Core CI does not reach it**; a `capabilityclient` job in `go.yml` builds/vets/
-  tests it on the `go 1.22` floor. Keep the files gofmt-clean. **Released on
+  tests it on the `go 1.24` floor. Keep the files gofmt-clean. **Released on
   its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag** the same way `proof`
   is — a `version.go`, a `publish-go` matrix leg, a `GO_MODULES` entry in
   `release-pr.sh` and a `release-bump-go.sh` case — and the core's release

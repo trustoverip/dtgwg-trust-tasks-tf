@@ -273,8 +273,8 @@ pub struct Response {
     ///The invitation's identifier, echoed.
     pub id: ResponseId,
     ///Present exactly when `channel` is `offer`: an OID4VCI Credential Offer object, carried verbatim, whose pre-authorized code redeems only for the invited DID. Its members are OID4VCI's and are deliberately not re-specified here.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub offer: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub offer: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -480,7 +480,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<super::ResponseId, ::std::string::String>,
         offer: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -539,7 +539,9 @@ pub mod builder {
         pub fn offer<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

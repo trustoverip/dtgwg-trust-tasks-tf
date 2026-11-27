@@ -41,8 +41,8 @@ pub mod error {
 #[deprecated(note = "superseded by trust-task-discovery/0.4")]
 pub struct Payload {
     ///Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub patterns: ::std::vec::Vec<PayloadPatternsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub patterns: ::std::option::Option<::std::vec::Vec<PayloadPatternsItem>>,
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
@@ -299,7 +299,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         patterns: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadPatternsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadPatternsItem>>,
             ::std::string::String,
         >,
     }
@@ -313,7 +313,9 @@ pub mod builder {
     impl Payload {
         pub fn patterns<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadPatternsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadPatternsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.patterns = value

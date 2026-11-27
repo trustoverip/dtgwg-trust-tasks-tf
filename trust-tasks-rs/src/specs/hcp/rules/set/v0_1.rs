@@ -161,14 +161,14 @@ pub struct Payload {
     )]
     pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP `categories` (HCP 6.3, 9.4.14): the categories the rule applies to. Absent means every category, held now or later. A delegate's rule must stay within the delegation's scope (HCP 6.3, 17.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<PayloadOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<PayloadOperatorsItem>>,
     ///HCP `requires` (HCP 6.3, 9.4.14): client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed. The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub requires: ::std::vec::Vec<Uri>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub requires: ::std::option::Option<::std::vec::Vec<Uri>>,
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
@@ -329,19 +329,19 @@ impl Response {
 #[non_exhaustive]
 pub struct StandingRule {
     ///The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub categories: ::std::option::Option<::std::vec::Vec<Category>>,
     ///Set by the provider: when the rule was set (HCP 6.3).
     #[serde(rename = "createdAt")]
     pub created_at: Instant,
     ///`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
     pub effect: StandingRuleEffect,
     ///The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<StandingRuleOperatorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub operators: ::std::option::Option<::std::vec::Vec<StandingRuleOperatorsItem>>,
     ///Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub requires: ::std::vec::Vec<Uri>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub requires: ::std::option::Option<::std::vec::Vec<Uri>>,
     ///Stable for the life of the rule (HCP 6.3).
     #[serde(rename = "ruleId")]
     pub rule_id: Urn,
@@ -647,12 +647,18 @@ pub mod builder {
             ::std::option::Option<super::PayloadAccessToken>,
             ::std::string::String,
         >,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        operators: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadOperatorsItem>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
             ::std::string::String,
         >,
-        requires: ::std::result::Result<::std::vec::Vec<super::Uri>, ::std::string::String>,
+        operators: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PayloadOperatorsItem>>,
+            ::std::string::String,
+        >,
+        requires: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Uri>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -677,7 +683,7 @@ pub mod builder {
         }
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -687,7 +693,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -697,7 +705,7 @@ pub mod builder {
         }
         pub fn requires<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Uri>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Uri>>>,
             T::Error: ::std::fmt::Display,
         {
             self.requires = value
@@ -765,14 +773,20 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct StandingRule {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Category>>,
+            ::std::string::String,
+        >,
         created_at: ::std::result::Result<super::Instant, ::std::string::String>,
         effect: ::std::result::Result<super::StandingRuleEffect, ::std::string::String>,
         operators: ::std::result::Result<
-            ::std::vec::Vec<super::StandingRuleOperatorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
             ::std::string::String,
         >,
-        requires: ::std::result::Result<::std::vec::Vec<super::Uri>, ::std::string::String>,
+        requires: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Uri>>,
+            ::std::string::String,
+        >,
         rule_id: ::std::result::Result<super::Urn, ::std::string::String>,
         set_by: ::std::result::Result<super::StandingRuleSetBy, ::std::string::String>,
     }
@@ -792,7 +806,7 @@ pub mod builder {
     impl StandingRule {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Category>>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -822,7 +836,9 @@ pub mod builder {
         }
         pub fn operators<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.operators = value
@@ -832,7 +848,7 @@ pub mod builder {
         }
         pub fn requires<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Uri>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Uri>>>,
             T::Error: ::std::fmt::Display,
         {
             self.requires = value

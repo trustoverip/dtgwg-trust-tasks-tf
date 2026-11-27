@@ -14,6 +14,8 @@ import (
 // Response For `login`: who is now signed in, for the starter's "Continue as …?"
 // confirmation. Never tokens: over HTTPS the session itself is delivered as HttpOnly
 // cookies.
+//
+// Deprecated: superseded by auth/oob/redeem/0.3
 type Response struct {
 	// The approving DID — the grant's issuer — now the session's subject.
 	Subject string `json:"subject"`
@@ -48,6 +50,8 @@ type RequestID = string
 // starter key; held as a long poll until the request is approved. The outer document
 // members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/redeem/0.3
 type Payload struct {
 	RequestID RequestID `json:"requestId"`
 	Ext       *Ext      `json:"ext,omitempty"`
@@ -68,7 +72,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by auth/oob/redeem/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/oob/redeem/0.2#response"

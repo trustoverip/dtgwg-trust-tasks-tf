@@ -86,7 +86,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is a holder of `vtc.badges.admin`, or an active member who may make a kudos badge or who owns a badge, signing with their membership DID or, for a member, with a key they delegated for this community under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) whose `signingScope` covers `vtc/badges`. A producer **SHOULD** scale an image down before sending it: the community keeps no more than it needs to show.
+A conforming **producer** is a holder of `vtc.badges.admin`, or an active member who may make a kudos badge or who owns a badge, signing with their membership DID or, for a member, with a key they delegated for this community under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) whose `signingScope` covers `vtc/badges`. A producer **SHOULD** scale an image down before sending it: the community keeps no more than it needs to show.
 
 A conforming **consumer** (the community) **MUST**:
 

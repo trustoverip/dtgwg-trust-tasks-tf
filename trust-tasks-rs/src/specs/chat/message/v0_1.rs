@@ -623,8 +623,8 @@ impl<'de> ::serde::Deserialize<'de> for MentionParticipant {
 #[non_exhaustive]
 pub struct Payload {
     ///OPTIONAL. Attachments carried by reference, never inline.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub attachments: ::std::vec::Vec<AttachmentRef>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub attachments: ::std::option::Option<::std::vec::Vec<AttachmentRef>>,
     ///Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id).
     #[serde(rename = "conversationId")]
     pub conversation_id: PayloadConversationId,
@@ -647,8 +647,8 @@ pub struct Payload {
     )]
     pub is_mention: ::std::option::Option<bool>,
     ///OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub mentions: ::std::vec::Vec<Mention>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub mentions: ::std::option::Option<::std::vec::Vec<Mention>>,
     ///OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub platform: ::std::option::Option<PayloadPlatform>,
@@ -1214,14 +1214,19 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        attachments:
-            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        attachments: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            ::std::string::String,
+        >,
         conversation_id: ::std::result::Result<super::PayloadConversationId, ::std::string::String>,
         direction: ::std::result::Result<super::PayloadDirection, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         is_group: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         is_mention: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        mentions: ::std::result::Result<::std::vec::Vec<super::Mention>, ::std::string::String>,
+        mentions: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Mention>>,
+            ::std::string::String,
+        >,
         platform: ::std::result::Result<
             ::std::option::Option<super::PayloadPlatform>,
             ::std::string::String,
@@ -1257,7 +1262,9 @@ pub mod builder {
     impl Payload {
         pub fn attachments<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.attachments = value
@@ -1317,7 +1324,7 @@ pub mod builder {
         }
         pub fn mentions<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Mention>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Mention>>>,
             T::Error: ::std::fmt::Display,
         {
             self.mentions = value

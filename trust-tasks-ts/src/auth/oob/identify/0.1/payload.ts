@@ -8,6 +8,8 @@ import type { MatchNumber, OobKey, RequestId } from "../../../../_shared/compone
 
 /**
  * A member's DID states that it holds the lock on one out-of-band request and can see the starter's screen. Issued by the approving DID and signed by its VTA for `authentication`; never sent on its own, only carried inside auth/oob/prove. Closed: additionalProperties false and no `ext`, so a VTA that signs it without user verification signs exactly these three members and nothing else. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/identify/0.2
  */
 export interface AuthOOBIdentifyPayload {
   /**
@@ -44,9 +46,13 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by auth/oob/identify/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/identify/0.2
+ */
 export type Payload = AuthOOBIdentifyPayload;
 
 /**

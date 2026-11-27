@@ -62,6 +62,10 @@ errorCodes:
       failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
       [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/rule"
+    rule: "A standing rule carries `operators`, `requires`, or both."
+    source: "HCP 6.3"
 related:
   - hcp/rules/list
   - hcp/rules/remove

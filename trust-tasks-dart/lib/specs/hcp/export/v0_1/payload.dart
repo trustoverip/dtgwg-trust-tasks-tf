@@ -566,7 +566,7 @@ class DelegationScope {
 /// where `atMajority` is true (HCP 17.2).
 class DelegationTerm {
   const DelegationTerm({
-    this.endsAt,
+    required this.endsAt,
     required this.atMajority,
   });
 
@@ -585,7 +585,7 @@ class DelegationTerm {
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (endsAt != null) 'endsAt': endsAt!,
+        'endsAt': endsAt,
         'atMajority': atMajority,
       };
 }
@@ -1026,12 +1026,12 @@ class AuditEvent {
     required this.eventType,
     required this.timestamp,
     required this.participants,
-    this.entryId,
-    this.relatedEntryId,
+    required this.entryId,
+    required this.relatedEntryId,
     this.categories,
-    this.purpose,
-    this.purposeDescription,
-    this.grantId,
+    required this.purpose,
+    required this.purposeDescription,
+    required this.grantId,
     this.disclosed,
     this.data,
   });
@@ -1123,13 +1123,12 @@ class AuditEvent {
         'eventType': eventType,
         'timestamp': timestamp,
         'participants': participants.toJson(),
-        if (entryId != null) 'entryId': entryId!,
-        if (relatedEntryId != null) 'relatedEntryId': relatedEntryId!,
+        'entryId': entryId,
+        'relatedEntryId': relatedEntryId,
         if (categories != null) 'categories': categories!,
-        if (purpose != null) 'purpose': purpose!,
-        if (purposeDescription != null)
-          'purposeDescription': purposeDescription!,
-        if (grantId != null) 'grantId': grantId!,
+        'purpose': purpose,
+        'purposeDescription': purposeDescription,
+        'grantId': grantId,
         if (disclosed != null)
           'disclosed': disclosed!.map((e) => e.toJson()).toList(),
         if (data != null) 'data': data!,

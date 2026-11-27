@@ -301,8 +301,9 @@ impl Response {
 #[non_exhaustive]
 pub struct ResponseEntriesItem {
     ///The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub parameters: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub parameters:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The DID document as of this entry.
     pub state: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The entry's version identifier. Absent for a method that has none.
@@ -589,7 +590,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ResponseEntriesItem {
         parameters: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         state: ::std::result::Result<
@@ -619,7 +620,9 @@ pub mod builder {
         pub fn parameters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

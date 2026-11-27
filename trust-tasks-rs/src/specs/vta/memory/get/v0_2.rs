@@ -700,8 +700,8 @@ impl<'de> ::serde::Deserialize<'de> for PurposeVariant1 {
 #[non_exhaustive]
 pub struct Response {
     ///Requested keys the maintainer did not evaluate because the response had reached its size budget. The caller re-requests exactly these. A deferred key was not read, and a maintainer MUST NOT record it as read.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub deferred: ::std::vec::Vec<MemoryKey>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub deferred: ::std::option::Option<::std::vec::Vec<MemoryKey>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -980,7 +980,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        deferred: ::std::result::Result<::std::vec::Vec<super::MemoryKey>, ::std::string::String>,
+        deferred: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::MemoryKey>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         items: ::std::result::Result<::std::vec::Vec<super::MemoryRecord>, ::std::string::String>,
         missing: ::std::result::Result<::std::vec::Vec<super::MemoryKey>, ::std::string::String>,
@@ -998,7 +1001,7 @@ pub mod builder {
     impl Response {
         pub fn deferred<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::MemoryKey>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::MemoryKey>>>,
             T::Error: ::std::fmt::Display,
         {
             self.deferred = value

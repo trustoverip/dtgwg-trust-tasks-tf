@@ -126,16 +126,18 @@ pub struct MemberResponse {
     #[serde(
         rename = "currentRoleVacId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub current_role_vac_id: ::std::option::Option<::std::string::String>,
+    pub current_role_vac_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Id of the member's current Verifiable Membership Credential, if issued.
     #[serde(
         rename = "currentVmcId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub current_vmc_id: ::std::option::Option<::std::string::String>,
+    pub current_vmc_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///How the member's record is handled on departure.
     #[serde(rename = "departurePreference")]
     pub departure_preference: MemberResponseDeparturePreference,
@@ -153,22 +155,29 @@ pub struct MemberResponse {
     )]
     pub joined_via_invitation: ::std::option::Option<bool>,
     ///Optional human-readable label.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<MemberResponseLabel>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub label: ::std::option::Option<::std::option::Option<MemberResponseLabel>>,
     ///`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.
     #[serde(
         rename = "memberVmcId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub member_vmc_id: ::std::option::Option<::std::string::String>,
+    pub member_vmc_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///When that reciprocal credential was received. Paired with `memberVmcId`.
     #[serde(
         rename = "memberVmcReceivedAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub member_vmc_received_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub member_vmc_received_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub personhood: ::std::option::Option<bool>,
@@ -176,9 +185,11 @@ pub struct MemberResponse {
     #[serde(
         rename = "personhoodAssertedAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub personhood_asserted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub personhood_asserted_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Whether the member consented to being published in the community directory.
     #[serde(rename = "publishConsent")]
     pub publish_consent: bool,
@@ -188,9 +199,10 @@ pub struct MemberResponse {
     #[serde(
         rename = "statusListIndex",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub status_list_index: ::std::option::Option<i64>,
+    pub status_list_index: ::std::option::Option<::std::option::Option<i64>>,
 }
 impl MemberResponse {
     pub fn builder() -> builder::MemberResponse {
@@ -460,11 +472,16 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Replacement extension bag (maintainer-capped, 16 KiB in the reference implementation).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<PayloadLabel>,
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    ///Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub label: ::std::option::Option<::std::option::Option<PayloadLabel>>,
     ///New directory-publish consent. May only withdraw consent (`true` → `false`) or restate the current value; `true` for a member whose record does not already carry it is refused with `consentGrantForbidden`. Consent is the member's own, given by `registryConsent` on `vtc/join-requests/submit`.
     #[serde(
         rename = "publishConsent",
@@ -747,11 +764,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct MemberResponse {
         current_role_vac_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         current_vmc_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         departure_preference:
@@ -766,25 +783,28 @@ pub mod builder {
         joined_via_invitation:
             ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<super::MemberResponseLabel>,
+            ::std::option::Option<::std::option::Option<super::MemberResponseLabel>>,
             ::std::string::String,
         >,
         member_vmc_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         member_vmc_received_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         personhood: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         personhood_asserted_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         publish_consent: ::std::result::Result<bool, ::std::string::String>,
         role: ::std::result::Result<super::MemberResponseRole, ::std::string::String>,
-        status_list_index: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        status_list_index: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<i64>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for MemberResponse {
         fn default() -> Self {
@@ -810,7 +830,9 @@ pub mod builder {
     impl MemberResponse {
         pub fn current_role_vac_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.current_role_vac_id = value.try_into().map_err(|e| {
@@ -820,7 +842,9 @@ pub mod builder {
         }
         pub fn current_vmc_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.current_vmc_id = value
@@ -882,7 +906,9 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::MemberResponseLabel>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::MemberResponseLabel>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -892,7 +918,9 @@ pub mod builder {
         }
         pub fn member_vmc_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.member_vmc_id = value
@@ -903,7 +931,9 @@ pub mod builder {
         pub fn member_vmc_received_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -925,7 +955,9 @@ pub mod builder {
         pub fn personhood_asserted_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -956,7 +988,7 @@ pub mod builder {
         }
         pub fn status_list_index<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<i64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.status_list_index = value
@@ -1019,11 +1051,11 @@ pub mod builder {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         label: ::std::result::Result<
-            ::std::option::Option<super::PayloadLabel>,
+            ::std::option::Option<::std::option::Option<super::PayloadLabel>>,
             ::std::string::String,
         >,
         publish_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -1077,7 +1109,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1088,7 +1122,9 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::PayloadLabel>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.label = value

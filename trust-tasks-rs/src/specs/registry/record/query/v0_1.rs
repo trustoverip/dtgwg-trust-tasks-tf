@@ -237,9 +237,10 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub next_cursor: ::std::option::Option<::std::string::String>,
+    pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.
     pub records: ::std::vec::Vec<TrustRecord>,
 }
@@ -260,8 +261,9 @@ pub struct TrustRecord {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub authorized: ::std::option::Option<bool>,
     ///Opaque governance context attached to the record.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub context: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub context:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     pub entity_id: ::std::string::String,
     ///Present on recognition records: whether the action+resource is recognised.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -420,7 +422,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         next_cursor: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         records: ::std::result::Result<::std::vec::Vec<super::TrustRecord>, ::std::string::String>,
@@ -447,7 +449,9 @@ pub mod builder {
         }
         pub fn next_cursor<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.next_cursor = value
@@ -491,7 +495,7 @@ pub mod builder {
         authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
         authorized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         context: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -547,7 +551,9 @@ pub mod builder {
         pub fn context<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
