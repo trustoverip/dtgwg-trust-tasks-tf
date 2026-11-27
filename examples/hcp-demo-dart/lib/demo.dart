@@ -14,10 +14,12 @@
 // (proof verified over the document as received, payload validated against its
 // schema) before anything acts on it. Nothing touches the network.
 
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:affinidi_tsp/affinidi_tsp.dart';
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:ssi/ssi.dart' as ssi;
 // Framework specifications ship with the runtime package, not the generator.
 import 'package:trust_tasks/specs/trust_task_discovery/v0_4/payload.dart'
@@ -172,11 +174,15 @@ const List<({String ref, String category, String value})> _entries = [
   ),
 ];
 
+/// The SHA-256 digest of a token, in hex: what the provider keeps in place of
+/// the token.
+String tokenDigest(String token) =>
+    sha256.convert(utf8.encode(token)).toString();
+
 /// A grant in the provider's table.
 final class Grant {
   Grant({
     required this.grantId,
-    required this.token,
     required this.tokenExpiresAt,
     required this.client,
     required this.access,
@@ -187,7 +193,11 @@ final class Grant {
   });
 
   final String grantId;
-  final String token;
+
+  /// The SHA-256 digests (hex) of every token issued under the grant. The
+  /// provider keeps no token itself (hcp/grants/request "The access token"),
+  /// so it can check a presented token but never send one again.
+  final Set<String> tokenDigests = {};
   final String tokenExpiresAt;
   final String client; // the client's VID
   final List<grant_request.AccessDetail> access;
@@ -437,7 +447,10 @@ final class World {
       // request (HCP 5.2.1, 6.2.2).
       case query.typeUri:
         final p = query.Payload.fromJson(doc.payload);
-        final grant = grants.where((g) => g.token == p.accessToken).firstOrNull;
+        final digest = tokenDigest(p.accessToken);
+        final grant = grants
+            .where((g) => g.tokenDigests.contains(digest))
+            .firstOrNull;
         if (grant == null) {
           return refuse('hcp:invalidToken', 'The access token is not valid.');
         }
@@ -579,8 +592,6 @@ final class World {
         final expiresAt = clock.plus(hold.payload.expiresIn ?? 4 * 3600);
         final grant = Grant(
           grantId: ids.next(),
-          token:
-              'hcp_at_demo_${(++_tokens).toString().padLeft(4, '0')}', // DEMO ONLY
           // No refresh in 0.1, so the token lasts as long as the grant
           // (hcp/grants/request "Response").
           tokenExpiresAt: expiresAt,
@@ -615,10 +626,12 @@ final class World {
           ..state = 'granted'
           ..grantId = grant.grantId
           ..respondedAt = clock.now();
-        return reply(_grantResponse(grant).toJson());
+        return reply(_grantResponse(grant, _issueToken(grant)).toJson());
       case 'granted':
         // After approval: the same grant within the hour, never a second one;
-        // after it, permissionDenied.
+        // after it, permissionDenied. The provider kept no copy of the token
+        // it sent, so it issues a new one under the same grant; every token
+        // issued under the grant stays valid until the grant ends (HCP 6.2.2).
         final grant = grants.firstWhere((g) => g.grantId == hold.grantId);
         final late =
             clock.now().difference(hold.respondedAt!).inSeconds >
@@ -626,7 +639,7 @@ final class World {
         if (late || grant.status != 'active') {
           return refuse('permissionDenied', _neutralDenial);
         }
-        return reply(_grantResponse(grant).toJson());
+        return reply(_grantResponse(grant, _issueToken(grant)).toJson());
     }
     throw StateError('unknown hold state ${hold.state}');
   }
@@ -658,12 +671,21 @@ final class World {
         ),
       ).toJson((p) => p.toJson());
 
-  /// The grant response: the token and HCP's grant object, as
+  /// Mint a new token under [grant], keep only its digest, and return the
+  /// token to send.
+  String _issueToken(Grant grant) {
+    // DEMO ONLY: a real token is random.
+    final token = 'hcp_at_demo_${(++_tokens).toString().padLeft(4, '0')}';
+    grant.tokenDigests.add(tokenDigest(token));
+    return token;
+  }
+
+  /// The grant response: a newly issued token and HCP's grant object, as
   /// hcp/grants/read-own would return it.
-  grant_request.Response _grantResponse(Grant grant) {
+  grant_request.Response _grantResponse(Grant grant, String token) {
     final registration = registeredClients[grant.client]!;
     return grant_request.Response(
-      accessToken: grant.token,
+      accessToken: token,
       tokenExpiresAt: grant.tokenExpiresAt,
       grant: grant_request.Grant(
         grantId: grant.grantId,

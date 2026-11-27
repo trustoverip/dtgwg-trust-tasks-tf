@@ -31,6 +31,10 @@ dependencies:
   # rely on `pattern`, `format` and `uniqueItems`, which getting-started-dart's
   # structural stand-in ignores.
   json_schema: ^5.2.0
+  # SHA-256: the provider keeps a digest of each access token, never the
+  # token. trust_tasks_proof depends on it already; the range is the one it
+  # declares.
+  crypto: ^3.0.6
 
 dev_dependencies:
   test: ^1.26.3

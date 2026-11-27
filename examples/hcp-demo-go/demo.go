@@ -18,6 +18,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -155,13 +157,18 @@ type registration struct {
 
 // grant is a grant in the provider's table.
 type grant struct {
-	grantID, token, tokenExpiresAt string
-	client                         string // the client's VID
-	access                         []grantrequest.AccessDetail
-	categories, purposes           []string
-	issuedAt, expiresAt            string
-	status                         grantrequest.GrantStatus // active | revoked
-	revokedAt                      string
+	grantID, tokenExpiresAt string
+	// tokenDigests are the SHA-256 digests (hex) of every token issued under
+	// the grant. The provider keeps no token itself (hcp/grants/request "The
+	// access token"), so it can check a presented token but never send one
+	// again.
+	tokenDigests         map[string]bool
+	client               string // the client's VID
+	access               []grantrequest.AccessDetail
+	categories, purposes []string
+	issuedAt, expiresAt  string
+	status               grantrequest.GrantStatus // active | revoked
+	revokedAt            string
 }
 
 // holdState is where a held grant request stands.
@@ -536,13 +543,12 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 	case declined, expired: // 5. the thread has ended and is never reopened: the same refusal as an unknown person
 		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	case approved: // 6. the person approved (the toy approves everything asked, read only): issue the one grant
-		w.tokens++
 		g := &grant{
-			grantID:  w.IDs.Next(),
-			token:    fmt.Sprintf("hcp_at_demo_%04d", w.tokens), // DEMO ONLY
-			client:   issuer,
-			issuedAt: w.Clock.ISO(),
-			status:   grantrequest.GrantStatusActive,
+			grantID:      w.IDs.Next(),
+			tokenDigests: map[string]bool{},
+			client:       issuer,
+			issuedAt:     w.Clock.ISO(),
+			status:       grantrequest.GrantStatusActive,
 		}
 		for _, a := range h.payload.Access {
 			g.categories = append(g.categories, a.Categories...)
@@ -568,14 +574,17 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 		g.tokenExpiresAt = g.expiresAt
 		w.grants = append(w.grants, g)
 		h.state, h.grantID, h.respondedAt = granted, g.grantID, w.Clock.Now()
-		return reply(w, me, doc, w.grantResponse(g))
+		return reply(w, me, doc, w.grantResponse(g, w.issueToken(g)))
 	default: // 7. granted: the same grant within the hour, never a second one; after it, permissionDenied
+		// The provider kept no copy of the token it sent, so it issues a new one
+		// under the same grant; every token issued under the grant stays valid
+		// until the grant ends (HCP 6.2.2).
 		g := w.grantByID(h.grantID)
 		late := w.Clock.Now().Sub(h.respondedAt) > AfterApprovalWindow*time.Second
 		if late || g.status != grantrequest.GrantStatusActive {
 			return refuse(w, me, doc, "permissionDenied", neutralDenial)
 		}
-		return reply(w, me, doc, w.grantResponse(g))
+		return reply(w, me, doc, w.grantResponse(g, w.issueToken(g)))
 	}
 }
 
@@ -597,13 +606,29 @@ func (w *World) nextStep(me *Party, doc *tt.Document[withJCS[grantrequest.Payloa
 	})), nil
 }
 
-// grantResponse is the token and HCP's grant object, as hcp/grants/read-own
-// would return it.
-func (w *World) grantResponse(g *grant) grantrequest.Response {
+// TokenDigest is the SHA-256 digest of a token, in hex: what the provider
+// keeps in place of the token.
+func TokenDigest(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
+}
+
+// issueToken mints a new token under g, keeps only its digest, and returns the
+// token to send.
+func (w *World) issueToken(g *grant) string {
+	w.tokens++
+	token := fmt.Sprintf("hcp_at_demo_%04d", w.tokens) // DEMO ONLY: a real token is random
+	g.tokenDigests[TokenDigest(token)] = true
+	return token
+}
+
+// grantResponse is a newly issued token and HCP's grant object, as
+// hcp/grants/read-own would return it.
+func (w *World) grantResponse(g *grant, token string) grantrequest.Response {
 	r := w.registeredClients[g.client]
 	expiresAt := g.expiresAt
 	return grantrequest.Response{
-		AccessToken:    g.token,
+		AccessToken:    token,
 		TokenExpiresAt: g.tokenExpiresAt,
 		Grant: grantrequest.Grant{
 			GrantID:              g.grantID,
@@ -624,8 +649,9 @@ func (w *World) grantResponse(g *grant) grantrequest.Response {
 func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Document[json.RawMessage], error) {
 	p := doc.Payload
 	var g *grant
+	digest := TokenDigest(p.AccessToken)
 	for _, x := range w.grants {
-		if x.token == p.AccessToken {
+		if x.tokenDigests[digest] {
 			g = x
 			break
 		}

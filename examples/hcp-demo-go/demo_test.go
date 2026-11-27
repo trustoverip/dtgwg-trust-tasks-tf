@@ -200,7 +200,7 @@ func Test09AResubmissionThatDiffersIsMalformedRequest(t *testing.T) {
 	}
 }
 
-func Test10WithinTheHourAResubmissionGetsTheSameGrant(t *testing.T) {
+func Test10WithinTheHourAResubmissionGetsTheSameGrantWithANewToken(t *testing.T) {
 	w, threadID, grantID := afterGrant()
 	C, P := w.ContextClient, w.Provider
 	// The same payload with its members in another order: the provider compares JCS forms.
@@ -244,7 +244,34 @@ func Test10WithinTheHourAResubmissionGetsTheSameGrant(t *testing.T) {
 		t.Errorf("grantId %s, want %s", r.Grant.GrantID, grantID)
 	}
 	if len(w.grants) != 1 {
-		t.Errorf("%d grants, want 1", len(w.grants))
+		t.Fatalf("%d grants, want 1", len(w.grants))
+	}
+	// A newly issued token under the same grant: the provider keeps no copy of
+	// the one it sent, only digests.
+	second := r.AccessToken
+	if second != "hcp_at_demo_0002" {
+		t.Errorf("token %s, want hcp_at_demo_0002", second)
+	}
+	if r.Grant.ExpiresAt == nil || r.TokenExpiresAt != *r.Grant.ExpiresAt {
+		t.Errorf("tokenExpiresAt %s, want the grant's expiresAt", r.TokenExpiresAt)
+	}
+	if want := map[string]bool{TokenDigest(token): true, TokenDigest(second): true}; !maps.Equal(w.grants[0].tokenDigests, want) {
+		t.Errorf("token digests %v, want %v", w.grants[0].tokenDigests, want)
+	}
+	// Both tokens are good until the grant ends, and neither is once it is revoked.
+	ask := func(tok string) json.RawMessage {
+		return w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", QueryPayload(tok), ""))
+	}
+	for _, tok := range []string{token, second} {
+		if typ := decodeReply(t, ask(tok)).Type; typ != query.ResponseTypeURI {
+			t.Errorf("query with %s: got %s, want %s", tok, typ, query.ResponseTypeURI)
+		}
+	}
+	StepRevoke(w, grantID)
+	for _, tok := range []string{token, second} {
+		if got := code(t, ask(tok)); got != "hcp:invalidToken" {
+			t.Errorf("query with %s after revoke: got %q, want hcp:invalidToken", tok, got)
+		}
 	}
 }
 

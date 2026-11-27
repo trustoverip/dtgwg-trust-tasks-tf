@@ -172,7 +172,7 @@ void main() {
   });
 
   test('10. within the hour after approval a resubmission gets the same '
-      'grant, never a second one', () async {
+      'grant with a new token, never a second grant', () async {
     final (world, (:threadId, :grantId)) = await afterGrant();
     final (c, p) = (world.contextClient, world.provider);
     // The same payload with its members in another order: the provider
@@ -188,8 +188,32 @@ void main() {
       await world.request(c, p, requestType, reordered, threadId: threadId),
     );
     expect(reply['type'], grant_request.responseTypeUri);
-    expect((payloadOf(reply)['grant'] as Map)['grantId'], grantId);
+    final granted = payloadOf(reply);
+    expect((granted['grant'] as Map)['grantId'], grantId);
     expect(world.grants, hasLength(1));
+    // A newly issued token under the same grant: the provider keeps no copy
+    // of the one it sent, only digests.
+    final second = granted['accessToken'] as String;
+    expect(second, 'hcp_at_demo_0002');
+    expect(granted['tokenExpiresAt'], (granted['grant'] as Map)['expiresAt']);
+    expect(world.grants[0].tokenDigests, {
+      tokenDigest(token),
+      tokenDigest(second),
+    });
+    // Both tokens are good until the grant ends, and neither is once it is
+    // revoked.
+    Future<Map<String, dynamic>> send(String t) async => world.exchange(
+      c,
+      p,
+      await world.request(c, p, queryType, queryPayload(t)),
+    );
+    for (final t in [token, second]) {
+      expect((await send(t))['type'], query.responseTypeUri);
+    }
+    await stepRevoke(world, grantId);
+    for (final t in [token, second]) {
+      expect(codeOf(await send(t)), 'hcp:invalidToken');
+    }
   });
 
   test(

@@ -14,6 +14,8 @@
 // pipeline (proof verified over the document as received, payload validated
 // against its schema) before anything acts on it. Nothing touches the network.
 
+import { createHash } from "node:crypto";
+
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {
   rejectWith,
@@ -132,7 +134,12 @@ const ENTRIES = [
 /** A grant in the provider's table. */
 export interface Grant {
   grantId: string;
-  token: string;
+  /**
+   * The SHA-256 digests (hex) of every token issued under the grant. The
+   * provider keeps no token itself (hcp/grants/request "The access token"), so
+   * it can check a presented token but never send one again.
+   */
+  tokenDigests: Set<string>;
   tokenExpiresAt: string;
   client: string; // the client's VID
   access: grantRequest.Response["grant"]["access"];
@@ -286,7 +293,8 @@ export class World {
       // Steps 3 and 5 — hcp/entries/query: the grant is checked on every request (HCP 5.2.1, 6.2.2).
       case query.TYPE_URI: {
         const p = doc.payload as query.Payload;
-        const grant = this.grants.find((g) => g.token === p.accessToken);
+        const digest = tokenDigest(p.accessToken);
+        const grant = this.grants.find((g) => g.tokenDigests.has(digest));
         if (grant === undefined) return refuse("hcp:invalidToken", "The access token is not valid.");
         // A token issued to another client is no use from this VID (query "The access token").
         if (grant.client !== doc.issuer) return refuse("permissionDenied", NEUTRAL_DENIAL);
@@ -381,7 +389,7 @@ export class World {
         const expiresAt = this.clock.plus(hold.payload.expiresIn ?? 4 * 3600); // HCP 6.1.3 default
         const grant: Grant = {
           grantId: this.ids.next(),
-          token: `hcp_at_demo_${String(++this.tokens).padStart(4, "0")}`, // DEMO ONLY
+          tokenDigests: new Set(),
           // No refresh in 0.1, so the token lasts as long as the grant (hcp/grants/request "Response").
           tokenExpiresAt: expiresAt,
           client: issuer,
@@ -401,14 +409,16 @@ export class World {
         hold.state = "granted";
         hold.grantId = grant.grantId;
         hold.respondedAt = this.clock.now();
-        return reply(this.grantResponse(grant));
+        return reply(this.grantResponse(grant, this.issueToken(grant)));
       }
       case "granted": {
         // After approval: the same grant within the hour, never a second one; after it, permissionDenied.
+        // The provider kept no copy of the token it sent, so it issues a new one under the same grant;
+        // every token issued under the grant stays valid until the grant ends (HCP 6.2.2).
         const grant = this.grants.find((g) => g.grantId === hold.grantId)!;
         const late = this.clock.now() - hold.respondedAt! > AFTER_APPROVAL_WINDOW * 1000;
         if (late || grant.status !== "active") return refuse("permissionDenied", NEUTRAL_DENIAL);
-        return reply(this.grantResponse(grant));
+        return reply(this.grantResponse(grant, this.issueToken(grant)));
       }
     }
   }
@@ -431,11 +441,18 @@ export class World {
     return this.sign(me, step);
   }
 
-  /** The grant response: the token and HCP's grant object, as hcp/grants/read-own would return it. */
-  private grantResponse(grant: Grant): grantRequest.Response {
+  /** Mint a new token under `grant`, keep only its digest, and return the token to send. */
+  private issueToken(grant: Grant): string {
+    const token = `hcp_at_demo_${String(++this.tokens).padStart(4, "0")}`; // DEMO ONLY: a real token is random
+    grant.tokenDigests.add(tokenDigest(token));
+    return token;
+  }
+
+  /** The grant response: a newly issued token and HCP's grant object, as hcp/grants/read-own would return it. */
+  private grantResponse(grant: Grant, token: string): grantRequest.Response {
     const registration = this.registeredClients.get(grant.client)!;
     return {
-      accessToken: grant.token,
+      accessToken: token,
       tokenExpiresAt: grant.tokenExpiresAt,
       grant: {
         grantId: grant.grantId,
@@ -496,6 +513,11 @@ export class World {
   private print(from: Party, to: Party, doc: TrustTaskDocument<unknown>): void {
     this.transcript.push(`--> ${from.name} -> ${to.name} (TSP) ${doc.type}\n${pretty(redact(doc))}\n`);
   }
+}
+
+/** The SHA-256 digest of a token, in hex: what the provider keeps in place of the token. */
+export function tokenDigest(token: string): string {
+  return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
 /** The SpecPolicy each receiving party applies, by bare Type URI. */

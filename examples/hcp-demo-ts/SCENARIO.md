@@ -77,7 +77,8 @@ Each key is 32 bytes, every byte the same value. Never use such keys for anythin
   and each reply comes back the same way. The sealed bytes are random (HPKE ephemeral keys) and are
   never printed.
 - **Tokens (DEMO ONLY).** The person's Management Client holds the token `hcp_mt_demo_management`,
-  issued at setup. The provider mints grant tokens `hcp_at_demo_0001`, `hcp_at_demo_0002`, ….
+  issued at setup. The provider mints grant tokens `hcp_at_demo_0001`, `hcp_at_demo_0002`, …, one
+  counter across all grants (a real provider mints random tokens).
 
 ## The toy provider
 
@@ -93,8 +94,11 @@ In memory. Three entries of the person's context:
 `Wayfare booking agent`, operator `{"id": "booking.example", "name": "Wayfare Travel Ltd"}`. The
 person is known to that client by the pseudonym `hcp-sub-demo-alex`.
 
-**A grant table**: `grantId`, token, `tokenExpiresAt`, client VID, the approved `access`, categories,
-purpose codes, `issuedAt`, `expiresAt`, status (`active` | `revoked`), `revokedAt`.
+**A grant table**: `grantId`, the token digests, `tokenExpiresAt`, client VID, the approved
+`access`, categories, purpose codes, `issuedAt`, `expiresAt`, status (`active` | `revoked`),
+`revokedAt`. The provider keeps no token: it keeps the SHA-256 digest (lowercase hex, over the
+token's UTF-8 bytes) of every token it issues under the grant (hcp/grants/request "The access
+token"), so it can check a token presented to it but can never send one again.
 
 **A hold table** keyed by `threadId`: the held request's `issuer`, its payload and the payload's
 JCS form, the held request's `issuedAt` (`heldAt`), a state (`pending` → `approved` → `granted`,
@@ -138,20 +142,24 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
    step (same shape, `inResponseTo` the resubmission); `declined` or `expired` → `permissionDenied`
    (the thread has ended; the same fixed message as every refusal, so a decline, an expired hold and an
    unknown person look alike).
-6. `approved` → issue the one grant (approved as asked), set the hold to `granted` with the
-   `grantId` and the response time, and answer the response. `grant.expiresAt` is now plus the
+6. `approved` → issue the one grant (approved as asked) and a new token under it (its digest
+   added to the grant), set the hold to `granted` with the `grantId` and the response time, and
+   answer the response. `grant.expiresAt` is now plus the
    request's `expiresIn` (4 hours when absent), and `tokenExpiresAt` equals it: 0.1 has no refresh,
    so the token lasts as long as the grant (hcp/grants/request "Response").
 7. `granted` → if more than 3600 s have passed since the response was first sent, or the grant is
-   not `active` → `permissionDenied`. Otherwise answer a response for **the same grant**: the same
-   token, `tokenExpiresAt` and `grant`, with its status as it stands. Never a second grant.
+   not `active` → `permissionDenied`. Otherwise answer a response for **the same grant** with a
+   **newly issued token** under it (its digest added to the grant): the same `tokenExpiresAt` and
+   `grant`, with its status as it stands. The provider kept no copy of the token it sent, so it
+   cannot repeat it (hcp/grants/request "After approval"); every token issued under the grant
+   stays valid until the grant ends. Never a second grant.
 
 **`hcp/entries/query`** (spec: Authorization, The access token, Errors):
 
-1. No grant has the token → `hcp:invalidToken`.
+1. No grant has the token's digest → `hcp:invalidToken`.
 2. The grant's client VID is not the `issuer` → `permissionDenied` (a token presented from another
    VID; checked before the status, so it tells that VID nothing about the grant).
-3. The grant is not `active` → `hcp:invalidToken`.
+3. The grant is not `active` → `hcp:invalidToken` (whichever of the grant's tokens it is).
 4. The `purpose` is not one of the grant's, or a requested category is outside the grant →
    `permissionDenied`.
 5. Otherwise the response: the matching entries (at most `min(maxEntries ?? 5, 20)`), with
@@ -292,7 +300,11 @@ code.
    step 2's payload → `permissionDenied`; the hold table holds as many entries as before (four).
 9. After the grant: a resubmission on thread #3 with `expiresIn 3600` → `malformedRequest`.
 10. After the grant: a resubmission on thread #3 with step 2's payload, members in another order
-    → the grant response, `grant.grantId` #6, and the grant table still holds one grant.
+    → the grant response, `grant.grantId` #6, a new token `hcp_at_demo_0002` (not step 2's
+    `hcp_at_demo_0001`) with `tokenExpiresAt` equal to `grant.expiresAt`, and the grant table still
+    holds one grant, whose token digests are exactly those of the two tokens. Then a query (step
+    3's payload) with each token → the query response; step 4 (revoke); and a query with each
+    token → `hcp:invalidToken`.
 11. After the grant: move the clock on 3601 s, then a resubmission on thread #3 with step 2's
     payload → `permissionDenied`.
 12. After the demo: a resubmission on thread #3 with step 2's payload → `permissionDenied`; the

@@ -21,6 +21,7 @@ import {
   stepGrantRequest,
   stepNotice,
   stepRevoke,
+  tokenDigest,
 } from "../src/demo.js";
 import { HcpEntriesQuery_v0_1 as query, HcpGrantsRequest_v0_1 as grantRequest, HcpGrantsRevoked_v0_1 as revoked } from "../src/trust-tasks/index.js";
 
@@ -115,7 +116,7 @@ test("9. a resubmission whose payload differs from the held request is refused w
   assert.equal(reply.payload.code, "malformedRequest");
 });
 
-test("10. within the hour after approval a resubmission gets the same grant, never a second one", async () => {
+test("10. within the hour after approval a resubmission gets the same grant with a new token, never a second grant", async () => {
   const { world, threadId, grantId } = await afterGrant();
   const { contextClient: C, provider: P } = world;
   // The same payload with its members in another order: the provider compares JCS forms.
@@ -124,6 +125,20 @@ test("10. within the hour after approval a resubmission gets the same grant, nev
   assert.equal(reply.type, grantRequest.RESPONSE_TYPE_URI);
   assert.equal(reply.payload.grant.grantId, grantId);
   assert.equal(world.grants.length, 1);
+  // A newly issued token under the same grant: the provider keeps no copy of the one it sent, only digests.
+  const second = reply.payload.accessToken as string;
+  assert.equal(second, "hcp_at_demo_0002");
+  assert.equal(reply.payload.tokenExpiresAt, reply.payload.grant.expiresAt);
+  assert.deepEqual([...world.grants[0]!.tokenDigests], [tokenDigest(TOKEN), tokenDigest(second)]);
+  // Both tokens are good until the grant ends, and neither is once it is revoked.
+  const ask = (token: string) => world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload(token)));
+  for (const token of [TOKEN, second]) assert.equal((await ask(token)).type, query.RESPONSE_TYPE_URI);
+  await stepRevoke(world, grantId);
+  for (const token of [TOKEN, second]) {
+    const refused = await ask(token);
+    assert.equal(refused.type, ERROR);
+    assert.equal(refused.payload.code, "hcp:invalidToken");
+  }
 });
 
 test("11. a resubmission after the hour is refused with permissionDenied", async () => {
