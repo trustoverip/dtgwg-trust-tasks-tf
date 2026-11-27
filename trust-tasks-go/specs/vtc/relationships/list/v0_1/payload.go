@@ -27,10 +27,10 @@ type ResponseItemsItem struct {
 //
 // Deprecated: retired; use vtc/relationships/list/0.2
 type Response struct {
-	Items         []ResponseItemsItem `json:"items"`
-	NextCursor    *string             `json:"nextCursor,omitempty"`
-	TotalEstimate *int64              `json:"totalEstimate,omitempty"`
-	Ext           *Ext                `json:"ext,omitempty"`
+	Items         []ResponseItemsItem         `json:"items"`
+	NextCursor    trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	TotalEstimate trusttasks.Nullable[int64]  `json:"totalEstimate,omitzero"`
+	Ext           *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

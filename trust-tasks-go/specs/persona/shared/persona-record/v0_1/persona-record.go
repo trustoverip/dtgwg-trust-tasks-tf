@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package personasharedpersonarecordv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // Ulid A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`.
 // Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan
@@ -361,8 +364,8 @@ type ContactRevision struct {
 	ReceivedAt string `json:"receivedAt"`
 
 	// When a later revision replaced this one. Null for the current revision.
-	SupersededAt *string          `json:"supersededAt,omitempty"`
-	Document     *ContactDocument `json:"document,omitempty"`
+	SupersededAt trusttasks.Nullable[string] `json:"supersededAt,omitzero"`
+	Document     *ContactDocument            `json:"document,omitempty"`
 }
 
 // Sensitivity How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer

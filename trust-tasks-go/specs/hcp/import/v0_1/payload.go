@@ -475,12 +475,12 @@ type ImportedAuditEvent struct {
 
 	// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2).
 	// OPTIONAL, as in HCP's own shape; absent means unknown.
-	EntryID *string `json:"entryId,omitempty"`
+	EntryID trusttasks.Nullable[string] `json:"entryId,omitzero"`
 
 	// For conflict events, the authoritative entry (or the other entry where neither or both
 	// are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's
 	// own shape; absent means unknown.
-	RelatedEntryID *string `json:"relatedEntryId,omitempty"`
+	RelatedEntryID trusttasks.Nullable[string] `json:"relatedEntryId,omitzero"`
 
 	// The categories concerned (HCP 8.2). The maxItems is the request's own 16 MiB document
 	// bound, which no array in the document can reach, so it refuses nothing that bound does
@@ -489,16 +489,16 @@ type ImportedAuditEvent struct {
 
 	// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in
 	// HCP's own shape; absent means unknown.
-	Purpose *string `json:"purpose,omitempty"`
+	Purpose trusttasks.Nullable[string] `json:"purpose,omitzero"`
 
 	// The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own
 	// shape; absent means unknown. The maxLength is the request's own 16 MiB document bound,
 	// so it refuses nothing that bound does not.
-	PurposeDescription *string `json:"purposeDescription,omitempty"`
+	PurposeDescription trusttasks.Nullable[string] `json:"purposeDescription,omitzero"`
 
 	// The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in
 	// HCP's own shape; absent means unknown.
-	GrantID *string `json:"grantId,omitempty"`
+	GrantID trusttasks.Nullable[string] `json:"grantId,omitzero"`
 
 	// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). Its maxItems
 	// of 20 is HCP's own limit on a retrieval (HCP 7.2), not a framework bound.

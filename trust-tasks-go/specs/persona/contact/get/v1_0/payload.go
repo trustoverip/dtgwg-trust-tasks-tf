@@ -44,8 +44,8 @@ type ContactRevision struct {
 	ReceivedAt string `json:"receivedAt"`
 
 	// When a later revision replaced this one. Null for the current revision.
-	SupersededAt *string          `json:"supersededAt,omitempty"`
-	Document     *ContactDocument `json:"document,omitempty"`
+	SupersededAt trusttasks.Nullable[string] `json:"supersededAt,omitzero"`
+	Document     *ContactDocument            `json:"document,omitempty"`
 }
 
 // ContactDocumentClaimsItem ContactDocumentClaimsItem is a generated payload type.

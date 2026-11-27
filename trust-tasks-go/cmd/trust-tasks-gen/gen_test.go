@@ -571,7 +571,48 @@ func TestRequiredNullableMembersKeepTheirKey(t *testing.T) {
 		regexp.MustCompile("\tExpiresAt +\\*string +`json:\"expiresAt\"`\n"),
 		regexp.MustCompile("\tGrant +\\*PayloadGrant +`json:\"grant\"`\n"),
 		regexp.MustCompile("\tName +string +`json:\"name\"`\n"),
-		regexp.MustCompile("\tLabel +\\*string +`json:\"label,omitempty\"`\n"),
+		regexp.MustCompile("\tLabel +trusttasks\\.Nullable\\[string\\] +`json:\"label,omitzero\"`\n"),
+	} {
+		if !want.Match(g.code) {
+			t.Errorf("no field matches %s:\n%s", want, g.code)
+		}
+	}
+}
+
+// TestOptionalNullableMembersAreNullable: an optional member whose schema
+// admits null is a trusttasks.Nullable tagged omitzero, so absent, null and a
+// value stay apart on the way in and out. A non-nullable optional member is
+// still a pointer, and a nullable member the generator renders as
+// json.RawMessage (it already keeps an explicit null) is left as it is.
+// specs/smoke/optional_nullable_test.go round-trips the prebuilt packages.
+func TestOptionalNullableMembersAreNullable(t *testing.T) {
+	schema := `{"type":"object","required":["id"],"properties":{` +
+		`"id":{"type":"string"},` +
+		`"label":{"type":["string","null"]},` +
+		`"count":{"type":["integer","null"]},` +
+		`"keys":{"type":["array","null"],"items":{"type":"string"}},` +
+		`"step":{"type":["object","null"],"properties":{"x":{"type":"string"}}},` +
+		`"reason":{"type":"string"},` +
+		`"any":{"oneOf":[{"type":"string"},{"type":"null"}]}},"$defs":{"Response":{"type":"object"}}}`
+	b := &bundle{
+		TypeURI:        "https://trusttasks.org/spec/probe/0.1",
+		Slug:           "probe",
+		Version:        "0.1",
+		Schema:         []byte(schema),
+		ResponseSchema: []byte(`{"type":"object"}`),
+	}
+	g, err := generatePackage(b, "", "sha256:00")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []*regexp.Regexp{
+		regexp.MustCompile("\tID +string +`json:\"id\"`\n"),
+		regexp.MustCompile("\tLabel +trusttasks\\.Nullable\\[string\\] +`json:\"label,omitzero\"`\n"),
+		regexp.MustCompile("\tCount +trusttasks\\.Nullable\\[int64\\] +`json:\"count,omitzero\"`\n"),
+		regexp.MustCompile("\tKeys +trusttasks\\.Nullable\\[\\[\\]string\\] +`json:\"keys,omitzero\"`\n"),
+		regexp.MustCompile("\tStep +trusttasks\\.Nullable\\[PayloadStep\\] +`json:\"step,omitzero\"`\n"),
+		regexp.MustCompile("\tReason +\\*string +`json:\"reason,omitempty\"`\n"),
+		regexp.MustCompile("\tAny +json\\.RawMessage +`json:\"any,omitempty\"`\n"),
 	} {
 		if !want.Match(g.code) {
 			t.Errorf("no field matches %s:\n%s", want, g.code)

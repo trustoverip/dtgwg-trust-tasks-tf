@@ -6,6 +6,8 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vtcsharedbackupv0_1
 
+import "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+
 // BackupEnvelope Unencrypted metadata plus the encrypted payload. The KDF and cipher
 // parameters travel in the clear so a reader can decrypt without knowing this
 // specification's defaults.
@@ -21,7 +23,7 @@ type BackupEnvelope struct {
 
 	// DID of the community exported from, when it has one. An import cross-checks this
 	// against the running community.
-	SourceDID *string `json:"sourceDid,omitempty"`
+	SourceDID trusttasks.Nullable[string] `json:"sourceDid,omitzero"`
 
 	// Version of the software that produced the envelope.
 	SourceVersion string           `json:"sourceVersion"`

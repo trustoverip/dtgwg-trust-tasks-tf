@@ -15,9 +15,9 @@ import (
 //
 // Deprecated: superseded by vtc/endorsement-types/list/0.2
 type Response struct {
-	Items      []EndorsementType `json:"items"`
-	NextCursor *string           `json:"nextCursor,omitempty"`
-	Ext        *Ext              `json:"ext,omitempty"`
+	Items      []EndorsementType           `json:"items"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

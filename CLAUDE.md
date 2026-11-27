@@ -81,7 +81,7 @@ document in the same PR. Do not copy their content back into this file.
   the `acl` family; the per-module generator is `trust-tasks-build`.
   → [rust.md](docs/packages/rust.md)
 - **Go:** no `_` directories, one package per directory, optional slices are
-  pointers, a Go tag can never be retracted.
+  pointers (`Nullable` when nullable), a Go tag can never be retracted.
   → [go.md](docs/packages/go.md)
 - **Dart:** the barrel exports the runtime only; closed value sets are
   extension types; `version:` and `packageVersion` move together.

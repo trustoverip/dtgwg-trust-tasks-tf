@@ -13,9 +13,9 @@ import (
 
 // Response Domain Set Default — response payload
 type Response struct {
-	Entry           DomainEntry `json:"entry"`
-	PreviousDefault *string     `json:"previousDefault,omitempty"`
-	Ext             *Ext        `json:"ext,omitempty"`
+	Entry           DomainEntry                 `json:"entry"`
+	PreviousDefault trusttasks.Nullable[string] `json:"previousDefault,omitzero"`
+	Ext             *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

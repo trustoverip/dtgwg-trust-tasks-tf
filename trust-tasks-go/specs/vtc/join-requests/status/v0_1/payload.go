@@ -47,7 +47,7 @@ type Response struct {
 
 	// Elaboration in prose, when the decider gave one. Present only when `status` is
 	// `rejected`.
-	Reason *string `json:"reason,omitempty"`
+	Reason trusttasks.Nullable[string] `json:"reason,omitzero"`
 
 	// When the refusal was decided — not when this poll was produced. Present only when
 	// `status` is `rejected`.

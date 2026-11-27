@@ -26,7 +26,7 @@ type Response struct {
 	Status ResponseStatus `json:"status"`
 
 	// The community DID the envelope was taken from.
-	SourceDID *string `json:"sourceDid,omitempty"`
+	SourceDID trusttasks.Nullable[string] `json:"sourceDid,omitzero"`
 
 	// Per-keyspace row counts written, or that would be written on a preview.
 	Counts map[string]int64 `json:"counts"`
@@ -55,7 +55,7 @@ type BackupEnvelope struct {
 
 	// DID of the community exported from, when it has one. An import cross-checks this
 	// against the running community.
-	SourceDID *string `json:"sourceDid,omitempty"`
+	SourceDID trusttasks.Nullable[string] `json:"sourceDid,omitzero"`
 
 	// Version of the software that produced the envelope.
 	SourceVersion string           `json:"sourceVersion"`

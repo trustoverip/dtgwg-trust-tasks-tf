@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vtashareddidtemplatev0_7
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // DIDTemplateKeysValuePurpose What the key is for. Deliberately coarser than DID Core's
 // five verification relationships: the template says what the key is, and the `document`
@@ -67,7 +70,7 @@ type DIDTemplate struct {
 	Kind string `json:"kind"`
 
 	// Human-readable description of what the template provisions.
-	Description *string `json:"description,omitempty"`
+	Description trusttasks.Nullable[string] `json:"description,omitzero"`
 
 	// DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"]
 	// for a did:key.
@@ -159,7 +162,7 @@ type DIDTemplateRecord struct {
 	SchemaVersion int64                       `json:"schemaVersion"`
 	Name          string                      `json:"name"`
 	Kind          string                      `json:"kind"`
-	Description   *string                     `json:"description,omitempty"`
+	Description   trusttasks.Nullable[string] `json:"description,omitzero"`
 	Methods       *[]string                   `json:"methods,omitempty"`
 	RequiredVars  *[]string                   `json:"requiredVars,omitempty"`
 	OptionalVars  *map[string]json.RawMessage `json:"optionalVars,omitempty"`
