@@ -17,10 +17,10 @@ import (
 //
 // Deprecated: superseded by vtc/directory/export/0.2
 type Response struct {
-	Items      []JsContactCard `json:"items"`
-	NextCursor *string         `json:"nextCursor,omitempty"`
-	ExportedAt string          `json:"exportedAt"`
-	Ext        *Ext            `json:"ext,omitempty"`
+	Items      []JsContactCard             `json:"items"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	ExportedAt string                      `json:"exportedAt"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

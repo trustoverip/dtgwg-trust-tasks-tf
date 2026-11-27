@@ -17,7 +17,7 @@ type Response struct {
 	SubjectDID string `json:"subjectDid"`
 
 	// Expiry, or null when the invitation does not lapse.
-	ValidUntil *string `json:"validUntil,omitempty"`
+	ValidUntil trusttasks.Nullable[string] `json:"validUntil,omitzero"`
 
 	// The signed Invitation Credential (W3C VC). Opaque here; returned once.
 	Vic map[string]json.RawMessage `json:"vic"`

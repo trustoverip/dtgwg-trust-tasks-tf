@@ -657,6 +657,37 @@
         "operation": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The carried protocol's own name for the operation this specification carries. One specification carries one operation." }
       }
     },
+    "uncheckedRules": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "description": "Rules this specification states that its payload schema does not check, so that a document can validate against the schema and still break them. Declare one where a rule cannot be written in the schema in a form every library generator accepts (the Rust generator rejects `if`/`then`/`else` and `contains`), and so is stated only in a member's `description` and in the prose. OPTIONAL: absent claims nothing. The build fails on an entry whose `member` does not resolve to a schema in the payload schema, and on a description reachable from the payload schema that says a rule is \"not checked by the schema\" (or that \"a validator does not check it\") with no entry at or under it; `npm run validate -- --verbose` prints each declared rule as an informational note. The field is source-only for now: the registry data and the site do not carry it, and the library validators do not yet surface these rules, so a consumer that needs them enforced checks them itself.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["member", "rule", "source"],
+        "properties": {
+          "member": {
+            "type": "string",
+            "pattern": "^/",
+            "maxLength": 512,
+            "description": "A JSON Pointer (RFC 6901) into `payload.schema.json`, from its root, naming the schema the rule applies to: `/properties/grantId`, `/$defs/Response/properties/entries/items/anyOf/1/properties/type`. It must end at a schema, not at a map of schemas (`/properties`, `/$defs`), an array (`/anyOf`, `/required`) or another keyword's value. Resolution follows `$ref` wherever the next segment is not on the node itself, including into a shared schema in another directory, so a pointer reaches a shared definition through the member that uses it."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "The rule, stated as a requirement on the document: what a conforming producer must do and a consumer may refuse."
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Where the rule comes from: a section of this specification, of SPEC.md, or of a carried protocol (for example `HCP 4.2`)."
+          }
+        }
+      }
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",

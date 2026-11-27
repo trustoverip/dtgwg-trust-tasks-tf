@@ -1,0 +1,84 @@
+[
+  {
+    "note": "Missing `reason` — every withdrawal states why (HCP 5.2.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Empty `reason` — the reason is recorded for the person to read (HCP 5.2.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "reason": "",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the token is the evidence of the grant.",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "reason": "The person asked to forget it."
+    }
+  },
+  {
+    "note": "Non-urn `entryId` — HCP entry identifiers are urn:uuid.",
+    "payload": {
+      "reason": "The person asked to forget it.",
+      "accessToken": "hcp_at_x",
+      "entryId": "entry-42"
+    }
+  },
+  {
+    "note": "A `hardDelete` flag — hard deletion is a governance operation, not a withdrawal (HCP 5.4.2, 9.4.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "reason": "The person asked to forget it.",
+      "accessToken": "hcp_at_x",
+      "hardDelete": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A status other than `deleted` — a withdrawal always sets `deleted` (HCP 5.2.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "status": "withdrawn",
+      "respondedAt": "2026-11-25T12:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`hardDeleted: true` — a withdrawal is never a hard deletion (HCP 5.4.2).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "status": "deleted",
+      "respondedAt": "2026-11-25T12:00:01Z",
+      "hardDeleted": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `respondedAt` — the result carries HCP's `timestamp` (HCP 5.2.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "status": "deleted"
+    }
+  },
+  {
+    "note": "`reason` longer than 1024 characters (here 1025) — the maxLength is a framework bound, not an HCP requirement.",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `status` — the result carries the entry's new status, `deleted` (HCP 5.2.5, 9.4.5).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  }
+]

@@ -25,7 +25,7 @@ type DIDTemplate struct {
 	Kind string `json:"kind"`
 
 	// Human-readable description of what the template provisions.
-	Description *string `json:"description,omitempty"`
+	Description trusttasks.Nullable[string] `json:"description,omitzero"`
 
 	// DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"]
 	// for a did:key.
@@ -59,7 +59,7 @@ type Response struct {
 	SchemaVersion int64                       `json:"schemaVersion"`
 	Name          string                      `json:"name"`
 	Kind          string                      `json:"kind"`
-	Description   *string                     `json:"description,omitempty"`
+	Description   trusttasks.Nullable[string] `json:"description,omitzero"`
 	Methods       *[]string                   `json:"methods,omitempty"`
 	RequiredVars  *[]string                   `json:"requiredVars,omitempty"`
 	OptionalVars  *map[string]json.RawMessage `json:"optionalVars,omitempty"`

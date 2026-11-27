@@ -43,6 +43,7 @@ import { checkMemberDescriptions } from './lib/member-descriptions.mjs';
 import { checkCurrentFramework } from './lib/spec-lifecycle.mjs';
 import { checkSpecExamples } from './lib/spec-examples.mjs';
 import { checkSchemaBounds } from './lib/schema-bounds.mjs';
+import { makeUncheckedRulesReporter } from './lib/unchecked-rules.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,6 +57,9 @@ const BINDINGS_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'bindings.js');
 const LIBRARIES_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'libraries.js');
 
 const validateOnly = process.argv.includes('--validate-only');
+// More detail in informational output: today, one line per declared
+// `uncheckedRules` entry (by default only the summary line prints).
+const verbose = process.argv.includes('--verbose');
 // Maintenance affordance for the Security & Privacy backlog: rewrite the
 // allowlist from what is currently non-conforming and exit. Deliberately not a
 // documented everyday flag — running it after regressing a spec would launder
@@ -2488,6 +2492,7 @@ function main() {
   // Every spec that passed its payload-schema check, for the cross-spec checks run
   // after the loop (checkOutcomeEvidence).
   const specIndex = new Map();
+  const uncheckedRules = makeUncheckedRulesReporter({ fail, log: console.log, verbose });
   let disclosureFloorOffenders = 0;
   // SPEC §7.3 item 17 — see checkIssuedAtFloor. The count is still reported as
   // one line rather than one message per spec, but it is now a line that reads
@@ -2578,6 +2583,11 @@ function main() {
     if (checkDisclosureFloor(meta, schema, payloadSchemaPath, rel, { warn, fail })) {
       disclosureFloorOffenders++;
     }
+    // Rules the schema cannot check, declared so a reader can find them: each
+    // `member` must resolve to a schema in the payload schema, and every
+    // description the payload schema reaches that says a rule is not checked
+    // must be declared. The rules print under --verbose.
+    uncheckedRules.check(meta, payloadSchemaPath, rel);
     const { uses: refUses, unresolved } = computeUses(schema, payloadSchemaPath, sharedByPath);
     for (const u of unresolved) {
       warn(`${slug}/${version}/payload.schema.json: $ref '${u}' did not resolve to a discovered shared schema`);
@@ -2596,6 +2606,7 @@ function main() {
   }
 
   checkOutcomeEvidence(specIndex);
+  console.log(uncheckedRules.summary());
   console.log(
     `  Exposure floor: ${disclosureFloorOffenders} spec(s) declare exposure.discloses: none ` +
       `while returning released material` +

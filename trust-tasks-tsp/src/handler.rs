@@ -9,8 +9,9 @@
 
 use trust_tasks_rs::{TransportContext, TransportHandler};
 
-/// Stable identifier for the TSP binding, per SPEC §9.3.
-pub const BINDING_URI: &str = "https://trusttasks.org/binding/tsp/0.1";
+/// Stable identifier for the TSP binding, per SPEC §9.3: binding `tsp/0.3`,
+/// which requires TSP 1.0. The envelope `type` is still the `tsp/0.1` one.
+pub const BINDING_URI: &str = "https://trusttasks.org/binding/tsp/0.3";
 
 /// A [`TransportHandler`] for one TSP exchange.
 ///

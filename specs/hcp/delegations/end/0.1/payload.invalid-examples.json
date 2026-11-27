@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Non-urn `delegationId` — HCP delegation identifiers are urn:uuid (HCP 17.2).",
+    "payload": { "delegationId": "delegation-12", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `delegationId` — an ending names the delegation it ends.",
+    "payload": { "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "A `reason` in the request — the reason is fixed by who the caller is (HCP 17.6), never sent.",
+    "payload": { "delegationId": "urn:uuid:2e4a6c8d-0f1b-4d3e-b5a7-9c1e3a5c7e08", "accessToken": "hcp_mt_x", "reason": "relinquished" }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the response — HCP answers 204 No Content, so the payload is the empty object.",
+    "payload": { "ended": true }
+  }
+]

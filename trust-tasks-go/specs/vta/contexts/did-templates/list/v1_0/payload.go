@@ -17,7 +17,7 @@ type DIDTemplateRecord struct {
 	SchemaVersion int64                       `json:"schemaVersion"`
 	Name          string                      `json:"name"`
 	Kind          string                      `json:"kind"`
-	Description   *string                     `json:"description,omitempty"`
+	Description   trusttasks.Nullable[string] `json:"description,omitzero"`
 	Methods       *[]string                   `json:"methods,omitempty"`
 	RequiredVars  *[]string                   `json:"requiredVars,omitempty"`
 	OptionalVars  *map[string]json.RawMessage `json:"optionalVars,omitempty"`

@@ -1,0 +1,577 @@
+[
+  {
+    "note": "Missing `classification` — a create names one or more categories (HCP 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Empty `classification.categories` — an entry has at least one category (HCP 4.2, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": []
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `record.provenance.source` — the origin of the entry is REQUIRED (HCP 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {}
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `record` — a create carries `record.provenance` (HCP 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Unknown `declarationType` — HCP defines person-declared, model-inferred and issuer-attested (HCP 4.4).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "guessed"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A provider-assigned `id` at the top level — the provider assigns the entry's `id` (HCP 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x",
+      "id": "urn:uuid:7d1e4b2a-0c9f-4a61-8e3d-5b6a7c8d9e0f"
+    }
+  },
+  {
+    "note": "Content without a `profile` — the profile names the content's shape (HCP 4.2).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A relationship with an unknown `type` — HCP defines derivedFrom, supersedes, contradicts and duplicates (HCP 4.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        },
+        "relationships": [
+          {
+            "type": "refutes",
+            "target": "hcp-ref-5e02bd"
+          }
+        ]
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A proposal with an empty `weighed` — a proposal says what it considered (HCP 4.7.4).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        },
+        "relationships": [
+          {
+            "type": "contradicts",
+            "target": "hcp-ref-5e02bd",
+            "proposal": {
+              "act": "reject",
+              "entry": "hcp-ref-5e02bd",
+              "rationale": "Older and unconfirmed.",
+              "weighed": []
+            }
+          }
+        ]
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `entry` — the result is the created entry (HCP 5.2.3).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure without its `ref` — a Context Client learns the new entry only by its `ref` (HCP 5.2.3, 7.4).",
+    "payload": {
+      "entry": {
+        "version": 1,
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Prefers a window table."
+        },
+        "assertion": {
+          "declarationType": "person-declared"
+        },
+        "classification": {
+          "categories": [
+            "general_preferences"
+          ]
+        },
+        "standing": {
+          "assurance": "authenticated",
+          "confirmed": false
+        },
+        "useUntil": "2026-11-26T10:00:01Z"
+      }
+    }
+  },
+  {
+    "note": "Missing `subject` — a create names the Context Subject (HCP 4.2, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `content` — a create carries the entry's content (HCP 4.2, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `assertion` — every entry states its declaration type (HCP 4.2, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "An evidence item with a `role` HCP does not define — HCP defines `content` and `supports` (HCP 4.2.2).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x",
+      "evidence": [
+        {
+          "role": "primary",
+          "type": "https://evidence.example/receipt"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A duplicated category — `classification.categories` lists each category once (HCP 4.2).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences",
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A `confidence` HCP does not define — HCP defines high, medium and low (HCP 4.2, 4.4).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "model-inferred",
+        "confidence": "certain"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A proposal whose `act` HCP does not define — HCP defines reject, accept and supersede (HCP 4.7.3, 4.7.4).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        },
+        "relationships": [
+          {
+            "type": "contradicts",
+            "target": "hcp-ref-5e02bd",
+            "proposal": {
+              "act": "merge",
+              "entry": "hcp-ref-5e02bd",
+              "rationale": "Older and unconfirmed.",
+              "weighed": [
+                "recency"
+              ]
+            }
+          }
+        ]
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A relationship without `target` — a relationship names the related entry (HCP 4.2.3, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        },
+        "relationships": [
+          {
+            "type": "supersedes"
+          }
+        ]
+      },
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "`accessToken` longer than 8192 characters (here 8193) — the maxLength is a framework bound, not an HCP requirement.",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/2.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ]
+      },
+      "assertion": {
+        "declarationType": "person-declared"
+      },
+      "record": {
+        "provenance": {
+          "source": "person-input"
+        }
+      },
+      "accessToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "A v1 `schema` — a create takes `https://hcp.example/spec/entry/2.0` only; v1 entry forms are accepted through hcp/import only (HCP 4.2, 4.3, 5.2.3).",
+    "payload": {
+      "schema": "https://hcp.example/spec/entry/1.0",
+      "subject": {
+        "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+      },
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table.",
+        "language": "en"
+      },
+      "classification": {
+        "categories": [
+          "general_preferences"
+        ],
+        "dimension": "seating"
+      },
+      "assertion": {
+        "declarationType": "model-inferred",
+        "confidence": "medium",
+        "basis": {
+          "task": "Restaurant booking",
+          "rationale": "Asked for a window seat at three bookings."
+        }
+      },
+      "record": {
+        "provenance": {
+          "assertedBy": {
+            "id": "https://booking-agent.example/model/v4"
+          },
+          "source": "integration"
+        }
+      },
+      "accessToken": "hcp_at_2b7f0c6e9d1a4e8b"
+    }
+  }
+]

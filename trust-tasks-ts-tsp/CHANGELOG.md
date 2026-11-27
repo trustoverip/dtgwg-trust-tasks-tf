@@ -5,6 +5,61 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the `trust-tasks-ts-tsp-v<version>`
 tag; see `RELEASING.md`.
 
+## 0.2.0 — 2026-11-27
+
+
+### Added
+
+- **tsp**: The TSP libraries implement binding tsp/0.3, and Rust refuses a TSP draft as UnsupportedTspVersion (#1393)
+
+* fix(ts-tsp)!: speak TSP 1.0 on @openvtc/vti-tsp-js 0.4
+
+  @openvtc/trust-tasks-tsp now seals and opens TSP 1.0 (YTSP-BAA, HPKE-Base)
+  messages, the version the Rust trust-tasks-tsp crate (affinidi-tsp 0.5), the
+  VTA and Keyring speak. It moves @openvtc/vti-tsp-js from ^0.2.0, which spoke
+  only the Rev 2 draft, to ^0.4.0.
+
+  For consumers:
+  - A peer on a TSP draft (Rev 2 or Rev 3) can no longer exchange messages with
+    this package. Its message is refused from the version marker, before sender
+    resolution, as a TspEnvelopeError with the new failure kind
+    unsupportedTspVersion. TSP has no version negotiation.
+  - PackKeys and UnpackKeys (re-exported from vti-tsp-js) no longer take
+    senderEncryptionKey: HPKE-Base does not use the sender's X25519 key.
+    SenderPublicKeys.encryptionKey stays; it is what a reply is sealed to.
+  - New export TSP_VERSION ("1.0").
+
+  Tests open a TSP 1.0 message packed by the Rust affinidi-tsp 0.5.0 and refuse
+  a Rev 2 message packed by vti-tsp-js 0.2.0; test/fixtures.ts records how each
+  was produced.
+
+
+
+### Fixed
+
+- **ts-tsp**: Speak TSP 1.0 on @openvtc/vti-tsp-js 0.4 (#1387)
+
+* fix(ts-tsp)!: speak TSP 1.0 on @openvtc/vti-tsp-js 0.4
+
+  @openvtc/trust-tasks-tsp now seals and opens TSP 1.0 (YTSP-BAA, HPKE-Base)
+  messages, the version the Rust trust-tasks-tsp crate (affinidi-tsp 0.5), the
+  VTA and Keyring speak. It moves @openvtc/vti-tsp-js from ^0.2.0, which spoke
+  only the Rev 2 draft, to ^0.4.0.
+
+  For consumers:
+  - A peer on a TSP draft (Rev 2 or Rev 3) can no longer exchange messages with
+    this package. Its message is refused from the version marker, before sender
+    resolution, as a TspEnvelopeError with the new failure kind
+    unsupportedTspVersion. TSP has no version negotiation.
+  - PackKeys and UnpackKeys (re-exported from vti-tsp-js) no longer take
+    senderEncryptionKey: HPKE-Base does not use the sender's X25519 key.
+    SenderPublicKeys.encryptionKey stays; it is what a reply is sealed to.
+  - New export TSP_VERSION ("1.0").
+
+  Tests open a TSP 1.0 message packed by the Rust affinidi-tsp 0.5.0 and refuse
+  a Rev 2 message packed by vti-tsp-js 0.2.0; test/fixtures.ts records how each
+  was produced.
+
 ## 0.1.7 — 2026-11-25
 
 ## 0.1.6 — 2026-11-14

@@ -50,7 +50,7 @@ type Response struct {
 
 	// The criterion's current requirementsDigest. Null only when its manifest entry carries
 	// none.
-	RequirementsDigest *string `json:"requirementsDigest,omitempty"`
+	RequirementsDigest *string `json:"requirementsDigest"`
 	Ext                *Ext    `json:"ext,omitempty"`
 }
 
@@ -136,7 +136,7 @@ type StoredEvent struct {
 
 	// Who approved the event, or null when nobody has. Recorded in storage only — dropped
 	// from the published shape (see published.events).
-	ApprovedBy *string `json:"approvedBy,omitempty"`
+	ApprovedBy trusttasks.Nullable[string] `json:"approvedBy,omitzero"`
 }
 
 // Payload Read one criterion's stored hidden-vetting configuration, what it publishes,

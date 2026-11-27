@@ -50,11 +50,11 @@ type AuditEnvelope struct {
 	// DID of the principal that performed the action. `null` when a right-to-be-forgotten
 	// redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor
 	// for correlation carries it in `ext`, not here.
-	Actor *string `json:"actor,omitempty"`
+	Actor trusttasks.Nullable[string] `json:"actor,omitzero"`
 
 	// DID of the principal the action acted upon, when the event has one. `null`/absent for
 	// events whose target is the maintainer itself. Same redaction semantics as `actor`.
-	Target *string `json:"target,omitempty"`
+	Target trusttasks.Nullable[string] `json:"target,omitzero"`
 
 	// Trust context the event occurred in, for a maintainer that partitions its log per
 	// context.

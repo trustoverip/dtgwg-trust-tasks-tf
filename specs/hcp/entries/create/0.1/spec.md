@@ -1,0 +1,372 @@
+---
+slug: hcp/entries/create
+version: "0.1"
+title: "HCP — Create Entry"
+summary: An HCP Client writes a new entry about a person to a Human Context Protocol provider, under a grant that lets it write the entry's categories; carries the HCP 2.0-draft-3 Create operation.
+status: draft
+targetFrameworkVersion: "0.6.0"
+carries:
+  protocol: HCP
+  version: "2.0-draft-3"
+  reference: https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md
+  operation: Create
+category: data-exchange
+keywords: [hcp, human-context-protocol, personal-context, memory, entry, write, provenance]
+parties:
+  - role: HCP Client (a Context Client, or a Management Client)
+    requirement: REQUIRED
+    member: issuer
+  - role: HCP Provider
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  request: REQUIRED
+  response: REQUIRED
+  rationale: >-
+    The request is the client's attributable statement about a person, which the provider records as the entry's
+    provenance (HCP 3.5): the signature lets the provider, and later the person, show which client submitted which
+    assertion. The response discloses the entry as stored, with its new `ref`, so it carries the provider's signature.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    The task changes the person's context and is consequential; a re-delivered create must be placeable in the
+    provider's duplicate-execution window, so that it is absorbed instead of creating a second entry.
+sideEffects:
+  level: mutating
+  rationale: >-
+    A new entry is stored, and the provider appends a `context.created` audit event (HCP 8.1). The entry can later be
+    revised or withdrawn (HCP 5.2.4, 5.2.5).
+exposure:
+  discloses: secret
+  actsAsSubject: false
+  ingests: secret
+  rationale: >-
+    The request carries an assertion about a person, which may be in a High-sensitivity category or be a credential,
+    and the HCP access token, a bearer secret. The response discloses the stored entry back to the client.
+retention:
+  class: durable
+  rationale: >-
+    The provider keeps the entry and its provenance until it is hard-deleted, and the `context.created` audit event
+    (HCP 4.2, 8.1).
+    The access token is not retained: a kept request holds its digest instead (see Security & Privacy, The access token).
+maxDocumentBytes:
+  request: 524288
+  response: 524288
+  rationale: >-
+    One entry, which may carry a verifiable credential and supporting credentials as evidence, plus envelope and proof.
+    This is a framework bound, not an HCP requirement; HCP sets no size limit.
+errorCodes:
+  - code: hcp:invalidToken
+    meaning: >-
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token
+      the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here
+      too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error
+      (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a
+      failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
+      [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
+  - code: hcp:credentialInvalid
+    meaning: >-
+      HCP `credential-invalid` (HCP 5.5): a credential that is an entry's content, as created or revised, fails
+      verification, in its proof, its securing mechanism, its verification method or its status (HCP 14.6); or, for
+      an `issuer-attested` entry in `health_context`, no credential the request carries, content or supporting, passes
+      verification (HCP 16.2). The `message` says which check failed, and reveals no status-list internals. Defined
+      once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
+uncheckedRules:
+  - member: "/properties/content"
+    rule: "Under the General Context Profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/properties/content"
+    rule: "Under the VC Evidence Profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/properties/evidence"
+    rule: "At most one evidence item has `role` `content`."
+    source: "HCP 4.2.2, 5.2.3"
+  - member: "/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/properties/classification"
+    rule: "A create's `classification` carries no `permittedPurposes`; one that does is refused with `malformedRequest` (pending HCP confirmation, question 7)."
+    source: "HCP 4.2.1, 4.2.6"
+  - member: "/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/properties/record/properties/provenance/properties/assertedBy"
+    rule: "`assertedBy.id` is present unless the declaration type is `person-declared` or the content is a credential."
+    source: "HCP 5.2.3"
+  - member: "/properties/record/properties/relationships/items/properties/proposal"
+    rule: "Only a `contradicts` relationship carries a `proposal`."
+    source: "HCP 4.7.4"
+  - member: "/$defs/Response/properties/entry/anyOf/0/properties/content"
+    rule: "Under the General Context Profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/$defs/Response/properties/entry/anyOf/0/properties/content"
+    rule: "Under the VC Evidence Profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/$defs/Response/properties/entry/anyOf/0/properties/evidence"
+    rule: "At most one disclosed evidence item has `role` `content`."
+    source: "HCP 4.2.2, 7.4"
+  - member: "/$defs/Response/properties/entry/anyOf/0/properties/evidence/items/allOf/0/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/anyOf/0/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/type"
+    rule: "An entry's `type` array includes `ContextEntry`."
+    source: "HCP 4.2"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/content"
+    rule: "Under the General Context Profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/content"
+    rule: "Under the VC Evidence Profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/evidence"
+    rule: "At most one evidence item has `role` `content`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/anyOf/1/properties/record/properties/relationships/items/properties/proposal"
+    rule: "Only a `contradicts` relationship carries a `proposal`."
+    source: "HCP 4.7.4"
+related:
+  - hcp/entries/revise
+  - hcp/entries/withdraw
+  - hcp/entries/get
+---
+
+## Abstract
+
+The **HCP — Create Entry** Trust Task carries the Create operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.3; `POST /v2/entries` in HCP 9.2). An *HCP Client* writes a new entry about the *Context Subject* to an *HCP Provider*, under a grant that lets it write the entry's categories. The provider records the entry's provenance itself (HCP 3.5) and returns the entry as stored; to a *Context Client*, as a disclosure carrying the entry's new `ref`.
+
+It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorsed this carriage ([SPEC §9.4](/SPEC.md#94-carried-protocols), [SPEC §6.5](/SPEC.md#65-private-and-unpublished-trust-task-specifications)). This family is a proposal to them. HCP's text is © its authors under CC BY 4.0; this specification was written from that text, with attribution, and does not copy HCP's own schema files. Where it differs from the HCP text, the HCP text governs.
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Create operation, including the VC Evidence Profile's ingest rules where the content is a credential (HCP 14.6); this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+
+This specification adds one check HCP does not make: the token binding of [The access token](#the-access-token), a carriage rule of the `hcp/*` family, not HCP's. [SPEC §9.4](/SPEC.md#94-carried-protocols) item 6 places a check the carried protocol does not make in a separate specification that does not declare `carries`. This family keeps this one in the carriage, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)), because it protects the token that the carriage itself moves from the HTTP `Authorization` header into the document, where it can be stored or forwarded with the document; a separate task could not protect the document this one carries.
+
+## Authorization
+
+The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). `accessToken` is OPTIONAL. Where the request carries none, the write is not made under a grant: the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), writing for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal; the category check below then applies to what that Authorizing Principal may write, not to a grant. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). Each category in `classification.categories` **MUST** be one the grant authorizes the caller to write; a write naming any other fails with not authorized (HCP 5.2.3), carried as `permissionDenied`. An `issuer-attested` write is accepted only from a client authenticated as the issuer, or authorized by it, and a write whose content is a credential is `issuer-attested`; any other is refused with `permissionDenied` (HCP 3.7, 5.2.3).
+
+The REQUIRED `proof` establishes which client VID sent the assertion and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). Where the request carries `accessToken`, the proof is not the authorization, and it does not replace the provenance the provider records (HCP 3.5): `submittedByClient` and `authorizedUnder` are still taken from the grant. Where it carries none, the proof is the Management Client's authentication (see above). A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
+
+## Definitions
+
+- **Context Client**, **Management Client**, **HCP Provider**, **Context Subject**, **Context Asserter**, **grant**, **entry**, **evidence** and **category** have their HCP 2.0-draft-3 meanings.
+- The shared shapes are in [`hcp/_shared/0.1`](../../../_shared/0.1/common.schema.json): the write members, `WriteSubject` among them, in [`entry-write.schema.json`](../../../_shared/0.1/entry-write.schema.json), and `Content`, `EvidenceItem`, `Assertion` and `Entry` in [`context-entry.schema.json`](../../../_shared/0.1/context-entry.schema.json). They are open, as HCP's own schemas are.
+
+### HCP field mapping
+
+| HCP Create field | Member | Notes |
+|---|---|---|
+| request `schema`, `subject.id`, `content`, `evidence` | `schema`, `subject`, `content`, `evidence` | Unchanged. |
+| request `classification.categories`, `classification.dimension` | `classification` | Unchanged. |
+| request `assertion.*` | `assertion` | Unchanged. |
+| request `record.provenance.*`, `record.relationships` | `record` | Unchanged. |
+| `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
+| `Idempotency-Key` header (HCP 9.6) | the document `id` | See [Repeated requests](#repeated-requests). |
+| `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
+| result: the created entry (`201`, HCP 9.4.3) | `entry` | **Wrapped**: HCP returns the entry or disclosure itself; this task puts it in `entry`, as HCP's own Get entry result does (HCP 5.2.2). |
+
+The request payload's root is closed: a top-level entry member that HCP does not define cannot be written through this task, although HCP's Create body is an entry whose undefined members a provider preserves (HCP 4.2, 9.4.3, A.2). The nested `subject`, `content`, `classification`, `assertion` and `record` stay open. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
+
+### Parties
+
+| HCP role | Trust Task member |
+|---|---|
+| Context Client or Management Client | `issuer` of the request, `recipient` of the response |
+| HCP Provider | `recipient` of the request, `issuer` of the response |
+
+As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client **MUST** send a token or an assertion only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the client **MUST** check that binding before it sends a token or an assertion to the VID.
+
+## Request
+
+The payload is the top-level schema in [`payload.schema.json`](payload.schema.json). The members are HCP's (HCP 5.2.3):
+
+- `schema`, `subject`, `content`, `classification`, `assertion` and `record` are REQUIRED; `evidence` is OPTIONAL. `record.provenance.source` is REQUIRED.
+- `assertion.confidence` is REQUIRED and non-null when `assertion.declarationType` is `model-inferred`, and null or absent otherwise. A write that breaks this is refused with `malformedRequest` (HCP 5.2.3). The schema does not check it.
+- `record.provenance.assertedBy.id` is REQUIRED unless `declarationType` is `person-declared`, when the provider records the Context Subject, or the content is a credential, when the provider takes the credential's issuer (HCP 5.2.3, 14.6). The schema does not check it.
+- `record.relationships[].target`, and a proposal's `entry`, name an entry by its `ref` for a Context Client and its `id` for a Management Client (HCP 5.2.3). Only a `contradicts` relationship carries a `proposal` (HCP 4.7.4).
+- `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+- `schema` is `https://hcp.example/spec/entry/2.0`, compared as an exact string, the one value HCP 2.0-draft-3's create request takes: v1 entry forms are accepted through [`hcp/import`](../../../import/0.1/spec.md) only (HCP 4.2, 4.3). Any other `schema`, or a category the provider does not hold, is refused with `malformedRequest` (HCP 5.2.3).
+- The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and a proposal's `proposedBy` and `proposedAt`, and never takes them from a request (HCP 5.2.3, 4.7.4). The entry returned, like every stored entry, carries each proposal with all six of its members (the shared `RecordedProposal`).
+- `accessToken` (OPTIONAL) is the HCP access token for the grant. Where it is absent, the request's `proof` authenticates an enrolled Management Client writing for the person (see [Authorization](#authorization)).
+
+### A booking agent records an inferred preference
+
+```json
+{
+  "id": "urn:uuid:7a2d5f81-3b9c-4e6a-8d1f-0c4b2e9a7d13",
+  "type": "https://trusttasks.org/spec/hcp/entries/create/0.1#request",
+  "issuer": "did:web:booking-agent.example",
+  "recipient": "did:web:context.provider.example",
+  "issuedAt": "2026-11-25T10:00:00Z",
+  "threadId": "urn:uuid:1e9c4a73-6d2b-4f8e-a5c0-3b7d9f1e2a24",
+  "payload": {
+    "schema": "https://hcp.example/spec/entry/2.0",
+    "subject": { "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35" },
+    "content": {
+      "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+      "value": "Prefers a window table.",
+      "language": "en"
+    },
+    "classification": { "categories": ["general_preferences"], "dimension": "seating" },
+    "assertion": {
+      "declarationType": "model-inferred",
+      "confidence": "medium",
+      "basis": { "task": "Restaurant booking", "rationale": "Asked for a window seat at three bookings." }
+    },
+    "record": {
+      "provenance": {
+        "assertedBy": { "id": "https://booking-agent.example/model/v4" },
+        "source": "integration"
+      }
+    },
+    "accessToken": "hcp_at_2b7f0c6e9d1a4e8b"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T10:00:00Z",
+    "verificationMethod": "did:web:booking-agent.example#key-1",
+    "proofPurpose": "authentication",
+    "proofValue": "z2HdT9qLw5RnX3vYb8KcF1mJp7sAe4uGz6oNiQ2xV9tB5kW3rM8yD1gS6hL4jE7aP2cU9nO5fZ3wC8vT1bR6mK4q"
+  }
+}
+```
+
+## Response
+
+The provider answers with the created entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): `entry`, a `Disclosure` carrying the entry's new `ref` for a Context Client (HCP 7.4), otherwise the whole `Entry` with the provider-assigned fields populated (HCP 5.2.3). Failures use `trust-task-error` (see [Errors](#errors)).
+
+### The entry, created
+
+```json
+{
+  "id": "urn:uuid:9b4e2c17-8a3d-4f6b-b1e9-5d0c7a2f3e46",
+  "type": "https://trusttasks.org/spec/hcp/entries/create/0.1#response",
+  "issuer": "did:web:context.provider.example",
+  "recipient": "did:web:booking-agent.example",
+  "issuedAt": "2026-11-25T10:00:01Z",
+  "threadId": "urn:uuid:1e9c4a73-6d2b-4f8e-a5c0-3b7d9f1e2a24",
+  "payload": {
+    "entry": {
+      "ref": "hcp-ref-c73e19",
+      "version": 1,
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table.",
+        "language": "en"
+      },
+      "assertion": {
+        "declarationType": "model-inferred",
+        "confidence": "medium",
+        "basis": { "task": "Restaurant booking", "rationale": "Asked for a window seat at three bookings." }
+      },
+      "classification": { "categories": ["general_preferences"], "dimension": "seating" },
+      "standing": { "assurance": "authenticated", "confirmed": false },
+      "useUntil": "2026-11-26T10:00:01Z"
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T10:00:01Z",
+    "verificationMethod": "did:web:context.provider.example#key-1",
+    "proofPurpose": "authentication",
+    "proofValue": "z5JmR8tXq2WvL6nB3dKcY9pHf1sZa7eU4oGiN2xT8wV5bM3rE6kP9gS1jA4hD7yC2uF8lO5zQ3nX6mB9vT1kR4w"
+  }
+}
+```
+
+## Errors
+
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider never sends HCP's Core error object or the HTTP Binding's problem details (HCP 9.7).
+
+| HCP error (5.5) | Code | Trust Task error |
+|---|---|---|
+| invalid request | `malformed-request`: schema validation, a `confidence` that does not match `declarationType`, a `schema` other than `https://hcp.example/spec/entry/2.0`, a category it does not hold (HCP 4.2, 5.2.3) | `malformedRequest` |
+| unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
+| not authorized | `scope-denied`: a category the grant does not let the caller write, an `issuer-attested` write from a client that is not the issuer or authorized by it (HCP 5.2.3, 3.7) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
+| conflict | `idempotency-conflict`: a retried request that does not match the original (HCP 9.6) | `idConflict`: the document `id` reused with different content ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)). See [Repeated requests](#repeated-requests). |
+| version conflict | `version-conflict` | Does not arise: a create names no existing version (HCP 5.2.4). |
+| credential invalid | `credential-invalid`: the content is a credential that fails verification (HCP 14.6), or the entry is `issuer-attested` in `health_context` and no credential it carries, content or supporting, passes (HCP 16.2) | `hcp:credentialInvalid`, `retryable: false`. The `message` says which check failed (proof, securing mechanism, verification method or status) and reveals no status-list internals (HCP 5.5). |
+| subject unavailable | `subject-unavailable`: under end-to-end encrypted storage, the content checks need the Context Subject's trust domain (HCP 4.8, 5.2.3) | `unavailable`. The client may retry later (HCP 5.5). |
+| rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
+| unsupported version | `unsupported-version` | `unsupportedVersion` |
+
+A client that does not know `hcp:invalidToken` or `hcp:credentialInvalid` reads it as `taskFailed` ([SPEC §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)) and still honours `retryable: false`.
+
+## Repeated requests
+
+HCP's HTTP Binding makes a create idempotent under an `Idempotency-Key` header (HCP 9.6). This task uses the document `id` as that key: it is minted fresh per create, and [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) applies.
+
+- A re-delivered document with the same `id` and content is not executed again. The provider **MUST** answer it with the original response, including the original `ref` (or `id`) and `version`, and **MUST NOT** append a second `context.created` event (HCP 9.6).
+- A document whose `id` matches an accepted one but whose content differs is refused with `idConflict`, HCP's conflict (HCP 9.6).
+- The provider **MUST** retain its duplicate-execution record, with the response, for at least 24 hours (HCP 9.6), and for at least the acceptance window it applies to `issuedAt`.
+
+## Pending HCP confirmation
+
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../../_shared/0.1/QUESTIONS.md).
+
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 7 — `classification.permittedPurposes` on a create.** Refused with `malformedRequest`, since only a governance operation sets it (see [Request](#request)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP Client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
+- **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 56 — a Management Client authenticated without a token.** `accessToken` is OPTIONAL. Where it is absent, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose, reading HCP 3.2.3's "credentials" as including an enrolled key proved by a signature on each request, and refuses any other issuer with `permissionDenied`, with the one fixed `message`. Where a token is present, the token rules apply unchanged, including the binding of question 22. The request `proof` stays REQUIRED whether or not a token is present (question 53), and a provider keeps a record of the Management Clients each person enrolled. A write with no token is a Management Client's, made for the person, and is under no grant (see [Authorization](#authorization)).
+
+## What HCP requires that a document cannot express
+
+- **The grant and write-scope checks**, and the issuer check on an `issuer-attested` write (HCP 3.7, 5.2.3).
+- **Provenance** (HCP 3.5): the provider records `assurance`, `submittedByClient`, `authorizedUnder`, `recordedByProvider` and `recordedAt` from what it knows, never from the request.
+- **Credential ingest** (HCP 14.6): verification of a credential that is the content, which the provider **MUST NOT** modify (HCP 4.2.2).
+- **Conflict detection** (HCP 4.7) and the `conflict.proposed` event for a proposal the client makes (HCP 4.7.4). A provider that accepts `model-inferred` entries conforms to the Memory Manager Profile and lists it (HCP 15.1, 18.1): it evaluates candidate conflicts on every write, whichever of the two entries is written second, and records a `contradicts` relationship where its declared method finds one (HCP 15.2).
+- **Health context** (HCP 16.2). A provider that accepts `issuer-attested` entries in `health_context` conforms to the Health Context Profile and lists it (HCP 16.1, 18.1). Such an entry carries a credential, as its content or in support of it, and at least one credential it carries passes verification at ingest; HCP rejects a write that does not, with invalid request where it carries no credential and credential invalid where none passes (HCP 16.2, 14.6).
+- **Encrypted storage** (HCP 4.8): content checks made within the Context Subject's trust domain.
+
+## Security & Privacy
+
+### Data carried
+
+The request carries an assertion about the person, which may be in a High-sensitivity category, a credential with its proof, and, where present, the access token, a bearer secret. The response discloses the stored entry back to the client. A producer **MUST NOT** put content or the token in `ext` or in any `message`, and an `hcp:credentialInvalid` `message` names the failed check without status-list internals (HCP 5.5).
+
+### The access token
+
+`accessToken`, where a request carries it, is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
+
+**In an agent runtime**, the token is held as [`hcp/entries/query`](../../query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
+
+**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP Client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
+
+**Retained copies.** The provider verifies the request's `proof` over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
+
+### Correlation
+
+The provider learns which client asserted what, when; that is the provenance HCP records. A Context Client receives the new entry only by its grant-scoped `ref` (HCP 7.4). The `subject.id` the client supplies is the per-client pseudonym from its grant (HCP 3.4), so it does not join clients. `threadId` **SHOULD** be fresh per create.
+
+### Retention
+
+The provider keeps the entry until it is hard-deleted (HCP 5.4.2), with the `context.created` audit event (HCP 8.1). The signed request is evidence of what the client asserted, and a provider **MAY** keep it with the entry's provenance, with `accessToken` replaced by its digest and a record that its proof was verified at receipt (see [The access token](#the-access-token)). The client's disclosed copy of the entry is subject to its `useUntil` like any other (HCP 7.6).
+
+### Consent/purpose
+
+The grant's write scope is the person's permission to have context written about them in those categories. The person can see, confirm or reject every entry through a Management Client (HCP 3.8). Whether a given write needs any further approval is the provider's policy under HCP, not a requirement of this specification ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
+
+The acceptance window for `issuedAt` is consumer policy.

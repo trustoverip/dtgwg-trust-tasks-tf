@@ -1,0 +1,144 @@
+[
+  {
+    "note": "Missing `purpose` — every get entry names a purpose code (HCP 5.2.2, 6.1.5.2).",
+    "payload": {
+      "ref": "hcp-ref-5e02bd",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the token is the evidence of the grant.",
+    "payload": {
+      "ref": "hcp-ref-5e02bd",
+      "purpose": "https://hcp.example/purposes/reservation"
+    }
+  },
+  {
+    "note": "`version: 0` — entry versions start at 1.",
+    "payload": {
+      "ref": "hcp-ref-5e02bd",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "version": 0,
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Non-urn `entryId` — HCP entry identifiers are urn:uuid.",
+    "payload": {
+      "entryId": "entry-42",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Relative `purpose` — a purpose code is an absolute URI.",
+    "payload": {
+      "ref": "hcp-ref-5e02bd",
+      "purpose": "reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `minimization` — every get-entry result carries the minimization report (HCP 7.5).",
+    "payload": {
+      "entry": {
+        "ref": "hcp-ref-5e02bd",
+        "version": 1,
+        "content": { "profile": "https://hcp.example/spec/profiles/general-context/2.0", "value": "Severe peanut allergy." },
+        "assertion": { "declarationType": "person-declared" },
+        "classification": { "categories": ["health_context"] },
+        "standing": { "assurance": "authenticated", "confirmed": true },
+        "useUntil": "2026-11-25T21:00:01Z"
+      },
+      "retrievalId": "urn:uuid:0e7d4c2b-9a1f-4e3d-8b6c-2a5f1e0d9c83",
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure that carries the entry's `id` — a disclosure names the entry only by its `ref` (HCP 7.4).",
+    "payload": {
+      "entry": {
+        "ref": "hcp-ref-5e02bd",
+        "id": "urn:uuid:7d1e4b2a-0c9f-4a61-8e3d-5b6a7c8d9e0f",
+        "version": 1,
+        "content": { "profile": "https://hcp.example/spec/profiles/general-context/2.0", "value": "Severe peanut allergy." },
+        "assertion": { "declarationType": "person-declared" },
+        "classification": { "categories": ["health_context"] },
+        "standing": { "assurance": "authenticated", "confirmed": true },
+        "useUntil": "2026-11-25T21:00:01Z"
+      },
+      "retrievalId": "urn:uuid:0e7d4c2b-9a1f-4e3d-8b6c-2a5f1e0d9c83",
+      "minimization": { "method": "none" },
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "HCP's `timestamp` member — it is carried as `respondedAt`.",
+    "payload": {
+      "entry": {
+        "ref": "hcp-ref-5e02bd",
+        "version": 1,
+        "content": { "profile": "https://hcp.example/spec/profiles/general-context/2.0", "value": "Severe peanut allergy." },
+        "assertion": { "declarationType": "person-declared" },
+        "classification": { "categories": ["health_context"] },
+        "standing": { "assurance": "authenticated", "confirmed": true },
+        "useUntil": "2026-11-25T21:00:01Z"
+      },
+      "retrievalId": "urn:uuid:0e7d4c2b-9a1f-4e3d-8b6c-2a5f1e0d9c83",
+      "minimization": { "method": "none" },
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z",
+      "timestamp": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "note": "`ref` longer than 2048 characters (here 2049) — the maxLength is a framework bound, not an HCP requirement.",
+    "payload": {
+      "ref": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "purpose": "https://purposes.example/meal-planning",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `retrievalId` — the result names the retrieval the `context.read` audit event records (HCP 5.2.2, 8.2).",
+    "payload": {
+      "entry": {
+        "ref": "hcp-ref-5e02bd",
+        "version": 1,
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Severe peanut allergy."
+        },
+        "assertion": {
+          "declarationType": "person-declared"
+        },
+        "classification": {
+          "categories": [
+            "health_context"
+          ]
+        },
+        "standing": {
+          "assurance": "authenticated",
+          "confirmed": true
+        },
+        "useUntil": "2026-11-25T21:00:01Z"
+      },
+      "minimization": {
+        "method": "none"
+      },
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A result without `directives` — the carriage requires it: a list, empty when none applies, for a Context Client, and null for a Management Client (HCP 6.4; question 42).",
+    "payload": {"entry": {"ref": "hcp-ref-5e02bd", "version": 1, "content": {"profile": "https://hcp.example/spec/profiles/general-context/2.0", "value": "Severe peanut allergy."}, "assertion": {"declarationType": "person-declared"}, "classification": {"categories": ["health_context"]}, "standing": {"assurance": "authenticated", "confirmed": true}, "useUntil": "2026-11-25T21:00:01Z"}, "retrievalId": "urn:uuid:0e7d4c2b-9a1f-4e3d-8b6c-2a5f1e0d9c83", "minimization": {"method": "none"}, "respondedAt": "2026-11-25T09:00:01Z"}
+  }
+]

@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package credentialssharedcredentialsv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // CredentialID Stable identifier for an issued credential — the handle for revocation and
 // audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be
@@ -57,7 +60,7 @@ type CredentialReference struct {
 	IssuedAt *string `json:"issuedAt,omitempty"`
 
 	// When it lapses, or null when it does not.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt trusttasks.Nullable[string] `json:"expiresAt,omitzero"`
 }
 
 // RevocationReceipt The receipt for a successful revocation. Consumers MUST report the

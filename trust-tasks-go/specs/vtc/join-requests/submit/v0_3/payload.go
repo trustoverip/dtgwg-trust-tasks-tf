@@ -57,7 +57,7 @@ type VerdictWith struct {
 	Code *string `json:"code,omitempty"`
 
 	// Elaboration in prose, when the decider gave one. `deny` and `refer`.
-	Reason *string `json:"reason,omitempty"`
+	Reason trusttasks.Nullable[string] `json:"reason,omitzero"`
 
 	// Which review queue the decision was parked in, so an applicant can be told who now
 	// holds it. `refer` only.

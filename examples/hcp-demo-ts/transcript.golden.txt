@@ -1,0 +1,871 @@
+
+=== 1. Discover (trust-task-discovery 0.4) ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/trust-task-discovery/0.4
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000001",
+  "issuedAt": "2026-11-25T10:00:01Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "patterns": [
+      "hcp/*"
+    ]
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:01Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z5hERRnCbfAn9rH2b4CrMtcoifL8U6pLsqbRgojeMcANxHcazU9fR8do82W2mYgNq61YHN5R2oMUCf9C3DsEXtjWR",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000001",
+  "type": "https://trusttasks.org/spec/trust-task-discovery/0.4"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-discovery/0.4#response
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000002",
+  "issuedAt": "2026-11-25T10:00:02Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "supportedTypes": [
+      "https://trusttasks.org/spec/hcp/grants/request/0.1",
+      "https://trusttasks.org/spec/hcp/entries/query/0.1",
+      "https://trusttasks.org/spec/hcp/grants/revoke/0.1",
+      "https://trusttasks.org/spec/hcp/grants/revoked/0.1"
+    ]
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:02Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "zFqng15BPKxBgQDejb2ga3kqDkzntz6eGAwxfSW9Ny5bWJGZMHjbLEWqaQ7ZBiiYVubn7r9WcWed1a3tSgetEeKg",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000001",
+  "type": "https://trusttasks.org/spec/trust-task-discovery/0.4#response"
+}
+
+=== 2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "issuedAt": "2026-11-25T10:00:03Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:03Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z4qMSYUDzBnbJpf1Xg5v4Z5nnpATAjmFn7iE1CG5Jfiz6QpqsdWhuA47KTuX4642mgjudksdMmT64LMK3CtrcZ6At",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-next-step/0.1
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000004",
+  "issuedAt": "2026-11-25T10:00:04Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "continuation": "resubmit",
+    "expects": [
+      {
+        "hint": {
+          "retryAfter": 1
+        },
+        "reason": "The request is with the person, who has not decided yet.",
+        "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+      }
+    ],
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    }
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:04Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z4GZe2dKC2n8CcgcfU6mWpbDAANL3PpcuBf9DL7PbUnLdFsHs5Vifw8gjx8fHooFaa4GtwGVfFhjiHKc8qFFPM9F2",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/trust-task-next-step/0.1"
+}
+[person] approves the grant request on thread urn:uuid:00000000-0000-4000-8000-000000000003 in the provider's app
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000005",
+  "issuedAt": "2026-11-25T10:00:06Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:06Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z4CPsQYNqHkNT8gHihUxEPhonWky8uA5Wkb9rvMgDEurgcNaFGo5HpyxuXeBMmTD75ZFAUL9rkkVnWhvafguRrjSL",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#response
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000007",
+  "issuedAt": "2026-11-25T10:00:07Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "accessToken": "hcp_at…",
+    "grant": {
+      "access": [
+        {
+          "actions": [
+            "read"
+          ],
+          "categories": [
+            "travel_preferences"
+          ],
+          "purposes": [
+            {
+              "code": "https://purposes.example/travel-booking",
+              "description": "Book trips that match how you like to travel"
+            }
+          ],
+          "type": "https://hcp.example/spec/authorization/context-access"
+        }
+      ],
+      "authorizingPrincipal": {
+        "id": "hcp-sub-demo-alex"
+      },
+      "client": {
+        "id": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+        "name": "Wayfare booking agent",
+        "operator": {
+          "id": "booking.example",
+          "name": "Wayfare Travel Ltd"
+        }
+      },
+      "expiresAt": "2026-11-25T14:00:06Z",
+      "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006",
+      "grantType": "temporary",
+      "issuedAt": "2026-11-25T10:00:06Z",
+      "status": "active",
+      "subject": {
+        "id": "hcp-sub-demo-alex"
+      }
+    },
+    "tokenExpiresAt": "2026-11-25T14:00:06Z"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:07Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z23TwQEyKay2e3E56pBqRyqbFLNQTAnzTcTnbM8EZPUBYKDyoC5GHgJjYDi6eoRVbHnpHEbLm3fthwtaRg9FnJGra",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#response"
+}
+
+=== 3. Query (hcp/entries/query 0.1) ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000008",
+  "issuedAt": "2026-11-25T10:00:08Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "accessToken": "hcp_at…",
+    "categories": [
+      "travel_preferences"
+    ],
+    "maxEntries": 5,
+    "purpose": "https://purposes.example/travel-booking",
+    "query": "How does Alex like to fly?"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:08Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z2bKbLPWv2p7T7cmNVtJHm8BQhmNvtV3YKetk79tJeysmLKtk9EX4Ff6sjKzHdpe6YyxkhdiraqNKukrfJsHhfCqj",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000008",
+  "type": "https://trusttasks.org/spec/hcp/entries/query/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#response
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000a",
+  "issuedAt": "2026-11-25T10:00:09Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "categoriesSearched": [
+      "travel_preferences"
+    ],
+    "directives": [],
+    "entries": [
+      {
+        "assertion": {
+          "declarationType": "person-declared"
+        },
+        "classification": {
+          "categories": [
+            "travel_preferences"
+          ]
+        },
+        "content": {
+          "language": "en",
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Prefers aisle seats and early-morning flights."
+        },
+        "ref": "hcp-ref-0001",
+        "standing": {
+          "assurance": "authenticated",
+          "confirmed": true
+        },
+        "useUntil": "2026-11-25T11:00:08Z",
+        "version": 1
+      },
+      {
+        "assertion": {
+          "declarationType": "person-declared"
+        },
+        "classification": {
+          "categories": [
+            "travel_preferences"
+          ]
+        },
+        "content": {
+          "language": "en",
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Avoids overnight layovers."
+        },
+        "ref": "hcp-ref-0002",
+        "standing": {
+          "assurance": "authenticated",
+          "confirmed": true
+        },
+        "useUntil": "2026-11-25T11:00:08Z",
+        "version": 1
+      }
+    ],
+    "minimization": {
+      "method": "lexical"
+    },
+    "respondedAt": "2026-11-25T10:00:08Z",
+    "retrievalId": "urn:uuid:00000000-0000-4000-8000-000000000009"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:09Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z4VKGf8ev44e6WdXnk1tXNbzMjgLG8bhcTG468DJVgzrMtoyWVHzrhMi5oE1Ub49f8K2Sg4MjPVw95VAgJ5c119Vn",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000008",
+  "type": "https://trusttasks.org/spec/hcp/entries/query/0.1#response"
+}
+
+=== 4. Revoke (hcp/grants/revoke 0.1) from the Management Client ===
+--> Management Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/revoke/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000b",
+  "issuedAt": "2026-11-25T10:00:10Z",
+  "issuer": "did:key:z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja",
+  "payload": {
+    "accessToken": "hcp_mt…",
+    "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:10Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z2Q3HYiNtXPbSn3kPPYD2WUd2s9GmmgXpDRwG1fD7cYdUe7ft8LHePqKhSfSXjqD5NwZmAwmibDF4fp7Eb8m8MrQa",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja#z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000b",
+  "type": "https://trusttasks.org/spec/hcp/grants/revoke/0.1#request"
+}
+--> Provider -> Management Client (TSP) https://trusttasks.org/spec/hcp/grants/revoke/0.1#response
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000c",
+  "issuedAt": "2026-11-25T10:00:11Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {},
+  "proof": {
+    "created": "2026-11-25T10:00:11Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z55bMjMnPoz4QqWRNsdZX323dni8EVvnYz11vQwEp91vwEmFdC3W44uDVu8dYFqgHcB4WWqQr6RPcK1Chr2Uo5Q3v",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000b",
+  "type": "https://trusttasks.org/spec/hcp/grants/revoke/0.1#response"
+}
+
+=== 5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "issuedAt": "2026-11-25T10:00:12Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "accessToken": "hcp_at…",
+    "categories": [
+      "travel_preferences"
+    ],
+    "maxEntries": 5,
+    "purpose": "https://purposes.example/travel-booking",
+    "query": "How does Alex like to fly?"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:12Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z5E5FjcYVSrNVFm38vrjg9mVDV66bM5oVgGXgUWb2pDe6keMyoSmtSPGgwAQKUp92SpZC3N9eTPCCF78PCKtb6x7o",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "type": "https://trusttasks.org/spec/hcp/entries/query/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000e",
+  "issuedAt": "2026-11-25T10:00:13Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "code": "hcp:invalidToken",
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+      "typeUri": "https://trusttasks.org/spec/hcp/entries/query/0.1#request"
+    },
+    "message": "The access token is not valid.",
+    "retryable": false
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:13Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z2K99NV4bLHTeHF6MBuidCC4Acrz3kFfUtSrukLCDWEazjVjwv294k2tgdQFeqQeuhwGdPcJwdeKvTrcFi1nNXK4w",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6"
+}
+
+=== 6. Revocation notice (hcp/grants/revoked 0.1) ===
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000010",
+  "issuedAt": "2026-11-25T10:00:14Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006",
+    "noticeId": "urn:uuid:00000000-0000-4000-8000-00000000000f",
+    "revokedAt": "2026-11-25T10:00:10Z"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:14Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z5pdiLoNRWgsSCUNf9U4cWA3nmvEHXwEpN9m46rJitQNzmj2vn5WSvi2XWckHogtGVARvpEfmvX8Pwed4d7WERH81",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000010",
+  "type": "https://trusttasks.org/spec/hcp/grants/revoked/0.1#request"
+}
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#response
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000011",
+  "issuedAt": "2026-11-25T10:00:15Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {},
+  "proof": {
+    "created": "2026-11-25T10:00:15Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z63dFr3m5qWTfPR4u9UaA49VwmH8wGVxq862KEqo6kRm3evjDY3mTZ39wafMGTzEqvMun2deyPWDfBcvLPCG1xoX7",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000010",
+  "type": "https://trusttasks.org/spec/hcp/grants/revoked/0.1#response"
+}
+
+=== 7. Grant request declined (hcp/grants/request 0.1): the person says no ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "issuedAt": "2026-11-25T10:00:16Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:16Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3sd9ZBc78zo36p1MRY7pqNsK5Y41qQHEv1VbSSvESgsqEWZw9hMG88urFjsMoBvFBJpvgZxvUXLHyGu54WCQSDwX",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-next-step/0.1
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000013",
+  "issuedAt": "2026-11-25T10:00:17Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "continuation": "resubmit",
+    "expects": [
+      {
+        "hint": {
+          "retryAfter": 1
+        },
+        "reason": "The request is with the person, who has not decided yet.",
+        "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+      }
+    ],
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000012",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    }
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:17Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z2wCr6qz81oQ1y1rX3pGaDeZGpgmy1SnX1dPwBgJukHUCJ6UpGaTSDgLKuh6c96RkVjAC3TWMzTCGCErickcm3viM",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "type": "https://trusttasks.org/spec/trust-task-next-step/0.1"
+}
+[person] declines the grant request on thread urn:uuid:00000000-0000-4000-8000-000000000012 in the provider's app
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000014",
+  "issuedAt": "2026-11-25T10:00:19Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:19Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z5qFskugqnZqdUTUavwNwBvrh1eLobHQPWwq3S5pY8Ew6UPPHzRyXD2Zfr5dK2Xh6z8skGQvM4zaB9YZ9NB49PX5Y",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000015",
+  "issuedAt": "2026-11-25T10:00:20Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "code": "permissionDenied",
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000014",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    },
+    "message": "The request is not authorized.",
+    "retryable": false
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:20Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3wikYQMreaqvYLCxyThuNMEAxbW9CfX42JuRKuc76BgcSSgEXxMg498YCYnqyJvuNADpQ7RgvVMS1ML77WkTm9rj",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6"
+}
+
+=== 8. Grant request expired (hcp/grants/request 0.1): the hold's lifetime passes ===
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "issuedAt": "2026-11-25T10:00:21Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:21Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z2Dbd8MLi3yahbnvXDFBMZ2YYruQrNhbx58mfE6jvwXZjzJ2G351tVVdTf1PzhruujKjfySYbXst1FrkePTn7gs9S",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-next-step/0.1
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000017",
+  "issuedAt": "2026-11-25T10:00:22Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "continuation": "resubmit",
+    "expects": [
+      {
+        "hint": {
+          "retryAfter": 1
+        },
+        "reason": "The request is with the person, who has not decided yet.",
+        "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+      }
+    ],
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000016",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    }
+  },
+  "proof": {
+    "created": "2026-11-25T10:00:22Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z5h5yDeww7CdDdNx2tKy9rC5bZhHQsjyWDYWgUgqAKnJ5DWaAsdiBx5HQ1DNepg7WNarMgFprdcT4EHyfmHkfRDUt",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/trust-task-next-step/0.1"
+}
+[person] does not decide on thread urn:uuid:00000000-0000-4000-8000-000000000016; the hold's lifetime (300 s) passes
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000018",
+  "issuedAt": "2026-11-25T10:05:23Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:23Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3gYjhnXxsEiZd1wNkyFjhVpfRekvt9VcG3sHFBk4BTMroUSCLcGqMBQWUAcNFSqBUDjKx69uKKyjQWxcPyM8gxnN",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000019",
+  "issuedAt": "2026-11-25T10:05:24Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "code": "permissionDenied",
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000018",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    },
+    "message": "The request is not authorized.",
+    "retryable": false
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:24Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3Z5NvUNsZnArmefz3Ck7esbb69X2qwfk4wMkCrg7akC5JgGSXNRZpcK4Y1GajaBX5brCSL1E2LkPLHqe4o6DJJ5r",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6"
+}
+[person] approves the grant request on thread urn:uuid:00000000-0000-4000-8000-000000000016 in the provider's app, but the hold has ended: nothing changes
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000001a",
+  "issuedAt": "2026-11-25T10:05:25Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:25Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3nvWqKeLwDs3wkYbnuoVAHUAwVb72Qf9tmJXgJWWrj9AJajaxqKGGLvVx4JJHAtEor6syJa83M82xkjWMJSL5gSr",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000001b",
+  "issuedAt": "2026-11-25T10:05:26Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "code": "permissionDenied",
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-00000000001a",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    },
+    "message": "The request is not authorized.",
+    "retryable": false
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:26Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "zehzbeahPzoLW5MQZCYy5jAe5ppejBTryWZb9AfyBR4kWA4hYjD67fr657QxD7fGkc9cWR1wRRzYcBWeXZw1EGms",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000016",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6"
+}
+--> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000001c",
+  "issuedAt": "2026-11-25T10:05:27Z",
+  "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "payload": {
+    "access": [
+      {
+        "actions": [
+          "read"
+        ],
+        "categories": [
+          "travel_preferences"
+        ],
+        "purposes": [
+          {
+            "code": "https://purposes.example/travel-booking",
+            "description": "Book trips that match how you like to travel"
+          }
+        ],
+        "type": "https://hcp.example/spec/authorization/context-access"
+      }
+    ],
+    "expiresIn": 14400,
+    "subjectHint": "acct:alex@provider.example"
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:27Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z4kFS4TYbzARbBGibbF14mPWNZWHmRJCnfrvGeTSyXsxBHHFDrogeGP7WgHfJjRHKoiFAjy7iPMA34R5W3dVcdv2B",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
+  },
+  "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000001c",
+  "type": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+}
+--> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-next-step/0.1
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000001d",
+  "issuedAt": "2026-11-25T10:05:28Z",
+  "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
+  "payload": {
+    "continuation": "resubmit",
+    "expects": [
+      {
+        "hint": {
+          "retryAfter": 1
+        },
+        "reason": "The request is with the person, who has not decided yet.",
+        "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+      }
+    ],
+    "inResponseTo": {
+      "id": "urn:uuid:00000000-0000-4000-8000-00000000001c",
+      "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
+    }
+  },
+  "proof": {
+    "created": "2026-11-25T10:05:28Z",
+    "cryptosuite": "eddsa-jcs-2022",
+    "proofPurpose": "authentication",
+    "proofValue": "z3QG55KCtq6eDQ9H2nASZEZWQJNiBVH6D2E3YopPY3VmJHL6njQRrAFJgZHxR5bhf1oztrBCrJL2owCTBBpmMkskB",
+    "type": "DataIntegrityProof",
+    "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
+  },
+  "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000001c",
+  "type": "https://trusttasks.org/spec/trust-task-next-step/0.1"
+}

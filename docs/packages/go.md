@@ -21,13 +21,75 @@ the same reason). TypeScript hoists because structural typing makes it free.
    declare `Ext`. Side by side in Go that is a redeclaration error, so every
    schema gets its own directory: `specs/auth/shared/tokens/v0_1`.
 
-3. **Optional members are pointers, *including slices and maps*.** `omitempty` on
+3. **Optional members are pointers, *including slices and maps*** (or a
+   `trusttasks.Nullable` when the schema admits `null`, below). `omitempty` on
    a plain slice drops an empty one from the wire, collapsing "present and empty"
    into "absent" — which `acl`'s `allowedKeys` documents at length as a
    privilege-escalation defect ("PRESENT-BUT-EMPTY means authorized on NO keys —
    the opposite of absent"). `*[]string` is ugly and it is the only spelling that
    can say it. `trust-tasks-go/specs/smoke` pins this, on `vta/contexts/update/1.0`'s
    `signableKeys` ("absent: every key; present-but-empty: no keys").
+
+   A *required* member whose schema admits `null` is a pointer too, and
+   **`omitempty` goes on optional members only**. A required nullable member
+   (`vta/contexts/update-did` 1.2's `did`, where `null` means "no DID of its
+   own") is `*string` with a plain `json:"did"` tag, so a nil writes
+   `"did": null`; with `omitempty` it dropped the key and the document failed
+   its own schema's `required`. `specs/smoke/required_nullable_test.go` pins
+   the prebuilt package, `TestRequiredNullableMembersKeepTheirKey` in
+   `cmd/trust-tasks-gen` the per-module generator. So a nil on a required
+   nullable member is a deliberate `null`, not a default: `update-did`'s
+   `DID` left unset sends `"did": null`, which clears the context's DID (it
+   used to drop the key, and the document was rejected). Set such a field
+   explicitly.
+
+   An *optional* nullable member has three states, and a pointer has two, so
+   it is a **`trusttasks.Nullable[T]`** tagged `omitzero`. `acl/update` 0.3 reads
+   an absent `label` as "leave it unchanged", `"label": null` as "clear it" and
+   a string as the new label:
+
+   ```go
+   aclupdatev0_3.Payload{Subject: s}                                   // leave it
+   aclupdatev0_3.Payload{Subject: s, Label: trusttasks.Null[string]()} // clear it
+   aclupdatev0_3.Payload{Subject: s, Label: trusttasks.Value("ops")}   // set it
+
+   if label, ok := p.Label.Get(); ok { ... } else if p.Label.IsNull() { ... }
+   ```
+
+   `IsSet` is true for null and a value. The zero value is absent, an absent
+   one refuses to marshal (it has nothing it may write, and `null` would mean
+   "clear"), and `UnmarshalJSON` reads `null` as null and refuses what `T`
+   refuses. It is a struct with unexported fields, so it compares with `==`
+   whenever `T` does (`p.Label == trusttasks.Null[string]()`). `omitzero`
+   (Go 1.24, the modules' floor) asks its `IsZero` and leaves an absent one
+   out; `omitempty` never omits a struct, so a hand-written field tagged only
+   `omitempty` reaches `MarshalJSON` and fails. With a plain slice or map `T`,
+   only `Null()` writes `null`: `Value(nil)` writes `[]` or `{}`, so on `acl`'s
+   `allowedKeys` (absent or `null`: every key; `[]`: none) a filtered-to-nothing
+   nil slice grants no key rather than every key. A `T` that encodes itself
+   (`json.RawMessage`, `[]byte`, a type with `MarshalJSON` or `MarshalText`)
+   writes a nil value as `T` does. `CheckMemberNames` enters a `Nullable`, so a
+   case-variant member inside one is refused as it is behind a pointer. Use it
+   only as a struct field tagged `omitzero`: behind a pointer, nested, or as a
+   map value it loses a state or fails the encode. Non-nullable optional
+   members are still pointers, and the generated types still do not refuse a
+   `null` the schema forbids (it reads as nil): that is the caller's
+   validator's job, over `PayloadSchemaJSON`. A member the generator renders as `json.RawMessage` (a
+   `oneOf` with `null`, for example) is not affected: an explicit `null`
+   survives in it. `specs/smoke/optional_nullable_test.go` round-trips
+   `acl/update` 0.3 and `vtc/registry/records/list` 0.2,
+   `specs/smoke/nullable_members_test.go` round-trips `acl/grant` 0.1's
+   `allowedKeys` (absent, `null`, `[]`) and refuses a case-variant member in
+   `vtc/join-requests/list` 0.2's `decision`, and
+   `TestOptionalNullableMembersAreNullable` in `cmd/trust-tasks-gen` pins the
+   per-module generator.
+
+   **The specs module needs a core with `Nullable` (v0.14.0 or later).**
+   `specs/go.mod` requires the published core, so the generated tree that uses
+   it builds only after a core release carrying the type, and a move of that
+   requirement. Before that release, build it against this checkout's core with
+   a `go.work` kept outside the repository (`GOWORK=<file>`, `use`-ing
+   `trust-tasks-go` and `trust-tasks-go/specs`); never commit a `replace`.
 
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
@@ -116,7 +178,7 @@ refuse it validates the payload in the received bytes itself before decoding.
 
 ### The `trust-tasks-go/tsp` nested module
 
-The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
+The TSP transport binding (`tsp/0.3`) is a **separate Go module** under `trust-tasks-go/tsp`,
 not a package of the core. The core module has zero dependencies (its selling
 point, and what the website claims), and this one pulls in `affinidi-tsp-go` and
 its crypto. Keeping them apart is the whole point.
@@ -126,12 +188,20 @@ its crypto. Keeping them apart is the whole point.
   dependency. A dedicated `tsp` job in `go.yml` builds and tests it on its own
   floor (`go 1.27`, inherited from `affinidi-tsp-go`). `gofmt -l .` in the core
   job does recurse into the subdir, so keep the tsp files gofmt-clean.
-- **It is not released yet.** `affinidi-tsp-go` has no tag, so `go.mod` requires
-  it at a pseudo-version and there is no `trust-tasks-go/tsp/v*` release wiring in
-  `publish.yml`. `go get` of the module still works (the proxy resolves the
-  pseudo-version from the public repo). When `affinidi-tsp-go` is tagged: bump the
-  requirement to the tag and add a `publish-go`-style tag job for
-  `trust-tasks-go/tsp/vX.Y.Z`.
+- **It speaks TSP 1.0 only.** It requires the tagged `affinidi-tsp-go` v0.2.0
+  (`YTSP-BAA`), as the Rust and TypeScript TSP bindings speak 1.0. A peer on a TSP
+  draft (MAJOR other than 1) is refused `FailUnsupportedTSPVersion` from the
+  version marker, before `Open`; an unknown 1.x MINOR is not a version refusal
+  (TSP 1.0 §3.1). TSP has no version negotiation, so moving `affinidi-tsp-go` across
+  a TSP version is a wire break for every peer: do it deliberately, and
+  regenerate the fixtures in `interop_test.go` (each records how it was
+  produced) when the TSP version moves, not when the library does.
+- **It is not released yet.** Its dependency is tagged now, so nothing upstream
+  blocks a release, but there is no `trust-tasks-go/tsp/v*` release wiring in
+  `publish.yml` yet. `go get` of the module resolves a pseudo-version of this
+  repository. Wiring it is a follow-up: a `publish-go`-style leg and a
+  `GO_MODULES` entry, a `version.go`, and its scope in the bump script and
+  commit-lint's package list, like `didcomm`.
 - **The Go TSP library signs Ed25519 only** and does no DID resolution — the
   caller supplies the sender `*tsp.Identity` (read `AdvertisedSender`, look it up
   in your own store). The sealed `{type, document}` envelope matches the Rust
@@ -166,7 +236,7 @@ written in the module. Its only requirement is the core module whose
   as `proofInvalid` (§10.4). `did:key` only, no network.
 - **The core CI jobs do not reach it** (`./...` in `trust-tasks-go` excludes a
   nested module); a dedicated `proof` job in `go.yml` builds/vets/tests it on its
-  `go 1.22` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
+  `go 1.24` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
   so keep these files gofmt-clean.
 - **Released on its own `trust-tasks-go/proof/vX.Y.Z` tag**, independently of the
   core. It carries a `version.go` with a `const Version` (the manifest surrogate,
@@ -216,7 +286,7 @@ authcrypt on the standard library.
   header and the parsed document), and a disagreement is `malformedRequest`
   routed to the sender, never `identityMismatch`.
 - **Core CI does not reach it**; a `didcomm` job in `go.yml` builds/vets/tests on
-  the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
+  the `go 1.24` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
   recurses in). **Released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag** the
   same way `proof` is — a `version.go`, a `publish-go` matrix leg, and a
   `GO_MODULES` entry in `release-pr.sh` — independent of the core. **Cross-library interop is now
@@ -246,7 +316,7 @@ classification. No third-party dependency (only the core, for `Document` and
   attempt, distinct from a bit-for-bit retry the consumer's item-11 record
   absorbs. Sign built documents with `trust-tasks-go/proof`.
 - **Core CI does not reach it**; a `capabilityclient` job in `go.yml` builds/vets/
-  tests it on the `go 1.22` floor. Keep the files gofmt-clean. **Released on
+  tests it on the `go 1.24` floor. Keep the files gofmt-clean. **Released on
   its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag** the same way `proof`
   is — a `version.go`, a `publish-go` matrix leg, a `GO_MODULES` entry in
   `release-pr.sh` and a `release-bump-go.sh` case — and the core's release

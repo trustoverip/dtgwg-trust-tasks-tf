@@ -41,12 +41,12 @@ type Record struct {
 
 	// Present on recognition records: whether the action+resource is recognised. Absent on
 	// other record types — absent is not `false`.
-	Recognized *bool `json:"recognized,omitempty"`
+	Recognized trusttasks.Nullable[bool] `json:"recognized,omitzero"`
 
 	// Present on authorization records: whether the action+resource authorization is
 	// confirmed. Absent on other record types — absent is not `false`.
-	Authorized *bool `json:"authorized,omitempty"`
-	Ext        *Ext  `json:"ext,omitempty"`
+	Authorized trusttasks.Nullable[bool] `json:"authorized,omitzero"`
+	Ext        *Ext                      `json:"ext,omitempty"`
 }
 
 // Response VTC Registry Records List — response payload
@@ -61,8 +61,8 @@ type Response struct {
 	Source Source `json:"source"`
 
 	// Continuation token for the next page, or null when this is the last.
-	NextCursor *string `json:"nextCursor,omitempty"`
-	Ext        *Ext    `json:"ext,omitempty"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

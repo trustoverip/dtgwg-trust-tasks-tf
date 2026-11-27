@@ -18,11 +18,11 @@ type Response struct {
 	Items []Endorsement `json:"items"`
 
 	// Continuation token for the next page, or null when this is the last.
-	NextCursor *string `json:"nextCursor,omitempty"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
 
 	// Approximate total matching endorsements, when the maintainer can cheaply estimate it.
-	TotalEstimate *int64 `json:"totalEstimate,omitempty"`
-	Ext           *Ext   `json:"ext,omitempty"`
+	TotalEstimate trusttasks.Nullable[int64] `json:"totalEstimate,omitzero"`
+	Ext           *Ext                       `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
@@ -62,7 +62,7 @@ type Endorsement struct {
 	StatusListIndex int64 `json:"statusListIndex"`
 
 	// When the statement was revoked, or null while live.
-	RevokedAt *string `json:"revokedAt,omitempty"`
+	RevokedAt trusttasks.Nullable[string] `json:"revokedAt,omitzero"`
 }
 
 // CredentialReference A pointer to an issued credential, without the credential itself.
@@ -82,7 +82,7 @@ type CredentialReference struct {
 	IssuedAt *string `json:"issuedAt,omitempty"`
 
 	// When it lapses, or null when it does not.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt trusttasks.Nullable[string] `json:"expiresAt,omitzero"`
 }
 
 // CredentialID Stable identifier for an issued credential — the handle for revocation and

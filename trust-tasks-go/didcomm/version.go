@@ -12,4 +12,4 @@ package didcomm
 //
 // DO NOT EDIT BY HAND. See RELEASING.md — a version in a feature PR collides
 // with every other open PR.
-const Version = "0.3.5"
+const Version = "0.4.0"

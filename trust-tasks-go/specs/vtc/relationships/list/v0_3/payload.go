@@ -32,9 +32,9 @@ type Response struct {
 
 	// Continuation token for the next page; pass it back as `cursor`. Absent on the last page
 	// — never `null`.
-	NextCursor    *string `json:"nextCursor,omitempty"`
-	TotalEstimate *int64  `json:"totalEstimate,omitempty"`
-	Ext           *Ext    `json:"ext,omitempty"`
+	NextCursor    *string                    `json:"nextCursor,omitempty"`
+	TotalEstimate trusttasks.Nullable[int64] `json:"totalEstimate,omitzero"`
+	Ext           *Ext                       `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

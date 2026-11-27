@@ -1,0 +1,257 @@
+[
+  {
+    "note": "Missing `accessToken` — the token names the grant to read.",
+    "payload": {}
+  },
+  {
+    "note": "A `grantId` member — a client reads only the grant its token was issued under, so the request names none (HCP 5.2.6).",
+    "payload": {
+      "accessToken": "hcp_at_x",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `directives` — the grant is returned with the directives that apply to it (HCP 5.2.6).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "client": {
+          "id": "booking-agent",
+          "name": "Example Booking Agent",
+          "operator": {
+            "id": "https://booking-agent.example",
+            "name": "Example Booking Ltd"
+          }
+        },
+        "access": [
+          {
+            "type": "https://hcp.example/spec/authorization/context-access",
+            "actions": [
+              "read",
+              "write"
+            ],
+            "categories": [
+              "general_preferences"
+            ],
+            "purposes": [
+              {
+                "code": "https://hcp.example/purposes/reservation",
+                "description": "Booking restaurants for you"
+              }
+            ]
+          }
+        ],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "active"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A grant with no `access` detail — every grant authorizes something (HCP 6.1.5).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "client": {
+          "id": "booking-agent",
+          "name": "Example Booking Agent",
+          "operator": {
+            "id": "https://booking-agent.example",
+            "name": "Example Booking Ltd"
+          }
+        },
+        "access": [],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "active"
+      },
+      "directives": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A grant detail with no purpose — a grant is never issued without one (HCP 6.1.5.2).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "client": {
+          "id": "booking-agent",
+          "name": "Example Booking Agent",
+          "operator": {
+            "id": "https://booking-agent.example",
+            "name": "Example Booking Ltd"
+          }
+        },
+        "access": [
+          {
+            "type": "https://hcp.example/spec/authorization/context-access",
+            "actions": [
+              "read",
+              "write"
+            ],
+            "categories": [
+              "general_preferences"
+            ],
+            "purposes": []
+          }
+        ],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "active"
+      },
+      "directives": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown grant `status` — HCP defines active, revoked and expired (HCP 6.1.5).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "client": {
+          "id": "booking-agent",
+          "name": "Example Booking Agent",
+          "operator": {
+            "id": "https://booking-agent.example",
+            "name": "Example Booking Ltd"
+          }
+        },
+        "access": [
+          {
+            "type": "https://hcp.example/spec/authorization/context-access",
+            "actions": [
+              "read",
+              "write"
+            ],
+            "categories": [
+              "general_preferences"
+            ],
+            "purposes": [
+              {
+                "code": "https://hcp.example/purposes/reservation",
+                "description": "Booking restaurants for you"
+              }
+            ]
+          }
+        ],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "paused"
+      },
+      "directives": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown access `action` — HCP defines read, write and provenance (HCP 6.1.5).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "client": {
+          "id": "booking-agent",
+          "name": "Example Booking Agent",
+          "operator": {
+            "id": "https://booking-agent.example",
+            "name": "Example Booking Ltd"
+          }
+        },
+        "access": [
+          {
+            "type": "https://hcp.example/spec/authorization/context-access",
+            "actions": [
+              "delete"
+            ],
+            "categories": [
+              "general_preferences"
+            ],
+            "purposes": [
+              {
+                "code": "https://hcp.example/purposes/reservation",
+                "description": "Booking restaurants for you"
+              }
+            ]
+          }
+        ],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "active"
+      },
+      "directives": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A grant without `client` — the grant names the client it was issued to (HCP 6.1.5).",
+    "payload": {
+      "grant": {
+        "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+        "subject": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "authorizingPrincipal": {
+          "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35"
+        },
+        "access": [
+          {
+            "type": "https://hcp.example/spec/authorization/context-access",
+            "actions": [
+              "read",
+              "write"
+            ],
+            "categories": [
+              "general_preferences"
+            ],
+            "purposes": [
+              {
+                "code": "https://hcp.example/purposes/reservation",
+                "description": "Booking restaurants for you"
+              }
+            ]
+          }
+        ],
+        "grantType": "persistent",
+        "issuedAt": "2026-10-01T09:00:00Z",
+        "expiresAt": null,
+        "status": "active"
+      },
+      "directives": []
+    }
+  }
+]

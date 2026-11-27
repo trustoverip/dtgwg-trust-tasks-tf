@@ -38,7 +38,7 @@
    A `transports` entry may carry `unreleased: "<why>"` for a
    package that is built and tested here but has no release a
    reader can install yet; the matrix shows it as built, not
-   shipped. (Go's TSP module waits on a tagged affinidi-tsp-go.)
+   shipped. (Go's TSP module has no release wiring yet.)
 
    bindings.js names the same packages under each binding's
    `implementations`; `checkBindingImplementations()` holds the
@@ -109,7 +109,7 @@ window.TT_LIBRARY_CAPABILITIES = [
     group: "Transports",
     binding: "tsp",
     label: "TSP",
-    note: "The preferred binding. HPKE authenticated encryption binds the sender's VID, which maps directly onto the framework's transport-authenticated identity.",
+    note: "The preferred binding. TSP 1.0 signs every message and seals the sender's VID into the payload, so the authenticated sender VID maps directly onto the framework's transport-authenticated identity.",
   },
   {
     id: "binding:https",
@@ -231,7 +231,7 @@ window.TT_LIBRARIES = [
     generate: { package: "trust-tasks-go/cmd/trust-tasks-gen", how: "go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen --lock trust-tasks.lock --out tasks" },
     tagline: "Types, the §7.2 pipeline, a DIDComm v2 transport binding, and a Data Integrity proof backend.",
     summary:
-      "The §7.2 pipeline in the trusttasks package, and trust-tasks-gen to generate the specifications an application pins — with no dependencies beyond the standard library. The prebuilt packages, one per specification and each self-contained, are their own module, trust-tasks-go/specs, so the core does not carry them. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Separate nested modules keep the core dependency-free: trust-tasks-go/didcomm carries a document in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library; and trust-tasks-go/capabilityclient builds and parses the governance/capability/* and git-trust/* documents (no crypto). trust-tasks-go/tsp, which seals a document into a ToIP Trust Spanning Protocol message, is built and tested but not yet released: it waits on a tagged affinidi-tsp-go. Each interoperates with its Rust counterpart.",
+      "The §7.2 pipeline in the trusttasks package, and trust-tasks-gen to generate the specifications an application pins — with no dependencies beyond the standard library. The prebuilt packages, one per specification and each self-contained, are their own module, trust-tasks-go/specs, so the core does not carry them. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent; an optional member that may be null is a trusttasks.Nullable, which keeps absent, null and a value apart. Separate nested modules keep the core dependency-free: trust-tasks-go/didcomm carries a document in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library; and trust-tasks-go/capabilityclient builds and parses the governance/capability/* and git-trust/* documents (no crypto). trust-tasks-go/tsp, which seals a document into a ToIP Trust Spanning Protocol message, is built and tested but not yet released: it waits on a tagged affinidi-tsp-go. Each interoperates with its Rust counterpart.",
     detail: "go",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
@@ -241,9 +241,9 @@ window.TT_LIBRARIES = [
     ],
     transports: {
       // Separate nested modules, so the core stays dependency-free.
-      // Untagged: it requires affinidi-tsp-go at a pseudo-version, and has no
-      // release wiring until that library is tagged (docs/packages/go.md).
-      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — waits on a tagged affinidi-tsp-go" },
+      // Untagged: it requires the tagged affinidi-tsp-go v0.2 (TSP 1.0), but
+      // has no release wiring yet (docs/packages/go.md).
+      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — release wiring pending" },
       "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },
       "capability-client": { package: "trust-tasks-go/capabilityclient", dir: "trust-tasks-go/capabilityclient" },
@@ -279,9 +279,10 @@ window.TT_LIBRARIES = [
       proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
       "capability-client": { package: "trust_tasks_capability_client", dir: "trust-tasks-dart-capability-client" },
     },
-    // trust_tasks_tsp is built and tested (bindings/tsp) but not on pub.dev yet
-    // — affinidi_tsp, the library it seals with, is not published — so it is a
-    // foundation, not a shipped cell. The named evidence is the repo.
+    // trust_tasks_tsp is built and tested (bindings/tsp) on the published
+    // affinidi_tsp 0.2 (TSP 1.0), but is not on pub.dev yet — it has no release
+    // wiring — so it is a foundation, not a shipped cell. The named evidence is
+    // the repo.
     foundations: {
       "binding:tsp": { package: "affinidi-tsp-dart", url: "https://github.com/affinidi/affinidi-tsp-dart" },
     },

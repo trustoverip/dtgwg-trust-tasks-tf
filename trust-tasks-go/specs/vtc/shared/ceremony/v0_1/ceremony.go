@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vtcsharedceremonyv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // VerdictEffect What the policy decided. `allow` — admitted. `deny` — refused, terminally
 // for this submission. `refer` — parked for a human or quorum decision; the applicant is
@@ -48,7 +51,7 @@ type VerdictWith struct {
 	Code *string `json:"code,omitempty"`
 
 	// Elaboration in prose, when the decider gave one. `deny` and `refer`.
-	Reason *string `json:"reason,omitempty"`
+	Reason trusttasks.Nullable[string] `json:"reason,omitzero"`
 
 	// Which review queue the decision was parked in, so an applicant can be told who now
 	// holds it. `refer` only.

@@ -34,8 +34,8 @@ type Response struct {
 
 	// When the member's last group credential lapses; renewal has stopped. Null when they
 	// held none.
-	CredentialValidUntil *string `json:"credentialValidUntil,omitempty"`
-	Ext                  *Ext    `json:"ext,omitempty"`
+	CredentialValidUntil trusttasks.Nullable[string] `json:"credentialValidUntil,omitzero"`
+	Ext                  *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

@@ -11,6 +11,188 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.14.0 — 2026-11-27
+
+
+### Added
+
+- **build**: Declare the rules a payload schema does not check (uncheckedRules) and check the declarations (#1381)
+
+* feat(hcp): carry HCP 2.0-draft-3 query, grant revoke and revocation notice as Trust Tasks
+
+  Add the hcp/* protocol family (SPEC §9.4) with three draft 0.1 specs
+  targeting framework 0.6.0, each carrying one Human Context Protocol
+  2.0-draft-3 operation:
+
+  - hcp/entries/query: Query (HCP 5.2.1). The HCP access token travels
+    opaquely in `accessToken`; the result's `timestamp` is renamed
+    `respondedAt`; `categories` gets a framework bound of 256.
+  - hcp/grants/revoke: Revoke grant (HCP 6.2, 9.2), destructive and acting
+    for the Authorizing Principal, with an empty response for HCP's 204.
+  - hcp/grants/revoked: the revocation notice (HCP 6.2.3, 9.9). The SET
+    claims map to the envelope, and an empty response carries RFC 8935's
+    202. The notice is signed with a provider VID key that the provider's
+    JWKS must also publish.
+
+  HCP's invalid-token condition maps to the family code hcp:invalidToken.
+  Shared shapes (common, context entry, disclosure, directive) live in
+  specs/hcp/_shared/0.1. They were written from the CC BY 4.0 HCP text,
+  with attribution, not copied from HCP's schema files. HCP's kebab-case
+  enum values are allowlisted as external.
+
+- **hcp**: Add the hcp/* specifications, carrying the Human Context Protocol (HCP 2.0-draft-3) as Trust Tasks (#1380)
+
+* feat(hcp): carry HCP 2.0-draft-3 query, grant revoke and revocation notice as Trust Tasks
+
+  Add the hcp/* protocol family (SPEC §9.4) with three draft 0.1 specs
+  targeting framework 0.6.0, each carrying one Human Context Protocol
+  2.0-draft-3 operation:
+
+  - hcp/entries/query: Query (HCP 5.2.1). The HCP access token travels
+    opaquely in `accessToken`; the result's `timestamp` is renamed
+    `respondedAt`; `categories` gets a framework bound of 256.
+  - hcp/grants/revoke: Revoke grant (HCP 6.2, 9.2), destructive and acting
+    for the Authorizing Principal, with an empty response for HCP's 204.
+  - hcp/grants/revoked: the revocation notice (HCP 6.2.3, 9.9). The SET
+    claims map to the envelope, and an empty response carries RFC 8935's
+    202. The notice is signed with a provider VID key that the provider's
+    JWKS must also publish.
+
+  HCP's invalid-token condition maps to the family code hcp:invalidToken.
+  Shared shapes (common, context entry, disclosure, directive) live in
+  specs/hcp/_shared/0.1. They were written from the CC BY 4.0 HCP text,
+  with attribution, not copied from HCP's schema files. HCP's kebab-case
+  enum values are allowlisted as external.
+
+- **go**: Add trusttasks.Nullable (#1375)
+
+* build(go,go-specs,go-proof,go-didcomm,go-capabilityclient)!: require Go 1.24
+
+  Raise the `go` directive from 1.22 to 1.24 in the core, specs, proof,
+  didcomm and capabilityclient modules and in the two Go examples
+  (consumer-app-go, getting-started-go). tsp stays at 1.27, the floor it
+  inherits from affinidi-tsp-go. The go.yml matrices that prove the floor
+  move from ["1.22", "stable"] to ["1.24", "stable"], and the comments, the
+  dependabot note, go.md and the go.mod the generator and smoke tests write
+  for their throwaway modules say 1.24.
+
+  1.24 is the first release whose encoding/json honours `omitzero`, which an
+  optional member that admits null needs in order to be a comparable struct
+  that is still left out when absent.
+
+  A consumer whose toolchain is older than 1.24 and that runs with
+  GOTOOLCHAIN=local (a distribution's Go, a pinned CI image) can no longer
+  build these modules; with the default GOTOOLCHAIN=auto the go command
+  fetches 1.24 itself. Go supports only its two newest releases, and 1.22
+  and 1.23 are long out of support.
+
+- **tsp**: The TSP libraries implement binding tsp/0.3, and Rust refuses a TSP draft as UnsupportedTspVersion (#1393)
+
+* fix(ts-tsp)!: speak TSP 1.0 on @openvtc/vti-tsp-js 0.4
+
+  @openvtc/trust-tasks-tsp now seals and opens TSP 1.0 (YTSP-BAA, HPKE-Base)
+  messages, the version the Rust trust-tasks-tsp crate (affinidi-tsp 0.5), the
+  VTA and Keyring speak. It moves @openvtc/vti-tsp-js from ^0.2.0, which spoke
+  only the Rev 2 draft, to ^0.4.0.
+
+  For consumers:
+  - A peer on a TSP draft (Rev 2 or Rev 3) can no longer exchange messages with
+    this package. Its message is refused from the version marker, before sender
+    resolution, as a TspEnvelopeError with the new failure kind
+    unsupportedTspVersion. TSP has no version negotiation.
+  - PackKeys and UnpackKeys (re-exported from vti-tsp-js) no longer take
+    senderEncryptionKey: HPKE-Base does not use the sender's X25519 key.
+    SenderPublicKeys.encryptionKey stays; it is what a reply is sealed to.
+  - New export TSP_VERSION ("1.0").
+
+  Tests open a TSP 1.0 message packed by the Rust affinidi-tsp 0.5.0 and refuse
+  a Rev 2 message packed by vti-tsp-js 0.2.0; test/fixtures.ts records how each
+  was produced.
+
+
+
+### Build & CI
+
+- **go,go-specs,go-proof,go-didcomm,go-capabilityclient**: Require Go 1.24 (#1374)
+
+Raise the `go` directive from 1.22 to 1.24 in the core, specs, proof,
+  didcomm and capabilityclient modules and in the two Go examples
+  (consumer-app-go, getting-started-go). tsp stays at 1.27, the floor it
+  inherits from affinidi-tsp-go. The go.yml matrices that prove the floor
+  move from ["1.22", "stable"] to ["1.24", "stable"], and the comments, the
+  dependabot note, go.md and the go.mod the generator and smoke tests write
+  for their throwaway modules say 1.24.
+
+  1.24 is the first release whose encoding/json honours `omitzero`, which an
+  optional member that admits null needs in order to be a comparable struct
+  that is still left out when absent.
+
+  A consumer whose toolchain is older than 1.24 and that runs with
+  GOTOOLCHAIN=local (a distribution's Go, a pinned CI image) can no longer
+  build these modules; with the default GOTOOLCHAIN=auto the go command
+  fetches 1.24 itself. Go supports only its two newest releases, and 1.22
+  and 1.23 are long out of support.
+
+
+
+### Fixed
+
+- **go,go-specs**: Write a required nullable member's null instead of dropping its key (#1378)
+
+* test(go): show a required nullable member losing its null on marshal
+
+  A required member whose schema admits null is generated with omitempty, so
+  a nil pointer drops the key and the document fails its own schema's
+  required. vta/contexts/update-did 1.2's did is the case: a null did means
+  "no DID of its own", and Go writes the member out entirely.
+
+  specs/smoke drives the prebuilt package through a marshal and a round trip,
+  and trust-tasks-gen's test checks the tags the per-module generator emits.
+
+- **go-tsp,dart-tsp**: Speak TSP 1.0 on affinidi-tsp-go v0.2.0 and affinidi_tsp 0.2 (#1388)
+
+* fix(go-tsp,dart-tsp): speak TSP 1.0 on affinidi-tsp-go v0.2.0 and affinidi_tsp 0.2
+
+  The Go and Dart TSP bindings move from TSP Rev 3 (YTSP-AAC) to TSP 1.0
+  (YTSP-BAA), the version the Rust binding, the TypeScript binding (#1387), the
+  VTA and Keyring speak. TSP has no version negotiation, so a Rev 3 peer and a
+  1.0 peer cannot exchange messages in either direction.
+
+
+
+### Specifications
+
+- **auth/oob**: DeviceEnrol: a client asks for scoped, long-lived access to a person's VTA, approved from their wallet (#1386)
+
+* spec(auth/oob): copy the versions deviceEnrol changes, unchanged
+
+  _shared 0.1 to 0.2, request 0.2 to 0.3, claim 0.2 to 0.3, identify 0.1
+  to 0.2, prove 0.3 to 0.4, grant 0.3 to 0.4, respond 0.3 to 0.4 and
+  redeem 0.2 to 0.3, copied byte for byte so the next commit shows only
+  what the new versions change. The copies still carry their old version
+  numbers and $ids; this commit does not build on its own.
+
+- **vtc/directory/query**: 0.2 answers the member's directory entry (#1383)
+
+* spec(vtc/directory/query): 0.2 answers the member's directory entry
+
+  A caller that meets a member by their DID (the author of a record in a data
+  room, the signer of a document) can read their projection with
+  vtc/directory/query, but every other directory read is addressed by entry:
+  the member's picture (images/get), their entry with shared groups
+  (entries/show), and the card a member surface opens. Without the entry
+  identifier such a caller can name the member but not show their picture or
+  open their card.
+
+  0.2 = 0.1 + a required `entryId` (directory-card `EntryId`) on every answer,
+  never on a notFound or in a refusal's details. The notFound rule is now
+  stated normatively: an answer is given only where the projection shows the
+  caller the member's DID, to the member themselves, or to an administrator,
+  so the identifier links the named DID only to an entry that caller could
+  already open; Security & Privacy says so. Targets framework 0.6.0.
+
+  All four libraries regenerated.
+
 ## 0.13.10 — 2026-11-25
 
 

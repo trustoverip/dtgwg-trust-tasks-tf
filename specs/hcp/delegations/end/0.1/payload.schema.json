@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/delegations/end/0.1",
+  "title": "HCP — Relinquish or End Delegation — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Relinquish or end delegation operation (Delegated Authorization Profile, HCP 17.6, 17.5, 17.10; `DELETE /v2/delegations/{delegationId}` in HCP 9.2, 9.4.13): a Management Client, acting for the delegate, relinquishes a delegation, or, acting for the Context Subject or an appointing delegate, ends one. The reason is fixed by who the caller is, never sent. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.13. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["delegationId"],
+  "properties": {
+    "delegationId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "HCP `delegationId` (the `{delegationId}` path parameter of HCP 9.2, 9.4.13; HCP 17.2): the delegation to relinquish or end."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged: a delegate's, or the Context Subject's for an appointed delegation (HCP 9.2). HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Relinquish or End Delegation — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The delegation has ended, or had already ended. Carries HCP's `204 No Content`, which has no body, so the payload is the empty object. Failures use trust-task-error, not this shape.",
+      "properties": {}
+    }
+  }
+}

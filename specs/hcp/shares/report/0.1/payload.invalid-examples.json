@@ -1,0 +1,107 @@
+[
+  {
+    "note": "Empty `refs` — a report names each entry the client drew on (HCP 5.2.8).",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example",
+        "name": "Example Outfitters"
+      },
+      "refs": [],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "sharedAt": "2026-11-25T13:10:00Z",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A recipient without a `name` — the person must be able to recognize who was told (HCP 5.2.8).",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "sharedAt": "2026-11-25T13:10:00Z",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A recipient without a `domain` — the provider checks the domain against the grant (HCP 5.2.8, 6.1.5).",
+    "payload": {
+      "recipient": {
+        "name": "Example Outfitters"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "sharedAt": "2026-11-25T13:10:00Z",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `sharedAt` — a report says when the client shared (HCP 5.2.8).",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example",
+        "name": "Example Outfitters"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `purpose` — a share names the purpose code it was made for (HCP 5.2.8).",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example",
+        "name": "Example Outfitters"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "sharedAt": "2026-11-25T13:10:00Z",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "`sharedAt` as Unix seconds — instants are RFC 3339 strings.",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example",
+        "name": "Example Outfitters"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "sharedAt": 1795612200,
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the report is made under the grant the client shared under (HCP 9.4.16).",
+    "payload": {
+      "recipient": {
+        "domain": "outfitters.example",
+        "name": "Example Outfitters"
+      },
+      "refs": [
+        "hcp-ref-a91c4f"
+      ],
+      "purpose": "https://hcp.example/purposes/reservation",
+      "sharedAt": "2026-11-25T13:10:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A `permitted` member in the response — a share the grant did not allow is answered with permissionDenied, not a flag (HCP 5.2.8).",
+    "payload": {
+      "permitted": true
+    }
+  }
+]

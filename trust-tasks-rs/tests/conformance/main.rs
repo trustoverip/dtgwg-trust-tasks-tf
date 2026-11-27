@@ -73,32 +73,39 @@ mod auth {
         mod claim {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod grant {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod identify {
             mod v0_1;
+            mod v0_2;
         }
         mod prove {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod redeem {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod request {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod respond {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
     }
     mod passkey {
@@ -844,6 +851,109 @@ mod governance {
             mod v0_1;
         }
         mod list {
+            mod v0_1;
+        }
+    }
+}
+#[cfg(feature = "hcp")]
+mod hcp {
+    mod audit {
+        mod read {
+            mod v0_1;
+        }
+    }
+    mod delegations {
+        mod end {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+    }
+    mod directives {
+        mod list {
+            mod v0_1;
+        }
+        mod remove {
+            mod v0_1;
+        }
+        mod set {
+            mod v0_1;
+        }
+    }
+    mod disclosures {
+        mod summary {
+            mod v0_1;
+        }
+    }
+    mod entries {
+        mod confirm {
+            mod v0_1;
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod get {
+            mod v0_1;
+        }
+        mod hard_delete {
+            mod v0_1;
+        }
+        mod query {
+            mod v0_1;
+        }
+        mod restrict_purposes {
+            mod v0_1;
+        }
+        mod revise {
+            mod v0_1;
+        }
+        mod set_categories {
+            mod v0_1;
+        }
+        mod withdraw {
+            mod v0_1;
+        }
+    }
+    mod export {
+        mod v0_1;
+    }
+    mod grants {
+        mod list {
+            mod v0_1;
+        }
+        mod read_own {
+            mod v0_1;
+        }
+        mod relinquish {
+            mod v0_1;
+        }
+        mod request {
+            mod v0_1;
+        }
+        mod revoke {
+            mod v0_1;
+        }
+        mod revoked {
+            mod v0_1;
+        }
+    }
+    mod import {
+        mod v0_1;
+    }
+    mod rules {
+        mod list {
+            mod v0_1;
+        }
+        mod remove {
+            mod v0_1;
+        }
+        mod set {
+            mod v0_1;
+        }
+    }
+    mod shares {
+        mod report {
             mod v0_1;
         }
     }

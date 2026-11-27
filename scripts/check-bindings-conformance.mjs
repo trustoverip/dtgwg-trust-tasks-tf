@@ -1549,6 +1549,121 @@ for (const [uri, mod] of dartByUri) {
   if (agreed.length) console.log(`  runtime defaults agree across the four libraries: ${agreed.join(", ")}`);
 }
 
+/* ── The TSP binding the four TSP libraries report ──────────────────────── */
+
+// Each TSP library hand-writes the binding URI it reports, the envelope `type`
+// it seals and the TSP version it speaks. Nothing generated them and nothing
+// compared them: the libraries moved to TSP 1.0 and kept reporting
+// `binding/tsp/0.1`, a binding that cites the Rev 2 draft. The URI is never on
+// the wire, so no interop test sees it either. The four must agree, name a
+// binding under bindings/tsp/, and seal that binding's front-matter
+// `envelopeType`; trailing the newest binding is a note, as for the error URI.
+// Each constant is read with its own per-language pattern.
+{
+  const TSP_BINDINGS = path.join(ROOT, "bindings", "tsp");
+  const versions = fs
+    .readdirSync(TSP_BINDINGS, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^\d+\.\d+$/.test(d.name))
+    .map((d) => d.name)
+    .sort((a, b) => {
+      const [am, an] = a.split(".").map(Number);
+      const [bm, bn] = b.split(".").map(Number);
+      return am - bm || an - bn;
+    });
+  const newest = versions[versions.length - 1];
+  const WHAT = { uri: "binding URI", envelope: "envelope type", tsp: "TSP version" };
+  const ALL = "trust-tasks-tsp / trust-tasks-ts-tsp / trust-tasks-go/tsp / trust-tasks-dart-tsp";
+  const libs = [
+    {
+      name: "trust-tasks-tsp",
+      files: ["trust-tasks-tsp/src/handler.rs", "trust-tasks-tsp/src/envelope.rs", "trust-tasks-tsp/src/pack.rs"],
+      uri: /pub const BINDING_URI: &str = "([^"]+)";/,
+      envelope: /pub const ENVELOPE_TYPE: &str = "([^"]+)";/,
+      tsp: /pub const TSP_VERSION: &str = "([^"]+)";/,
+    },
+    {
+      name: "@openvtc/trust-tasks-tsp",
+      files: ["trust-tasks-ts-tsp/src/envelope.ts"],
+      uri: /export const BINDING_URI = "([^"]+)";/,
+      envelope: /export const ENVELOPE_TYPE = "([^"]+)";/,
+      tsp: /export const TSP_VERSION = "([^"]+)";/,
+    },
+    {
+      name: "trust-tasks-go/tsp",
+      files: ["trust-tasks-go/tsp/envelope.go"],
+      uri: /^const BindingURI = "([^"]+)"$/m,
+      envelope: /^const EnvelopeType = "([^"]+)"$/m,
+      tsp: /^const TSPVersion = "([^"]+)"$/m,
+    },
+    {
+      name: "trust_tasks_tsp",
+      files: ["trust-tasks-dart-tsp/lib/src/envelope.dart"],
+      uri: /const String _bindingUri = '([^']+)';/,
+      envelope: /const String envelopeType = '([^']+)';/,
+      tsp: /const String tspVersion = '([^']+)';/,
+    },
+  ];
+  const read = libs.map((lib) => {
+    const src = lib.files.map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
+    const got = {};
+    for (const key of Object.keys(WHAT)) {
+      const m = lib[key].exec(src);
+      if (m) got[key] = m[1];
+      else
+        fail(
+          lib.files.join(" / "),
+          `no readable ${WHAT[key]} constant — the TSP-binding comparison reads it; if it moved or was renamed, ` +
+            `update scripts/check-bindings-conformance.mjs too`,
+        );
+    }
+    return [lib, got];
+  });
+  for (const key of Object.keys(WHAT)) {
+    const values = read.filter(([, got]) => got[key] !== undefined);
+    if (new Set(values.map(([, got]) => got[key])).size > 1) {
+      fail(
+        ALL,
+        `the TSP libraries disagree on the ${WHAT[key]}: ` +
+          values.map(([lib, got]) => `${lib.name} ${got[key]}`).join("; ") +
+          `. Move all four together.`,
+      );
+    }
+  }
+  const uris = new Set(read.map(([, got]) => got.uri).filter(Boolean));
+  if (uris.size === 1) {
+    const uri = [...uris][0];
+    const version = /^https:\/\/trusttasks\.org\/binding\/tsp\/(\d+\.\d+)$/.exec(uri)?.[1];
+    const specPath = version && path.join(TSP_BINDINGS, version, "spec.md");
+    if (!specPath || !fs.existsSync(specPath)) {
+      fail(ALL, `every TSP library reports ${uri}, which is not a binding under bindings/tsp/`);
+    } else {
+      const raw = fs.readFileSync(specPath, "utf8");
+      const end = raw.indexOf("\n---", 3);
+      const meta = (raw.startsWith("---") && end > 0 ? YAML.parse(raw.slice(3, end)) : null) || {};
+      if (meta.bindingURI !== uri) {
+        fail(path.relative(ROOT, specPath), `front matter bindingURI ${meta.bindingURI} is not ${uri}, which the TSP libraries report for it`);
+      }
+      for (const [lib, got] of read) {
+        if (got.envelope !== undefined && got.envelope !== meta.envelopeType) {
+          fail(
+            lib.files.join(" / "),
+            `${lib.name} seals envelope type ${got.envelope}, but binding tsp/${version}, which it reports, declares ${meta.envelopeType}`,
+          );
+        }
+      }
+      if (version !== newest) {
+        console.log(
+          `  note: the TSP libraries report binding tsp/${version}; bindings/tsp/${newest} is published. ` +
+            `Adopt it in all four together, or leave all four.`,
+        );
+      } else {
+        const tsp = [...new Set(read.map(([, got]) => got.tsp).filter(Boolean))].join(" / ");
+        console.log(`  TSP libraries agree: binding tsp/${version}, TSP ${tsp}`);
+      }
+    }
+  }
+}
+
 /* ── The Dart package's two version declarations ────────────────────────── */
 
 // `version:` in pubspec.yaml is what pub.dev publishes under; `packageVersion`

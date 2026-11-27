@@ -35,8 +35,8 @@ type Response struct {
 	Granters []DepartedGranter `json:"granters"`
 
 	// Continuation token for the next page of granters, or `null` when this is the last.
-	NextCursor *string `json:"nextCursor,omitempty"`
-	Ext        *Ext    `json:"ext,omitempty"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

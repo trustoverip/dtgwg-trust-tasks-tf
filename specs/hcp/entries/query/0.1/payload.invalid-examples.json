@@ -1,0 +1,1367 @@
+[
+  {
+    "note": "Missing `purpose` — HCP 5.2.1 makes the purpose code REQUIRED on every query; a purposeless query cannot be checked against the grant.",
+    "payload": {
+      "query": "dietary preferences",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the token is the only evidence of the grant (option A carriage); a query without one cannot be authorized.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation"
+    }
+  },
+  {
+    "note": "`maxEntries: 0` — HCP's maxEntries is an integer of at least 1.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "maxEntries": 0
+    }
+  },
+  {
+    "note": "Relative `purpose` — a purpose code is an absolute URI.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Empty `query` — the query text has minLength 1.",
+    "payload": {
+      "query": "",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "More than 256 `categories` — the framework bound on the request array.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "categories": [
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences"
+      ]
+    }
+  },
+  {
+    "note": "Unknown top-level request member — additionalProperties: false.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "frobnicate": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "More than 20 `entries` — HCP 7.2 caps a query result at 20 entries, whatever `maxEntries` says.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "HCP's bare `timestamp` instead of the renamed `respondedAt` — the rename is part of the carriage mapping, so `timestamp` is an unknown member and `respondedAt` is missing.",
+    "payload": {
+      "entries": [],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "timestamp": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure without `useUntil` — HCP 7.6 requires a use limit on every disclosed copy, and the object is not an Entry either.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          }
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Non-urn `retrievalId` — HCP identifiers are urn:uuid.",
+    "payload": {
+      "entries": [],
+      "retrievalId": "retrieval-1",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure carrying `record` — HCP 7.4 withholds the whole of the entry's record (status, provenance, conversion, metadata) from a Context Client.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z",
+          "record": {
+            "status": "active"
+          }
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure without `standing` — HCP 7.4 makes `standing` (assurance and confirmation) a required member of every disclosure.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure without `version` — HCP 7.4 discloses the version as stored.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A directive without `text` — HCP 6.4 requires the directive in the person's words; a client that does not recognize `action` reads it from `text`.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [
+        {
+          "directiveId": "urn:uuid:5b8c2e17-4a9d-4f3b-8e6a-1c0d9f7e2b44",
+          "action": "share",
+          "effect": "deny",
+          "setBy": "context-subject",
+          "createdAt": "2026-10-02T08:30:00Z"
+        }
+      ],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A directive without `directiveId` — HCP 6.4 requires a stable identifier, which the audit log records for every result that carried it (HCP 8.2).",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [
+        {
+          "action": "share",
+          "effect": "deny",
+          "text": "Never pass my health information to another agent.",
+          "setBy": "context-subject",
+          "createdAt": "2026-10-02T08:30:00Z"
+        }
+      ],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`minimization` without `method` — HCP 7.5 requires the report to name the relevance method.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {},
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An Entry whose `type` is a string — HCP 4.2 makes `type` an array containing \"ContextEntry\".",
+    "payload": {
+      "entries": [
+        {
+          "@context": [
+            "https://hcp.example/contexts/v2"
+          ],
+          "id": "urn:uuid:0b1c2d3e-4f50-4617-8293-a4b5c6d7e8f9",
+          "type": "ContextEntry",
+          "schema": "https://hcp.example/spec/entry/2.0",
+          "subject": {
+            "id": "did:web:person.example"
+          },
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian."
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "record": {
+            "status": "active",
+            "version": 1,
+            "provenance": {
+              "assertedBy": {
+                "id": "did:web:person.example",
+                "assurance": "authenticated"
+              },
+              "assertedAt": "2026-10-01T09:00:00Z",
+              "source": "person-input",
+              "submittedByClient": {
+                "id": "client-1",
+                "name": "Booking Agent",
+                "operator": {
+                  "id": "booking.example",
+                  "name": "Booking Ltd"
+                }
+              },
+              "authorizedUnder": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+              "recordedByProvider": "https://provider.example",
+              "recordedAt": "2026-10-01T09:00:01Z"
+            }
+          }
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Content without `profile` — HCP 4.2 requires every entry's content to name its content profile.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Disclosure `provenance` carrying `submittedByClient` — HCP 7.4.1 gives a Context Client only `submittedBy` names, never the identifiers in `submittedByClient`.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Vegetarian.",
+            "language": "en"
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "general_preferences"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T10:00:00Z",
+          "provenance": {
+            "submittedBy": {
+              "name": "Booking Agent",
+              "operator": "Booking Ltd"
+            },
+            "source": "person-input",
+            "assertedAt": "2026-10-01T09:00:00Z",
+            "recordedAt": "2026-10-01T09:00:01Z",
+            "submittedByClient": {
+              "id": "client-1",
+              "name": "Booking Agent",
+              "operator": {
+                "id": "booking.example",
+                "name": "Booking Ltd"
+              }
+            }
+          }
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "note": "`query` longer than 4096 characters (here 4097) — the maxLength is a framework bound, not an HCP requirement.",
+    "payload": {
+      "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "purpose": "https://purposes.example/meal-planning",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "`purposeDescription` longer than 1024 characters (here 1025) — the maxLength is a framework bound, not an HCP requirement.",
+    "payload": {
+      "query": "Dietary needs for a dinner booking.",
+      "purpose": "https://purposes.example/meal-planning",
+      "accessToken": "hcp_at_x",
+      "purposeDescription": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `retrievalId` — the result names the retrieval the `context.read` audit event records (HCP 5.2.1, 8.2).",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-5e02bd",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Severe peanut allergy."
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "health_context"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T21:00:01Z"
+        }
+      ],
+      "minimization": {
+        "method": "lexical"
+      },
+      "categoriesSearched": [
+        "health_context"
+      ],
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `categoriesSearched` — the result says which categories were searched (HCP 5.2.1).",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-5e02bd",
+          "version": 1,
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Severe peanut allergy."
+          },
+          "assertion": {
+            "declarationType": "person-declared"
+          },
+          "classification": {
+            "categories": [
+              "health_context"
+            ]
+          },
+          "standing": {
+            "assurance": "authenticated",
+            "confirmed": true
+          },
+          "useUntil": "2026-11-25T21:00:01Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {
+        "method": "lexical"
+      },
+      "directives": [],
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
+  },
+  {
+    "note": "An empty `categories` — omit the member to query every category; an empty list has no meaning in HCP 5.2.1, and a library that drops it would widen the query (question 42).",
+    "payload": {"query": "dietary preferences", "purpose": "https://hcp.example/purposes/reservation", "accessToken": "hcp_at_x", "categories": []}
+  },
+  {
+    "variant": "response",
+    "note": "A result without `directives` — the carriage requires it: a list, empty when none applies, for a Context Client, and null for any other requester (HCP 6.4; question 42).",
+    "payload": {"entries": [], "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99", "minimization": {"method": "lexical"}, "categoriesSearched": ["general_preferences"], "respondedAt": "2026-11-24T10:00:01Z"}
+  }
+]
