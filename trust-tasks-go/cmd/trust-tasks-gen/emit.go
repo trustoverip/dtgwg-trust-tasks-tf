@@ -18,6 +18,9 @@ package main
 //     json.RawMessage is the one exception: an explicit null survives in it.
 //   - omitempty exactly on optional members. A required nullable member is a
 //     pointer without it, so a nil writes null instead of dropping the key.
+//   - An optional nullable member is a trusttasks.Nullable[T] (absent, null or
+//     a value), a comparable struct tagged omitzero (Go 1.24) in place of
+//     omitempty, which never omits a struct.
 //   - A closed set of strings is a named string type with one constant per
 //     value; any other union is json.RawMessage, because Go has no sum type.
 //   - The types enforce no constraint; PayloadSchemaJSON carries them.
@@ -474,17 +477,28 @@ func (em *emitter) declareStruct(node, props *object, hint string, defNames map[
 		goType := em.goTypeFor(member, name+fieldName, defNames)
 
 		// Optional → pointer, slices and maps included; json.RawMessage
-		// already distinguishes absent from null.
-		if (!isRequired || nullable) && goType != "json.RawMessage" {
+		// already distinguishes absent from null. An optional member that
+		// admits null has three states (absent, null, a value), which a
+		// pointer cannot keep apart, so it is a trusttasks.Nullable instead:
+		// acl/update 0.3 reads an absent label as "unchanged" and a null one
+		// as "clear it". A required nullable member is never absent, so it
+		// stays a pointer and nil is null.
+		omit := ",omitempty"
+		switch {
+		case goType == "json.RawMessage":
+		case !isRequired && nullable:
+			goType = "trusttasks.Nullable[" + goType + "]"
+			omit = ",omitzero" // omitempty never omits a struct
+		case !isRequired || nullable:
 			goType = "*" + goType
 		}
-		// omitempty exactly where the member is optional. A required nullable
-		// member is a pointer so that nil can stand for null, and it must
-		// still be written: with omitempty a nil drops the key, and the
-		// document fails its own schema's `required`.
+		// omitempty (omitzero on a Nullable) exactly where the member is
+		// optional. A required nullable member is a pointer so that nil can
+		// stand for null, and it must still be written: with omitempty a nil
+		// drops the key, and the document fails its own schema's `required`.
 		tag := wireName
 		if !isRequired {
-			tag += ",omitempty"
+			tag += omit
 		}
 		var doc any
 		if mo, ok := memberNode.(*object); ok {

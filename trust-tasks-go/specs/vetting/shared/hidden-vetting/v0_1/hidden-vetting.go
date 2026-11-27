@@ -6,6 +6,8 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package vettingsharedhiddenvettingv0_1
 
+import "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+
 // TickLength The length of one tick of the drip, as an ISO 8601 duration in days and/or
 // hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths
 // after the label's start (`vtc/vetting/vetters/pcs-tokens`).
@@ -31,7 +33,7 @@ type StoredEvent struct {
 
 	// Who approved the event, or null when nobody has. Recorded in storage only — dropped
 	// from the published shape (see published.events).
-	ApprovedBy *string `json:"approvedBy,omitempty"`
+	ApprovedBy trusttasks.Nullable[string] `json:"approvedBy,omitzero"`
 }
 
 // PublishedEvent The published shape drops approvedBy and graceDays: who approved is the

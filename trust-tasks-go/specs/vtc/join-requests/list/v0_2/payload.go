@@ -17,9 +17,9 @@ type Response struct {
 
 	// Continuation token for the next page; pass it back as `cursor`. Absent on the last page
 	// — never `null`.
-	NextCursor    *string `json:"nextCursor,omitempty"`
-	TotalEstimate *int64  `json:"totalEstimate,omitempty"`
-	Ext           *Ext    `json:"ext,omitempty"`
+	NextCursor    *string                    `json:"nextCursor,omitempty"`
+	TotalEstimate trusttasks.Nullable[int64] `json:"totalEstimate,omitzero"`
+	Ext           *Ext                       `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
@@ -48,7 +48,7 @@ type JoinRequestDecision struct {
 	Code string `json:"code"`
 
 	// Elaboration in prose, when the decider gave one.
-	Reason *string `json:"reason,omitempty"`
+	Reason trusttasks.Nullable[string] `json:"reason,omitzero"`
 
 	// When the decision was taken — not when the poll answering it was produced. On an admin
 	// refusal the two diverge by however long the applicant takes to ask.
@@ -83,9 +83,9 @@ type JoinRequest struct {
 	// have to re-extract it, and opaque here: its members are whatever the community's policy
 	// asks of an applicant. `null` on a request recorded before a community began extracting
 	// one.
-	VPClaims    *map[string]json.RawMessage `json:"vpClaims,omitempty"`
-	SubmittedAt string                      `json:"submittedAt"`
-	Status      JoinRequestStatus           `json:"status"`
+	VPClaims    trusttasks.Nullable[map[string]json.RawMessage] `json:"vpClaims,omitzero"`
+	SubmittedAt string                                          `json:"submittedAt"`
+	Status      JoinRequestStatus                               `json:"status"`
 
 	// The community policy verdict recorded for this request (opaque here); absent while
 	// pending.
@@ -96,7 +96,7 @@ type JoinRequest struct {
 	// records the community's internal verdict: both rejection paths — a policy auto-deny at
 	// submit and an admin's later refusal — write this one, so a client reads a single shape
 	// instead of reconciling two.
-	Decision *JoinRequestDecision `json:"decision,omitempty"`
+	Decision trusttasks.Nullable[JoinRequestDecision] `json:"decision,omitzero"`
 
 	// Whether the applicant consented to trust-registry publication.
 	RegistryConsent *bool `json:"registryConsent,omitempty"`

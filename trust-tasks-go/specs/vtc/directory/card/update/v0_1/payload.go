@@ -299,7 +299,7 @@ type Payload struct {
 
 	// Replaces the groups that count as the `groups` audience; `null` returns to every group
 	// the member is in.
-	GroupAudience *[]GroupID `json:"groupAudience,omitempty"`
+	GroupAudience trusttasks.Nullable[[]GroupID] `json:"groupAudience,omitzero"`
 
 	// Optional: apply only if the card is at this revision, else refuse with `superseded`.
 	ExpectedRevision *int64 `json:"expectedRevision,omitempty"`

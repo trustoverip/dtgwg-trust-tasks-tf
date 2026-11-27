@@ -42,8 +42,8 @@ type MemberResponse struct {
 	Role string `json:"role"`
 
 	// Optional human-readable label.
-	Label    *string `json:"label,omitempty"`
-	JoinedAt string  `json:"joinedAt"`
+	Label    trusttasks.Nullable[string] `json:"label,omitzero"`
+	JoinedAt string                      `json:"joinedAt"`
 
 	// Whether the member consented to being published in the community directory.
 	PublishConsent bool `json:"publishConsent"`
@@ -52,14 +52,14 @@ type MemberResponse struct {
 	DeparturePreference MemberResponseDeparturePreference `json:"departurePreference"`
 
 	// The member's slot on the community's membership status list, when allocated.
-	StatusListIndex *int64 `json:"statusListIndex,omitempty"`
+	StatusListIndex trusttasks.Nullable[int64] `json:"statusListIndex,omitzero"`
 
 	// Id of the member's current Verifiable Membership Credential, if issued.
-	CurrentVmcID *string `json:"currentVmcId,omitempty"`
+	CurrentVmcID trusttasks.Nullable[string] `json:"currentVmcId,omitzero"`
 
 	// Id of the member's current role credential — a community-issued Verifiable Authority
 	// Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`.
-	CurrentRoleVacID *string `json:"currentRoleVacId,omitempty"`
+	CurrentRoleVacID trusttasks.Nullable[string] `json:"currentRoleVacId,omitzero"`
 
 	// Whether the community has asserted that this member is a distinct real person.
 	// Read-only here: it is set and cleared by the personhood verbs, and cleared by a
@@ -71,7 +71,7 @@ type MemberResponse struct {
 	// When personhood was most recently asserted. Absent where it never has been.
 	// Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves
 	// need carry only the flag.
-	PersonhoodAssertedAt *string `json:"personhoodAssertedAt,omitempty"`
+	PersonhoodAssertedAt trusttasks.Nullable[string] `json:"personhoodAssertedAt,omitzero"`
 
 	// Whether this member joined by presenting an invitation credential rather than by an
 	// admin's decision on an open request. The two routes to membership carry different
@@ -82,10 +82,10 @@ type MemberResponse struct {
 	// pair — once the member has sent it. Absent until then, which is the useful signal: it
 	// distinguishes a membership the community has asserted from one the member has
 	// acknowledged. The credential body is not echoed here.
-	MemberVmcID *string `json:"memberVmcId,omitempty"`
+	MemberVmcID trusttasks.Nullable[string] `json:"memberVmcId,omitzero"`
 
 	// When that reciprocal credential was received. Paired with `memberVmcId`.
-	MemberVmcReceivedAt *string `json:"memberVmcReceivedAt,omitempty"`
+	MemberVmcReceivedAt trusttasks.Nullable[string] `json:"memberVmcReceivedAt,omitzero"`
 
 	// Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer
 	// caps its size (16 KiB in the reference implementation).
@@ -115,7 +115,7 @@ type Payload struct {
 	// Operator-facing display label for this member. Editable, unlike the DID it labels —
 	// which is the point: an operator needs a name they can read on a roster of identifiers
 	// they cannot. `null` clears it; omit to leave it unchanged.
-	Label *string `json:"label,omitempty"`
+	Label trusttasks.Nullable[string] `json:"label,omitzero"`
 
 	// New directory-publish consent. May only withdraw consent (`true` → `false`) or restate
 	// the current value; `true` for a member whose record does not already carry it is

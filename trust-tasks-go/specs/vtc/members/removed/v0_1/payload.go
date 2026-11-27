@@ -27,7 +27,7 @@ type RemovedMember struct {
 	RemovedAt string `json:"removedAt"`
 
 	// Slot in the community's published status list holding this member's revocation bit.
-	StatusListIndex *int64 `json:"statusListIndex,omitempty"`
+	StatusListIndex trusttasks.Nullable[int64] `json:"statusListIndex,omitzero"`
 
 	// Tombstone state, e.g. how the departure was dispositioned.
 	Status string `json:"status"`

@@ -23,7 +23,7 @@ type Response struct {
 	// deactivated by this call. `null` when no policy was active — the first activation for
 	// the slot. Recorded so an operator can roll back to the prior policy and so the audit
 	// trail links the displacement.
-	PreviousPolicyID *string `json:"previousPolicyId,omitempty"`
+	PreviousPolicyID trusttasks.Nullable[string] `json:"previousPolicyId,omitzero"`
 
 	// Echoed from the request when it was supplied.
 	ContextID *string `json:"contextId,omitempty"`

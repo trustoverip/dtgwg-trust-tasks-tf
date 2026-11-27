@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package authsharedwebauthnv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // CredentialCreationOptionsRp CredentialCreationOptionsRp is a generated payload type.
 type CredentialCreationOptionsRp struct {
@@ -157,10 +160,10 @@ type AttestationResponse struct {
 
 // AssertionResponseResponse AssertionResponseResponse is a generated payload type.
 type AssertionResponseResponse struct {
-	ClientDataJSON    string  `json:"clientDataJSON"`
-	AuthenticatorData string  `json:"authenticatorData"`
-	Signature         string  `json:"signature"`
-	UserHandle        *string `json:"userHandle,omitempty"`
+	ClientDataJSON    string                      `json:"clientDataJSON"`
+	AuthenticatorData string                      `json:"authenticatorData"`
+	Signature         string                      `json:"signature"`
+	UserHandle        trusttasks.Nullable[string] `json:"userHandle,omitzero"`
 }
 
 // AssertionResponse The credential the client returns from `navigator.credentials.get`.

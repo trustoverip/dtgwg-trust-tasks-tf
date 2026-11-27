@@ -22,8 +22,8 @@ type Response struct {
 	// records one, else the server's system default. Producers SHOULD omit it when there is
 	// neither; `null` is accepted as the same answer, and consumers MUST NOT read a
 	// difference between the two.
-	Default *string `json:"default,omitempty"`
-	Ext     *Ext    `json:"ext,omitempty"`
+	Default trusttasks.Nullable[string] `json:"default,omitzero"`
+	Ext     *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

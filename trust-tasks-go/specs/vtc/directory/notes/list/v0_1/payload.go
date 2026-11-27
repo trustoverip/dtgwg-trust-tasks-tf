@@ -18,9 +18,9 @@ import (
 // Deprecated: superseded by vtc/directory/notes/list/0.2
 type Response struct {
 	// Newest first. A redacted note appears without `text`, with `redactedBy`.
-	Items      []AdminNote `json:"items"`
-	NextCursor *string     `json:"nextCursor,omitempty"`
-	Ext        *Ext        `json:"ext,omitempty"`
+	Items      []AdminNote                 `json:"items"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
