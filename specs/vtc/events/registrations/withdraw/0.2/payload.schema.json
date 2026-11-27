@@ -12,6 +12,10 @@
     "eventId": {
       "$ref": "../../../_shared/0.2/event.schema.json#/$defs/EventId"
     },
+    "presentation": {
+      "$ref": "../../../_shared/0.2/event.schema.json#/$defs/MembershipPresentation",
+      "description": "Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it."
+    },
     "ext": {
       "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
     }

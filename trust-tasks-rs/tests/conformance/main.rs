@@ -2921,6 +2921,7 @@ mod vtc {
         }
         mod cancel {
             mod v0_1;
+            mod v0_2;
         }
         mod create {
             mod v0_1;
@@ -2958,6 +2959,9 @@ mod vtc {
             mod respond {
                 mod v0_1;
             }
+            mod revoke {
+                mod v0_1;
+            }
             mod send {
                 mod v0_1;
             }
@@ -2982,6 +2986,7 @@ mod vtc {
         }
         mod publish {
             mod v0_1;
+            mod v0_2;
         }
         mod registrations {
             mod decide {

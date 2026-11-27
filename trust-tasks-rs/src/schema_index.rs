@@ -6867,6 +6867,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/events/cancel/0.1#response" => <crate::specs::vtc::events::cancel::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/cancel/0.2" => <crate::specs::vtc::events::cancel::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/cancel/0.2#response" => <crate::specs::vtc::events::cancel::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/create/0.1" => <crate::specs::vtc::events::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -6933,6 +6939,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/events/invitations/respond/0.1#response" => <crate::specs::vtc::events::invitations::respond::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/invitations/revoke/0.1" => <crate::specs::vtc::events::invitations::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/invitations/revoke/0.1#response" => <crate::specs::vtc::events::invitations::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/invitations/send/0.1" => <crate::specs::vtc::events::invitations::send::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -6979,6 +6991,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/publish/0.1#response" => <crate::specs::vtc::events::publish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/publish/0.2" => <crate::specs::vtc::events::publish::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/publish/0.2#response" => <crate::specs::vtc::events::publish::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/registrations/decide/0.1" => <crate::specs::vtc::events::registrations::decide::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -15414,6 +15432,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/cancel/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::events::cancel::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/create/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::events::create::v0_1::Payload,
         >()),
@@ -15481,6 +15504,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/invitations/revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::events::invitations::revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/invitations/send/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::events::invitations::send::v0_1::Payload,
@@ -15520,6 +15550,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/publish/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::events::publish::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/publish/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::events::publish::v0_2::Payload,
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -23244,6 +23279,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/cancel/0.2" => {
+            Some(crate::specs::vtc::events::cancel::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/create/0.1" => {
             Some(crate::specs::vtc::events::create::v0_1::ERROR_CODES)
         }
@@ -23299,6 +23339,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/invitations/revoke/0.1" => {
+            Some(crate::specs::vtc::events::invitations::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/invitations/send/0.1" => {
             Some(crate::specs::vtc::events::invitations::send::v0_1::ERROR_CODES)
         }
@@ -23336,6 +23381,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/events/publish/0.1" => {
             Some(crate::specs::vtc::events::publish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/events/publish/0.2" => {
+            Some(crate::specs::vtc::events::publish::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]

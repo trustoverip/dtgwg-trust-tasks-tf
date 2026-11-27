@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`invitationId` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "An invitation is named by its identifier, never by the invitee's entry.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "invitationId": "dir_AdaLovelace0000000"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `withdrawRegistration`; revoking an invitation never ends a registration (VTI-EVT-103).",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "invitationId": "inv_W5k2N8xRb3Qz7TpL",
+      "withdrawRegistration": true
+    }
+  },
+  {
+    "note": "`invitation` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

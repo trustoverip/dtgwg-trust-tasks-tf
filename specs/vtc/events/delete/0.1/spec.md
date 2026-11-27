@@ -59,7 +59,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Delete** Trust Task removes a **draft** and its host appointments. Only a draft is ever deleted (VTI-EVT-093): it has been seen by its hosts alone and has no registrations. A published event is cancelled instead ([`vtc/events/cancel`](../../cancel/0.1/spec.md)), so that nobody who registered for it finds it gone without a word.
+The **VTC Events — Delete** Trust Task removes a **draft** and its host appointments. Only a draft is ever deleted (VTI-EVT-093): it has been seen by its hosts alone and has no registrations. A published event is cancelled instead ([`vtc/events/cancel`](../../cancel/0.2/spec.md)), so that nobody who registered for it finds it gone without a word.
 
 ## Status of this Document
 

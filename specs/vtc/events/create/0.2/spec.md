@@ -124,7 +124,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Create** Trust Task creates an event, or a meeting (`kind: meeting`, VTI-EVT-003), as a **draft** in a calendar (VTI-EVT-004, VTI-EVT-010). A draft is seen only by its hosts and takes no registrations; [`vtc/events/publish`](../../publish/0.1/spec.md) shows it to its audience. The signer becomes its first host (VTI-EVT-070).
+The **VTC Events — Create** Trust Task creates an event, or a meeting (`kind: meeting`, VTI-EVT-003), as a **draft** in a calendar (VTI-EVT-004, VTI-EVT-010). A draft is seen only by its hosts and takes no registrations; [`vtc/events/publish`](../../publish/0.2/spec.md) shows it to its audience. The signer becomes its first host (VTI-EVT-070).
 
 An event's time is a local `start` in an IANA `timeZone` with a `duration`, as JSCalendar states it (VTI-EVT-005). Its `audience` says who may see and register for it (VTI-EVT-020). Its `access` — where it happens and how to join — is released only to registrants who are going unless marked `public` (VTI-EVT-060, VTI-EVT-061); `placeSummary` is the coarse hint everyone in the audience sees (VTI-EVT-062). Its `roster` setting may change while it is a draft and is fixed once it is published (VTI-EVT-051).
 
