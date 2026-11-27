@@ -4255,6 +4255,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_json_canonicalizer",
+ "sha2",
  "tokio",
  "trust-tasks",
  "trust-tasks-build",

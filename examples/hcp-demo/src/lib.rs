@@ -21,7 +21,7 @@
 //! `trust-task-next-step`) ship with the runtime.
 
 use std::collections::btree_map::Entry;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -31,6 +31,7 @@ use affinidi_tsp::{MessageType, MetaEnvelope, PrivateVid, ResolvedVid};
 use chrono::{DateTime, SecondsFormat, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use trust_tasks::proof::affinidi::{SignOptions, Verifier};
 use trust_tasks::proof::ProofExt;
 use trust_tasks::specs::trust_task_discovery::v0_4 as discovery;
@@ -190,7 +191,10 @@ const ENTRIES: [(&str, &str, &str); 3] = [
 /// A grant in the provider's table.
 struct Grant {
     grant_id: String,
-    token: String,
+    /// The SHA-256 digests (hex) of every token issued under the grant. The
+    /// provider keeps no token itself (hcp/grants/request "The access
+    /// token"), so it can check a presented token but never send one again.
+    token_digests: BTreeSet<String>,
     token_expires_at: String,
     /// The client's VID.
     client: String,
@@ -420,6 +424,16 @@ impl World {
             .grants
             .iter()
             .map(|g| (g.token_expires_at.clone(), g.expires_at.clone()))
+            .collect()
+    }
+
+    /// Each issued grant's token digests, in issue order.
+    pub fn grant_token_digests(&self) -> Vec<BTreeSet<String>> {
+        let state = self.shared.state.lock().expect("state");
+        state
+            .grants
+            .iter()
+            .map(|g| g.token_digests.clone())
             .collect()
     }
 
@@ -794,30 +808,38 @@ impl Shared {
                             HoldState::Declined | HoldState::Expired => Answer::Deny,
                             // 6. Approved: issue the one grant.
                             HoldState::Approved => {
-                                let grant =
-                                    self.issue_grant(&mut state.tokens, &issuer, &hold.payload);
+                                let mut grant = self.issue_grant(&issuer, &hold.payload);
+                                let token = issue_token(&mut state.tokens, &mut grant);
                                 hold.state = HoldState::Granted {
                                     grant_id: grant.grant_id.clone(),
                                     responded_at: self.clock.now(),
                                 };
-                                let response = grant_response(&grant, &state.registered_clients);
+                                let response =
+                                    grant_response(&grant, &token, &state.registered_clients);
                                 state.grants.push(grant);
                                 Answer::Grant(response)
                             }
                             // 7. Within the hour after the response, the same
                             //    grant while it is active; never a second one.
+                            //    The provider kept no copy of the token it sent,
+                            //    so it issues a new one under the same grant;
+                            //    every token issued under the grant stays valid
+                            //    until the grant ends (HCP 6.2.2).
                             HoldState::Granted {
                                 grant_id,
                                 responded_at,
                             } => {
                                 let elapsed = (self.clock.now() - *responded_at).num_seconds();
-                                let grant = state.grants.iter().find(|g| &g.grant_id == grant_id);
+                                let grant =
+                                    state.grants.iter_mut().find(|g| &g.grant_id == grant_id);
                                 match grant {
                                     Some(grant)
                                         if grant.active && elapsed <= AFTER_APPROVAL_WINDOW =>
                                     {
+                                        let token = issue_token(&mut state.tokens, grant);
                                         Answer::Grant(grant_response(
                                             grant,
+                                            &token,
                                             &state.registered_clients,
                                         ))
                                     }
@@ -844,8 +866,7 @@ impl Shared {
 
     /// The grant the person approved (the toy approves everything asked, read
     /// only). Its `grantId` takes the next id, before the response's.
-    fn issue_grant(&self, tokens: &mut u32, client: &str, asked: &Value) -> Grant {
-        *tokens += 1;
+    fn issue_grant(&self, client: &str, asked: &Value) -> Grant {
         let empty = Vec::new();
         let details = asked["access"].as_array().unwrap_or(&empty);
         let purposes_of = |a: &Value| a["purposes"].as_array().cloned().unwrap_or_default();
@@ -882,7 +903,7 @@ impl Shared {
         let expires_at = self.clock.plus(expires_in);
         Grant {
             grant_id: self.ids.next(),
-            token: format!("hcp_at_demo_{tokens:04}"), // DEMO ONLY
+            token_digests: BTreeSet::new(),
             // No refresh in 0.1, so the token lasts as long as the grant
             // (hcp/grants/request "Response").
             token_expires_at: expires_at.clone(),
@@ -930,7 +951,7 @@ impl Shared {
             state
                 .grants
                 .iter()
-                .find(|g| g.token == **p.access_token)
+                .find(|g| g.token_digests.contains(&token_digest(&p.access_token)))
                 .map(|g| {
                     (
                         g.client.clone(),
@@ -1067,12 +1088,30 @@ impl Shared {
     }
 }
 
-/// The grant response: the token and HCP's grant object, as
+/// The SHA-256 digest of a token, in hex: what the provider keeps in place of
+/// the token.
+pub fn token_digest(token: &str) -> String {
+    Sha256::digest(token.as_bytes())
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+/// Mint a new token under `grant`, keep only its digest, and return the token
+/// to send.
+fn issue_token(tokens: &mut u32, grant: &mut Grant) -> String {
+    *tokens += 1;
+    let token = format!("hcp_at_demo_{tokens:04}"); // DEMO ONLY: a real token is random
+    grant.token_digests.insert(token_digest(&token));
+    token
+}
+
+/// The grant response: a newly issued token and HCP's grant object, as
 /// hcp/grants/read-own would return it, with the grant's status as it stands.
-fn grant_response(grant: &Grant, registered: &HashMap<String, Value>) -> Value {
+fn grant_response(grant: &Grant, token: &str, registered: &HashMap<String, Value>) -> Value {
     let registration = &registered[&grant.client];
     json!({
-        "accessToken": grant.token,
+        "accessToken": token,
         "tokenExpiresAt": grant.token_expires_at,
         "grant": {
             "grantId": grant.grant_id,

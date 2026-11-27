@@ -255,7 +255,7 @@ A later delivery attempt of a notice the client already processed is not an erro
 - **On receipt.** The client **MUST** stop using every copy of context disclosed under the grant, whatever its `useUntil`, and **MUST NOT** pass any of them on (HCP 6.2.2, 7.6). The one exception is a copy kept in a record under a legal obligation the client declared at registration, which it keeps only to meet that obligation (HCP 6.2.5). It also stops using the grant's token. HCP does not require deletion, and the provider cannot enforce it (HCP 6.2.2).
 - **A delegation that ends.** When a delegation ends, every grant authorized under it ends with status `expired`, not `revoked`, and "invalidation and notification follow 6.2.2–6.2.4, as for a revocation" (HCP 17.6). HCP names only the grant-revoked event. This specification announces such a grant with this notice, carrying `reason: "delegation-ended"` (the reason HCP's `grant.expired` audit event records, HCP 8.2) and `revokedAt` the instant the delegation ended, *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)). The delivery rules above apply to it unchanged. A grant that reaches its own `expiresAt` is not announced.
 
-Over TSP without a return path, the acknowledgement is delivered best-effort ([TSP binding 0.2 §6](../../../../../bindings/tsp/0.2/spec.md)), so the provider may see no acknowledgement for a notice the client accepted. It then retries, and abandons as HCP describes.
+Over TSP without a return path, the acknowledgement is delivered best-effort ([TSP binding 0.3 §6](../../../../../bindings/tsp/0.3/spec.md)), so the provider may see no acknowledgement for a notice the client accepted. It then retries, and abandons as HCP describes.
 
 ## Pending HCP confirmation
 

@@ -48,8 +48,10 @@ per key. Never reuse them.
 The provider also applies the rules the tests exercise: a token presented from another VID gets
 `permissionDenied`; only its one registered client may ask for a grant; a resubmission must carry
 the held payload (compared in JCS form, as received rather than through the generated type); and a
-resubmission after approval gets the same grant within the hour, never a second one, and
-`permissionDenied` after it. Each side checks a reply before it uses it: from the party asked, on
+resubmission after approval gets the same grant with a newly issued token within the hour, never
+a second grant, and `permissionDenied` after it. The provider keeps only a SHA-256 digest of each
+token it issues, never the token, and accepts every token issued under a grant until the grant
+ends. Each side checks a reply before it uses it: from the party asked, on
 the same thread, signed (unless the library built it), and valid against its schema
 (`trust-task-error` included, against the framework's own schema in `specs/`).
 

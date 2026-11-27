@@ -32,10 +32,12 @@ below. When the editors answer, update that section and the marked sentences.
   recorded under questions 16 (a 24-hour limit on notice delivery), 25 (why a decline is `permissionDenied`), 36
   (the trust anchor when a provider has no HCP discovery document) and 39 (an expired hold is denied, never
   reopened).
+- **Added 2026-11-27, assumption taken:** questions 58 (the relevance method without a discovery document) and 59 (a
+  revocation notice still being delivered).
 - **Still open, no assumption taken:** questions 44, 46, 48 and 57. Question 47 needs none yet, because we do not offer
   what it asks about.
 - **Decided, not carried:** questions 35 and 36 (no Trust Task defines an operation HCP does not).
-- **Appear in no spec:** 13 numbered questions, 35, 36, 43 to 52 and 57 (41 is unused). The others are cited in the
+- **Appear in no spec:** questions 35, 36, 43 to 52 and 57, 13 in all (41 is unused). The others are cited in the
   `## Pending HCP confirmation` section of each spec they affect, question 56 included (the governance specs and
   `hcp/entries/create`, where `accessToken` is now optional).
 
@@ -244,6 +246,18 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
    receiving entries whole and no `directives`. Nothing forbids a Management Client from querying.
    *Assumption taken:* a Management Client may query and receives whole `Entry` objects, with no `directives`.
    *Specs:* `hcp/entries/query` (Authorization).
+
+<!-- Added 2026-11-27; a separate list, so the number renders as written. -->
+
+58. **Where does a provider with no HCP discovery document declare its relevance method (7.3, 7.5, 19.3)?** 7.3 has
+    the provider declare, in its discovery document, the relevance method that orders a query's result, and 7.5
+    repeats it in the minimization report as `method`. A provider reached only over the carriage publishes no HCP
+    discovery document (question 36), so it has nowhere to make the declaration 7.3 asks for.
+    *Assumption taken:* for such a provider, the `minimization.method` of each query response is the declaration.
+    The provider uses one method for every query under a grant, so a client can rely on the first response it sees.
+    *Ask:* is the per-response `method` enough, or should the method be declared somewhere a client can read before
+    its first query (for example in the grant, or in a binding-level discovery document)?
+    *Specs:* `hcp/entries/query` (Response).
 
 ## `hcp/entries/get`, `create`, `revise`, `withdraw`
 
@@ -459,8 +473,9 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     proof authenticates the `issuer`. A document on a held or approved thread from another issuer is refused with
     `permissionDenied` (one fixed message) and never gets a next step or the token. Every next step and the response
     go to the held request's `issuer`. For 1 hour after the response is first sent (a carriage bound), a resubmission
-    from that issuer with the held payload gets a response for the same grant (same `grantId`, with the token repeated
-    or a new one under that grant). It never gets a second grant, a second `grant.issued` event or a second prompt to
+    from that issuer with the held payload gets a response for the same grant (same `grantId`, with a newly issued token
+    under that grant, since the provider keeps no copy of the token it sent; a re-delivered copy of the answered
+    request is answered the same way). It never gets a second grant, a second `grant.issued` event or a second prompt to
     the person, and it is `permissionDenied` if the grant is no longer active. After that hour it gets
     `permissionDenied`, and a new request on a new thread is put to the person again. A hold has a lifetime set by the
     provider's policy; when it passes, the policy denies, and the next resubmission on that thread gets the same
@@ -598,6 +613,19 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     grants through the audit log.
     *Ask:* confirm. If a former delegate is meant to have a summary (17.6 says they "can read the record of the grants
     they authorized"), which members may it carry?
+    *Specs:* `hcp/disclosures/summary`.
+
+<!-- Added 2026-11-27; a separate list, so the number renders as written. -->
+
+59. **How does the disclosure summary show a revocation notice that is still being delivered (6.2.4, 8.6, 9.9)?**
+    The summary's `notification` is `delivered`, `abandoned` or `none` (HCP's result shape). After a revoke, the
+    provider keeps retrying the notice for up to the 9.9 window, and during that time none of the three values says
+    "being delivered": `none` reads as "no notice", which is also what a grant that was never revoked, or a client
+    that holds no disclosed copies, shows.
+    *Assumption taken:* `none` covers a notice not yet sent or still being retried, as well as no notice at all. An
+    Authorizing Principal's app that sees `none` on a grant it has just revoked shows the notice as in progress, and
+    reads `delivered` or `abandoned` as final.
+    *Ask:* should HCP add a value such as `pending` for a notice still being retried, so that the summary can say so?
     *Specs:* `hcp/disclosures/summary`.
 
 ## `hcp/delegations/*`

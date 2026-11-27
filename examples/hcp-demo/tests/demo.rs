@@ -7,9 +7,9 @@ use serde_json::{json, Value};
 use trust_tasks::Payload as _;
 use trust_tasks_example_hcp_demo::{
     ask, check_reply, grant_request, query, query_payload, request_uri, retry_after_of, revoked,
-    run_demo, step_discover, step_grant_request, step_notice, step_revoke, DemoResult, Granted,
-    World, AFTER_APPROVAL_WINDOW, DEFAULT_RETRY_AFTER, ERROR_TYPE_URI, HOLD_LIFETIME,
-    MANAGEMENT_TOKEN,
+    run_demo, step_discover, step_grant_request, step_notice, step_revoke, token_digest,
+    DemoResult, Granted, World, AFTER_APPROVAL_WINDOW, DEFAULT_RETRY_AFTER, ERROR_TYPE_URI,
+    HOLD_LIFETIME, MANAGEMENT_TOKEN,
 };
 
 /// The golden transcript every language's port shares, kept beside the
@@ -167,7 +167,7 @@ async fn t09_a_resubmission_that_differs_from_the_held_request_is_refused_with_m
 }
 
 #[tokio::test]
-async fn t10_within_the_hour_a_resubmission_gets_the_same_grant_never_a_second() {
+async fn t10_within_the_hour_a_resubmission_gets_the_same_grant_with_a_new_token_never_a_second() {
     let (
         world,
         Granted {
@@ -190,6 +190,37 @@ async fn t10_within_the_hour_a_resubmission_gets_the_same_grant_never_a_second()
     assert_eq!(reply["type"], grant_request::Response::TYPE_URI);
     assert_eq!(reply["payload"]["grant"]["grantId"], json!(grant_id));
     assert_eq!(world.grant_count(), 1);
+    // A newly issued token under the same grant: the provider keeps no copy of
+    // the one it sent, only digests.
+    let second = reply["payload"]["accessToken"]
+        .as_str()
+        .expect("a token")
+        .to_string();
+    assert_eq!(second, "hcp_at_demo_0002");
+    assert_eq!(
+        reply["payload"]["tokenExpiresAt"],
+        reply["payload"]["grant"]["expiresAt"]
+    );
+    assert_eq!(
+        world.grant_token_digests(),
+        vec![[token_digest(TOKEN), token_digest(&second)].into()]
+    );
+    // Both tokens are good until the grant ends, and neither is once it is revoked.
+    for token in [TOKEN, second.as_str()] {
+        let sent = world
+            .request(c, p, &query_uri(), query_payload(token), None)
+            .await;
+        let reply = world.exchange(c, p, &sent).await.expect("a reply");
+        assert_eq!(reply["type"], query::Response::TYPE_URI, "{token}");
+    }
+    step_revoke(&world, &grant_id).await.expect("step 4");
+    for token in [TOKEN, second.as_str()] {
+        let sent = world
+            .request(c, p, &query_uri(), query_payload(token), None)
+            .await;
+        let reply = world.exchange(c, p, &sent).await.expect("a reply");
+        assert_eq!(reply["payload"]["code"], "hcp:invalidToken", "{token}");
+    }
 }
 
 #[tokio::test]
