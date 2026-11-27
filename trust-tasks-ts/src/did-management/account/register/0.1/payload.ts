@@ -130,6 +130,21 @@ export interface HostingVoucher {
    */
   proof: {
     /**
+     * The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise.
+     *
+     * @maxItems 8
+     */
+    "@context"?:
+      | []
+      | [string]
+      | [string, string]
+      | [string, string, string]
+      | [string, string, string, string]
+      | [string, string, string, string, string]
+      | [string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string];
+    /**
      * Always `DataIntegrityProof`.
      */
     type: "DataIntegrityProof";
@@ -417,6 +432,15 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           ],
           "description": "The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.",
           "properties": {
+            "@context": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "description": "The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise."
+            },
             "type": {
               "type": "string",
               "const": "DataIntegrityProof",

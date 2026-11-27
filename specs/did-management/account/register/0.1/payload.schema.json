@@ -164,6 +164,12 @@
           "required": ["type", "cryptosuite", "verificationMethod", "proofPurpose", "proofValue"],
           "description": "The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.",
           "properties": {
+            "@context": {
+              "type": "array",
+              "maxItems": 8,
+              "items": { "type": "string", "maxLength": 512 },
+              "description": "The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise."
+            },
             "type": { "type": "string", "const": "DataIntegrityProof", "description": "Always `DataIntegrityProof`." },
             "cryptosuite": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9-]+$", "description": "The cryptosuite, e.g. `eddsa-jcs-2022`." },
             "created": { "type": "string", "format": "date-time", "description": "When the community signed the voucher." },

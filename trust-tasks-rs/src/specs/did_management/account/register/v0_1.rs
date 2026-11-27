@@ -1030,6 +1030,13 @@ impl<'de> ::serde::Deserialize<'de> for HostingVoucherIssuer {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct HostingVoucherProof {
+    ///The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise.
+    #[serde(
+        rename = "@context",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub context: ::std::option::Option<::std::vec::Vec<HostingVoucherProofContextItem>>,
     ///When the community signed the voucher.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1051,6 +1058,65 @@ pub struct HostingVoucherProof {
 impl HostingVoucherProof {
     pub fn builder() -> builder::HostingVoucherProof {
         Default::default()
+    }
+}
+///`HostingVoucherProofContextItem`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct HostingVoucherProofContextItem(::std::string::String);
+impl ::std::ops::Deref for HostingVoucherProofContextItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<HostingVoucherProofContextItem> for ::std::string::String {
+    fn from(value: HostingVoucherProofContextItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for HostingVoucherProofContextItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for HostingVoucherProofContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for HostingVoucherProofContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for HostingVoucherProofContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for HostingVoucherProofContextItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///The cryptosuite, e.g. `eddsa-jcs-2022`.
@@ -2432,6 +2498,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct HostingVoucherProof {
+        context: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::HostingVoucherProofContextItem>>,
+            ::std::string::String,
+        >,
         created: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -2450,6 +2520,7 @@ pub mod builder {
     impl ::std::default::Default for HostingVoucherProof {
         fn default() -> Self {
             Self {
+                context: Ok(Default::default()),
                 created: Ok(Default::default()),
                 cryptosuite: Err("no value supplied for cryptosuite".to_string()),
                 proof_purpose: Err("no value supplied for proof_purpose".to_string()),
@@ -2460,6 +2531,18 @@ pub mod builder {
         }
     }
     impl HostingVoucherProof {
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::HostingVoucherProofContextItem>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
         pub fn created<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
@@ -2529,6 +2612,7 @@ pub mod builder {
             value: HostingVoucherProof,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                context: value.context?,
                 created: value.created?,
                 cryptosuite: value.cryptosuite?,
                 proof_purpose: value.proof_purpose?,
@@ -2541,6 +2625,7 @@ pub mod builder {
     impl ::std::convert::From<super::HostingVoucherProof> for HostingVoucherProof {
         fn from(value: super::HostingVoucherProof) -> Self {
             Self {
+                context: Ok(value.context),
                 created: Ok(value.created),
                 cryptosuite: Ok(value.cryptosuite),
                 proof_purpose: Ok(value.proof_purpose),
@@ -2868,7 +2953,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(65536usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{\"Admission\":{\"description\":\"The evidence that admits the registrant. Exactly one of an operator invite or a trust community's voucher.\",\"oneOf\":[{\"$ref\":\"#/$defs/InviteAdmission\"},{\"$ref\":\"#/$defs/VoucherAdmission\"}],\"title\":\"Admission\"},", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"HostingVoucher\":{\"additionalProperties\":false,\"description\":\"A trust community's signed statement that one DID may register an account with one hosting service. It is a credential: its own proof, by the community, for `assertionMethod`, carries the community's authority; the envelope proof of the register document carries only the registrant's.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts, when the community issues the voucher as a JSON-LD credential. Absent: a plain JSON credential.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"credentialSubject\":{\"additionalProperties\":false,\"description\":\"Whom the voucher admits, and where.\",\"properties\":{\"domain\":{\"description\":\"When present, the only hosting domain the voucher admits on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"hostingService\":{\"description\":\"The DID of the hosting service the voucher is for: the register document's `recipient`. A voucher for one service is no use at another.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"description\":\"The DID the voucher admits, without any `src` query parameter. MUST be the identity the register document's `issuer` names.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"hostingService\"],\"type\":\"object\"},\"id\":{\"description\":\"The voucher's unique identifier. A consumer accepts each voucher once, keyed on (`issuer`, `id`), and keeps the record until `validUntil`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"The trust community's DID. The consumer accepts vouchers only from issuers the target domain lists as trusted.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"proof\":{\"additionalProperties\":false,\"description\":\"The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.\",\"properties\":{\"created\":{\"description\":\"When the community signed the voucher.\",\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"The cryptosuite, e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"assertionMethod\",\"description\":\"Always `assertionMethod`: a voucher is an attestation.\",\"type\":\"string\"},\"proofValue\":{\"description\":\"The signature, multibase base58btc.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"description\":\"Always `DataIntegrityProof`.\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"The community key that signed the voucher: a verification method of `issuer`, under its `assertionMethod` relationship.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"type\":\"object\"},\"type\":{\"description\":\"Credential types. MUST include `DidHostingVoucher`; a validator does not check it.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"validFrom\":{\"description\":\"Before this instant the voucher is not yet valid. Absent: valid from issue.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"After this instant the voucher is no longer accepted. REQUIRED, so a consumer's single-use record is bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"type\",\"id\",\"issuer\",\"validUntil\",\"credentialSubject\",\"proof\"],\"title\":\"HostingVoucher\",\"type\":\"object\"},\"InviteAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by an operator invite.\",\"properties\":{\"invite\":{\"additionalProperties\":false,\"description\":\"Both halves of an invite from did-management/account/invite/issue.\",\"properties\":{\"claimCode\":{\"description\":\"The invite's claim code, delivered to the registrant separately from the token.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"token\":{\"description\":\"The invite's single-use token.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"token\",\"claimCode\"],\"type\":\"object\"}},\"required\":[\"invite\"],\"title\":\"InviteAdmission\",\"type\":\"object\"},\"VoucherAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by a trust community's voucher.\",\"properties\":{\"voucher\":{\"$ref\":\"#/$defs/HostingVoucher\"}},\"required\":[\"voucher\"],\"title\":\"VoucherAdmission\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/account/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A party with no account on a DID hosting service registers its own self-certifying DID there: it submits the DID's complete log and evidence that it is admitted (an operator invite or a trust community's voucher), and the service creates the account and publishes the DID in one commit. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"admission\":{\"$ref\":\"#/$defs/Admission\"},\"didData\":{\"description\":\"The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young.\",\"maxLength\":57344,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain to register on. REQUIRED here, unlike in did-management/did/register: a party with no account has no default domain to fall back on, and the DID's identifier already names the host.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method. This version admits `webvh` only, whose log is self-certifying: its SCID commits to the genesis entry, which names the DID and the keys that control it.\",\"enum\":[\"webvh\"],\"type\":\"string\"},\"path\":{\"description\":\"The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"domain\",\"path\",\"method\",\"didData\",\"admission\"],\"title\":\"DID Management — Account Register — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{\"Admission\":{\"description\":\"The evidence that admits the registrant. Exactly one of an operator invite or a trust community's voucher.\",\"oneOf\":[{\"$ref\":\"#/$defs/InviteAdmission\"},{\"$ref\":\"#/$defs/VoucherAdmission\"}],\"title\":\"Admission\"},", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"HostingVoucher\":{\"additionalProperties\":false,\"description\":\"A trust community's signed statement that one DID may register an account with one hosting service. It is a credential: its own proof, by the community, for `assertionMethod`, carries the community's authority; the envelope proof of the register document carries only the registrant's.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts, when the community issues the voucher as a JSON-LD credential. Absent: a plain JSON credential.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"credentialSubject\":{\"additionalProperties\":false,\"description\":\"Whom the voucher admits, and where.\",\"properties\":{\"domain\":{\"description\":\"When present, the only hosting domain the voucher admits on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"hostingService\":{\"description\":\"The DID of the hosting service the voucher is for: the register document's `recipient`. A voucher for one service is no use at another.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"description\":\"The DID the voucher admits, without any `src` query parameter. MUST be the identity the register document's `issuer` names.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"hostingService\"],\"type\":\"object\"},\"id\":{\"description\":\"The voucher's unique identifier. A consumer accepts each voucher once, keyed on (`issuer`, `id`), and keeps the record until `validUntil`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"The trust community's DID. The consumer accepts vouchers only from issuers the target domain lists as trusted.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"proof\":{\"additionalProperties\":false,\"description\":\"The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.\",\"properties\":{\"@context\":{\"description\":\"The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise.\",\"items\":{\"maxLength\":512,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"created\":{\"description\":\"When the community signed the voucher.\",\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"The cryptosuite, e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"assertionMethod\",\"description\":\"Always `assertionMethod`: a voucher is an attestation.\",\"type\":\"string\"},\"proofValue\":{\"description\":\"The signature, multibase base58btc.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"description\":\"Always `DataIntegrityProof`.\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"The community key that signed the voucher: a verification method of `issuer`, under its `assertionMethod` relationship.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"type\":\"object\"},\"type\":{\"description\":\"Credential types. MUST include `DidHostingVoucher`; a validator does not check it.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"validFrom\":{\"description\":\"Before this instant the voucher is not yet valid. Absent: valid from issue.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"After this instant the voucher is no longer accepted. REQUIRED, so a consumer's single-use record is bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"type\",\"id\",\"issuer\",\"validUntil\",\"credentialSubject\",\"proof\"],\"title\":\"HostingVoucher\",\"type\":\"object\"},\"InviteAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by an operator invite.\",\"properties\":{\"invite\":{\"additionalProperties\":false,\"description\":\"Both halves of an invite from did-management/account/invite/issue.\",\"properties\":{\"claimCode\":{\"description\":\"The invite's claim code, delivered to the registrant separately from the token.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"token\":{\"description\":\"The invite's single-use token.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"token\",\"claimCode\"],\"type\":\"object\"}},\"required\":[\"invite\"],\"title\":\"InviteAdmission\",\"type\":\"object\"},\"VoucherAdmission\":{\"additionalProperties\":false,\"description\":\"Admission by a trust community's voucher.\",\"properties\":{\"voucher\":{\"$ref\":\"#/$defs/HostingVoucher\"}},\"required\":[\"voucher\"],\"title\":\"VoucherAdmission\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/account/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A party with no account on a DID hosting service registers its own self-certifying DID there: it submits the DID's complete log and evidence that it is admitted (an operator invite or a trust community's voucher), and the service creates the account and publishes the DID in one commit. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"admission\":{\"$ref\":\"#/$defs/Admission\"},\"didData\":{\"description\":\"The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young.\",\"maxLength\":57344,\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain to register on. REQUIRED here, unlike in did-management/did/register: a party with no account has no default domain to fall back on, and the DID's identifier already names the host.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method. This version admits `webvh` only, whose log is self-certifying: its SCID commits to the genesis entry, which names the DID and the keys that control it.\",\"enum\":[\"webvh\"],\"type\":\"string\"},\"path\":{\"description\":\"The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"domain\",\"path\",\"method\",\"didData\",\"admission\"],\"title\":\"DID Management — Account Register — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
