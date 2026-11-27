@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/invitations/links/redeem/0.1",
+  "title": "VTC Events — Invitations — Links — Redeem — payload",
+  "description": "An active member redeems an invitation link's code and is invited to its event by name, as a host would invite them. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43,86}$",
+      "description": "The code from the trigger link."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Invitations — Links — Redeem — response payload",
+      "description": "The success response to a vtc/events/invitations/links/redeem/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/invitations/links/redeem/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invitation",
+        "event"
+      ],
+      "properties": {
+        "invitation": {
+          "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventInvitation"
+        },
+        "event": {
+          "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventRef"
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

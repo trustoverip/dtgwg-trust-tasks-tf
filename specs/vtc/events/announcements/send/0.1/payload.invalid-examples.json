@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`text` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "An announcement does not move the event: there is no `when`.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "text": "Moved to 19:00.",
+      "when": {
+        "start": "2026-11-30T19:00:00"
+      }
+    }
+  },
+  {
+    "note": "`announcement` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

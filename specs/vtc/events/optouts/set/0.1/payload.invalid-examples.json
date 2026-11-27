@@ -1,0 +1,21 @@
+[
+  {
+    "note": "`optedOut` is REQUIRED.",
+    "payload": {
+      "scope": "event",
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "Scopes are `event` and `calendar`.",
+    "payload": {
+      "scope": "group",
+      "optedOut": true
+    }
+  },
+  {
+    "note": "`optedOut` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

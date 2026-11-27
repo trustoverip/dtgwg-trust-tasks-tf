@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/invitations/links/revoke/0.1",
+  "title": "VTC Events — Invitations — Links — Revoke — payload",
+  "description": "A host revokes an invitation link: its code redeems nothing from then on. Invitations already made by it stand. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "linkId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "linkId": {
+      "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventInvitationLinkId"
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Invitations — Links — Revoke — response payload",
+      "description": "The success response to a vtc/events/invitations/links/revoke/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/invitations/links/revoke/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link"
+      ],
+      "properties": {
+        "link": {
+          "$ref": "../../../../_shared/0.2/event.schema.json#/$defs/EventInvitationLink"
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

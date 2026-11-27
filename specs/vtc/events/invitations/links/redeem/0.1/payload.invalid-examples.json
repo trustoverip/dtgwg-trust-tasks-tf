@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`code` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A code is at least 256 bits, base64url.",
+    "payload": {
+      "code": "abc"
+    }
+  },
+  {
+    "note": "`invitation` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "event": {
+        "eventId": "evt_IntroSoldering2611",
+        "title": "Intro to Soldering",
+        "when": {
+          "start": "2026-11-30T18:30:00",
+          "timeZone": "Europe/London",
+          "duration": "PT1H30M"
+        },
+        "status": "published",
+        "sequence": 0
+      }
+    }
+  }
+]
