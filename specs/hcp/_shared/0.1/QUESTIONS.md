@@ -35,7 +35,7 @@ below. When the editors answer, update that section and the marked sentences.
 - **Still open, no assumption taken:** questions 44, 46, 48 and 57. Question 47 needs none yet, because we do not offer
   what it asks about.
 - **Decided, not carried:** questions 35 and 36 (no Trust Task defines an operation HCP does not).
-- **Appear in no spec:** 13 numbered questions, 35, 36, 43 to 52 and 57 (41 is unused). The others are cited in the
+- **Appear in no spec:** questions 35, 36, 43 to 52 and 57, 13 in all (41 is unused). The others are cited in the
   `## Pending HCP confirmation` section of each spec they affect, question 56 included (the governance specs and
   `hcp/entries/create`, where `accessToken` is now optional).
 
@@ -459,8 +459,9 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     proof authenticates the `issuer`. A document on a held or approved thread from another issuer is refused with
     `permissionDenied` (one fixed message) and never gets a next step or the token. Every next step and the response
     go to the held request's `issuer`. For 1 hour after the response is first sent (a carriage bound), a resubmission
-    from that issuer with the held payload gets a response for the same grant (same `grantId`, with the token repeated
-    or a new one under that grant). It never gets a second grant, a second `grant.issued` event or a second prompt to
+    from that issuer with the held payload gets a response for the same grant (same `grantId`, with a newly issued token
+    under that grant, since the provider keeps no copy of the token it sent; a re-delivered copy of the answered
+    request is answered the same way). It never gets a second grant, a second `grant.issued` event or a second prompt to
     the person, and it is `permissionDenied` if the grant is no longer active. After that hour it gets
     `permissionDenied`, and a new request on a new thread is put to the person again. A hold has a lifetime set by the
     provider's policy; when it passes, the policy denies, and the next resubmission on that thread gets the same
