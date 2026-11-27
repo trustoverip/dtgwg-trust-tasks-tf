@@ -660,11 +660,10 @@ func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Docu
 		if int64(len(disclosed)) == limit || !slices.Contains(asked, e.category) {
 			continue
 		}
-		language := "en"
 		d, err := json.Marshal(query.Disclosure{
 			Ref:            e.ref,
 			Version:        1,
-			Content:        query.Content{Profile: "https://hcp.example/spec/profiles/general-context/2.0", Value: quoted(e.value), Language: &language},
+			Content:        query.Content{Profile: "https://hcp.example/spec/profiles/general-context/2.0", Value: quoted(e.value), Language: tt.Value("en")},
 			Assertion:      query.Assertion{DeclarationType: query.AssertionDeclarationTypePersonDeclared},
 			Classification: query.Classification{Categories: []string{e.category}},
 			Standing:       query.Standing{Assurance: query.AssuranceAuthenticated, Confirmed: true},

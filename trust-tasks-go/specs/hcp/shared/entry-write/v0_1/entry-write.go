@@ -6,6 +6,8 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package hcpsharedentrywritev0_1
 
+import "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+
 // WriteSubject HCP `subject`, as a create supplies it (HCP 5.2.3): `subject.id` only. HCP
 // reserves `subject.relationship` (HCP 4.2, 11.3); a request that carries it is passed
 // through unchanged.
@@ -26,7 +28,7 @@ type WriteClassification struct {
 	Categories []Category `json:"categories"`
 
 	// HCP `classification.dimension`: the dimension within the entry's categories (HCP 4.2).
-	Dimension *string `json:"dimension,omitempty"`
+	Dimension trusttasks.Nullable[string] `json:"dimension,omitzero"`
 }
 
 // RevisionAssertionDeclarationType The declaration type of the revised assertion (HCP
@@ -51,10 +53,10 @@ type RevisionAssertion struct {
 	DeclarationType *RevisionAssertionDeclarationType `json:"declarationType,omitempty"`
 
 	// As for create (HCP 5.2.3).
-	Confidence *string `json:"confidence,omitempty"`
+	Confidence trusttasks.Nullable[string] `json:"confidence,omitzero"`
 
 	// As for create: when the content stops holding (HCP 4.2).
-	ValidUntil *string `json:"validUntil,omitempty"`
+	ValidUntil trusttasks.Nullable[string] `json:"validUntil,omitzero"`
 
 	// As for create: what the assertion was drawn from (HCP 4.2.5).
 	Basis *Basis `json:"basis,omitempty"`
