@@ -13,7 +13,7 @@ go 1.27
 
 require (
 	github.com/affinidi/affinidi-tsp-go v0.2.0
-	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3
+	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.4
 )
 
 require (
