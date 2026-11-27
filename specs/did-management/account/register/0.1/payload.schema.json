@@ -27,8 +27,8 @@
     "didData": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 1048576,
-      "description": "The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line."
+      "maxLength": 57344,
+      "description": "The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young."
     },
     "admission": {
       "$ref": "#/$defs/Admission"

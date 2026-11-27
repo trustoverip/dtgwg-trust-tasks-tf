@@ -28,7 +28,7 @@ export interface DIDManagementAccountRegisterPayload {
    */
   method: "webvh";
   /**
-   * The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line.
+   * The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young.
    */
   didData: string;
   admission: Admission;
@@ -246,8 +246,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "didData": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 1048576,
-      "description": "The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line."
+      "maxLength": 57344,
+      "description": "The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young."
     },
     "admission": {
       "$ref": "#/$defs/Admission"
@@ -680,7 +680,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
-  maxDocumentBytes: 1310720,
+  maxDocumentBytes: 65536,
 } as const;
 
 /**

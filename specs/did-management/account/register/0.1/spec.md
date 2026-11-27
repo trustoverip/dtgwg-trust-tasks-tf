@@ -45,8 +45,12 @@ retention:
     The account, the DID record and the single-use record of the invite or voucher outlive the exchange: they are
     what the service later authorises the holder's updates against.
 maxDocumentBytes:
-  request: 1310720
-  rationale: A complete webvh log of up to 1 MiB, plus admission evidence, envelope and proof headroom.
+  request: 65536
+  rationale: >-
+    The registrant is a stranger to the service until this task commits, so every byte it sends is parsed and
+    verified on behalf of someone with no standing. A self-registering DID's log is young — a genesis entry or a short
+    history of a few KiB — so 64 KiB is room enough; a long-lived DID with a large history moves to a host through an
+    account an operator creates.
 uncheckedRules:
   - member: "/$defs/HostingVoucher/properties/type"
     rule: "A voucher's `type` array includes `DidHostingVoucher`."
