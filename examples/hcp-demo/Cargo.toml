@@ -1,0 +1,31 @@
+[package]
+name = "trust-tasks-example-hcp-demo"
+version = "0.0.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "A demonstration of the Human Context Protocol (HCP) carried as Trust Tasks: discovery, grant request held with a next step, query, revoke and revocation notice between a toy in-memory HCP provider, a Context Client and a Management Client, sealed over TSP and signed with Data Integrity proofs. Not a reference provider."
+publish = false
+
+[dependencies]
+# The facade with no spec family (it has no default features): the runtime,
+# the TSP binding, the Data Integrity proof crate and `validate` (a JSON Schema
+# 2020-12 validator, the `jsonschema` crate). build.rs generates the four
+# hcp/* tasks; the framework tasks (discovery, next step) ship with the runtime.
+trust-tasks = { path = "../../trust-tasks", features = ["tsp", "proof-affinidi", "validate"] }
+# The TSP VIDs (key material) and the cleartext sender a receiver reads first.
+affinidi-tsp = "0.5"
+# The Ed25519 signer the proof crate takes.
+affinidi-secrets-resolver = "0.6.0"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+serde = "1"
+serde_json = "1"
+# The RFC 8785 (JCS) implementation trust-tasks-proof canonicalises with for
+# eddsa-jcs-2022 (through affinidi-data-integrity): the provider compares a
+# resubmitted grant request with the held one by their JCS forms.
+serde_json_canonicalizer = "0.4"
+tokio = { version = "1", features = ["macros", "rt"] }
+
+[build-dependencies]
+trust-tasks-build = { path = "../../trust-tasks-build" }

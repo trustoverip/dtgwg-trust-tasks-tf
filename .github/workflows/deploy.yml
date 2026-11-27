@@ -85,6 +85,11 @@ jobs:
       # against the tree, and every schema against the TypeScript generator's.
       - name: Check registry bundles
         run: npm run check-bundles
+      # `trust-tasks check` is offline, and the hcp/* drafts change in place,
+      # so this holds every examples/hcp-demo*/ lock and vendored bundle to
+      # the bundles just built from specs/ (scripts/check-demo-bundles.mjs).
+      - name: Check the HCP demos' vendored bundles
+        run: npm run check-demo-bundles
       # The by-digest store (milestone 2): every bundle again at
       # `specs/by-digest/sha256-<hex>.json`, its content address. A lockfile
       # pins a digest, and a draft may change in place, so `trust-tasks add`

@@ -20,6 +20,7 @@
     "build-dart-bindings": "node scripts/build-dart-bindings.mjs",
     "build-bundles": "cargo run -q --release -p trust-tasks-codegen -- --bundles website/specs",
     "check-bundles": "node scripts/check-bundles.mjs",
+    "check-demo-bundles": "node scripts/check-demo-bundles.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs && TUN_BUILT=1 node --test infra/cloudfront/type-uri-negotiation.test.mjs",
     "build:cloudfront": "node infra/cloudfront/build-function.mjs",
     "test:website": "node --test scripts/test/*.test.mjs",
