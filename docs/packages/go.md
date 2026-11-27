@@ -147,8 +147,8 @@ not parse with `malformedRequest` addressed from the routing members that did,
 runs the binding's own check (`ReceiveOptions.BindingCheck` — DIDComm's §3.1
 thread cross-check), refuses members differing only by case, reads a later
 version forward with `ReadForSpecWith`, decodes, and runs `ConsumeInbound` with
-the bytes as `Received` (proof, item-11 digest and `maxDocumentBytes` over what
-arrived). Every refusal precedes the replay record. It refuses a transport that
+the bytes as `Received` (payload schema, proof, item-11 digest and
+`maxDocumentBytes` over what arrived). Every refusal precedes the replay record. It refuses a transport that
 authenticated no sender (`ErrNoAuthenticatedSender`), because those answers are
 only safe when they go to the authenticated party. `trusttasks.NewURNUUID()`
 mints document ids and panics when `crypto/rand` fails. A binding needing a
@@ -156,6 +156,25 @@ check of its own adds it through `BindingCheck` rather than copying the body.
 The `tsp` and `didcomm` consumers are built on it (core v0.12.0), and `tsp`,
 `didcomm` and `capabilityclient` mint ids with `NewURNUUID` — `tsp.NewURNUUID`
 and `didcomm.NewMessageID` remain, as forwarders to it.
+
+### `ConsumeInbound` validates the payload as received
+
+With `PayloadValidate`, `ConsumeInbound[P]` checks the payload in
+`ConsumeOptions.Received` when it is set and `Doc` is a reading of it, not
+`json.Marshal(doc.Payload)`. A generated optional member is `*T` with
+`omitempty`, so a `null` the schema forbids (acl/update 0.3 `"purposes": null`)
+decodes as absent and the re-encoding omits it: only the received payload still
+shows it. A document of `Spec`'s own version is checked as received; a later
+version read forward along `extends` is checked as `ReadForSpecWith` reads it,
+pruned to the members `Spec`'s schema knows, since its added members are ones
+that schema refuses. Without `Received` the re-encoding is all there is, so set
+it whenever the bytes are at hand (`ConsumeReceived` does). Shared vectors:
+`fixtures/consume/received-payload.json` (`trusttasks/received_payload_vectors_test.go`).
+
+**Behavioural change.** A document that passed only because its re-encoding
+dropped a member the schema refuses is now refused `malformedRequest` when
+`Received` is set. Until a core release carrying this, a consumer that must
+refuse it validates the payload in the received bytes itself before decoding.
 
 ### The `trust-tasks-go/tsp` nested module
 

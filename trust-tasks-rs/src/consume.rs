@@ -308,6 +308,10 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// `P` does not model are an `idConflict`. Under a policy that carries no
     /// received document the digest is of `doc`'s serialisation, which cannot
     /// see such a member.
+    ///
+    /// Under [`PayloadPolicy::Validate`] the §7.2 item 2 schema check reads
+    /// this value's payload too, so it sees what decoding into `P` dropped
+    /// (see [`PayloadPolicy`]).
     VerifyReceived(&'a V, &'a Value),
 
     /// Reject documents that carry an in-band proof with
@@ -329,14 +333,16 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
 
     /// [`RejectIfPresent`](Self::RejectIfPresent), carrying the document as
     /// it was received — the `&Value` `doc` was parsed from — so the §7.2
-    /// item 11 digest is taken over it rather than over `doc`'s
+    /// item 11 digest, and the item 2 schema check under
+    /// [`PayloadPolicy::Validate`], read it rather than `doc`'s
     /// serialisation. What [`with_received`](Self::with_received) makes of
     /// `RejectIfPresent`.
     RejectIfPresentReceived(&'a Value),
 
     /// [`AcceptUnverified`](Self::AcceptUnverified), carrying the document as
-    /// it was received for the §7.2 item 11 digest. What
-    /// [`with_received`](Self::with_received) makes of `AcceptUnverified`.
+    /// it was received for the §7.2 item 11 digest and the item 2 schema
+    /// check. What [`with_received`](Self::with_received) makes of
+    /// `AcceptUnverified`.
     AcceptUnverifiedReceived(&'a Value),
 }
 
@@ -352,7 +358,8 @@ impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
     /// For a pipeline that takes a caller's policy and parses the document
     /// itself — every transport binding's `receive` — so the caller asks for
     /// verification and gets it over the bytes that were signed, and the
-    /// item-11 record compares those bytes whichever policy was asked for.
+    /// item-11 record and the item-2 schema check read those bytes whichever
+    /// policy was asked for.
     pub fn with_received<'b>(self, received: &'b Value) -> ProofPolicy<'b, V>
     where
         'a: 'b,
@@ -403,11 +410,19 @@ pub trait PayloadValidator {
 /// knowingly whether that residue matters to it, not discover later that it
 /// never checked.
 ///
-/// [`consume_dispatched`] validates the payload as received. The typed
-/// [`consume_inbound`] validates `P` re-encoded, so it cannot see what
-/// decoding into `P` already dropped, such as that forbidden `null`; a typed
-/// consumer that must refuse it validates the received payload itself
-/// (`ValidatedPayload::validate_value`, `validate` feature) before decoding.
+/// [`Validate`](Self::Validate) checks the payload **as received** wherever
+/// it is in hand. [`consume_dispatched`] holds it as a `Value`. The typed
+/// [`consume_inbound`] reads it from the [`ProofPolicy`] when the policy
+/// carries the received document ([`ProofPolicy::with_received`], as every
+/// transport binding's consumer binds it) and `doc` is a reading of it: a
+/// document of `P`'s own version is validated as it stands, and a later
+/// version read forward along `extends` with its payload pruned to what `P`'s
+/// schema knows, as [`consume_dispatched`] prunes a forwarded payload — its
+/// added members are ones `P`'s schema would refuse. Only without a received
+/// document does `consume_inbound` validate `P` re-encoded, and that cannot
+/// see what decoding into `P` dropped, such as that forbidden `null`; bind the
+/// policy with [`ProofPolicy::with_received`] whenever the received JSON is
+/// still in hand.
 ///
 /// (The TypeScript binding is in a different position entirely — its types are
 /// erased at runtime, so *nothing* is enforced without a validator. Both
@@ -631,6 +646,10 @@ where
             policy: SpecPolicy::of::<P>(),
             schema: P::PAYLOAD_SCHEMA,
             payload_value: |payload| serde_json::to_value(payload).map(Cow::Owned),
+            received_payload: match reading {
+                crate::extension::Reading::Same => ReceivedPayload::AsReceived,
+                crate::extension::Reading::Forward => ReceivedPayload::Pruned,
+            },
         },
         is_received_form_of::<P>,
         handler,
@@ -877,6 +896,7 @@ where
             schema: facts.schema,
             // Already a `Value`: validated where it is, not copied.
             payload_value: |payload| Ok(Cow::Borrowed(payload)),
+            received_payload: ReceivedPayload::Consumed,
         },
         // The proof was made over the document as received; the document being
         // consumed is that one with its payload pruned along a forward route.
@@ -979,9 +999,31 @@ where
 struct SpecFacts<P> {
     policy: SpecPolicy,
     schema: Option<&'static str>,
-    /// The payload as the JSON the validator reads: serialised from `P` on
-    /// the typed path, borrowed as it is on the dispatched one.
+    /// The payload as the JSON the validator reads when no received document
+    /// is in hand: serialised from `P` on the typed path, borrowed as it is on
+    /// the dispatched one.
     payload_value: PayloadValueFn<P>,
+    /// What the validator reads instead when the received document is in hand.
+    received_payload: ReceivedPayload,
+}
+
+/// Which payload the §7.2 item 2 schema check reads when the [`ProofPolicy`]
+/// carries the document as received and `doc` is a reading of it.
+#[derive(Clone, Copy)]
+enum ReceivedPayload {
+    /// `doc.payload` already is the received payload, pruned along a forward
+    /// route where there was one: the dispatched path.
+    Consumed,
+    /// The received payload as it stands: the typed path, for a document of
+    /// `P`'s own version. Decoding into `P` may have dropped a member the
+    /// schema refuses (a forbidden `null` reads as absent), so `P` re-encoded
+    /// is not what arrived.
+    AsReceived,
+    /// The received payload pruned to the members the implemented schema
+    /// knows: the typed path, for a later version read forward along
+    /// `extends`. Its added members are ones that schema refuses, so it is
+    /// validated as [`consume_dispatched`] validates a forwarded payload.
+    Pruned,
 }
 
 type PayloadValueFn<P> = for<'p> fn(&'p P) -> Result<Cow<'p, Value>, serde_json::Error>;
@@ -1024,6 +1066,22 @@ where
         default_max_document_bytes: _,
         recognized_extensions,
     } = checks;
+    // The document as it arrived, where the policy carries it, and whether it
+    // is the one being consumed. The payload schema check reads it, the proof
+    // is verified over it, and the item-11 digest below is taken over it,
+    // because all three concern what arrived — members `doc`'s type does not
+    // model, or decoding read as absent, included.
+    let received = match &policy {
+        ProofPolicy::VerifyReceived(_, received)
+        | ProofPolicy::RejectIfPresentReceived(received)
+        | ProofPolicy::AcceptUnverifiedReceived(received) => {
+            Some((*received, is_received_form(received, &doc)))
+        }
+        ProofPolicy::Verify(_) | ProofPolicy::RejectIfPresent | ProofPolicy::AcceptUnverified => {
+            None
+        }
+    };
+
     // §7.2 item 2 — payload schema. Runs first here (the envelope checks and
     // the attribution gate ran in the caller, ahead of the type check), and
     // before any check that consults the payload's meaning: a document whose
@@ -1032,30 +1090,43 @@ where
     // carried most of this; see `PayloadPolicy` for what is left.
     if let PayloadPolicy::Validate(validator) = payload_policy {
         if let Some(schema) = spec.schema {
-            match (spec.payload_value)(&doc.payload) {
-                Ok(value) => {
-                    if let Err(reason) = validator.validate(schema, &value) {
-                        return route_rejection(
-                            transport,
-                            &doc,
-                            RejectReason::MalformedRequest { reason },
-                            error_id_factory,
-                        );
+            // The payload as received where it is in hand, not `P` re-encoded:
+            // decoding reads a `null` the schema forbids as absent, and the
+            // re-encoding would pass. A later version read forward is pruned
+            // first, as `consume_dispatched` prunes it.
+            let received_payload = match (received, spec.received_payload) {
+                (Some((received, true)), ReceivedPayload::AsReceived) => received
+                    .get("payload")
+                    .map(|payload| Ok(Cow::Borrowed(payload))),
+                (Some((received, true)), ReceivedPayload::Pruned) => {
+                    received.get("payload").map(|payload| {
+                        let mut payload = payload.clone();
+                        crate::extension::prune_forward(&mut payload, schema)
+                            .map(|()| Cow::Owned(payload))
+                    })
+                }
+                _ => None,
+            };
+            let payload = match received_payload {
+                Some(payload) => payload,
+                None => (spec.payload_value)(&doc.payload).map_err(|e| {
+                    // A payload that cannot be re-serialized cannot be checked.
+                    // Refusing is the only safe reading: the alternative is to
+                    // accept precisely the documents the validator could not see.
+                    RejectReason::MalformedRequest {
+                        reason: format!("payload could not be serialized for validation: {e}"),
                     }
-                }
-                // A payload that cannot be re-serialized cannot be checked.
-                // Refusing is the only safe reading: the alternative is to
-                // accept precisely the documents the validator could not see.
-                Err(e) => {
-                    return route_rejection(
-                        transport,
-                        &doc,
-                        RejectReason::MalformedRequest {
-                            reason: format!("payload could not be serialized for validation: {e}"),
-                        },
-                        error_id_factory,
-                    );
-                }
+                }),
+            };
+            let refusal = match payload {
+                Ok(value) => validator
+                    .validate(schema, &value)
+                    .err()
+                    .map(|reason| RejectReason::MalformedRequest { reason }),
+                Err(reason) => Some(reason),
+            };
+            if let Some(reason) = refusal {
+                return route_rejection(transport, &doc, reason, error_id_factory);
             }
         }
     }
@@ -1080,21 +1151,6 @@ where
             );
         }
     }
-
-    // The document as it arrived, where the policy carries it, and whether it
-    // is the one being consumed. The proof is verified over it, and the item-11
-    // digest below is taken over it, because both concern the whole received
-    // document — members `doc`'s type does not model included.
-    let received = match &policy {
-        ProofPolicy::VerifyReceived(_, received)
-        | ProofPolicy::RejectIfPresentReceived(received)
-        | ProofPolicy::AcceptUnverifiedReceived(received) => {
-            Some((*received, is_received_form(received, &doc)))
-        }
-        ProofPolicy::Verify(_) | ProofPolicy::RejectIfPresent | ProofPolicy::AcceptUnverified => {
-            None
-        }
-    };
 
     // §7.2 item 7, clause B — apply the consumer's chosen proof policy.
     match (&policy, doc.proof.as_ref()) {

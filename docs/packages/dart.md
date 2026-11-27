@@ -60,6 +60,29 @@ this independently: `scripts/build-dart-bindings.mjs` (pinned by
 `lib/src/generator/emit.dart` (the `required nullable` group in
 `test/generator_test.dart`).
 
+### `consumeInbound` validates the payload as received
+
+With `PayloadPolicy.validate`, `consumeInbound` checks the payload of
+`received` when it is passed and names `doc`'s `id` and `type`, not
+`payloadToJson(doc.payload)`. A generated `toJson` writes an optional member
+only when it is non-null, so a `null` the schema forbids (acl/update 0.3
+`"purposes": null`) reads as absent and the re-encoding omits it: only the
+received payload still shows it. A document of the spec's own version is
+checked as received; a later version read forward along `extends` is checked
+as `readForVersion` reads it, pruned to the members the spec's schema knows,
+since its added members are ones that schema refuses. Without `received` the
+re-encoding is all there is, so pass it whenever the decoded JSON is in hand
+(`VersionAccepted.received`; the HTTPS, DIDComm and TSP packages do). Shared
+vectors: `fixtures/consume/received-payload.json`
+(`test/received_payload_vectors_test.dart`).
+
+**Behavioural change.** A document that passed only because its re-encoding
+dropped a member the schema refuses is now refused `malformedRequest` when
+`received` is passed. The sibling packages build against the published core,
+so they refuse it once they take a core release carrying this. Until then, a
+consumer that must refuse it validates `received['payload']` itself before
+decoding.
+
 ### The hand-written Dart packages beside it
 
 `trust-tasks-dart-proof` publishes as `trust_tasks_proof`: a Data Integrity

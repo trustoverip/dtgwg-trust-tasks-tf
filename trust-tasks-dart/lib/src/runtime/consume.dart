@@ -56,7 +56,13 @@ import 'canonical.dart';
 import 'codes.dart';
 import 'critical.dart';
 import 'document.dart';
-import 'extension.dart' show typeRefusalFor;
+import 'extension.dart'
+    show
+        VersionAccepted,
+        VersionRead,
+        VersionRefused,
+        readForVersion,
+        typeRefusalFor;
 import 'freshness.dart';
 import 'id.dart';
 import 'replay.dart';
@@ -200,6 +206,11 @@ sealed class PayloadPolicy {
   const PayloadPolicy();
 
   /// Validate against `spec.payloadSchema`. Failures map to `malformedRequest`.
+  ///
+  /// The payload checked is `consumeInbound`'s `received` payload when it is
+  /// passed (pruned, for a later version read forward along `extends`), and
+  /// the typed payload re-encoded only otherwise; pass `received` whenever
+  /// the decoded JSON is in hand.
   const factory PayloadPolicy.validate(PayloadValidator validator) =
       ValidatePayload;
 
@@ -377,7 +388,12 @@ Refusal refuse<P>(
 /// [newUrnUuid].
 ///
 /// Pass [received] — the decoded JSON map [doc] was read from, exactly as it
-/// arrived — and the item-11 digest is taken over it, so a member [doc]'s type
+/// arrived — and, under [PayloadPolicy.validate], §7.2 item 2 checks its
+/// payload rather than [doc]'s typed re-encoding, which cannot see what
+/// decoding dropped: a `null` on an optional member whose schema has no null
+/// form reads as absent. A document of a later version read forward along
+/// `extends` is checked as [readForVersion] reads it, pruned to the members
+/// [spec]'s schema knows. The item-11 digest is taken over it too, so a member [doc]'s type
 /// does not model still tells two documents under one `id` apart; without it
 /// the digest is of [doc]'s typed re-encoding. A proof is likewise verified
 /// over it rather than over [doc]'s typed
@@ -449,11 +465,43 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   // rather than interpreted.
   final schema = spec.payloadSchema;
   if (payloadPolicy is ValidatePayload && schema != null) {
+    // The payload as received where it is in hand, not [doc]'s typed
+    // re-encoding: decoding reads a `null` the schema forbids as absent, and
+    // the re-encoding would pass. A later version read forward along `extends`
+    // is checked as [readForVersion] reads it, pruned to the members [spec]'s
+    // schema knows, since its added members are ones that schema refuses.
+    Object? payload;
+    var checkReceived = false;
+    if (received != null &&
+        received['id'] == doc.id &&
+        received['type'] == doc.type &&
+        received.containsKey('payload')) {
+      VersionRead<Object?>? read;
+      try {
+        read = extendsIndex == null
+            ? readForVersion<Object?>(received, spec, (p) => p)
+            : readForVersion<Object?>(received, spec, (p) => p,
+                index: extendsIndex);
+      } on Object {
+        // An envelope `fromJson` cannot read: [doc] was not read from it, so
+        // there is no received payload to check — fall back to [doc]'s.
+        read = null;
+      }
+      switch (read) {
+        case VersionAccepted<Object?>(doc: final reading):
+          payload = reading.payload;
+          checkReceived = true;
+        case VersionRefused<Object?>(:final reason):
+          return route(reason);
+        case null:
+          break;
+      }
+    }
     String? failure;
     try {
       failure = payloadPolicy.validator.validate(
         schema,
-        payloadToJson(doc.payload),
+        checkReceived ? payload : payloadToJson(doc.payload),
       );
     } on Object catch (e) {
       // A validator that throws has not accepted the document. Treating an

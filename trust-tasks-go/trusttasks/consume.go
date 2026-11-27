@@ -183,6 +183,13 @@ type PayloadPolicyKind string
 const (
 	// PayloadValidate validates against Spec.PayloadSchema. Failures map to
 	// malformedRequest.
+	//
+	// The payload checked is the one in [ConsumeOptions.Received] when it is set
+	// and Doc is a reading of it — the payload as received, pruned for a later
+	// version read forward along extends — and Doc's payload re-encoded only
+	// otherwise. A re-encoding cannot see what the typed decode dropped: a null
+	// on an optional member whose schema has no null form decodes as absent.
+	// Pass Received whenever the bytes are at hand ([ConsumeReceived] does).
 	PayloadValidate PayloadPolicyKind = "validate"
 
 	// PayloadAcceptUnvalidated skips item 2 entirely. Appropriate only where
@@ -364,6 +371,13 @@ type ConsumeOptions[P, R any] struct {
 	// and refuses proofInvalid when it is not: a proof over one document vouches
 	// for nothing about another.
 	//
+	// When set, and Doc is a reading of it, §7.2 item 2 under PayloadValidate
+	// checks the payload in these bytes rather than Doc's payload re-encoded, so
+	// it sees what the typed decode dropped — a null on an optional member whose
+	// schema has no null form decodes as absent. A document of a later version
+	// read forward along extends is checked pruned to the members Spec's schema
+	// knows, as [ReadForSpecWith] reads it.
+	//
 	// When set, and Doc is a reading of it, the §7.2 item 11 digest is over these
 	// bytes too, in canonical form, so two documents under one id that differ
 	// only in a member Doc's type does not model are an idConflict rather than a
@@ -393,6 +407,43 @@ type ConsumeOptions[P, R any] struct {
 	// Clock overrides the response issuedAt clock, for deterministic tests. Nil
 	// means [SystemClock].
 	Clock Clock
+}
+
+// payloadToValidate is the payload §7.2 item 2 checks: the payload as received
+// when the caller passed Received and Doc is a reading of it, otherwise Doc's
+// payload re-encoded.
+//
+// Doc's typed decode reads a null on an optional member whose schema has no null
+// form as absent, so its re-encoding omits the member and would pass a check the
+// received payload fails. A document of Spec's own version is therefore checked
+// as received. A later version read forward along extends carries members Spec's
+// schema refuses, so it is checked as [ReadForSpecWith] reads it — the received
+// payload pruned to the members Spec's schema knows.
+func payloadToValidate[P any](
+	doc *Document[P],
+	received json.RawMessage,
+	spec SpecPolicy,
+	lookup ExtendsLookup,
+) (json.RawMessage, *RejectReason, error) {
+	if len(received) > 0 && isReadingOf(doc, received) {
+		reading, reason, err := ReadForSpecWith(received, spec, lookup)
+		if reason != nil {
+			return nil, reason, nil
+		}
+		if err == nil {
+			var envelope struct {
+				Payload json.RawMessage `json:"payload"`
+			}
+			if err := json.Unmarshal(reading, &envelope); err == nil && envelope.Payload != nil {
+				return envelope.Payload, nil, nil
+			}
+		}
+	}
+	payload, err := json.Marshal(doc.Payload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("trusttasks: marshal payload for §7.2 item 2: %w", err)
+	}
+	return payload, nil, nil
 }
 
 // ErrMissingOption reports an option [ConsumeInbound] requires and did not get.
@@ -483,9 +534,12 @@ func ConsumeInbound[P, R any](
 		if opts.PayloadPolicy.Validator == nil {
 			return zero, fmt.Errorf("%w: PayloadPolicy.Validator under PayloadValidate", ErrMissingOption)
 		}
-		payload, err := json.Marshal(doc.Payload)
+		payload, reason, err := payloadToValidate(doc, opts.Received, opts.Spec, opts.Extends)
 		if err != nil {
-			return zero, fmt.Errorf("trusttasks: marshal payload for §7.2 item 2: %w", err)
+			return zero, err
+		}
+		if reason != nil {
+			return route(reason), nil
 		}
 		if err := opts.PayloadPolicy.Validator.Validate(opts.Spec.PayloadSchema, payload); err != nil {
 			message := "payload does not conform to its schema (SPEC §7.2 item 2)"
