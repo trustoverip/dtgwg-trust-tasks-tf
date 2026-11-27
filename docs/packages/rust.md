@@ -176,6 +176,57 @@ that does not reassemble. It saved 1.07 MiB of the `.crate`.
   definition gets a new macro and an unchanged one keeps its name across
   regenerations.
 
+## The `hcp` schemas carry presence themselves
+
+typify's own output folds an optional member's absent, empty (`[]`, `{}`) and
+`null` forms together (`typify-impl` 0.6.2, `src/structs.rs`,
+`generate_serde_attr` and `has_default`): an optional array without
+`uniqueItems` is a bare `Vec` skipped when empty, an optional object with no
+`properties` a map skipped when empty, and an optional nullable member an
+`Option` skipped when `None`, so a Rust type decoded from the generator's raw
+output cannot tell the three apart, even when the sender kept them. Whether a
+library's generated types keep them apart, and whether each writes a required
+nullable member's `null`, is a per-runtime fact that moves with the generators,
+so it is stated once, in the payload-presence row of
+[`runtime-parity.md`](../runtime-parity.md#differences), not here. Proofs are
+unaffected either way: they are verified over the document as received
+([DEVELOPMENT.md](../DEVELOPMENT.md#extends-routing-a-newer-version-to-the-version-a-consumer-implements)).
+
+The `hcp` family does not depend on any generator keeping those forms apart.
+Where the difference carries meaning, its schemas carry presence explicitly, so
+the document itself says what was asked for or what is null, whichever library
+wrote it. These members, which HCP's own shapes leave optional, do so (each
+*pending HCP confirmation*, [question 42](../../specs/hcp/_shared/0.1/QUESTIONS.md)):
+
+- `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
+  `grantId` are required and nullable;
+- the export `hcp/export` returns requires `options`, with `includeVersions`
+  and `includeAudit`, which say whether `versions` and `audit` were asked for.
+  Read those, not whether the arrays are present. `hcp/import` accepts an
+  export written to HCP's schema alone, where `options` or its members may be
+  absent, which means unknown, never inferred from the arrays;
+- get and query `directives` are required and nullable (null: the requester
+  is not a Context Client);
+- a query's `categories` has `minItems: 1`, so a dropped `[]` cannot widen
+  the query.
+
+`hcp/import`'s `ImportedAuditEvent`, HCP's own audit-event shape, leaves the
+five `AuditEvent` members above optional and nullable: absent there means
+unknown, `null` means none. A provider whose typed payload folds `null` into
+absent reads the payload as received to keep that difference.
+
+What remains in `hcp` is harmless, because HCP treats empty and absent (or
+null and absent) alike there: `evidence`, `relationships`, `confirmations`,
+`drawnFrom`, `covers`, `revealed`, an `AuditEvent`'s `categories`, `disclosed`
+and `data`, an export's `directives` and `delegations`, the `narrowedTo`,
+`metadata`, `unmapped` and `categoryMap` maps, and the optional
+nullable `language`, `confidence`, `validUntil` and `dimension`. A new `hcp`
+member whose empty or null value means something follows the same rule.
+
+An entry subject's `relationship` is `"type": "null"`, as HCP reserves it.
+The presence pass renders it `Option<()>`: `None` when absent, `Some(())` for
+`null`, so the reserved member round-trips as received.
+
 ## `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with

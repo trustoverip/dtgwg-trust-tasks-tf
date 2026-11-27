@@ -16,6 +16,15 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:4b8e2f61-0c7d-4a95-8e13-6f2a9d0c5b72\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/request/0.1#request\",\n  \"issuer\": \"did:key:z6MkExecutorVtaExample\",\n  \"recipient\": \"did:key:z6MkApproverPhoneExample\",\n  \"issuedAt\": \"2026-07-13T10:12:00Z\",\n  \"payload\": {\n    \"challenge\": \"5e0a7c3d91b24f68a1c7e2d09b4f3a65\",\n    \"taskType\": \"https://trusttasks.org/spec/webvh/dids/update/1.0\",\n    \"payloadDigest\": \"zQmT7xYkVq3RnB9cHfLp2WdJs8GaZ4uEoMi6KbNtXyC1vDr\",\n    \"sideEffects\": \"mutating\",\n    \"exposure\": {\n      \"discloses\": \"none\",\n      \"actsAsSubject\": false\n    },\n    \"requester\": \"did:key:z6MkRequesterBrowserExample\",\n    \"effects\": [\n      {\n        \"kind\": \"keyRotation\",\n        \"summary\": \"Rotates this DID's update key. The current update key stops being able to authorize changes.\",\n        \"before\": [\"z6MkpB2NextUpdateKeyExample\"],\n        \"after\": [\"z6MkqC7FollowingUpdateKeyExample\"]\n      }\n    ],\n    \"approverSet\": \"operators\",\n    \"minApprovals\": 1,\n    \"excludeRequester\": true,\n    \"expiresAt\": \"2026-07-13T10:27:00Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T10:12:00Z\",\n    \"verificationMethod\": \"did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4KpRwExampleProofValueForTaskConsentRequestFragmentForm\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:1d7e4c05-3b8f-49a2-8c61-0e5f2a9d3b17\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/request/0.1#response\",\n  \"issuer\": \"did:key:z6MkApproverPhoneExample\",\n  \"recipient\": \"did:key:z6MkExecutorVtaExample\",\n  \"issuedAt\": \"2026-07-13T09:41:02Z\",\n  \"payload\": {\n    \"status\": \"prompted\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T09:41:02Z\",\n    \"verificationMethod\": \"did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z58aKqExampleProofValueForTaskConsentRequestResponse\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =

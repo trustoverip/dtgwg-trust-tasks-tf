@@ -4102,7 +4102,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "trust-tasks-capability-client",
  "trust-tasks-ceremony",
@@ -4116,7 +4116,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-build"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "heck",
@@ -4135,7 +4135,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "chrono",
  "serde",
@@ -4160,7 +4160,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-cli"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "anyhow",
  "clap",
@@ -4193,7 +4193,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-messaging-didcomm",
@@ -4211,7 +4211,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "async-trait",
@@ -4246,8 +4246,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "trust-tasks-example-hcp-demo"
+version = "0.0.0"
+dependencies = [
+ "affinidi-secrets-resolver",
+ "affinidi-tsp",
+ "chrono",
+ "serde",
+ "serde_json",
+ "serde_json_canonicalizer",
+ "tokio",
+ "trust-tasks",
+ "trust-tasks-build",
+]
+
+[[package]]
 name = "trust-tasks-https"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
@@ -4267,7 +4282,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -4287,7 +4302,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4303,7 +4318,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.41.6"
+version = "0.42.0"
 dependencies = [
  "affinidi-tsp",
  "async-trait",

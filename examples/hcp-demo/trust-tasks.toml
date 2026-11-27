@@ -1,0 +1,10 @@
+# The Trust Task specifications this application uses. `trust-tasks add`,
+# `remove` and `update` edit this file; `trust-tasks.lock` records what each
+# entry resolved to. A value is an exact version ("0.4") or "latest".
+# Tasks from a third-party source are named "<source>:<slug>", with the
+# source declared as [sources.<source>] url = "https://…" (or path = "…").
+[tasks]
+"hcp/entries/query" = "0.1"
+"hcp/grants/request" = "0.1"
+"hcp/grants/revoke" = "0.1"
+"hcp/grants/revoked" = "0.1"

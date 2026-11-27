@@ -14,6 +14,7 @@ members = [
     "trust-tasks-capability-client",
     "examples/consumer-app",
     "examples/getting-started",
+    "examples/hcp-demo",
     "trust-tasks-cli",
 ]
 

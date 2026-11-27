@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/_shared/0.1/standing-rule.schema.json",
+  "title": "HCP — Standing rule",
+  "description": "The Human Context Protocol (HCP) 2.0-draft-3 standing rule (HCP 6.3), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are. Where this schema and the HCP text differ, the HCP text governs. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty, which an hcp/* party never writes empty. hcp/import applies neither to an export it takes.",
+  "$defs": {
+    "StandingRule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["ruleId", "effect", "setBy", "createdAt"],
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; in this shared definition it is not checked by the schema, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.",
+      "properties": {
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/Urn",
+          "description": "Stable for the life of the rule (HCP 6.3)."
+        },
+        "effect": {
+          "type": "string",
+          "enum": ["deny"],
+          "description": "`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider."
+        },
+        "operators": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "description": "The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement."
+        },
+        "requires": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": { "$ref": "common.schema.json#/$defs/Uri" },
+          "description": "Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": { "$ref": "common.schema.json#/$defs/Category" },
+          "description": "The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."
+        },
+        "setBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2)."
+        },
+        "createdAt": {
+          "$ref": "common.schema.json#/$defs/Instant",
+          "description": "Set by the provider: when the rule was set (HCP 6.3)."
+        }
+      }
+    }
+  }
+}

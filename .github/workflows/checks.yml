@@ -125,6 +125,36 @@ jobs:
       # No dependencies: the script reads the files with node: built-ins only.
       - run: npm run check-doc-facts
 
+  # The hcp/* family carries operations of the Human Context Protocol: its
+  # schemas are compared with the JSON schemas HCP publishes, at the HCP commit
+  # the carried specs pin in `carries.reference`, in both modes of
+  # scripts/check-hcp-drift.mjs (members; bounds, patterns, formats, closed
+  # objects and merged unions). Unfiltered like the rest: HCP's side is pinned,
+  # so a change here is a change to our schemas, the map or the allowlists.
+  hcp-drift:
+    name: hcp/* schemas match HCP's
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: "npm"
+      # The front matter is parsed with `yaml`.
+      - run: npm ci --no-audit --no-fund
+      # A blobless clone of the public repository: the check reads HCP's
+      # schemas with `git show <commit>:<path>`, which fetches the blobs it
+      # needs, so the checkout's HEAD does not matter.
+      - name: Fetch HCP's specification repository
+        run: git clone --quiet --filter=blob:none --no-checkout https://github.com/loyalagents/hcp-spec.git "$RUNNER_TEMP/hcp-spec"
+      - name: Compare hcp/* with HCP's schemas at the pinned commit
+        run: |
+          echo "HCP commit pinned by the carried specs: $(node scripts/check-hcp-drift.mjs --pinned-commit)"
+          npm run check-hcp-drift -- --hcp "$RUNNER_TEMP/hcp-spec"
+
   # The node tests of the checks above and of check-release-lists.mjs
   # (scripts/test-checks/).
   test-checks:

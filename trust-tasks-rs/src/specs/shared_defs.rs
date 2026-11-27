@@ -29,6 +29,13 @@ macro_rules! d_AcceptsCriterion_5cdd9319 {
 }
 pub(crate) use d_AcceptsCriterion_5cdd9319;
 
+macro_rules! d_AccessDetail_770259fe {
+    () => {
+        "\"AccessDetail\":{\"additionalProperties\":true,\"description\":\"An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.\",\"properties\":{\"actions\":{\"description\":\"What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.\",\"items\":{\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories the detail covers (HCP 4.5).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"additionalProperties\":true,\"description\":\"An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).\",\"type\":\"object\"},\"onwardSharing\":{\"$ref\":\"#/$defs/OnwardSharing\",\"description\":\"The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).\"},\"purposes\":{\"description\":\"The purposes the person approved for these categories; never empty (HCP 6.1.5.2).\",\"items\":{\"$ref\":\"#/$defs/Purpose\"},\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"The HCP authorization detail type (HCP 6.1.5).\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\",\"purposes\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AccessDetail_770259fe;
+
 macro_rules! d_AccountBinding_4188c14e {
     () => {
         "\"AccountBinding\":{\"additionalProperties\":false,\"description\":\"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\"properties\":{\"consumer\":{\"description\":\"The DID of the integration allowed to use the account.\",\"maxLength\":2048,\"minLength\":7,\"pattern\":\"^did:[a-z0-9]+:\\\\S+$\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"maxTtlSeconds\":{\"description\":\"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\"maximum\":3600,\"minimum\":60,\"type\":\"integer\"},\"ratePerMinute\":{\"description\":\"Issuances or signatures per minute for this binding.\",\"maximum\":600,\"minimum\":1,\"type\":\"integer\"},\"scopeCeiling\":{\"$ref\":\"#/$defs/CredentialScopeCeiling\",\"description\":\"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"},\"sourceCidrs\":{\"description\":\"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\"items\":{\"maxLength\":49,\"pattern\":\"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"}},\"required\":[\"consumer\",\"maxTtlSeconds\",\"ratePerMinute\"],\"title\":\"AccountBinding\",\"type\":\"object\"}"
@@ -337,12 +344,33 @@ macro_rules! d_Artifact_4036e758 {
 }
 pub(crate) use d_Artifact_4036e758;
 
+macro_rules! d_AssertedBy_8138f67e {
+    () => {
+        "\"AssertedBy\":{\"additionalProperties\":true,\"description\":\"HCP `record.provenance.assertedBy`, as a request supplies it: the Context Asserter's identifier only. The provider assigns `assurance` (HCP 3.5, 5.2.3).\",\"properties\":{\"id\":{\"description\":\"The Context Asserter (HCP 3.2.6).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AssertedBy_8138f67e;
+
 macro_rules! d_AssertionResponse_36db1bca {
     () => {
         "\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_AssertionResponse_36db1bca;
+
+macro_rules! d_Assertion_7258cdf9 {
+    () => {
+        "\"Assertion\":{\"additionalProperties\":true,\"description\":\"What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/Basis\",\"description\":\"What the assertion was drawn from (HCP 4.2.5).\"},\"confidence\":{\"description\":\"How confident an inferring model is (HCP 4.2, 4.4).\",\"enum\":[\"high\",\"medium\",\"low\",null],\"type\":[\"string\",\"null\"]},\"declarationType\":{\"description\":\"What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values, carried verbatim.\",\"enum\":[\"person-declared\",\"model-inferred\",\"issuer-attested\"],\"type\":\"string\"},\"permittedPurposes\":{\"description\":\"The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"validUntil\":{\"description\":\"The instant after which the content no longer holds; absent or null means it does not expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable, which is a disclosure's `useUntil` (HCP 7.6).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"declarationType\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Assertion_7258cdf9;
+
+macro_rules! d_Assurance_debf452c {
+    () => {
+        "\"Assurance\":{\"description\":\"How a Context Asserter's identity was established (HCP 3.6). HCP's own values, carried verbatim.\",\"enum\":[\"unverified\",\"authenticated\",\"cryptographically-verified\"],\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Assurance_debf452c;
 
 macro_rules! d_AttachmentRef_b05d65ed {
     () => {
@@ -400,12 +428,40 @@ macro_rules! d_Audience_76aa3fc6 {
 }
 pub(crate) use d_Audience_76aa3fc6;
 
+macro_rules! d_AuditDisclosed_fc9343da {
+    () => {
+        "\"AuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry a retrieval disclosed (HCP 8.2).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable `id`.\"},\"provenance\":{\"description\":\"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"additionalProperties\":true,\"description\":\"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"evidence\":{\"description\":\"The evidence item's index.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The use-until time the disclosure was given (HCP 7.6).\"},\"version\":{\"description\":\"The version disclosed.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AuditDisclosed_fc9343da;
+
 macro_rules! d_AuditEnvelope_02b2c0a5 {
     () => {
         "\"AuditEnvelope\":{\"$anchor\":\"auditEnvelope\",\"additionalProperties\":false,\"description\":\"One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.\",\"properties\":{\"action\":{\"description\":\"The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.\",\"minLength\":1,\"type\":\"string\"},\"actor\":{\"description\":\"DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.\",\"type\":[\"string\",\"null\"]},\"contextId\":{\"description\":\"Trust context the event occurred in, for a maintainer that partitions its log per context.\",\"minLength\":1,\"type\":\"string\"},\"detail\":{\"additionalProperties\":true,\"description\":\"Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.\",\"type\":\"object\"},\"entryHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.\"},\"eventId\":{\"description\":\"Stable identifier for this event. Also the tie-breaker component of a cursor's position key.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"outcome\":{\"description\":\"How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.\",\"type\":\"string\"},\"prevHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.\"},\"recordedAt\":{\"description\":\"Wall-clock time the entry was written. The primary ordering key.\",\"format\":\"date-time\",\"type\":\"string\"},\"schemaVersion\":{\"description\":\"Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.\",\"minimum\":0,\"type\":\"integer\"},\"target\":{\"description\":\"DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.\",\"type\":[\"string\",\"null\"]}},\"required\":[\"eventId\",\"recordedAt\",\"action\"],\"title\":\"AuditEnvelope\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_AuditEnvelope_02b2c0a5;
+
+macro_rules! d_AuditEvent_e48c2562 {
+    () => {
+        "\"AuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements.\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\",\"entryId\",\"relatedEntryId\",\"purpose\",\"purposeDescription\",\"grantId\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AuditEvent_e48c2562;
+
+macro_rules! d_AuditParticipants_99e0fec3 {
+    () => {
+        "\"AuditParticipants\":{\"additionalProperties\":true,\"description\":\"The participants in an audit event (HCP 8.2, 3.9). No event names \\\"system\\\" (HCP 8.2).\",\"properties\":{\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Authorizing Principal (HCP 3.9).\"},\"clientOperator\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Client Operator, where a client took part (HCP 3.9).\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 8.2). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The model, where one took part (HCP 3.9).\"},\"provider\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The HCP Provider (HCP 8.2).\"},\"requestingParty\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Requesting Party, where there is one (HCP 3.9).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval, on a read (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AuditParticipants_99e0fec3;
+
+macro_rules! d_AuditParty_d60c0a20 {
+    () => {
+        "\"AuditParty\":{\"additionalProperties\":true,\"description\":\"A participant named by its identifier (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AuditParty_d60c0a20;
 
 macro_rules! d_AuthModel_d5697c2c {
     () => {
@@ -455,6 +511,13 @@ macro_rules! d_AuthorityScope_3c068034 {
     };
 }
 pub(crate) use d_AuthorityScope_3c068034;
+
+macro_rules! d_AuthorizingPrincipal_97d80a94 {
+    () => {
+        "\"AuthorizingPrincipal\":{\"additionalProperties\":true,\"description\":\"The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).\",\"properties\":{\"delegation\":{\"description\":\"The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AuthorizingPrincipal_97d80a94;
 
 macro_rules! d_AutoGrantStatus_3f2c0593 {
     () => {
@@ -588,6 +651,13 @@ macro_rules! d_Ballot_4ea3e0e4 {
     };
 }
 pub(crate) use d_Ballot_4ea3e0e4;
+
+macro_rules! d_Basis_811cd1e4 {
+    () => {
+        "\"Basis\":{\"additionalProperties\":true,\"description\":\"What an assertion was drawn from (HCP 4.2.5). It identifies no party but the Context Subject.\",\"properties\":{\"drawnFrom\":{\"description\":\"The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"rationale\":{\"description\":\"Why the asserter drew the conclusion.\",\"maxLength\":4096,\"type\":\"string\"},\"setting\":{\"description\":\"The setting in which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"},\"task\":{\"description\":\"The task during which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"}},\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Basis_811cd1e4;
 
 macro_rules! d_BindTarget_63e97e9b {
     () => {
@@ -827,6 +897,13 @@ macro_rules! d_Cast_4bc77d23 {
 }
 pub(crate) use d_Cast_4bc77d23;
 
+macro_rules! d_Category_bc23a848 {
+    () => {
+        "\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Category_bc23a848;
+
 macro_rules! d_Certification_eb434999 {
     () => {
         "\"Certification\":{\"additionalProperties\":false,\"description\":\"The community's certification of the election's result, as vtc/elections/certify recorded it.\",\"properties\":{\"auditAttestations\":{\"items\":{\"description\":\"A verifiable credential from an auditor the manifest names, as received.\",\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"},\"certifiedAt\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"}},\"required\":[\"result\",\"certifiedAt\",\"auditAttestations\"],\"title\":\"Certification\",\"type\":\"object\"}"
@@ -924,6 +1001,20 @@ macro_rules! d_ClaimType_9d5c7e6d {
     };
 }
 pub(crate) use d_ClaimType_9d5c7e6d;
+
+macro_rules! d_Classification_f9d67cb6 {
+    () => {
+        "\"Classification\":{\"additionalProperties\":true,\"description\":\"HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it covers any one of the entry's categories (HCP 4.5).\",\"properties\":{\"categories\":{\"description\":\"One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"dimension\":{\"description\":\"A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).\",\"maxLength\":2048,\"type\":[\"string\",\"null\"]},\"permittedPurposes\":{\"description\":\"The Authorizing Principal's narrowing of the entry's purposes; absent means no limit (HCP 4.2.6).\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"categories\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Classification_f9d67cb6;
+
+macro_rules! d_ClientDescription_b9e66f88 {
+    () => {
+        "\"ClientDescription\":{\"additionalProperties\":true,\"description\":\"An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).\",\"properties\":{\"id\":{\"description\":\"The client's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The client's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"additionalProperties\":true,\"description\":\"The Client Operator.\",\"properties\":{\"id\":{\"description\":\"The operator's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The operator's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"}},\"required\":[\"id\",\"name\",\"operator\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_ClientDescription_b9e66f88;
 
 macro_rules! d_CollectionSetting_5648f015 {
     () => {
@@ -1078,6 +1169,13 @@ macro_rules! d_ContactRevision_885af371 {
     };
 }
 pub(crate) use d_ContactRevision_885af371;
+
+macro_rules! d_Content_9ff5fa61 {
+    () => {
+        "\"Content\":{\"additionalProperties\":true,\"description\":\"Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"evidence\":{\"description\":\"Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).\",\"minimum\":0,\"type\":\"integer\"},\"language\":{\"description\":\"The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.\",\"maxLength\":64,\"type\":[\"string\",\"null\"]},\"profile\":{\"$ref\":\"#/$defs/Uri\",\"description\":\"The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).\"},\"value\":{\"description\":\"The statement, under the General Context Profile: a string or a structured object (HCP 11.2).\",\"type\":[\"string\",\"object\"]}},\"required\":[\"profile\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Content_9ff5fa61;
 
 macro_rules! d_ContextId_ea8fa6f9 {
     () => {
@@ -1281,6 +1379,41 @@ macro_rules! d_DecryptionTarget_afb438c5 {
     };
 }
 pub(crate) use d_DecryptionTarget_afb438c5;
+
+macro_rules! d_DelegationBasis_5707cab8 {
+    () => {
+        "\"DelegationBasis\":{\"additionalProperties\":true,\"description\":\"What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.\",\"properties\":{\"covers\":{\"description\":\"The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"description\":{\"description\":\"What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"establishedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation was established (HCP 17.2).\"},\"establishedBy\":{\"description\":\"The Authorization Service that established the delegation (HCP 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"description\":\"The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"maxItems\":16,\"type\":\"array\"},\"method\":{\"description\":\"How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).\",\"enum\":[\"appointed\",\"attested\",\"evidence\",\"delegated\",\"unspecified\"],\"type\":\"string\"},\"parent\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).\"}},\"required\":[\"method\",\"description\",\"establishedBy\",\"establishedAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DelegationBasis_5707cab8;
+
+macro_rules! d_DelegationEnded_652f9f46 {
+    () => {
+        "\"DelegationEnded\":{\"additionalProperties\":true,\"description\":\"How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation ended (HCP 17.2, 17.6).\"},\"reason\":{\"description\":\"Why it ended (HCP 17.6). HCP's own values, carried verbatim.\",\"enum\":[\"majority\",\"expiry\",\"basis-ended\",\"relinquished\",\"ended-by-subject\",\"parent-ended\",\"ended-by-delegate\"],\"type\":\"string\"}},\"required\":[\"at\",\"reason\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DelegationEnded_652f9f46;
+
+macro_rules! d_DelegationScope_7c41b3c9 {
+    () => {
+        "\"DelegationScope\":{\"additionalProperties\":true,\"description\":\"The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).\",\"properties\":{\"actions\":{\"description\":\"The actions in scope (HCP 17.2, 6.1.5).\",\"items\":{\"enum\":[\"read\",\"write\"],\"type\":\"string\"},\"maxItems\":2,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"categories\",\"actions\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DelegationScope_7c41b3c9;
+
+macro_rules! d_DelegationTerm_1bad5227 {
+    () => {
+        "\"DelegationTerm\":{\"additionalProperties\":true,\"description\":\"When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).\",\"properties\":{\"atMajority\":{\"description\":\"True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).\",\"type\":\"boolean\"},\"endsAt\":{\"description\":\"When the delegation ends; null where no end is known (HCP 17.2).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"endsAt\",\"atMajority\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DelegationTerm_1bad5227;
+
+macro_rules! d_Delegation_62ece95d {
+    () => {
+        "\"Delegation\":{\"additionalProperties\":true,\"description\":\"One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/DelegationBasis\",\"description\":\"What the authority rests on, and how the Authorization Service established it (HCP 17.3).\"},\"delegate\":{\"additionalProperties\":true,\"description\":\"The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).\",\"properties\":{\"id\":{\"description\":\"The delegate's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"A name the Context Subject can recognize.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"delegationId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).\"},\"ended\":{\"$ref\":\"#/$defs/DelegationEnded\",\"description\":\"Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).\"},\"mayDelegate\":{\"description\":\"True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).\",\"type\":\"boolean\"},\"relationship\":{\"description\":\"The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/DelegationScope\",\"description\":\"The categories and actions the delegate may authorize (HCP 17.4).\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 17.2).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"term\":{\"$ref\":\"#/$defs/DelegationTerm\",\"description\":\"When the delegation ends (HCP 17.2).\"}},\"required\":[\"delegationId\",\"subject\",\"delegate\",\"relationship\",\"basis\",\"scope\",\"term\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Delegation_62ece95d;
 
 macro_rules! d_DeliveryState_91a8ef87 {
     () => {
@@ -1499,6 +1632,13 @@ macro_rules! d_DigestMultibase_38e7e7d5 {
 }
 pub(crate) use d_DigestMultibase_38e7e7d5;
 
+macro_rules! d_Directive_84bea5d6 {
+    () => {
+        "\"Directive\":{\"additionalProperties\":true,\"description\":\"What a client may do with context it received, or on the Context Subject's behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).\",\"properties\":{\"action\":{\"description\":\"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`. The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the directive was set (HCP 6.4).\"},\"directiveId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the directive (HCP 6.4).\"},\"effect\":{\"description\":\"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"text\":{\"description\":\"The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"directiveId\",\"action\",\"effect\",\"text\",\"setBy\",\"createdAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Directive_84bea5d6;
+
 macro_rules! d_DirectoryCard_64dc8159 {
     () => {
         "\"DirectoryCard\":{\"additionalProperties\":false,\"description\":\"A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.\",\"properties\":{\"discoverability\":{\"$ref\":\"#/$defs/Discoverability\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection.\"},\"externalCard\":{\"$ref\":\"#/$defs/ExternalCard\"},\"groupAudience\":{\"description\":\"The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once.\",\"items\":{\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true},\"introductions\":{\"$ref\":\"#/$defs/Introductions\"},\"revision\":{\"description\":\"Incremented on every accepted change to the card, by its subject or by an administrator's assertion.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"description\":\"When the card last changed.\",\"format\":\"date-time\",\"type\":\"string\"},\"values\":{\"$ref\":\"#/$defs/CardValues\"},\"visibility\":{\"$ref\":\"#/$defs/FieldVisibility\"}},\"required\":[\"entryId\",\"values\",\"visibility\",\"discoverability\",\"introductions\",\"revision\",\"updatedAt\"],\"title\":\"DirectoryCard\",\"type\":\"object\"}"
@@ -1534,12 +1674,33 @@ macro_rules! d_DirectoryRef_44208ffb {
 }
 pub(crate) use d_DirectoryRef_44208ffb;
 
+macro_rules! d_DisclosedEvidenceItem_3514e7f9 {
+    () => {
+        "\"DisclosedEvidenceItem\":{\"allOf\":[{\"$ref\":\"#/$defs/EvidenceItem\"}],\"description\":\"An evidence item as disclosed (HCP 7.4). An item carrying a derived credential adds `revealed`.\",\"properties\":{\"revealed\":{\"description\":\"The JSON Pointers into the stored credential of the claims a derived credential reveals (HCP 7.4, 14.9).\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"type\":\"array\"}}}"
+    };
+}
+pub(crate) use d_DisclosedEvidenceItem_3514e7f9;
+
 macro_rules! d_DisclosedField_f5830c3e {
     () => {
         "\"DisclosedField\":{\"additionalProperties\":false,\"description\":\"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\"properties\":{\"ceiling\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience the field may ever reach, whatever the member chooses.\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"facet\":{\"description\":\"Whether members may filter on the field and see counts by its values. Absent: false.\",\"type\":\"boolean\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"searchable\":{\"description\":\"Whether a member's search may match the field, within what the searcher may see.\",\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\",\"description\":\"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"ceiling\",\"defaultVisibility\",\"searchable\"],\"title\":\"DisclosedField\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_DisclosedField_f5830c3e;
+
+macro_rules! d_DisclosedProvenance_20a80e94 {
+    () => {
+        "\"DisclosedProvenance\":{\"additionalProperties\":true,\"description\":\"Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an identifier of a client, a Client Operator, a grant, a conversation or a document, nor `confirmedBy`.\",\"not\":{\"anyOf\":[{\"required\":[\"id\"]},{\"required\":[\"confirmedBy\"]},{\"required\":[\"authorizedUnder\"]},{\"required\":[\"submittedByClient\"]}]},\"properties\":{\"assertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the assertion was made.\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the version.\"},\"source\":{\"description\":\"The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's own values, carried verbatim.\",\"enum\":[\"conversation\",\"document\",\"person-input\",\"integration\"],\"type\":\"string\"},\"submittedBy\":{\"additionalProperties\":true,\"description\":\"The names of the client that submitted the version disclosed and of its Client Operator.\",\"properties\":{\"name\":{\"description\":\"The client's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"description\":\"The Client Operator's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"operator\"],\"type\":\"object\"}},\"required\":[\"submittedBy\",\"source\",\"assertedAt\",\"recordedAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DisclosedProvenance_20a80e94;
+
+macro_rules! d_DisclosedRelationship_411becf4 {
+    () => {
+        "\"DisclosedRelationship\":{\"additionalProperties\":true,\"description\":\"A relationship as disclosed (HCP 7.4).\",\"properties\":{\"target\":{\"description\":\"The `ref` of the related entry, disclosed in the same response.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/RelationshipType\",\"description\":\"The kind of relationship.\"}},\"required\":[\"type\",\"target\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_DisclosedRelationship_411becf4;
 
 macro_rules! d_Disclosure_1106e043 {
     () => {
@@ -1554,6 +1715,13 @@ macro_rules! d_Disclosure_4d47778d {
     };
 }
 pub(crate) use d_Disclosure_4d47778d;
+
+macro_rules! d_Disclosure_536f5f00 {
+    () => {
+        "\"Disclosure\":{\"additionalProperties\":true,\"description\":\"A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`, never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the whole of `record` (status, provenance, relationships, conversion, metadata): those members describe the person's activity with other systems, which no grant authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it receives in `standing`.\",\"not\":{\"anyOf\":[{\"required\":[\"id\"]},{\"required\":[\"subject\"]},{\"required\":[\"record\"]},{\"required\":[\"schema\"]}]},\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/Assertion\",\"description\":\"The assertion, as stored for the version disclosed, including `basis` and `permittedPurposes` (HCP 7.4).\"},\"classification\":{\"$ref\":\"#/$defs/Classification\",\"description\":\"Only the entry's categories the requesting grant covers, with its dimension and its `permittedPurposes` where present; its other categories are withheld (HCP 7.4).\"},\"content\":{\"$ref\":\"#/$defs/Content\",\"description\":\"The content, as stored for the version disclosed (HCP 7.4).\"},\"evidence\":{\"description\":\"The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2), including each item's `verification`, except that a credential may be disclosed in derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The one-`content`-item rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"$ref\":\"#/$defs/DisclosedEvidenceItem\"},\"type\":\"array\"},\"onwardSharing\":{\"const\":true,\"description\":\"Present, and true, only where the client may share from this entry under HCP 3.12: the detail of the grant that reaches the entry carries `onwardSharing` and every category of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4).\"},\"provenance\":{\"$ref\":\"#/$defs/DisclosedProvenance\",\"description\":\"Present only where the requesting grant includes the `provenance` action for a category of the entry (HCP 7.4.1).\"},\"ref\":{\"description\":\"A reference to the entry, opaque to the client, stable for one grant and one entry and different under every other grant, and never derivable into the entry's `id` (HCP 7.4). The client names the entry by it in get entry, revise and withdraw; under any other grant it fails with not authorized.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"relationships\":{\"description\":\"Only the relationships whose target is disclosed in the same response, with the target named by its `ref` (HCP 7.4, 4.2.3).\",\"items\":{\"$ref\":\"#/$defs/DisclosedRelationship\"},\"type\":\"array\"},\"standing\":{\"$ref\":\"#/$defs/Standing\",\"description\":\"What the client needs to judge the entry's standing (HCP 7.4, 3.8).\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The instant after which the client MUST NOT use the copy, or pass it on, without fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit time that applies (such as `assertion.validUntil`), else a heuristic of at least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of High default sensitivity, or 1 hour where the client has no registered notification endpoint (HCP 7.6).\"},\"version\":{\"description\":\"The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"ref\",\"version\",\"content\",\"assertion\",\"classification\",\"standing\",\"useUntil\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Disclosure_536f5f00;
 
 macro_rules! d_Discoverability_1aff1732 {
     () => {
@@ -1807,12 +1975,26 @@ macro_rules! d_EntryState_19e1cf58 {
 }
 pub(crate) use d_EntryState_19e1cf58;
 
+macro_rules! d_EntrySubject_d714f210 {
+    () => {
+        "\"EntrySubject\":{\"additionalProperties\":true,\"description\":\"The subject of an entry (HCP 4.2).\",\"properties\":{\"id\":{\"description\":\"A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"relationship\":{\"description\":\"Reserved by HCP (HCP 4.2, 11.3); null where present.\",\"type\":\"null\"}},\"required\":[\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EntrySubject_d714f210;
+
 macro_rules! d_Entry_858b7090 {
     () => {
         "\"Entry\":{\"additionalProperties\":false,\"description\":\"An entry as its network's administrators see it.\",\"properties\":{\"ack\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The party's acknowledgement (VMC carrying the grant's digest).\"},\"createdAt\":{\"description\":\"When the party was first listed.\",\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The listed party's DID.\"},\"grant\":{\"$ref\":\"#/$defs/Issued\",\"description\":\"The signed membership grant (VMC), once the party acknowledged.\"},\"history\":{\"description\":\"Every transition, oldest first.\",\"items\":{\"$ref\":\"#/$defs/StateChange\"},\"type\":\"array\"},\"kind\":{\"$ref\":\"#/$defs/EntryKind\"},\"label\":{\"$ref\":\"#/$defs/Label\"},\"listing\":{\"$ref\":\"#/$defs/Issued\",\"description\":\"The listing credential (`lists/1`).\"},\"offer\":{\"$ref\":\"#/$defs/Issued\",\"description\":\"The unsigned membership grant offered to the party, before it acknowledged.\"},\"profile\":{\"$ref\":\"#/$defs/EntryProfile\"},\"repudiation\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The party's repudiation (`repudiates/1`) of the listing or the grant.\"},\"state\":{\"$ref\":\"#/$defs/EntryState\"},\"updatedAt\":{\"description\":\"When the entry last changed.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"did\",\"kind\",\"profile\",\"state\",\"createdAt\",\"updatedAt\",\"listing\",\"history\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Entry_858b7090;
+
+macro_rules! d_Entry_97831f86 {
+    () => {
+        "\"Entry\":{\"additionalProperties\":true,\"description\":\"An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry, with its stable `id`, reaches only the Context Subject's own access (HCP 7.4).\",\"properties\":{\"@context\":{\"description\":\"The entry's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 4.2).\",\"type\":[\"array\",\"string\"]},\"assertion\":{\"$ref\":\"#/$defs/Assertion\",\"description\":\"What the submitting client states about the assertion (HCP 4.2, 4.4).\"},\"classification\":{\"$ref\":\"#/$defs/Classification\",\"description\":\"HCP's classification of the entry: its categories, dimension and purpose limits (HCP 4.2, 4.5).\"},\"content\":{\"$ref\":\"#/$defs/Content\",\"description\":\"What is said about the Context Subject, shaped by its content profile (HCP 4.2).\"},\"evidence\":{\"description\":\"Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).\"},\"record\":{\"$ref\":\"#/$defs/Record\",\"description\":\"The provider's record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2).\"},\"schema\":{\"const\":\"https://hcp.example/spec/entry/2.0\",\"description\":\"The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3 defines this one value.\",\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/EntrySubject\",\"description\":\"The Context Subject the entry is about.\"},\"type\":{\"description\":\"The entry's types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"schema\",\"id\",\"type\",\"subject\",\"content\",\"assertion\",\"classification\",\"record\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Entry_97831f86;
 
 macro_rules! d_EnumOption_71fa9210 {
     () => {
@@ -1848,6 +2030,13 @@ macro_rules! d_EvidenceDocument_14af4a63 {
     };
 }
 pub(crate) use d_EvidenceDocument_14af4a63;
+
+macro_rules! d_EvidenceItem_b85c3770 {
+    () => {
+        "\"EvidenceItem\":{\"additionalProperties\":true,\"description\":\"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"credential\":{\"description\":\"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_EvidenceItem_b85c3770;
 
 macro_rules! d_Evidence_4270f806 {
     () => {
@@ -2122,12 +2311,26 @@ macro_rules! d_GovernancePolicyClaims_7c909415 {
 }
 pub(crate) use d_GovernancePolicyClaims_7c909415;
 
+macro_rules! d_GrantClient_7a868e56 {
+    () => {
+        "\"GrantClient\":{\"additionalProperties\":true,\"description\":\"The client a grant was issued to (HCP 6.1.5).\",\"properties\":{\"claims\":{\"description\":\"The client conformance claims it declared at registration (HCP 18.1); absent where it declared none.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"type\":\"array\",\"uniqueItems\":true},\"id\":{\"description\":\"Its client identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"legalRetention\":{\"$ref\":\"#/$defs/LegalRetention\",\"description\":\"Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5).\"},\"name\":{\"description\":\"A name the person can recognize (HCP 6.1.5).\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"$ref\":\"#/$defs/Named\",\"description\":\"The Client Operator (HCP 3.2.8).\"}},\"required\":[\"id\",\"name\",\"operator\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_GrantClient_7a868e56;
+
 macro_rules! d_GrantId_f4f78116 {
     () => {
         "\"GrantId\":{\"description\":\"A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._:-]+$\",\"title\":\"GrantId\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_GrantId_f4f78116;
+
+macro_rules! d_GrantParty_b45d4dcb {
+    () => {
+        "\"GrantParty\":{\"additionalProperties\":true,\"description\":\"An actor a grant binds, named by identifier (HCP 3.4).\",\"properties\":{\"id\":{\"description\":\"Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_GrantParty_b45d4dcb;
 
 macro_rules! d_GrantRef_0ce4a20b {
     () => {
@@ -2163,6 +2366,13 @@ macro_rules! d_GrantView_195c841a {
     };
 }
 pub(crate) use d_GrantView_195c841a;
+
+macro_rules! d_Grant_b4ede789 {
+    () => {
+        "\"Grant\":{\"additionalProperties\":true,\"description\":\"A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).\",\"properties\":{\"access\":{\"description\":\"What the grant authorizes: one or more authorization details (HCP 6.1.5).\",\"items\":{\"$ref\":\"#/$defs/AccessDetail\"},\"minItems\":1,\"type\":\"array\"},\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuthorizingPrincipal\",\"description\":\"Who authorized the grant (HCP 3.4, 6.1.5).\"},\"client\":{\"$ref\":\"#/$defs/GrantClient\",\"description\":\"The HCP Client the grant was issued to (HCP 6.1.5).\"},\"expiresAt\":{\"description\":\"For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2).\"},\"grantType\":{\"description\":\"Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.\",\"enum\":[\"temporary\",\"persistent\"],\"type\":\"string\"},\"issuedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the grant was issued.\"},\"requestingParty\":{\"$ref\":\"#/$defs/RequestingParty\",\"description\":\"The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4).\"},\"scopes\":{\"description\":\"Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).\",\"items\":{\"maxLength\":2048,\"pattern\":\"^hcp:[^:]+(:[^:]+)*:(read|write)$\",\"type\":\"string\"},\"type\":\"array\"},\"status\":{\"description\":\"`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"revoked\",\"expired\"],\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/GrantParty\",\"description\":\"The Context Subject, by a pseudonym specific to the client (HCP 3.4).\"}},\"required\":[\"grantId\",\"subject\",\"authorizingPrincipal\",\"client\",\"access\",\"grantType\",\"issuedAt\",\"expiresAt\",\"status\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Grant_b4ede789;
 
 macro_rules! d_GrantsBindingSpec_ea7c546c {
     () => {
@@ -2780,6 +2990,13 @@ macro_rules! d_LanguageTag_8062fe1f {
 }
 pub(crate) use d_LanguageTag_8062fe1f;
 
+macro_rules! d_LegalRetention_151b6ef2 {
+    () => {
+        "\"LegalRetention\":{\"additionalProperties\":true,\"description\":\"A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).\",\"properties\":{\"obligation\":{\"description\":\"The law or rule that requires it.\",\"maxLength\":4096,\"type\":\"string\"},\"period\":{\"description\":\"How long it is kept.\",\"maxLength\":1024,\"type\":\"string\"},\"record\":{\"description\":\"The record kept.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"record\",\"obligation\",\"period\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_LegalRetention_151b6ef2;
+
 macro_rules! d_LifecycleReason_9ca4820e {
     () => {
         "\"LifecycleReason\":{\"description\":\"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\"maxLength\":500,\"minLength\":1,\"title\":\"LifecycleReason\",\"type\":\"string\"}"
@@ -3095,6 +3312,13 @@ macro_rules! d_MigrationState_40f79c68 {
 }
 pub(crate) use d_MigrationState_40f79c68;
 
+macro_rules! d_MinimizationReport_00feca86 {
+    () => {
+        "\"MinimizationReport\":{\"additionalProperties\":true,\"description\":\"The minimization report a query or get-entry result carries (HCP 7.5). It MUST NOT carry the number of entries considered, the number available within scope, or any other measure of what was withheld (HCP 7.5); no schema can check that by name.\",\"properties\":{\"method\":{\"description\":\"The relevance method that determined the final ordering (HCP 7.3): the method the provider declares as `minimization_method` in its discovery document (HCP 19.3), such as `lexical`, `semantic` or `llm`, or `none` for a get-entry result. The set of values is open.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"method\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_MinimizationReport_00feca86;
+
 macro_rules! d_Mode_7f33c76d {
     () => {
         "\"Mode\":{\"description\":\"How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.\",\"enum\":[\"scan\"],\"title\":\"Mode\",\"type\":\"string\"}"
@@ -3192,6 +3416,13 @@ macro_rules! d_MyBadge_3a4d09fe {
     };
 }
 pub(crate) use d_MyBadge_3a4d09fe;
+
+macro_rules! d_Named_e4fd4d7d {
+    () => {
+        "\"Named\":{\"additionalProperties\":true,\"description\":\"An organization, by identifier and a name a person can recognize.\",\"properties\":{\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Its name. The minLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Named_e4fd4d7d;
 
 macro_rules! d_NamespaceId_693cfe90 {
     () => {
@@ -3318,6 +3549,13 @@ macro_rules! d_OfferV2_1a7a3288 {
     };
 }
 pub(crate) use d_OfferV2_1a7a3288;
+
+macro_rules! d_OnwardSharing_e3f512bc {
+    () => {
+        "\"OnwardSharing\":{\"additionalProperties\":true,\"description\":\"Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).\",\"properties\":{\"domains\":{\"description\":\"Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5).\",\"items\":{\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"notTo\":{\"description\":\"Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3).\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_OnwardSharing_e3f512bc;
 
 macro_rules! d_OobKey_3e240613 {
     () => {
@@ -3529,6 +3767,13 @@ macro_rules! d_ProofRung_2b660c93 {
 }
 pub(crate) use d_ProofRung_2b660c93;
 
+macro_rules! d_Proposal_903b3a28 {
+    () => {
+        "\"Proposal\":{\"additionalProperties\":true,\"description\":\"A proposal for resolving a conflict the client asserts, carried on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. `proposedBy` and `proposedAt` are set by the provider, never taken from a request (HCP 4.7.4).\",\"properties\":{\"act\":{\"description\":\"The act proposed (HCP 4.7.3).\",\"enum\":[\"reject\",\"accept\",\"supersede\"],\"type\":\"string\"},\"entry\":{\"description\":\"The entry the act applies to: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"rationale\":{\"description\":\"Why, in words the Context Subject can read (HCP 4.7.4).\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"weighed\":{\"description\":\"What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4).\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"act\",\"entry\",\"rationale\",\"weighed\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Proposal_903b3a28;
+
 macro_rules! d_ProtectionClass_e8d832ae {
     () => {
         "\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"}"
@@ -3542,6 +3787,13 @@ macro_rules! d_ProtocolCounts_f336e34b {
     };
 }
 pub(crate) use d_ProtocolCounts_f336e34b;
+
+macro_rules! d_Provenance_190796b6 {
+    () => {
+        "\"Provenance\":{\"additionalProperties\":true,\"description\":\"The provenance of one version of an entry (HCP 4.2, 3.5).\",\"properties\":{\"assertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the assertion was made, as the submitting client states it.\"},\"assertedBy\":{\"additionalProperties\":true,\"description\":\"The Context Asserter (HCP 3.5, 3.6).\",\"properties\":{\"assurance\":{\"$ref\":\"#/$defs/Assurance\",\"description\":\"How the asserter's identity was established.\"},\"id\":{\"description\":\"The Context Asserter's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"via\":{\"additionalProperties\":true,\"description\":\"Present only where a client attested for an issuer under the issuer's authorization (HCP 3.7).\",\"properties\":{\"id\":{\"description\":\"The identifier of the attestation authorization or the recorded arrangement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"description\":\"What the client attested under. HCP's own values, carried verbatim.\",\"enum\":[\"authorization-credential\",\"arrangement\"],\"type\":\"string\"}},\"required\":[\"kind\",\"id\"],\"type\":\"object\"}},\"required\":[\"id\",\"assurance\"],\"type\":\"object\"},\"authorizedUnder\":{\"description\":\"The grant under which this version was written.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"confirmations\":{\"description\":\"Confirmation records for this version (HCP 3.8). Absent or empty when there are none.\",\"items\":{\"additionalProperties\":true,\"properties\":{\"confirmedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When.\"},\"confirmedBy\":{\"additionalProperties\":true,\"description\":\"Who confirmed or rejected it.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"disposition\":{\"description\":\"Whether the Context Subject confirmed or rejected the version.\",\"enum\":[\"confirmed\",\"rejected\"],\"type\":\"string\"}},\"required\":[\"disposition\",\"confirmedBy\",\"confirmedAt\"],\"type\":\"object\"},\"type\":\"array\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded this version.\"},\"recordedByProvider\":{\"description\":\"The HCP Provider that recorded this version.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"source\":{\"description\":\"The origin of the entry, as the submitting client states it: a conversation or document identifier, `person-input` or `integration` (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"submittedByClient\":{\"$ref\":\"#/$defs/ClientDescription\",\"description\":\"The HCP Client that submitted this version, and its Client Operator (HCP 3.5).\"}},\"required\":[\"assertedBy\",\"assertedAt\",\"source\",\"submittedByClient\",\"authorizedUnder\",\"recordedByProvider\",\"recordedAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Provenance_190796b6;
 
 macro_rules! d_Provenance_decb9182 {
     () => {
@@ -3620,6 +3872,13 @@ macro_rules! d_PurgeProgress_5b14d7e4 {
 }
 pub(crate) use d_PurgeProgress_5b14d7e4;
 
+macro_rules! d_PurposeCode_364056e0 {
+    () => {
+        "\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_PurposeCode_364056e0;
+
 macro_rules! d_PurposeScopeAny_882918e3 {
     () => {
         "\"PurposeScopeAny\":{\"additionalProperties\":false,\"description\":\"Any purpose except `modelTraining` (training, fine-tuning or evaluating a machine-learning model on the content), which `any` never grants (VTI-ACL-105).\",\"properties\":{\"scope\":{\"const\":\"any\"}},\"required\":[\"scope\"],\"title\":\"PurposeScopeAny\",\"type\":\"object\"}"
@@ -3654,6 +3913,13 @@ macro_rules! d_Purpose_88e12d04 {
     };
 }
 pub(crate) use d_Purpose_88e12d04;
+
+macro_rules! d_Purpose_c6421fb4 {
+    () => {
+        "\"Purpose\":{\"additionalProperties\":true,\"description\":\"A purpose with a description the person can read (HCP 6.1.5.2).\",\"properties\":{\"code\":{\"$ref\":\"#/$defs/PurposeCode\",\"description\":\"The purpose code.\"},\"description\":{\"description\":\"The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"code\",\"description\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Purpose_c6421fb4;
 
 macro_rules! d_PushRegistration_3670ce67 {
     () => {
@@ -3949,12 +4215,26 @@ macro_rules! d_Record_1654f9d8 {
 }
 pub(crate) use d_Record_1654f9d8;
 
+macro_rules! d_Record_fb040dcd {
+    () => {
+        "\"Record\":{\"additionalProperties\":true,\"description\":\"The provider's record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).\",\"properties\":{\"conversion\":{\"additionalProperties\":true,\"description\":\"Present only on an entry converted from HCP v1 (HCP 4.3).\",\"properties\":{\"convertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When it was converted.\"},\"convertedBy\":{\"description\":\"Who converted it.\",\"maxLength\":2048,\"type\":\"string\"},\"from\":{\"description\":\"What the entry was converted from.\",\"maxLength\":2048,\"type\":\"string\"},\"unmapped\":{\"additionalProperties\":true,\"description\":\"v1 members the conversion did not map.\",\"type\":\"object\"}},\"required\":[\"from\",\"convertedAt\",\"convertedBy\"],\"type\":\"object\"},\"metadata\":{\"additionalProperties\":true,\"description\":\"Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).\",\"type\":\"object\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).\"},\"relationships\":{\"description\":\"Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Relationship\"},\"type\":\"array\"},\"status\":{\"description\":\"The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"deprecated\",\"conflicted\",\"expired\",\"revoked\",\"suspended\",\"deleted\"],\"type\":\"string\"},\"version\":{\"description\":\"The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"status\",\"version\",\"provenance\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Record_fb040dcd;
+
 macro_rules! d_RecordedApproval_e3f102e6 {
     () => {
         "\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RecordedApproval_e3f102e6;
+
+macro_rules! d_RecordedProposal_3a611e4e {
+    () => {
+        "\"RecordedProposal\":{\"additionalProperties\":true,\"description\":\"A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.\",\"properties\":{\"act\":{\"description\":\"The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.\",\"enum\":[\"reject\",\"accept\",\"supersede\"],\"type\":\"string\"},\"entry\":{\"description\":\"The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"proposedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request.\"},\"proposedBy\":{\"additionalProperties\":true,\"description\":\"Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 3.9). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"rationale\":{\"description\":\"Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"weighed\":{\"description\":\"What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"act\",\"entry\",\"rationale\",\"weighed\",\"proposedBy\",\"proposedAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RecordedProposal_3a611e4e;
 
 macro_rules! d_RecoveryCommitmentOrThreshold_15bf9f3f {
     () => {
@@ -4032,6 +4312,20 @@ macro_rules! d_RejectedKey_9551801b {
     };
 }
 pub(crate) use d_RejectedKey_9551801b;
+
+macro_rules! d_RelationshipType_41a887f3 {
+    () => {
+        "\"RelationshipType\":{\"description\":\"How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.\",\"enum\":[\"derivedFrom\",\"supersedes\",\"contradicts\",\"duplicates\"],\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_RelationshipType_41a887f3;
+
+macro_rules! d_Relationship_6d76680c {
+    () => {
+        "\"Relationship\":{\"additionalProperties\":true,\"description\":\"A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"assertedBy\":{\"additionalProperties\":true,\"description\":\"Who asserted the relationship.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 3.9). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"proposal\":{\"$ref\":\"#/$defs/RecordedProposal\",\"description\":\"A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the relationship.\"},\"target\":{\"description\":\"The related entry's `id`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/RelationshipType\",\"description\":\"The kind of relationship.\"}},\"required\":[\"type\",\"target\",\"assertedBy\",\"recordedAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Relationship_6d76680c;
 
 macro_rules! d_RelayDecision_fd508449 {
     () => {
@@ -4123,6 +4417,13 @@ macro_rules! d_Requester_1fb5b18c {
     };
 }
 pub(crate) use d_Requester_1fb5b18c;
+
+macro_rules! d_RequestingParty_a0e934aa {
+    () => {
+        "\"RequestingParty\":{\"additionalProperties\":true,\"description\":\"The Requesting Party (HCP 3.2.7).\",\"properties\":{\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Its name.\",\"maxLength\":1024,\"type\":\"string\"},\"type\":{\"description\":\"A person or an organization. HCP's own values, carried verbatim.\",\"enum\":[\"person\",\"organization\"],\"type\":\"string\"}},\"required\":[\"type\",\"id\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_RequestingParty_a0e934aa;
 
 macro_rules! d_Resolution_2fdca475 {
     () => {
@@ -5853,6 +6154,20 @@ macro_rules! d_Source_ce495190 {
 }
 pub(crate) use d_Source_ce495190;
 
+macro_rules! d_StandingRule_5334a7d4 {
+    () => {
+        "\"StandingRule\":{\"additionalProperties\":true,\"description\":\"A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; in this shared definition it is not checked by the schema, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.\",\"properties\":{\"categories\":{\"description\":\"The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the rule was set (HCP 6.3).\"},\"effect\":{\"description\":\"`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.\",\"enum\":[\"deny\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"ruleId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the rule (HCP 6.3).\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"ruleId\",\"effect\",\"setBy\",\"createdAt\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_StandingRule_5334a7d4;
+
+macro_rules! d_Standing_f84e650f {
+    () => {
+        "\"Standing\":{\"additionalProperties\":true,\"description\":\"The standing of the disclosed version (HCP 7.4).\",\"properties\":{\"assurance\":{\"$ref\":\"#/$defs/Assurance\",\"description\":\"The stored `record.provenance.assertedBy.assurance`.\"},\"confirmed\":{\"description\":\"True where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8).\",\"type\":\"boolean\"}},\"required\":[\"assurance\",\"confirmed\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Standing_f84e650f;
+
 macro_rules! d_StateChange_b8fd9ada {
     () => {
         "\"StateChange\":{\"additionalProperties\":false,\"description\":\"One transition in an entry's lifecycle.\",\"properties\":{\"changedAt\":{\"description\":\"When the state changed.\",\"format\":\"date-time\",\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/EntryState\",\"description\":\"The state before; absent for the first listing.\"},\"reason\":{\"$ref\":\"#/$defs/Reason\"},\"to\":{\"$ref\":\"#/$defs/EntryState\"}},\"required\":[\"changedAt\",\"to\"],\"type\":\"object\"}"
@@ -6350,6 +6665,20 @@ macro_rules! d_UpstreamMembership_4f3ed7cf {
 }
 pub(crate) use d_UpstreamMembership_4f3ed7cf;
 
+macro_rules! d_Uri_07e686fd {
+    () => {
+        "\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Uri_07e686fd;
+
+macro_rules! d_Urn_46c3cc7e {
+    () => {
+        "\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_Urn_46c3cc7e;
+
 macro_rules! d_UsageRecord_97593ba3 {
     () => {
         "\"UsageRecord\":{\"additionalProperties\":false,\"properties\":{\"consumerDid\":{\"description\":\"DID of the Companion/Service that initiated the use.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"deviceId\":{\"minLength\":1,\"type\":\"string\"},\"entryId\":{\"minLength\":1,\"type\":\"string\"},\"errorCode\":{\"description\":\"Trust Task error code when outcome is a failure.\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"kind\":{\"enum\":[\"proxyLogin\",\"release\"],\"type\":\"string\"},\"occurredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"outcome\":{\"enum\":[\"allowed\",\"denied\",\"stepUpRequired\",\"stepUpSatisfied\",\"targetUnreachable\",\"credentialRejected\",\"policyDeny\"],\"type\":\"string\"},\"policyDecisionId\":{\"description\":\"Pointer to the policy evaluation record for forensic detail.\",\"type\":\"string\"},\"sessionId\":{\"description\":\"For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"entryId\",\"contextId\",\"consumerDid\",\"kind\",\"outcome\",\"occurredAt\"],\"title\":\"UsageRecord\",\"type\":\"object\"}"
@@ -6685,6 +7014,13 @@ macro_rules! d_WorldColour_5c5bfdd5 {
     };
 }
 pub(crate) use d_WorldColour_5c5bfdd5;
+
+macro_rules! d_WriteRelationship_2674584a {
+    () => {
+        "\"WriteRelationship\":{\"additionalProperties\":true,\"description\":\"A relationship to assert (HCP 4.2.3, 5.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4); not checked by the schema. The provider assigns `assertedBy` and `recordedAt` (HCP 5.2.3).\",\"properties\":{\"proposal\":{\"$ref\":\"#/$defs/Proposal\",\"description\":\"A proposal for resolving the conflict, on a `contradicts` relationship only (HCP 4.7.4).\"},\"target\":{\"description\":\"The related entry: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/RelationshipType\",\"description\":\"The kind of relationship.\"}},\"required\":[\"type\",\"target\"],\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_WriteRelationship_2674584a;
 
 macro_rules! d_Write_1533e72a {
     () => {

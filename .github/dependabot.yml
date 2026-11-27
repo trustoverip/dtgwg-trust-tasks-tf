@@ -76,6 +76,7 @@ updates:
       - /trust-tasks-ts-gen
       - /examples/consumer-app-ts
       - /examples/getting-started-ts
+      - /examples/hcp-demo-ts
     schedule:
       interval: weekly
     groups:
@@ -124,6 +125,7 @@ updates:
       - /trust-tasks-go/tsp
       - /examples/consumer-app-go
       - /examples/getting-started-go
+      - /examples/hcp-demo-go
     schedule:
       interval: weekly
     groups:
@@ -144,6 +146,7 @@ updates:
       - /trust-tasks-dart-capability-client
       - /examples/consumer-app-dart
       - /examples/getting-started-dart
+      - /examples/hcp-demo-dart
     schedule:
       interval: weekly
     groups:

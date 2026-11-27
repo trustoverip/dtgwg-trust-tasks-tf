@@ -225,6 +225,16 @@ jobs:
           test -z "$(git status --porcelain -- examples/consumer-app/fixture-registry)"
           cargo run -q -p trust-tasks-cli -- -C examples/consumer-app check
           cargo run -q -p trust-tasks-cli -- -C examples/consumer-app/index-equivalence check
+      # examples/hcp-demo: the HCP-over-Trust-Tasks demo (discover, grant
+      # request held with a next step, query, revoke, revocation notice), sealed
+      # over TSP and signed. Its tests hold the run to the golden transcript
+      # every language's port shares (examples/hcp-demo-ts/transcript.golden.txt).
+      - name: "HCP demo: run and test"
+        run: |
+          cargo run -p trust-tasks-example-hcp-demo
+          cargo test -p trust-tasks-example-hcp-demo
+      - name: "HCP demo: the lock verifies"
+        run: cargo run -q -p trust-tasks-cli -- -C examples/hcp-demo check
 
   doc:
     name: cargo doc
@@ -625,7 +635,7 @@ jobs:
       - name: cargo package --workspace
         env:
           CARGO_BUILD_JOBS: 2
-        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app --exclude trust-tasks-example-getting-started
+        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app --exclude trust-tasks-example-getting-started --exclude trust-tasks-example-hcp-demo
 
   # The `trust-tasks` CLI against the WHOLE registry, as deploy.yml publishes
   # it: every bundle, the index and the by-digest store, built here by the same

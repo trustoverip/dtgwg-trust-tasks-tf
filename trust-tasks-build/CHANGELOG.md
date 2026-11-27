@@ -3,6 +3,25 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.3.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.2.2...trust-tasks-build-v0.3.0) — 2026-11-27
+
+
+### Fixed
+
+- **rs,build**: Keep absent, empty and null apart in generated payload types ([#1385](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1385))
+
+* test(rs): show generated payload types losing member presence on a round trip
+
+  An optional array decodes [] as absent and re-encodes it absent; an
+  optional nullable member decodes null as absent (acl/update 0.3's
+  "label: null clears it" becomes "leave it unchanged"); an optional
+  {"type": "null"} member is written back as null when absent. The
+  trust-tasks-rs tests round-trip acl/show 0.3 and acl/update 0.3; the
+  trust-tasks-build tests pin the field shapes on a fixture module. Both
+  fail until the generator keeps presence.
+
+
+
 ## [0.2.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.2.1...trust-tasks-build-v0.2.2) — 2026-11-24
 
 

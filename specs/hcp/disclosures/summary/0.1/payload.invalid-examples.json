@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`limit` above the carriage's ceiling of 1000 — a framework bound (question 3).",
+    "payload": { "accessToken": "hcp_mt_x", "limit": 1001 }
+  },
+  {
+    "note": "`to` is not an RFC 3339 instant.",
+    "payload": { "accessToken": "hcp_mt_x", "to": "yesterday" }
+  },
+  {
+    "note": "Unknown top-level request member — HCP 9.4.12 defines no `purpose` filter.",
+    "payload": { "accessToken": "hcp_mt_x", "purpose": "https://hcp.example/purposes/reservation" }
+  },
+  {
+    "variant": "response",
+    "note": "A grant `status` outside HCP's values (HCP 8.6, 6.1.5).",
+    "payload": { "clients": [ { "client": { "id": "https://tutor.example/client", "name": "Tutor", "operator": { "id": "https://tutor.example", "name": "Tutor Ltd" } }, "grants": [ { "grantId": "urn:uuid:6f8b0d2e-4a5c-4e7b-9d1f-3b5d7f9a1c39", "status": "paused" } ], "categories": ["learning_context"], "purposes": ["https://hcp.example/purposes/tutoring"], "entries": 2, "retrievals": 4, "firstAt": "2026-03-01T09:00:00Z", "lastAt": "2026-03-02T15:12:44Z", "usableUntil": "2026-03-03T15:12:44Z", "notification": "none" } ] }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `usableUntil` — required in each summary, as in HCP's result shape (HCP 8.6).",
+    "payload": { "clients": [ { "client": { "id": "https://tutor.example/client", "name": "Tutor", "operator": { "id": "https://tutor.example", "name": "Tutor Ltd" } }, "grants": [ { "grantId": "urn:uuid:6f8b0d2e-4a5c-4e7b-9d1f-3b5d7f9a1c39", "status": "active" } ], "categories": ["learning_context"], "purposes": ["https://hcp.example/purposes/tutoring"], "entries": 2, "retrievals": 4, "firstAt": "2026-03-01T09:00:00Z", "lastAt": "2026-03-02T15:12:44Z", "notification": "none" } ] }
+  },
+  {
+    "variant": "response",
+    "note": "A negative `retrievals` count (HCP 8.6).",
+    "payload": { "clients": [ { "client": { "id": "https://tutor.example/client", "name": "Tutor", "operator": { "id": "https://tutor.example", "name": "Tutor Ltd" } }, "grants": [ { "grantId": "urn:uuid:6f8b0d2e-4a5c-4e7b-9d1f-3b5d7f9a1c39", "status": "active" } ], "categories": ["learning_context"], "purposes": ["https://hcp.example/purposes/tutoring"], "entries": 2, "retrievals": -1, "firstAt": "2026-03-01T09:00:00Z", "lastAt": "2026-03-02T15:12:44Z", "usableUntil": "2026-03-03T15:12:44Z", "notification": "none" } ] }
+  }
+]

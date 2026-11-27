@@ -31,6 +31,88 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.42.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.6...trust-tasks-rs-v0.42.0) — 2026-11-27
+
+
+### Added
+
+- **hcp**: Add the hcp/* specifications, carrying the Human Context Protocol (HCP 2.0-draft-3) as Trust Tasks ([#1380](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1380))
+
+* feat(hcp): carry HCP 2.0-draft-3 query, grant revoke and revocation notice as Trust Tasks
+
+  Add the hcp/* protocol family (SPEC §9.4) with three draft 0.1 specs
+  targeting framework 0.6.0, each carrying one Human Context Protocol
+  2.0-draft-3 operation:
+
+  - hcp/entries/query: Query (HCP 5.2.1). The HCP access token travels
+    opaquely in `accessToken`; the result's `timestamp` is renamed
+    `respondedAt`; `categories` gets a framework bound of 256.
+  - hcp/grants/revoke: Revoke grant (HCP 6.2, 9.2), destructive and acting
+    for the Authorizing Principal, with an empty response for HCP's 204.
+  - hcp/grants/revoked: the revocation notice (HCP 6.2.3, 9.9). The SET
+    claims map to the envelope, and an empty response carries RFC 8935's
+    202. The notice is signed with a provider VID key that the provider's
+    JWKS must also publish.
+
+  HCP's invalid-token condition maps to the family code hcp:invalidToken.
+  Shared shapes (common, context entry, disclosure, directive) live in
+  specs/hcp/_shared/0.1. They were written from the CC BY 4.0 HCP text,
+  with attribution, not copied from HCP's schema files. HCP's kebab-case
+  enum values are allowlisted as external.
+
+
+
+### Fixed
+
+- **rs,build**: Keep absent, empty and null apart in generated payload types ([#1385](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1385))
+
+* test(rs): show generated payload types losing member presence on a round trip
+
+  An optional array decodes [] as absent and re-encodes it absent; an
+  optional nullable member decodes null as absent (acl/update 0.3's
+  "label: null clears it" becomes "leave it unchanged"); an optional
+  {"type": "null"} member is written back as null when absent. The
+  trust-tasks-rs tests round-trip acl/show 0.3 and acl/update 0.3; the
+  trust-tasks-build tests pin the field shapes on a fixture module. Both
+  fail until the generator keeps presence.
+
+
+
+### Specifications
+
+- **auth/oob**: DeviceEnrol: a client asks for scoped, long-lived access to a person's VTA, approved from their wallet ([#1386](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1386))
+
+* spec(auth/oob): copy the versions deviceEnrol changes, unchanged
+
+  _shared 0.1 to 0.2, request 0.2 to 0.3, claim 0.2 to 0.3, identify 0.1
+  to 0.2, prove 0.3 to 0.4, grant 0.3 to 0.4, respond 0.3 to 0.4 and
+  redeem 0.2 to 0.3, copied byte for byte so the next commit shows only
+  what the new versions change. The copies still carry their old version
+  numbers and $ids; this commit does not build on its own.
+
+- **vtc/directory/query**: 0.2 answers the member's directory entry ([#1383](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1383))
+
+* spec(vtc/directory/query): 0.2 answers the member's directory entry
+
+  A caller that meets a member by their DID (the author of a record in a data
+  room, the signer of a document) can read their projection with
+  vtc/directory/query, but every other directory read is addressed by entry:
+  the member's picture (images/get), their entry with shared groups
+  (entries/show), and the card a member surface opens. Without the entry
+  identifier such a caller can name the member but not show their picture or
+  open their card.
+
+  0.2 = 0.1 + a required `entryId` (directory-card `EntryId`) on every answer,
+  never on a notFound or in a refusal's details. The notFound rule is now
+  stated normatively: an answer is given only where the projection shows the
+  caller the member's DID, to the member themselves, or to an administrator,
+  so the identifier links the named DID only to an entry that caller could
+  already open; Security & Privacy says so. Targets framework 0.6.0.
+
+  All four libraries regenerated.
+
+
+
 ## [0.41.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.5...trust-tasks-rs-v0.41.6) — 2026-11-25
 
 

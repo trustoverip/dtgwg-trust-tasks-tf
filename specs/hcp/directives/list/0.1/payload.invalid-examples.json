@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Unknown top-level request member — HCP's `GET /v2/directives` takes no parameters (HCP 9.4.15), so there is no filter.",
+    "payload": { "accessToken": "hcp_mt_x", "action": "share" }
+  },
+  {
+    "note": "Empty `accessToken` — a token has at least one character.",
+    "payload": { "accessToken": "" }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `directives` — HCP answers 200 with a `directives` array, empty when there is none (HCP 9.4.15).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A cursor in the response — the directives list is not paginated (HCP 9.4.15).",
+    "payload": { "directives": [], "nextCursor": "c2" }
+  },
+  {
+    "variant": "response",
+    "note": "A directive with an out-of-enum `effect` — HCP's effects are `deny`, `ask-first` and `permit` (HCP 6.4).",
+    "payload": { "directives": [ { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19", "action": "share", "effect": "forbid", "text": "Never pass my health context to another agent.", "setBy": "context-subject", "createdAt": "2026-11-25T12:00:01Z" } ] }
+  }
+]
