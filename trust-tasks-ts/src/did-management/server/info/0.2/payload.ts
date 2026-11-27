@@ -51,7 +51,7 @@ export interface SelfRegistration {
    */
   trustedVoucherIssuers?: string[];
   /**
-   * A self-registered DID's path must begin with one of these. Absent or empty: any path the domain's grammar admits. A registrant reads this before minting, because the path is fixed into the DID's identifier.
+   * A self-registered DID's path (the `/`-separated `path` of did-management/account/register, not the DID's `:`-separated form) must sit under one of these, matched on whole segments: `g` admits `g/agent-1` but not `gx/agent-1` or `g` itself. Absent or empty: any path the domain's grammar admits. A registrant reads this before minting, because the path is fixed into the DID's identifier.
    */
   pathPrefixes?: string[];
   /**
@@ -189,7 +189,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "type": "string",
             "minLength": 1
           },
-          "description": "A self-registered DID's path must begin with one of these. Absent or empty: any path the domain's grammar admits. A registrant reads this before minting, because the path is fixed into the DID's identifier."
+          "description": "A self-registered DID's path (the `/`-separated `path` of did-management/account/register, not the DID's `:`-separated form) must sit under one of these, matched on whole segments: `g` admits `g/agent-1` but not `gx/agent-1` or `g` itself. Absent or empty: any path the domain's grammar admits. A registrant reads this before minting, because the path is fixed into the DID's identifier."
         },
         "maxDidCount": {
           "type": "integer",

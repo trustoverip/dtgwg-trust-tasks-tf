@@ -20,7 +20,7 @@ export interface DIDManagementAccountRegisterPayload {
    */
   domain: string;
   /**
-   * The path the DID is hosted under. It MUST be the path the DID's identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.
+   * The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them.
    */
   path: string;
   /**
@@ -234,7 +234,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 255,
-      "description": "The path the DID is hosted under. It MUST be the path the DID's identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them."
+      "description": "The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them."
     },
     "method": {
       "type": "string",

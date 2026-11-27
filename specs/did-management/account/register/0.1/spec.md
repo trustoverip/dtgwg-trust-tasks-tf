@@ -191,7 +191,7 @@ The registrant sends the request to the hosting service; the payload validates a
   "issuedAt": "2026-12-01T09:00:00Z",
   "payload": {
     "domain": "did.example.com",
-    "path": "g:agent-7f3a",
+    "path": "g/agent-7f3a",
     "method": "webvh",
     "didData": "{\"versionId\":\"1-QmEntry\",\"versionTime\":\"2026-12-01T08:59:00Z\",\"parameters\":{\"method\":\"did:webvh:1.0\",\"scid\":\"QmScidExample\",\"updateKeys\":[\"z6MkUpdate\"],\"portable\":true},\"state\":{\"id\":\"did:webvh:QmScidExample:did.example.com:g:agent-7f3a\"},\"proof\":[]}",
     "admission": {
@@ -220,7 +220,7 @@ The registrant sends the request to the hosting service; the payload validates a
   "issuedAt": "2026-12-01T09:05:00Z",
   "payload": {
     "domain": "did.example.com",
-    "path": "g:agent-91cc",
+    "path": "g/agent-91cc",
     "method": "webvh",
     "didData": "{\"versionId\":\"1-QmOther\",\"parameters\":{},\"state\":{},\"proof\":[]}",
     "admission": {
@@ -283,7 +283,7 @@ The hosting service answers with the account it created and the DID record it pu
       "maxTotalSizeBytes": 65536
     },
     "record": {
-      "mnemonic": "g:agent-7f3a",
+      "mnemonic": "g/agent-7f3a",
       "owner": "did:scid:vh:1:QmScidExample",
       "createdAt": "2026-12-01T09:00:01Z",
       "updatedAt": "2026-12-01T09:00:01Z",

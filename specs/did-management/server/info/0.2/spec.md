@@ -110,7 +110,7 @@ None. The task is open to any caller, which is safe because it returns only fact
         "domain": "did.example.com",
         "admissions": ["invite", "voucher"],
         "trustedVoucherIssuers": ["did:webvh:QmVtcScid:community.example"],
-        "pathPrefixes": ["g:"],
+        "pathPrefixes": ["g"],
         "maxDidCount": 1,
         "maxTotalSizeBytes": 65536,
         "inactivityDays": 90,
