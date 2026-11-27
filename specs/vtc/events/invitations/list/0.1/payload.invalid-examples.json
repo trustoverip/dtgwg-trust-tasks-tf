@@ -1,0 +1,37 @@
+[
+  {
+    "note": "`answers` are invitation answers, not registration statuses.",
+    "payload": {
+      "answers": [
+        "waitlisted"
+      ]
+    }
+  },
+  {
+    "note": "At most 100 a page.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "Each item carries `invitation`.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "event": {
+            "eventId": "evt_IntroSoldering2611",
+            "title": "Intro to Soldering",
+            "when": {
+              "start": "2026-11-30T18:30:00",
+              "timeZone": "Europe/London",
+              "duration": "PT1H30M"
+            },
+            "status": "published",
+            "sequence": 0
+          }
+        }
+      ]
+    }
+  }
+]

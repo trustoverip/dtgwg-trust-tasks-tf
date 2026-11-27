@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`answer` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "`declined` is a recorded answer; the request says `decline`.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "answer": "declined"
+    }
+  },
+  {
+    "note": "`event` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "invitation": {
+        "invitationId": "inv_W5k2N8xRb3Qz7TpL",
+        "eventId": "evt_IntroSoldering2611",
+        "entryId": "dir_AdaLovelace0000000",
+        "invitedBy": "host",
+        "inviterEntryId": "dir_PriyaNatarajan000",
+        "replyExpected": false,
+        "answer": "none",
+        "createdAt": "2026-11-20T10:00:01Z"
+      }
+    }
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "note": "`linkId` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "Links are named by identifier, never by code.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "linkId": "q8Zx2mN4vB7tR1yK9pL3wQ6sD0fH5jG8aC2eV7nM4bX"
+    }
+  },
+  {
+    "note": "`link` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

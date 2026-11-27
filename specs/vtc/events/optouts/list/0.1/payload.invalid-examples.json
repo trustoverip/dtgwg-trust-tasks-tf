@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Only the caller's own: there is no `entryId`.",
+    "payload": {
+      "entryId": "dir_AdaLovelace0000000"
+    }
+  },
+  {
+    "note": "At most 100 a page.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "`items` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

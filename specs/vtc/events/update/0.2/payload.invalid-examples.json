@@ -1,0 +1,36 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {
+      "title": "Intro to Soldering"
+    }
+  },
+  {
+    "note": "An event's kind is fixed for its life (VTI-EVT-003).",
+    "payload": {
+      "eventId": "evt_S0lderIntroNov2026",
+      "kind": "meeting"
+    }
+  },
+  {
+    "note": "An event's calendar never changes.",
+    "payload": {
+      "eventId": "evt_S0lderIntroNov2026",
+      "calendarId": "cal_RiversideCommunity1"
+    }
+  },
+  {
+    "note": "`title` cannot be cleared.",
+    "payload": {
+      "eventId": "evt_S0lderIntroNov2026",
+      "title": null
+    }
+  },
+  {
+    "note": "The response is the event.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_S0lderIntroNov2026"
+    }
+  }
+]
