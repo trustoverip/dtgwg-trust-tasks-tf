@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.1",
+  "title": "VTC Events — Registrations — Withdraw — payload",
+  "description": "A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Registrations — Withdraw — response payload",
+      "description": "The success response to a vtc/events/registrations/withdraw/0.1 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event",
+        "changed"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Registration",
+          "description": "The registration as it now stands — `withdrawn`, or unchanged where it already ended."
+        },
+        "event": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventRef",
+          "description": "The event as it stood when the community answered."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False where the registration had already ended — withdrawn, declined or removed — or the event is cancelled, and nothing changed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`calendarId` is REQUIRED.",
+    "payload": {
+      "name": "Electronics"
+    }
+  },
+  {
+    "note": "`state` is `active` or `archived`.",
+    "payload": {
+      "calendarId": "cal_ElectronicsCal00001",
+      "state": "deleted"
+    }
+  },
+  {
+    "note": "A calendar's group never changes.",
+    "payload": {
+      "calendarId": "cal_ElectronicsCal00001",
+      "groupId": "grp_WoodshopGroup000001"
+    }
+  },
+  {
+    "note": "The response is the calendar, not a bare identifier.",
+    "variant": "response",
+    "payload": {
+      "calendarId": "cal_ElectronicsCal00001"
+    }
+  }
+]
