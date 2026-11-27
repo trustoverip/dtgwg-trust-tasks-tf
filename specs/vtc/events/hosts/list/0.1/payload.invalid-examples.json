@@ -1,0 +1,37 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Events are addressed by EventId (`evt_…`).",
+    "payload": {
+      "eventId": "intro-to-soldering"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — hosts are never paged; an event has at most 32.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "cursor": "abc"
+    }
+  },
+  {
+    "note": "An event has at most 32 hosts.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "hosts": [
+        "dir_Host0000000000000a", "dir_Host0000000000000b", "dir_Host0000000000000c", "dir_Host0000000000000d",
+        "dir_Host0000000000000e", "dir_Host0000000000000f", "dir_Host0000000000000g", "dir_Host0000000000000h",
+        "dir_Host0000000000000i", "dir_Host0000000000000j", "dir_Host0000000000000k", "dir_Host0000000000000l",
+        "dir_Host0000000000000m", "dir_Host0000000000000n", "dir_Host0000000000000o", "dir_Host0000000000000p",
+        "dir_Host0000000000000q", "dir_Host0000000000000r", "dir_Host0000000000000s", "dir_Host0000000000000t",
+        "dir_Host0000000000000u", "dir_Host0000000000000v", "dir_Host0000000000000w", "dir_Host0000000000000x",
+        "dir_Host0000000000000y", "dir_Host0000000000000z", "dir_Host0000000000001a", "dir_Host0000000000001b",
+        "dir_Host0000000000001c", "dir_Host0000000000001d", "dir_Host0000000000001e", "dir_Host0000000000001f",
+        "dir_Host0000000000001g"
+      ]
+    }
+  }
+]

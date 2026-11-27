@@ -1,0 +1,40 @@
+[
+  {
+    "note": "`name` is REQUIRED.",
+    "payload": {
+      "color": "#5B5BD6"
+    }
+  },
+  {
+    "note": "A colour is `#RRGGBB`.",
+    "payload": {
+      "name": "Socials",
+      "color": "teal"
+    }
+  },
+  {
+    "note": "Calendars are not created for a group by its DID; `groupId` is a GroupId.",
+    "payload": {
+      "name": "Electronics",
+      "groupId": "did:example:electronics"
+    }
+  },
+  {
+    "note": "A calendar is never created as the community's own: `community` is not a request member (VTI-EVT-011).",
+    "payload": {
+      "name": "Riverside Makers",
+      "community": true
+    }
+  },
+  {
+    "note": "The response carries the calendar, which has a `state`.",
+    "variant": "response",
+    "payload": {
+      "calendar": {
+        "calendarId": "cal_ElectronicsCal00001",
+        "name": "Electronics",
+        "createdAt": "2026-11-19T15:00:01Z"
+      }
+    }
+  }
+]

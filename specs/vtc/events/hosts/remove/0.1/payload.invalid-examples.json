@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {
+      "entryId": "dir_TomAshworth000000"
+    }
+  },
+  {
+    "note": "Hosts are named by community-scoped EntryId, never by DID.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryId": "did:example:tom"
+    }
+  },
+  {
+    "note": "A reason is at most 1024 characters, and at least one when given.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryId": "dir_TomAshworth000000",
+      "reason": ""
+    }
+  },
+  {
+    "note": "`hosts` lists EntryIds, never DIDs.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "hosts": ["did:example:priya"]
+    }
+  }
+]

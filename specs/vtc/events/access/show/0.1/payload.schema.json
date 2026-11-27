@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/access/show/0.1",
+  "title": "VTC Events — Access — Show — payload",
+  "description": "Read where an event happens and how to join it: answered to a registrant who is going, and to the event's hosts, from the event's `revealAt` if it has one. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Access — Show — response payload",
+      "description": "The success response to a vtc/events/access/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/access/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "access",
+        "sequence"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/EventId"
+        },
+        "access": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/AccessDetails",
+          "description": "The access details as they stand. May be empty where the hosts have not stated any yet."
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The event's `sequence` now, so the reader knows which version of the access details it holds (VTI-EVT-063)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

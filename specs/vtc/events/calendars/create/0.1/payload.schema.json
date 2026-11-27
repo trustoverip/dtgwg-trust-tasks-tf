@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/calendars/create/0.1",
+  "title": "VTC Events — Calendars — Create — payload",
+  "description": "Create a calendar of the community's or a group's own calendar. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Title"
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Description"
+    },
+    "color": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Color"
+    },
+    "groupId": {
+      "$ref": "../../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId",
+      "description": "Make it this group's calendar. Absent: a further calendar of the community's."
+    },
+    "defaultRoster": {
+      "$ref": "../../../_shared/0.1/event.schema.json#/$defs/RosterSetting",
+      "description": "The roster setting a new event in it starts with. Absent means `hidden`."
+    },
+    "defaultReminderMinutes": {
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/event.schema.json#/$defs/ReminderMinutes"
+      },
+      "description": "The reminders a new event in it suggests, as minutes before its start."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Calendars — Create — response payload",
+      "description": "The success response to a vtc/events/calendars/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/calendars/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calendar"
+      ],
+      "properties": {
+        "calendar": {
+          "$ref": "../../../_shared/0.1/event.schema.json#/$defs/Calendar"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

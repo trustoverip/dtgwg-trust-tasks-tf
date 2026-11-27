@@ -1,0 +1,54 @@
+[
+  {
+    "note": "`decision` is REQUIRED.",
+    "payload": {
+      "registrationId": "reg_Kf3nP8qLs2Vx7Bd1"
+    }
+  },
+  {
+    "note": "A decision is `approve` or `decline`; waitlisting is the community's consequence of an approval when full, not a host's choice.",
+    "payload": {
+      "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+      "decision": "waitlist"
+    }
+  },
+  {
+    "note": "Registrations are addressed by RegistrationId (`reg_…`), not by the registrant's entry.",
+    "payload": {
+      "registrationId": "dir_AdaLovelace000000",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "A note is at most 500 characters.",
+    "payload": {
+      "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+      "decision": "decline",
+      "note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "The response states the `decision` it records: a decline is a decision, answered here, never an error.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+        "eventId": "evt_IntroSoldering2611",
+        "entryId": "dir_AdaLovelace000000",
+        "status": "declined",
+        "guests": 1,
+        "roster": "hidden",
+        "eventSequence": 1,
+        "createdAt": "2026-11-20T19:02:11Z",
+        "updatedAt": "2026-11-21T08:05:01Z"
+      },
+      "event": {
+        "eventId": "evt_IntroSoldering2611",
+        "title": "Intro to Soldering",
+        "when": { "start": "2026-11-30T18:30:00", "timeZone": "Europe/London", "duration": "PT1H30M" },
+        "status": "published",
+        "sequence": 1
+      }
+    }
+  }
+]

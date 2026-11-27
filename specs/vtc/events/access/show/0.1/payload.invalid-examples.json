@@ -1,0 +1,40 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Events are addressed by EventId (`evt_…`), not by their calendar's identifier.",
+    "payload": {
+      "eventId": "cal_RiversideMakers01"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — the access details are released to the caller alone; there is no `entryId` to read them for someone else.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryId": "dir_BenOkafor0000000"
+    }
+  },
+  {
+    "note": "`sequence` is REQUIRED on every answer: a reader holding an older copy must know the details changed.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "access": {
+        "places": [ { "name": "The Makerspace" } ]
+      }
+    }
+  },
+  {
+    "note": "A Place needs a `name`; an address alone is not a Place.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "access": {
+        "places": [ { "address": "Unit 4, Mill Lane, London" } ]
+      },
+      "sequence": 2
+    }
+  }
+]

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/report/0.1",
+  "title": "VTC Events — Report — payload",
+  "description": "A member reports an event they may see to the community's administrators: inappropriate, spam, unsafe, misleading, or something else, with an optional note. The report goes on the administrators' action list; who reported is visible to administrators only. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "reason"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.1/event.schema.json#/$defs/EventId"
+    },
+    "reason": {
+      "$ref": "#/$defs/ReportReason"
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "What the administrators should know. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ReportReason": {
+      "title": "ReportReason",
+      "description": "`inappropriate`: content or conduct the community does not accept. `spam`: an event that is advertising or noise. `unsafe`: an event that puts people at risk. `misleading`: an event that is not what it says. `other`: the note says.",
+      "type": "string",
+      "enum": [
+        "inappropriate",
+        "spam",
+        "unsafe",
+        "misleading",
+        "other"
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Report — response payload",
+      "description": "The success response to a vtc/events/report/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/report/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reportId"
+      ],
+      "properties": {
+        "reportId": {
+          "$ref": "../../_shared/0.1/event.schema.json#/$defs/ReportId"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

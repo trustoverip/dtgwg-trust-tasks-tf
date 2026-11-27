@@ -1,0 +1,43 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Withdrawal names the event, not a registration identifier: a member has at most one registration per event (VTI-EVT-030).",
+    "payload": {
+      "registrationId": "reg_Kf3nP8qLs2Vx7Bd1"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — a member withdraws only themselves; hosts use vtc/events/registrations/remove.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "entryId": "dir_BenOkafor0000000"
+    }
+  },
+  {
+    "note": "`changed` is REQUIRED: the member's agent must know whether the withdrawal did anything.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+        "eventId": "evt_IntroSoldering2611",
+        "entryId": "dir_AdaLovelace000000",
+        "status": "withdrawn",
+        "guests": 1,
+        "roster": "hidden",
+        "eventSequence": 2,
+        "createdAt": "2026-11-20T19:02:11Z",
+        "updatedAt": "2026-11-29T21:40:01Z"
+      },
+      "event": {
+        "eventId": "evt_IntroSoldering2611",
+        "title": "Intro to Soldering",
+        "when": { "start": "2026-11-30T18:30:00", "timeZone": "Europe/London", "duration": "PT1H30M" },
+        "status": "published",
+        "sequence": 2
+      }
+    }
+  }
+]

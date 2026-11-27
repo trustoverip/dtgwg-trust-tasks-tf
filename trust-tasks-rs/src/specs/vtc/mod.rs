@@ -13,6 +13,7 @@ pub mod directory;
 pub mod elections;
 pub mod endorsement_types;
 pub mod endorsements;
+pub mod events;
 pub mod groups;
 pub mod install;
 pub mod invitations;
