@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/guests/withdraw/0.1",
+  "title": "VTC Events — Guests — Withdraw — payload",
+  "description": "A guest withdraws their registration for an event. Always allowed; the reply is their receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Guests — Withdraw — response payload",
+      "description": "The success response to a vtc/events/guests/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/guests/withdraw/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event",
+        "changed"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/Registration"
+        },
+        "event": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventRef"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False when the registration was already withdrawn or closed by a host."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

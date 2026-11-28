@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/checkin/record/0.1",
+  "title": "VTC Events — Check-in — Record — payload",
+  "description": "Check in to an event: a registrant signing over the door challenge, or self check-in where the calendar allows it, or door staff checking a registrant in by name. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "challenge": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventDoorChallengeValue",
+      "description": "A registrant's check-in at the door: the challenge the door shows (VTI-EVT-162)."
+    },
+    "registrationId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/RegistrationId",
+      "description": "Door staff checking a registrant in by name (VTI-EVT-163)."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/MembershipPresentation",
+      "description": "A partner community's member: the presentation that admits them (VTI-EVT-132)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Check-in — Record — response payload",
+      "description": "The success response to a vtc/events/checkin/record/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/checkin/record/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkIn",
+        "event"
+      ],
+      "properties": {
+        "checkIn": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventCheckIn"
+        },
+        "event": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventRef"
+        },
+        "badgeOffered": {
+          "$ref": "../../../../badges/_shared/0.1/badge.schema.json#/$defs/AwardId",
+          "description": "Where the event names an attendance badge and the registrant is a member: the offer made to them, for them to accept (VTI-EVT-186)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

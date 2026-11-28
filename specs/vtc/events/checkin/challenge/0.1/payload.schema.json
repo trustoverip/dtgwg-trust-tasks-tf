@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/checkin/challenge/0.1",
+  "title": "VTC Events — Check-in — Challenge — payload",
+  "description": "Obtain a fresh door challenge for an event: a short-lived random value the door shows, which a registrant signs over to check in. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Check-in — Challenge — response payload",
+      "description": "The success response to a vtc/events/checkin/challenge/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/checkin/challenge/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "challenge",
+        "expiresAt"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+        },
+        "challenge": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventDoorChallengeValue"
+        },
+        "expiresAt": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventInstant",
+          "description": "After this the community refuses it (VTI-EVT-161)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

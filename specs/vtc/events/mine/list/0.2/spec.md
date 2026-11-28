@@ -49,7 +49,7 @@ related:
 
 The **VTC Events — Mine — List** Trust Task lists the caller's own registrations in a community, each with the event it belongs to as the community states it now: its title, its time, its status and its `sequence`. It is what a member's agent reads to keep the member's calendar across communities, signed as the member's identity at this community, so the community learns nothing it did not already hold: who its members are and what they registered for. Read again with `updatedSince`, it answers only what changed since — a registration a host decided, an event rescheduled or cancelled.
 
-The single-record read is [`vtc/events/show`](../../../show/0.2/spec.md), which answers the caller's registration for one event as `myRegistration`.
+The single-record read is [`vtc/events/show`](../../../show/0.3/spec.md), which answers the caller's registration for one event as `myRegistration`.
 
 ## Status of this Document
 

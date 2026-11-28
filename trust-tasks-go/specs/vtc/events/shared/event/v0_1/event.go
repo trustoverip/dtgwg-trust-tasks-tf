@@ -486,6 +486,7 @@ const (
 	RuleConditionFactKudosReceived   RuleConditionFact = "kudosReceived"
 	RuleConditionFactIdeasSelected   RuleConditionFact = "ideasSelected"
 	RuleConditionFactElectionTickets RuleConditionFact = "electionTickets"
+	RuleConditionFactEventsAttended  RuleConditionFact = "eventsAttended"
 )
 
 // RuleConditionOp `equals` compares with `value`; `oneOf` with any of `values`; `exists`
@@ -512,7 +513,10 @@ const (
 // the community keeps of its own records (kudos the member accepted, ideas of theirs a
 // board selected, elections it issued them a ticket in), compared with `atLeast`; only a
 // badge's group reads them (VTI-BDG-015), and any other group refuses them with
-// `ruleInvalid`.
+// `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the community events the member
+// checked in to that count toward attendance, optionally only in `calendarId` and only
+// within `withinDays` before evaluation, compared with `atLeast`; read by a badge's
+// group, as the other counts are.
 type RuleCondition struct {
 	Fact RuleConditionFact `json:"fact"`
 
@@ -527,8 +531,15 @@ type RuleCondition struct {
 	Values *[]string       `json:"values,omitempty"`
 
 	// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
-	// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+	// `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is `atLeast`.
 	Count *int64 `json:"count,omitempty"`
+
+	// With `eventsAttended` only: count events in this calendar alone.
+	CalendarID *string `json:"calendarId,omitempty"`
+
+	// With `eventsAttended` only: count events attended within this many days before the rule
+	// is evaluated.
+	WithinDays *int64 `json:"withinDays,omitempty"`
 }
 
 // FieldKey Identifier of a directory field. A key with no `.` is a BASE field, the same

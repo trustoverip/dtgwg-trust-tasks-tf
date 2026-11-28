@@ -1,0 +1,30 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "At most 100 a page.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "limit": 500
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`checkedIn` is REQUIRED; there is never a count of who did not come.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "items": []
+    }
+  }
+]

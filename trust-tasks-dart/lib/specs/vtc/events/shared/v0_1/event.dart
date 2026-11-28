@@ -217,6 +217,8 @@ extension type const RuleConditionFact(String value) {
       RuleConditionFact('ideasSelected');
   static const RuleConditionFact electionTickets =
       RuleConditionFact('electionTickets');
+  static const RuleConditionFact eventsAttended =
+      RuleConditionFact('eventsAttended');
 
   /// Every value this specification's schema permits.
   static const List<RuleConditionFact> values = <RuleConditionFact>[
@@ -226,7 +228,8 @@ extension type const RuleConditionFact(String value) {
     joinedAt,
     kudosReceived,
     ideasSelected,
-    electionTickets
+    electionTickets,
+    eventsAttended
   ];
 }
 
@@ -265,7 +268,10 @@ extension type const RuleConditionOp(String value) {
 /// counts the community keeps of its own records (kudos the member accepted, ideas of
 /// theirs a board selected, elections it issued them a ticket in), compared with
 /// `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group
-/// refuses them with `ruleInvalid`.
+/// refuses them with `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the
+/// community events the member checked in to that count toward attendance, optionally
+/// only in `calendarId` and only within `withinDays` before evaluation, compared with
+/// `atLeast`; read by a badge's group, as the other counts are.
 class RuleCondition {
   const RuleCondition({
     required this.fact,
@@ -274,6 +280,8 @@ class RuleCondition {
     this.value,
     this.values,
     this.count,
+    this.calendarId,
+    this.withinDays,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -288,6 +296,8 @@ class RuleCondition {
                 .map((e) => e as String)
                 .toList(),
         count: json['count'] as int?,
+        calendarId: json['calendarId'] as String?,
+        withinDays: json['withinDays'] as int?,
       );
 
   final RuleConditionFact fact;
@@ -303,8 +313,16 @@ class RuleCondition {
   final List<String>? values;
 
   /// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
-  /// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+  /// `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is
+  /// `atLeast`.
   final int? count;
+
+  /// With `eventsAttended` only: count events in this calendar alone.
+  final String? calendarId;
+
+  /// With `eventsAttended` only: count events attended within this many days before the
+  /// rule is evaluated.
+  final int? withinDays;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -314,6 +332,8 @@ class RuleCondition {
         if (value != null) 'value': value!,
         if (values != null) 'values': values!,
         if (count != null) 'count': count!,
+        if (calendarId != null) 'calendarId': calendarId!,
+        if (withinDays != null) 'withinDays': withinDays!,
       };
 }
 

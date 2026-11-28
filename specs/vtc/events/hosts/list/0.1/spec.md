@@ -45,7 +45,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Hosts — List** Trust Task reads who hosts an event: the entries holding `vtc.events.manage` qualified to it (VTI-EVT-070), the member who created it first while they still host it. It is whom a member asks about an event — a question, an access need — and is answered to everyone who may see the event, as [`vtc/events/show`](../../../show/0.2/spec.md)'s `hosts` is. It is its own read because who hosts an event is read from the access-control list, never from the event's record.
+The **VTC Events — Hosts — List** Trust Task reads who hosts an event: the entries holding `vtc.events.manage` qualified to it (VTI-EVT-070), the member who created it first while they still host it. It is whom a member asks about an event — a question, an access need — and is answered to everyone who may see the event, as [`vtc/events/show`](../../../show/0.3/spec.md)'s `hosts` is. It is its own read because who hosts an event is read from the access-control list, never from the event's record.
 
 ## Status of this Document
 

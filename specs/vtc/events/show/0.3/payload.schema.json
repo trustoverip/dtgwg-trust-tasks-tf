@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/show/0.3",
+  "title": "VTC Events — Show — payload",
+  "description": "Read one event the caller may see. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "presentation": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/MembershipPresentation",
+      "description": "Only from a party who is not a member of this community, for an event whose audience names partners: their presentation of the membership credential a named partner issued them (VTI-EVT-132). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Show — response payload",
+      "description": "The success response to a vtc/events/show/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/show/0.3#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/Event",
+          "description": "The event as the caller may see it."
+        },
+        "myRegistration": {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/Registration",
+          "description": "The caller's own registration for the event, where they have one, whatever its status."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

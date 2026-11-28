@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/guests/register/0.1",
+  "title": "VTC Events — Guests — Register — payload",
+  "description": "A guest — a party who is not a member — registers for an event that admits guests, or changes their registration. The reply is their receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "status"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "going",
+        "maybe"
+      ],
+      "description": "What the guest says; the community decides pending or waitlisted."
+    },
+    "guests": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Plus-ones."
+    },
+    "answers": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/RegistrationAnswers"
+    },
+    "codeOfConductAcknowledged": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The `sha256` of the code of conduct the guest acknowledges (VTI-EVT-035)."
+    },
+    "linkCode": {
+      "type": "string",
+      "minLength": 43,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Under `invited`: the code of an invitation link made for guests (VTI-EVT-107, 151)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Guests — Register — response payload",
+      "description": "The success response to a vtc/events/guests/register/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/guests/register/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/Registration"
+        },
+        "event": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventRef"
+        },
+        "wasCreated": {
+          "type": "boolean",
+          "description": "True when this request created the registration; false when it changed one the guest held."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

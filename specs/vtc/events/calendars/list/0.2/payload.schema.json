@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/calendars/list/0.2",
+  "title": "VTC Events — Calendars — List — payload",
+  "description": "List the calendars the caller may see. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "groupId": {
+      "$ref": "../../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId",
+      "description": "Only this group's calendar."
+    },
+    "includeArchived": {
+      "type": "boolean",
+      "description": "Also archived calendars."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the filters; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Calendars — List — response payload",
+      "description": "The success response to a vtc/events/calendars/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/calendars/list/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "../../../_shared/0.3/event.schema.json#/$defs/Calendar"
+          },
+          "description": "The calendars the caller may see: the community's own first, then by name."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more items follow: pass it as `cursor` to continue."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
