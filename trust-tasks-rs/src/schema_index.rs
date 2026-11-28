@@ -869,6 +869,63 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/device/wipe/0.2#response" => <crate::specs::device::wipe::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/exempt/0.1" => <crate::specs::did_management::account::exempt::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/exempt/0.1#response" => <crate::specs::did_management::account::exempt::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/expiry-notice/0.1" => <crate::specs::did_management::account::expiry_notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/issue/0.1" => <crate::specs::did_management::account::invite::issue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/issue/0.1#response" => <crate::specs::did_management::account::invite::issue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/list/0.1" => <crate::specs::did_management::account::invite::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/list/0.1#response" => <crate::specs::did_management::account::invite::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/revoke/0.1" => <crate::specs::did_management::account::invite::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/revoke/0.1#response" => <crate::specs::did_management::account::invite::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/list/0.1" => <crate::specs::did_management::account::policy::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/list/0.1#response" => <crate::specs::did_management::account::policy::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/set/0.1" => <crate::specs::did_management::account::policy::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/set/0.1#response" => <crate::specs::did_management::account::policy::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/register/0.1" => <crate::specs::did_management::account::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/register/0.1#response" => <crate::specs::did_management::account::register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/renew/0.1" => <crate::specs::did_management::account::renew::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/renew/0.1#response" => <crate::specs::did_management::account::renew::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/status/0.1" => <crate::specs::did_management::account::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/status/0.1#response" => <crate::specs::did_management::account::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/agent-name/check/0.1" => <crate::specs::did_management::agent_name::check::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
@@ -1176,6 +1233,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/server/info/0.1#response" => <crate::specs::did_management::server::info::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/server/info/0.2" => <crate::specs::did_management::server::info::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/server/info/0.2#response" => <crate::specs::did_management::server::info::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/server/metrics/0.1" => <crate::specs::did_management::server::metrics::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -9717,6 +9780,76 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/exempt/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::exempt::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/expiry-notice/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::expiry_notice::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/issue/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::invite::issue::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::invite::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::invite::revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::policy::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/set/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::policy::set::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/register/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::register::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/renew/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::renew::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/status/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::account::status::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/agent-name/check/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::agent_name::check::v0_1::Payload,
@@ -10069,6 +10202,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/did-management/server/info/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::server::info::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/server/info/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::server::info::v0_2::Payload,
             >())
         }
         #[cfg(feature = "did-management")]
@@ -18210,6 +18350,56 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/exempt/0.1" => {
+            Some(crate::specs::did_management::account::exempt::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/expiry-notice/0.1" => {
+            Some(crate::specs::did_management::account::expiry_notice::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/issue/0.1" => {
+            Some(crate::specs::did_management::account::invite::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/list/0.1" => {
+            Some(crate::specs::did_management::account::invite::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/invite/revoke/0.1" => {
+            Some(crate::specs::did_management::account::invite::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/list/0.1" => {
+            Some(crate::specs::did_management::account::policy::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/policy/set/0.1" => {
+            Some(crate::specs::did_management::account::policy::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/register/0.1" => {
+            Some(crate::specs::did_management::account::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/renew/0.1" => {
+            Some(crate::specs::did_management::account::renew::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/status/0.1" => {
+            Some(crate::specs::did_management::account::status::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/agent-name/check/0.1" => {
             Some(crate::specs::did_management::agent_name::check::v0_1::ERROR_CODES)
         }
@@ -18467,6 +18657,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/server/info/0.1" => {
             Some(crate::specs::did_management::server::info::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/server/info/0.2" => {
+            Some(crate::specs::did_management::server::info::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
@@ -24960,6 +25155,9 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "chat")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/chat/direct/message/0.1" => <crate::specs::chat::direct::message::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/account/register/0.1" => <crate::specs::did_management::account::register::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "external")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/external/credentials/issue/0.2" => <crate::specs::external::credentials::issue::v0_2::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,

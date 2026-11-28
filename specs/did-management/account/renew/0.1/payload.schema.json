@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/renew/0.1",
+  "title": "DID Management — Account Renew — payload",
+  "description": "An account holder tells its DID hosting service it is still in use, restarting the account's inactivity period; a disabled account is restored. The request names nothing: the account is the issuer's own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Account Renew — response payload",
+      "description": "The account after renewal. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account", "changed"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.4/hosting-account.schema.json#/$defs/HostingAccount"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`true` when the renewal restored a `disabled` or `warned` account to `active`; `false` when it was already `active` and only its inactivity period restarted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

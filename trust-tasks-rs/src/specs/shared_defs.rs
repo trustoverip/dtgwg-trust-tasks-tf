@@ -71,6 +71,13 @@ macro_rules! d_AccountId_77dd4962 {
 }
 pub(crate) use d_AccountId_77dd4962;
 
+macro_rules! d_AccountInvite_17bbffd4 {
+    () => {
+        "\"AccountInvite\":{\"additionalProperties\":false,\"description\":\"An invite to register an account, as the issuing service describes it. Never carries the invite's token or claim code, which are returned once, by did-management/account/invite/issue.\",\"properties\":{\"createdAt\":{\"description\":\"When the invite was issued.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"The DID of the administrator who issued it.\",\"maxLength\":2048,\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain the invite admits an account on.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"The last instant the invite can be redeemed.\",\"format\":\"date-time\",\"type\":\"string\"},\"inviteId\":{\"description\":\"The service's identifier for the invite. Not a secret: knowing it does not let anyone redeem the invite.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"The issuer's note on who the invite is for. Operator-facing; never shown to the invitee by this task family.\",\"maxLength\":256,\"type\":\"string\"},\"pathPrefix\":{\"description\":\"When present, the account's DIDs must be hosted under this path prefix, in addition to any rule the domain sets. Absent: the domain's rules alone apply.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"redeemedAt\":{\"description\":\"When it was redeemed. Present exactly when `state` is `redeemed`.\",\"format\":\"date-time\",\"type\":\"string\"},\"redeemedBy\":{\"description\":\"The account subject that redeemed it. Present exactly when `state` is `redeemed`.\",\"maxLength\":2048,\"type\":\"string\"},\"referral\":{\"$ref\":\"#/$defs/Referral\",\"description\":\"The referral the administrator recorded on the invite. An account the invite admits carries it as verified.\"},\"state\":{\"description\":\"`pending`: redeemable. `redeemed`: an account was registered with it. `revoked`: withdrawn before use. `expired`: `expiresAt` passed before use.\",\"enum\":[\"pending\",\"redeemed\",\"revoked\",\"expired\"],\"type\":\"string\"}},\"required\":[\"inviteId\",\"domain\",\"state\",\"createdAt\",\"expiresAt\"],\"title\":\"AccountInvite\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AccountInvite_17bbffd4;
+
 macro_rules! d_AccountProbeReport_264a1e61 {
     () => {
         "\"AccountProbeReport\":{\"additionalProperties\":false,\"properties\":{\"complete\":{\"description\":\"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\"type\":\"boolean\"},\"ok\":{\"description\":\"True when every step that ran succeeded.\",\"type\":\"boolean\"},\"probedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"steps\":{\"description\":\"In order; the first failing step ends the probe.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"durationMs\":{\"minimum\":0,\"type\":\"integer\"},\"ok\":{\"type\":\"boolean\"},\"providerError\":{\"description\":\"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\"maxLength\":2048,\"type\":\"string\"},\"providerRequestId\":{\"maxLength\":256,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"},\"step\":{\"$ref\":\"#/$defs/AccountProbeStep\"}},\"required\":[\"step\",\"ok\"],\"type\":\"object\"},\"maxItems\":8,\"type\":\"array\"}},\"required\":[\"probedAt\",\"ok\",\"complete\",\"steps\"],\"title\":\"AccountProbeReport\",\"type\":\"object\"}"
@@ -98,6 +105,13 @@ macro_rules! d_AccountPublicMaterial_aa3107b5 {
     };
 }
 pub(crate) use d_AccountPublicMaterial_aa3107b5;
+
+macro_rules! d_AccountReferral_e7a42fdb {
+    () => {
+        "\"AccountReferral\":{\"additionalProperties\":false,\"description\":\"A Referral as the service recorded it on an account, with whether anything other than the registrant's own word supports it.\",\"properties\":{\"label\":{\"description\":\"As in Referral.\",\"maxLength\":128,\"type\":\"string\"},\"verified\":{\"description\":\"`true` when the admission evidence supports it: a voucher whose issuer is `via`, or an invite whose administrator set the referral when issuing it. `false`: the registrant's own claim, recorded for attribution only.\",\"type\":\"boolean\"},\"via\":{\"description\":\"As in Referral.\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verified\"],\"title\":\"AccountReferral\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_AccountReferral_e7a42fdb;
 
 macro_rules! d_AccountRow_ce8299cc {
     () => {
@@ -133,6 +147,13 @@ macro_rules! d_AccountState_514f817a {
     };
 }
 pub(crate) use d_AccountState_514f817a;
+
+macro_rules! d_AccountState_6f374f24 {
+    () => {
+        "\"AccountState\":{\"description\":\"Where an account stands in the inactivity lifecycle. `active`: its DIDs are served. `warned`: its DIDs are served, `disableAt` is near, and the service has sent at least one expiry notice. `disabled`: its DIDs are not served; the holder may still renew until `purgeAt`. A purged account no longer exists and is reported as not found.\",\"enum\":[\"active\",\"warned\",\"disabled\"],\"title\":\"AccountState\",\"type\":\"string\"}"
+    };
+}
+pub(crate) use d_AccountState_6f374f24;
 
 macro_rules! d_AccountStats_b10e5916 {
     () => {
@@ -2759,6 +2780,13 @@ macro_rules! d_HostedRoom_d9c421e6 {
 }
 pub(crate) use d_HostedRoom_d9c421e6;
 
+macro_rules! d_HostingAccount_9af1dd6a {
+    () => {
+        "\"HostingAccount\":{\"additionalProperties\":false,\"description\":\"One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.\",\"properties\":{\"admission\":{\"description\":\"How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly.\",\"enum\":[\"invite\",\"voucher\"],\"type\":\"string\"},\"disableAt\":{\"description\":\"When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one.\",\"format\":\"date-time\",\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"exempt\":{\"description\":\"`true` when an administrator has exempted the account from its domain's terms (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered account.\",\"type\":\"boolean\"},\"lastActiveAt\":{\"description\":\"The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastResolvedAt\":{\"description\":\"The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none.\",\"format\":\"date-time\",\"type\":\"string\"},\"maxDidCount\":{\"description\":\"The most DIDs the account may hold. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"maxTotalSizeBytes\":{\"description\":\"The most bytes of DID content the account may hold in total. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"purgeAt\":{\"description\":\"When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`.\",\"format\":\"date-time\",\"type\":\"string\"},\"referral\":{\"$ref\":\"#/$defs/AccountReferral\"},\"registeredAt\":{\"description\":\"When the account was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"description\":\"The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/AccountState\"},\"subject\":{\"description\":\"The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"subject\",\"role\",\"domain\",\"state\",\"registeredAt\"],\"title\":\"HostingAccount\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_HostingAccount_9af1dd6a;
+
 macro_rules! d_HpkeArmoredEnvelope_696eb5a0 {
     () => {
         "\"HpkeArmoredEnvelope\":{\"additionalProperties\":false,\"description\":\"OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\\n\\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.\",\"properties\":{\"armored\":{\"description\":\"ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.\",\"minLength\":1,\"type\":\"string\"},\"envelope\":{\"const\":\"hpkeArmored\"},\"producerAssertion\":{\"default\":\"didSigned\",\"description\":\"Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production).\",\"enum\":[\"didSigned\",\"attested\",\"pinnedOnly\"],\"type\":\"string\"},\"recipientKeyId\":{\"description\":\"did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"envelope\",\"armored\",\"recipientKeyId\"],\"title\":\"HpkeArmoredEnvelope\",\"type\":\"object\"}"
@@ -4537,6 +4565,13 @@ macro_rules! d_RecoverySigningRequest_296a42cd {
 }
 pub(crate) use d_RecoverySigningRequest_296a42cd;
 
+macro_rules! d_Referral_fb032f5d {
+    () => {
+        "\"Referral\":{\"additionalProperties\":false,\"description\":\"How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.\",\"properties\":{\"label\":{\"description\":\"A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"via\":{\"description\":\"The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"title\":\"Referral\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Referral_fb032f5d;
+
 macro_rules! d_RegisteredGroup_ee5e6c36 {
     () => {
         "\"RegisteredGroup\":{\"additionalProperties\":false,\"properties\":{\"acceptance\":{\"description\":\"The network's `groupRegistered/1` statement (VSC) accepting the registration: subject the group, `object.digestMultibase` the registration's digest — SHA-256 over the RFC 8785 (JCS) form of the signed request including its proof.\",\"type\":\"object\"},\"endpoint\":{\"description\":\"Where the network delivers broadcasts for the group: the community's Trust Task endpoint, at which the network sends them as `vtc/networks/deliver`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"groupDid\":{\"description\":\"The group's own DID, which the registration names as its `group`.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"groupId\":{\"description\":\"The community's identifier for the group.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"registration\":{\"description\":\"The registration: the community's signed `vtn/groups/register` request as the network accepted it — a complete Trust Task document, with its proof, naming the network as `recipient` and the group, `role` and `endpoint` in its payload.\",\"type\":\"object\"},\"role\":{\"description\":\"A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.\",\"pattern\":\"^[a-z0-9_-]{1,64}$\",\"type\":\"string\"}},\"required\":[\"role\",\"groupId\",\"groupDid\",\"endpoint\",\"registration\",\"acceptance\",\"registeredAt\"],\"type\":\"object\"}"
@@ -6308,6 +6343,13 @@ macro_rules! d_Segment_e5f9874d {
 }
 pub(crate) use d_Segment_e5f9874d;
 
+macro_rules! d_SelfRegistrationPolicy_a134b0e1 {
+    () => {
+        "\"SelfRegistrationPolicy\":{\"additionalProperties\":false,\"properties\":{\"admissions\":{\"description\":\"The admission evidence the domain accepts: `invite`, an invite from did-management/account/invite/issue; `voucher`, a voucher from one of `trustedIssuers`. Empty only when `enabled` is `false`.\",\"items\":{\"enum\":[\"invite\",\"voucher\"],\"type\":\"string\"},\"maxItems\":2,\"type\":\"array\",\"uniqueItems\":true},\"domain\":{\"description\":\"The hosting domain the terms apply to.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the domain admits new registrations now. `false` closes it without discarding its terms: registrations are refused with `registrationClosed`, while existing accounts keep their DIDs, renew and expire as before.\",\"type\":\"boolean\"},\"graceDays\":{\"description\":\"Days a disabled account is kept, and can be restored by its holder's renewal, before it is purged.\",\"minimum\":0,\"type\":\"integer\"},\"inactivityDays\":{\"description\":\"Days an account may go without a liveness signal before its DIDs are disabled. `0`: accounts on this domain do not expire.\",\"minimum\":0,\"type\":\"integer\"},\"maxDidCount\":{\"description\":\"The most DIDs one self-registered account may hold, its own included. Absent: the service's ordinary per-account limit, as for any account an administrator creates.\",\"minimum\":1,\"type\":\"integer\"},\"maxPendingInvites\":{\"description\":\"The most invites that may be pending for the domain at once.\",\"minimum\":0,\"type\":\"integer\"},\"maxRegistrations\":{\"description\":\"The most self-registered accounts the domain holds at once.\",\"minimum\":0,\"type\":\"integer\"},\"maxTotalSizeBytes\":{\"description\":\"The most bytes of DID content one self-registered account may hold. Absent: the service's ordinary per-account limit.\",\"minimum\":0,\"type\":\"integer\"},\"pathPrefixes\":{\"description\":\"Every DID a self-registered account holds sits under one of these `/`-separated prefixes, matched on whole segments. Empty: any path the domain's grammar admits.\",\"items\":{\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},\"trustedIssuers\":{\"description\":\"The authorising parties — trust communities, or any other party the operator chooses — whose vouchers admit a registrant here. Non-empty exactly when `admissions` includes `voucher`; no DID appears twice.\",\"items\":{\"$ref\":\"#/$defs/TrustedIssuer\"},\"maxItems\":256,\"type\":\"array\"},\"updatedAt\":{\"description\":\"When the terms last changed. Set by the service; ignored in a `set` request.\",\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"The administrator who last changed them, or `operator` for terms seeded from the service's configuration. Set by the service; ignored in a `set` request.\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"domain\",\"enabled\",\"admissions\",\"trustedIssuers\",\"pathPrefixes\",\"maxRegistrations\",\"inactivityDays\",\"graceDays\",\"maxPendingInvites\"],\"title\":\"SelfRegistrationPolicy\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_SelfRegistrationPolicy_a134b0e1;
+
 macro_rules! d_SenderLastSeen_e1a99f6e {
     () => {
         "\"SenderLastSeen\":{\"additionalProperties\":false,\"properties\":{\"lastSeenAt\":{\"description\":\"When that message arrived.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastSeenMediator\":{\"description\":\"The mediator its most recent message arrived through.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"lastSeenTransport\":{\"description\":\"The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.\",\"enum\":[\"didcomm\",\"tsp\"],\"type\":\"string\"},\"senderDid\":{\"description\":\"A sender that reached the agent in the window.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"senderDid\",\"lastSeenMediator\",\"lastSeenAt\"],\"type\":\"object\"}"
@@ -6937,6 +6979,13 @@ macro_rules! d_TrustRecord_b6747452 {
     };
 }
 pub(crate) use d_TrustRecord_b6747452;
+
+macro_rules! d_TrustedIssuer_9b011a20 {
+    () => {
+        "\"TrustedIssuer\":{\"additionalProperties\":false,\"description\":\"An authorising party whose `DidHostingVoucher`s admit a registrant.\",\"properties\":{\"did\":{\"description\":\"The party's DID: a voucher's `issuer`. A `did:scid` is compared without its `src`.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"description\":\"The operator's name for the party. Not published.\",\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"TrustedIssuer\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_TrustedIssuer_9b011a20;
 
 macro_rules! d_TrusteeCeremony_b4b3b398 {
     () => {

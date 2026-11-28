@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/exempt/0.1",
+  "title": "DID Management — Account Exempt — payload",
+  "description": "An administrator exempts a self-registered account from its domain's terms, or holds it to them again. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "exempt"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The account, by the DID it registered as. A `did:scid` is compared without its `src`."
+    },
+    "exempt": {
+      "type": "boolean",
+      "description": "`true`: the domain's terms no longer apply to the account. `false`: they apply again."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Account Exempt — response payload",
+      "description": "The account after the request. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account", "changed"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.4/hosting-account.schema.json#/$defs/HostingAccount"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`false` when the account already stood as requested."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

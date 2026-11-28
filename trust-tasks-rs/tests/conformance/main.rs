@@ -402,6 +402,42 @@ mod device {
 }
 #[cfg(feature = "did-management")]
 mod did_management {
+    mod account {
+        mod exempt {
+            mod v0_1;
+        }
+        mod expiry_notice {
+            mod v0_1;
+        }
+        mod invite {
+            mod issue {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod revoke {
+                mod v0_1;
+            }
+        }
+        mod policy {
+            mod list {
+                mod v0_1;
+            }
+            mod set {
+                mod v0_1;
+            }
+        }
+        mod register {
+            mod v0_1;
+        }
+        mod renew {
+            mod v0_1;
+        }
+        mod status {
+            mod v0_1;
+        }
+    }
     mod agent_name {
         mod check {
             mod v0_1;
@@ -564,6 +600,7 @@ mod did_management {
         }
         mod info {
             mod v0_1;
+            mod v0_2;
         }
         mod metrics {
             mod v0_1;

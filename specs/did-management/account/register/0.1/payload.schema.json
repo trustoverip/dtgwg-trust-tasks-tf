@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/register/0.1",
+  "title": "DID Management — Account Register — payload",
+  "description": "A party with no account on a DID hosting service registers its own self-certifying DID there: it submits the DID's complete log and evidence that it is admitted (an operator invite or a trust community's voucher), and the service creates the account and publishes the DID in one commit. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "path",
+    "method",
+    "didData",
+    "admission"
+  ],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "The hosting domain to register on. REQUIRED here, unlike in did-management/did/register: a party with no account has no default domain to fall back on, and the DID's identifier already names the host."
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "The path the DID is hosted under, `/`-separated (`g/agent-7f3a`): the DID's identifier names the same path with `:` separators (`did:webvh:{SCID}:{domain}:g:agent-7f3a`). It MUST be the path the identifier names, and MUST satisfy the domain's path rules as did-management/server/info publishes them."
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "webvh"
+      ],
+      "description": "The DID method. This version admits `webvh` only, whose log is self-certifying: its SCID commits to the genesis entry, which names the DID and the keys that control it."
+    },
+    "didData": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 57344,
+      "description": "The DID's complete log, from its genesis entry: for `webvh`, the `did.jsonl` content, one signed entry per line. At most 56 KiB, inside the document's 64 KiB: a self-registering DID's log is young."
+    },
+    "admission": {
+      "$ref": "#/$defs/Admission"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    },
+    "referral": {
+      "$ref": "../../../_shared/0.4/hosting-account.schema.json#/$defs/Referral",
+      "description": "Optional: how the registrant came to the service, for attribution. Recorded on the account; never authority."
+    }
+  },
+  "$defs": {
+    "Admission": {
+      "title": "Admission",
+      "description": "The evidence that admits the registrant. Exactly one of an operator invite or a trust community's voucher.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/InviteAdmission"
+        },
+        {
+          "$ref": "#/$defs/VoucherAdmission"
+        }
+      ]
+    },
+    "InviteAdmission": {
+      "title": "InviteAdmission",
+      "description": "Admission by an operator invite.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invite"
+      ],
+      "properties": {
+        "invite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token",
+            "claimCode"
+          ],
+          "description": "Both halves of an invite from did-management/account/invite/issue.",
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 256,
+              "description": "The invite's single-use token."
+            },
+            "claimCode": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 64,
+              "description": "The invite's claim code, delivered to the registrant separately from the token."
+            }
+          }
+        }
+      }
+    },
+    "VoucherAdmission": {
+      "title": "VoucherAdmission",
+      "description": "Admission by a trust community's voucher.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "voucher"
+      ],
+      "properties": {
+        "voucher": {
+          "$ref": "#/$defs/HostingVoucher"
+        }
+      }
+    },
+    "HostingVoucher": {
+      "title": "HostingVoucher",
+      "description": "A trust community's signed statement that one DID may register an account with one hosting service. It is a credential: its own proof, by the community, for `assertionMethod`, carries the community's authority; the envelope proof of the register document carries only the registrant's.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "issuer",
+        "validUntil",
+        "credentialSubject",
+        "proof"
+      ],
+      "properties": {
+        "@context": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "description": "JSON-LD contexts, when the community issues the voucher as a JSON-LD credential. Absent: a plain JSON credential."
+        },
+        "type": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "Credential types. MUST include `DidHostingVoucher`; a validator does not check it."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The voucher's unique identifier. A consumer accepts each voucher once, keyed on (`issuer`, `id`), and keeps the record until `validUntil`."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The trust community's DID. The consumer accepts vouchers only from issuers the target domain lists as trusted."
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Before this instant the voucher is not yet valid. Absent: valid from issue."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "After this instant the voucher is no longer accepted. REQUIRED, so a consumer's single-use record is bounded."
+        },
+        "credentialSubject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "hostingService"
+          ],
+          "description": "Whom the voucher admits, and where.",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "pattern": "^did:",
+              "description": "The DID the voucher admits, without any `src` query parameter. MUST be the identity the register document's `issuer` names."
+            },
+            "hostingService": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "pattern": "^did:",
+              "description": "The DID of the hosting service the voucher is for: the register document's `recipient`. A voucher for one service is no use at another."
+            },
+            "domain": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253,
+              "description": "When present, the only hosting domain the voucher admits on."
+            }
+          }
+        },
+        "proof": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "cryptosuite",
+            "verificationMethod",
+            "proofPurpose",
+            "proofValue"
+          ],
+          "description": "The community's W3C Data Integrity proof over the voucher. Closed, so that a member this schema does not name is refused rather than dropped: a proof that lost a signed member could not be verified.",
+          "properties": {
+            "@context": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "description": "The voucher's own `@context`, which a JCS cryptosuite copies into the proof when the voucher carries one (eddsa-jcs-2022 §3.3.1). Absent otherwise."
+            },
+            "type": {
+              "type": "string",
+              "const": "DataIntegrityProof",
+              "description": "Always `DataIntegrityProof`."
+            },
+            "cryptosuite": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z0-9-]+$",
+              "description": "The cryptosuite, e.g. `eddsa-jcs-2022`."
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the community signed the voucher."
+            },
+            "verificationMethod": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "pattern": "^did:",
+              "description": "The community key that signed the voucher: a verification method of `issuer`, under its `assertionMethod` relationship."
+            },
+            "proofPurpose": {
+              "type": "string",
+              "const": "assertionMethod",
+              "description": "Always `assertionMethod`: a voucher is an attestation."
+            },
+            "proofValue": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+              "description": "The signature, multibase base58btc."
+            }
+          }
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Account Register — response payload",
+      "description": "The account the service created and the DID record it published. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account",
+        "record"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.4/hosting-account.schema.json#/$defs/HostingAccount"
+        },
+        "record": {
+          "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

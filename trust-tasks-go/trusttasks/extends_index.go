@@ -8,6 +8,7 @@ package trusttasks
 // absent. [RegistryExtends] reads it.
 var registryExtendsIndex = map[string]string{
 	"https://trusttasks.org/spec/auth/step-up/approve-request/0.6": "0.5",
+	"https://trusttasks.org/spec/did-management/server/info/0.2":   "0.1",
 	"https://trusttasks.org/spec/messaging/monitor/event/0.3":      "0.2",
 	"https://trusttasks.org/spec/messaging/monitor/subscribe/0.2":  "0.1",
 	"https://trusttasks.org/spec/rooms/info/0.5":                   "0.4",

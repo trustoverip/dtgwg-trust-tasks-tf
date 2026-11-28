@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/account/policy/list/0.1",
+  "title": "DID Management — Account Policy List — payload",
+  "description": "An administrator reads the self-registration terms of the hosting domains: open or closed, the trusted authorising parties with their labels, and the limits. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "Only this domain's terms. Absent: every domain that has terms."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Account Policy List — response payload",
+      "description": "Every matching domain's terms. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policies"],
+      "properties": {
+        "policies": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../_shared/0.4/self-registration-policy.schema.json#/$defs/SelfRegistrationPolicy"
+          },
+          "description": "The domains' terms, by domain name. Empty when no domain has any — that is, when every domain is closed to self-registration."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

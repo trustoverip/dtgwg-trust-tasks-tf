@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.4/self-registration-policy",
+  "title": "SelfRegistrationPolicy — shared definition for did-management/account/policy/*",
+  "description": "One hosting domain's terms for admitting parties with no account (did-management/account/register): whether it admits them at all, by which evidence, which authorising parties' vouchers it trusts, where their DIDs may sit, how much they may hold, and when their accounts expire. Set by an administrator with did-management/account/policy/set and read with did-management/account/policy/list; the public subset is published by did-management/server/info/0.2. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen). Every member a community's policy chooses is REQUIRED, with no default (SPEC §6.6 rule 5); the two quotas are OPTIONAL because their absence does not choose a value, it defers to the limit the service applies to every account.",
+  "$defs": {
+    "SelfRegistrationPolicy": {
+      "title": "SelfRegistrationPolicy",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "enabled",
+        "admissions",
+        "trustedIssuers",
+        "pathPrefixes",
+        "maxRegistrations",
+        "inactivityDays",
+        "graceDays",
+        "maxPendingInvites"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "description": "The hosting domain the terms apply to."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the domain admits new registrations now. `false` closes it without discarding its terms: registrations are refused with `registrationClosed`, while existing accounts keep their DIDs, renew and expire as before."
+        },
+        "admissions": {
+          "type": "array",
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["invite", "voucher"] },
+          "description": "The admission evidence the domain accepts: `invite`, an invite from did-management/account/invite/issue; `voucher`, a voucher from one of `trustedIssuers`. Empty only when `enabled` is `false`."
+        },
+        "trustedIssuers": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/TrustedIssuer" },
+          "description": "The authorising parties — trust communities, or any other party the operator chooses — whose vouchers admit a registrant here. Non-empty exactly when `admissions` includes `voucher`; no DID appears twice."
+        },
+        "pathPrefixes": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "description": "Every DID a self-registered account holds sits under one of these `/`-separated prefixes, matched on whole segments. Empty: any path the domain's grammar admits."
+        },
+        "maxRegistrations": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The most self-registered accounts the domain holds at once."
+        },
+        "maxDidCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The most DIDs one self-registered account may hold, its own included. Absent: the service's ordinary per-account limit, as for any account an administrator creates."
+        },
+        "maxTotalSizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The most bytes of DID content one self-registered account may hold. Absent: the service's ordinary per-account limit."
+        },
+        "inactivityDays": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Days an account may go without a liveness signal before its DIDs are disabled. `0`: accounts on this domain do not expire."
+        },
+        "graceDays": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Days a disabled account is kept, and can be restored by its holder's renewal, before it is purged."
+        },
+        "maxPendingInvites": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The most invites that may be pending for the domain at once."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the terms last changed. Set by the service; ignored in a `set` request."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The administrator who last changed them, or `operator` for terms seeded from the service's configuration. Set by the service; ignored in a `set` request."
+        }
+      }
+    },
+    "TrustedIssuer": {
+      "title": "TrustedIssuer",
+      "description": "An authorising party whose `DidHostingVoucher`s admit a registrant.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did"],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:",
+          "description": "The party's DID: a voucher's `issuer`. A `did:scid` is compared without its `src`."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "The operator's name for the party. Not published."
+        }
+      }
+    }
+  }
+}
