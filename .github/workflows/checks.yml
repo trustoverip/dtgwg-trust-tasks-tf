@@ -105,6 +105,13 @@ jobs:
         env:
           VERSION_BASE_REF: HEAD^1 # the base the merge commit was built on; pull_request.base.sha stays at the commit the PR branched from
         run: npm run check-spec-lifecycle
+      # trust-tasks-rs/prebuilt-modules.txt only shrinks: new versions are
+      # consumer-side only in Rust (milestone 5), so the .crate stays under
+      # crates.io's upload limit.
+      - name: The prebuilt Rust module list only shrinks
+        env:
+          VERSION_BASE_REF: HEAD^1
+        run: npm run check-prebuilt-list
 
   # #1123: the facts the docs still state in prose — RELEASING.md's package
   # table, the crates outside a trust-tasks-rs leading-component bump, the

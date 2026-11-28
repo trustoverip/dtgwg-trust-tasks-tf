@@ -28,7 +28,7 @@ publish = true
 # same reason: the crate grew back to 9.8 MiB (#1097). It is published as each
 # crate's GitHub Release and lives in the repository; the README links there.
 # The `package` job in rust.yml fails above 9.9 MiB and warns above 9.5 MiB.
-exclude = ["tests/conformance/", "CHANGELOG.md"]
+exclude = ["tests/conformance/", "CHANGELOG.md", "prebuilt-modules.txt"]
 
 [features]
 # Enables runtime payload validation against the JSON Schema bundled with
