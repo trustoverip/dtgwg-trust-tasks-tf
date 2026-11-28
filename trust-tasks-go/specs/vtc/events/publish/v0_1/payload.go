@@ -14,6 +14,8 @@ import (
 // Response The success response to a vtc/events/publish/0.1 request. Carried in a Trust
 // Task document whose type is
 // https://trusttasks.org/spec/vtc/events/publish/0.1#response.
+//
+// Deprecated: superseded by vtc/events/publish/0.2
 type Response struct {
 	// The published event, as its host sees it.
 	Event Event `json:"event"`
@@ -445,6 +447,8 @@ type EntryID = string
 
 // Payload Publish a draft event. The outer document members are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by vtc/events/publish/0.2
 type Payload struct {
 	EventID EventID `json:"eventId"`
 	Ext     *Ext    `json:"ext,omitempty"`
@@ -465,7 +469,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/events/publish/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/publish/0.1#response"

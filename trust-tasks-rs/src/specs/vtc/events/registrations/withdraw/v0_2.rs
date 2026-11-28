@@ -576,6 +576,89 @@ impl<'de> ::serde::Deserialize<'de> for LocalDateTime {
             })
     }
 }
+///A partner member's presentation of the membership credential a partner the event's audience names issued them, made by the credential's subject — who signs the request — and bound to it: its `nonce` the request's `id`, its `domain` this community's DID (VTI-EVT-132). The community verifies it before, and without reference to, the event, and discards it once it has decided (VTI-EVT-133).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum MembershipPresentation {
+    Object(::serde_json::Map<::std::string::String, ::serde_json::Value>),
+    String(MembershipPresentationString),
+}
+impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json::Value>>
+    for MembershipPresentation
+{
+    fn from(value: ::serde_json::Map<::std::string::String, ::serde_json::Value>) -> Self {
+        Self::Object(value)
+    }
+}
+impl ::std::convert::From<MembershipPresentationString> for MembershipPresentation {
+    fn from(value: MembershipPresentationString) -> Self {
+        Self::String(value)
+    }
+}
+///A compact presentation: an SD-JWT with a key-binding JWT whose `nonce` is the request's `id` and whose `aud` is the community's DID.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct MembershipPresentationString(::std::string::String);
+impl ::std::ops::Deref for MembershipPresentationString {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<MembershipPresentationString> for ::std::string::String {
+    fn from(value: MembershipPresentationString) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for MembershipPresentationString {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 65536usize {
+            return Err("longer than 65536 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for MembershipPresentationString {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for MembershipPresentationString {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for MembershipPresentationString {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for MembershipPresentationString {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -586,6 +669,9 @@ pub struct Payload {
     pub event_id: EventId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub presentation: ::std::option::Option<MembershipPresentation>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -1475,12 +1561,17 @@ pub mod builder {
     pub struct Payload {
         event_id: ::std::result::Result<super::EventId, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        presentation: ::std::result::Result<
+            ::std::option::Option<super::MembershipPresentation>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
                 event_id: Err("no value supplied for event_id".to_string()),
                 ext: Ok(Default::default()),
+                presentation: Ok(Default::default()),
             }
         }
     }
@@ -1505,6 +1596,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for ext: {e}"));
             self
         }
+        pub fn presentation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::MembershipPresentation>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for presentation: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -1512,6 +1613,7 @@ pub mod builder {
             Ok(Self {
                 event_id: value.event_id?,
                 ext: value.ext?,
+                presentation: value.presentation?,
             })
         }
     }
@@ -1520,6 +1622,7 @@ pub mod builder {
             Self {
                 event_id: Ok(value.event_id),
                 ext: Ok(value.ext),
+                presentation: Ok(value.presentation),
             }
         }
     }
@@ -1932,7 +2035,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"eventId\"],\"title\":\"VTC Events — Registrations — Withdraw — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_MembershipPresentation_db4ceeca!(), "},\"$id\":\"https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presentation\":{\"$ref\":\"#/$defs/MembershipPresentation\",\"description\":\"Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it.\"}},\"required\":[\"eventId\"],\"title\":\"VTC Events — Registrations — Withdraw — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/publish/0.2",
+  "title": "VTC Events — Publish — payload",
+  "description": "Publish a draft event. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Publish — response payload",
+      "description": "The success response to a vtc/events/publish/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/publish/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.2/event.schema.json#/$defs/Event",
+          "description": "The published event, as its host sees it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

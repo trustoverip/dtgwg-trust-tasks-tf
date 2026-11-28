@@ -80,6 +80,7 @@ A conforming **consumer** (the community) **MUST**:
 6. Answer a registration that is already `withdrawn`, `declined` or `removed`, or one for a cancelled event, as it stands with `changed` false. Withdrawing from a cancelled event changes nothing: the event will not happen and no place is held.
 7. Keep the registration's `registrationId`, its roster setting and its history; delete its answers on the event's retention schedule as any other (VTI-EVT-090).
 8. Answer the registration and an `EventRef` of the event. The answer is the member's receipt (VTI-EVT-092). Audit the withdrawal by reference (VTI-EVT-091).
+9. With `presentation`, from a party who is not a member: verify it before, and without reference to, the event the request names, as VTI-VOT-016 verifies a presentation for an election and as `registrations/register/0.2` does; use the outcome only for an event whose audience names the credential's issuer as a partner; discard it once decided; and withdraw the registration that party made as the partner's member, named by `registrantDid` (VTI-EVT-134, VTI-EVT-135). Without one that passes, answer as for an event the caller may not see. A party who passes but holds no registration is answered `notRegistered`. A member's withdrawal needs no presentation and any it carries is ignored. Withdrawal stays always allowed for the partner's member as for a member (VTI-EVT-037).
 
 ## Authorization
 

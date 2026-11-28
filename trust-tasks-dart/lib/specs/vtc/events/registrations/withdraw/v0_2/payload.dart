@@ -337,6 +337,13 @@ class Response {
       };
 }
 
+/// A partner member's presentation of the membership credential a partner the event's
+/// audience names issued them, made by the credential's subject — who signs the
+/// request — and bound to it: its `nonce` the request's `id`, its `domain` this
+/// community's DID (VTI-EVT-132). The community verifies it before, and without
+/// reference to, the event, and discards it once it has decided (VTI-EVT-133).
+typedef MembershipPresentation = Object?;
+
 /// A member withdraws their registration for an event: always allowed, never held for
 /// anyone's decision, at any time before or after the registration window closes. A
 /// place it held passes to the waitlist. The community's signed answer is the member's
@@ -344,21 +351,31 @@ class Response {
 class Payload {
   const Payload({
     required this.eventId,
+    this.presentation,
     this.ext,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Payload.fromJson(Map<String, dynamic> json) => Payload(
         eventId: json['eventId'] as String,
+        presentation: json['presentation'],
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
   final EventId eventId;
+
+  /// Only from a party who is not a member of this community, withdrawing the
+  /// registration they made as a partner's member: their presentation of the membership
+  /// credential a named partner issued them, as `registrations/register/0.2` takes it
+  /// (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event;
+  /// discarded once decided (VTI-EVT-133). A member never sends it.
+  final MembershipPresentation? presentation;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'eventId': eventId,
+        if (presentation != null) 'presentation': presentation!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -397,7 +414,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2","title":"VTC Events — Registrations — Withdraw — payload","description":"A member withdraws their registration for an event: always allowed, never held for anyone\'s decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community\'s signed answer is the member\'s receipt. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["eventId"],"properties":{"eventId":{"\$ref":"#/\$defs/EventId"},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"EventId":{"title":"EventId","description":"Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).","type":"string","pattern":"^evt_[A-Za-z0-9_-]{16,64}\$"}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2","title":"VTC Events — Registrations — Withdraw — payload","description":"A member withdraws their registration for an event: always allowed, never held for anyone\'s decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community\'s signed answer is the member\'s receipt. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["eventId"],"properties":{"eventId":{"\$ref":"#/\$defs/EventId"},"presentation":{"\$ref":"#/\$defs/MembershipPresentation","description":"Only from a party who is not a member of this community, withdrawing the registration they made as a partner\'s member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"EventId":{"title":"EventId","description":"Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).","type":"string","pattern":"^evt_[A-Za-z0-9_-]{16,64}\$"},"MembershipPresentation":{"title":"MembershipPresentation","description":"A partner member\'s presentation of the membership credential a partner the event\'s audience names issued them, made by the credential\'s subject — who signs the request — and bound to it: its `nonce` the request\'s `id`, its `domain` this community\'s DID (VTI-EVT-132). The community verifies it before, and without reference to, the event, and discards it once it has decided (VTI-EVT-133).","anyOf":[{"type":"object","description":"A W3C Verifiable Presentation whose `nonce` is the request\'s `id` and whose `domain` is the community\'s DID, both signed by its holder\'s Data Integrity proof."},{"type":"string","minLength":1,"maxLength":65536,"description":"A compact presentation: an SD-JWT with a key-binding JWT whose `nonce` is the request\'s `id` and whose `aud` is the community\'s DID."}]}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

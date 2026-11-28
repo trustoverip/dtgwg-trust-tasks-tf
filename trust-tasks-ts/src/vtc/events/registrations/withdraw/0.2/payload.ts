@@ -3,7 +3,7 @@
  * Source: specs/vtc/events/registrations/withdraw/0.2/payload.schema.json
  */
 
-import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
+import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
 
 
 /**
@@ -11,6 +11,10 @@ import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTit
  */
 export interface VTCEventsRegistrationsWithdrawPayload {
   eventId: EventId;
+  /**
+   * Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it.
+   */
+  presentation?: MembershipPresentation;
   ext?: Ext;
 }
 /**
@@ -33,7 +37,7 @@ export interface VTCEventsRegistrationsWithdrawResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When };
+export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2" as const;
@@ -91,6 +95,10 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "eventId": {
       "$ref": "#/$defs/EventId"
     },
+    "presentation": {
+      "$ref": "#/$defs/MembershipPresentation",
+      "description": "Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it."
+    },
     "ext": {
       "$ref": "#/$defs/Ext"
     }
@@ -111,6 +119,22 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).",
       "type": "string",
       "pattern": "^evt_[A-Za-z0-9_-]{16,64}$"
+    },
+    "MembershipPresentation": {
+      "title": "MembershipPresentation",
+      "description": "A partner member's presentation of the membership credential a partner the event's audience names issued them, made by the credential's subject — who signs the request — and bound to it: its `nonce` the request's `id`, its `domain` this community's DID (VTI-EVT-132). The community verifies it before, and without reference to, the event, and discards it once it has decided (VTI-EVT-133).",
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "A W3C Verifiable Presentation whose `nonce` is the request's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof."
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "A compact presentation: an SD-JWT with a key-binding JWT whose `nonce` is the request's `id` and whose `aud` is the community's DID."
+        }
+      ]
     }
   }
 };
