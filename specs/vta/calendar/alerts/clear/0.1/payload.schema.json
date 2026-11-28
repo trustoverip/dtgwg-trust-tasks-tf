@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/alerts/clear/0.1",
+  "title": "VTA Calendar — Alerts — Clear — payload",
+  "description": "A client removes the principal's own reminders for one event, so the event's suggestions, or the context's default, apply again. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "eventId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "community": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarDid"
+    },
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Alerts — Clear — response payload",
+      "description": "The success response to a vta/calendar/alerts/clear/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/alerts/clear/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "community",
+        "eventId",
+        "changed"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+        },
+        "community": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarDid"
+        },
+        "eventId": {
+          "$ref": "../../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False where there was nothing to clear."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

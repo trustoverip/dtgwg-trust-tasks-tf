@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "format": "csv"
+    }
+  },
+  {
+    "note": "`ics` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "receipts": []
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "contextIds": [
+        "personal"
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

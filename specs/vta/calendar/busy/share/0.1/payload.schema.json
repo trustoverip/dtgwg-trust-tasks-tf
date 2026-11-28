@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/busy/share/0.1",
+  "title": "VTA Calendar — Busy — Share — payload",
+  "description": "A client turns on or off, for one trust context, sharing the principal's busy times with one booking page — merged, coarsened intervals and nothing else. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "target",
+    "enabled"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "target": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarBusyTarget"
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "True shares busy times with the target from now on; false stops at once (VTI-CAL-060)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Busy — Share — response payload",
+      "description": "The success response to a vta/calendar/busy/share/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/busy/share/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "share"
+      ],
+      "properties": {
+        "share": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarBusyShare"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
