@@ -58,6 +58,18 @@ Also in agreement, guarded by per-library tests rather than by
   and Dart require it when parsing; Go's `Proof.Created` is a plain `string`
   and reads an absent one as `""`. The proof verifiers read it as "when
   present". Each proof package's README says so.
+- A payload member whose schema is an `anyOf` of object branches keeps
+  whichever branch it carries (`hcp/entries/{create,get,revise,query}` 0.1
+  `entry` / `entries[]`: a Disclosure or a whole Entry). Rust's generated
+  struct has one optional field per branch, read first match wins, each
+  branch from its own copy of the value, and refuses a value no branch reads
+  (`trust-tasks-build/src/any_of.rs`; before, a whole Entry read as an empty
+  struct). TypeScript types it `Disclosure | Entry` over the JSON as received
+  (`src/hcp/entries/create/0.1/payload.ts`), Go keeps a `json.RawMessage`
+  for the consumer to decode (`specs/hcp/entries/create/v0_1/payload.go`) and
+  Dart an `Object?` (`lib/specs/hcp/entries/create/v0_1/payload.dart`).
+  Pinned by `tests/anyof_object_branches.rs`; the other three keep the JSON
+  as is and have no decoding step to test.
 
 ## Differences
 

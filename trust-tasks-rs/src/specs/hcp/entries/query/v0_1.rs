@@ -4640,7 +4640,7 @@ impl Response {
 }
 ///`ResponseEntriesItem`
 ///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[derive(::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ResponseEntriesItem {
     #[serde(
@@ -4655,6 +4655,39 @@ pub struct ResponseEntriesItem {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subtype_1: ::std::option::Option<Entry>,
+}
+impl<'de> serde::Deserialize<'de> for ResponseEntriesItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let e0 = match serde_json::from_value(value.clone()) {
+            ::std::result::Result::Ok(branch) => {
+                return ::std::result::Result::Ok(Self {
+                    subtype_0: ::std::option::Option::Some(branch),
+                    subtype_1: ::std::option::Option::None,
+                });
+            }
+            ::std::result::Result::Err(e) => e,
+        };
+        let e1 = match serde_json::from_value(value) {
+            ::std::result::Result::Ok(branch) => {
+                return ::std::result::Result::Ok(Self {
+                    subtype_0: ::std::option::Option::None,
+                    subtype_1: ::std::option::Option::Some(branch),
+                });
+            }
+            ::std::result::Result::Err(e) => e,
+        };
+        ::std::result::Result::Err(
+            <D::Error as serde::de::Error>::custom(
+                ::std::format!(
+                    "data did not match any anyOf branch of ResponseEntriesItem: subtype_0: {e0}; subtype_1: {e1}"
+                ),
+            ),
+        )
+    }
 }
 impl ::std::default::Default for ResponseEntriesItem {
     fn default() -> Self {

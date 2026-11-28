@@ -162,6 +162,46 @@ emits must be reachable both as `crate::…` (here) and as `::trust_tasks_rs::�
 door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 `examples/consumer-app` (the `consumer-app` job) is what catches a missing one.
 
+## An `anyOf` of object branches reads each branch whole
+
+Where typify cannot prove the branches of an `anyOf` of objects mutually
+exclusive (any branch carrying a `not`, `allOf` or other subschema defeats its
+check — `hcp/_shared`'s `Disclosure` excludes `Entry` by a `not`), it renders
+the `anyOf` as a struct with one `#[serde(flatten)] Option<Branch>` field per
+branch (`subtype_0`, `subtype_1`, …). serde's derived `Deserialize` reads
+flattened fields from one buffer, and a flattened struct takes the members it
+recognises out of it before it knows whether it will succeed, so a failed
+first branch took the members it shares with the second: a whole `Entry` in
+`hcp/entries/{create,get,revise,query}` 0.1 read as `ResponseEntry {}` and
+wrote back `{}`, and a value matching no branch read as that empty struct.
+
+`trust_tasks_build` (`src/any_of.rs`) therefore replaces the derived
+`Deserialize` of exactly that shape — a struct whose every field is a
+flattened `Option` named `subtype_N`, deriving both `Deserialize` and
+`Serialize` — with one that reads the value once and tries the branches in
+order, each on its own copy. The first branch that reads is kept and the
+others stay `None`, so at most one field is ever `Some` and `Serialize` never
+writes a shared member twice; a value two branches would read keeps only the
+first (Entry's own members on a value that is also a Disclosure are dropped,
+as an open object's undeclared members are). A value no branch reads is
+refused with each branch's error ("data did not match any anyOf branch of
+ResponseEntry: subtype_0: …; subtype_1: …"), as `anyOf` requires. The struct,
+its fields, `Serialize` and the builder are typify's, unchanged.
+
+`generate_module` fails on any other struct that derives `Deserialize` over a
+`#[serde(flatten)] Option<_>` field (typify's rendering of an `anyOf` beside
+members of its own, for example), since it would lose data the same way; a
+flattened map such as `registry/*`'s `extra` is not an `Option` and is
+unaffected. If a new schema trips it, extend the pass rather than silencing
+it.
+
+Tests: `trust-tasks-build/tests/any_of_branches.rs` (the generated shape, both
+targets), `trust-tasks-rs/tests/anyof_object_branches.rs` (round trips on the
+`hcp` modules, the refusal, a value both branches read) and
+`examples/hcp-demo/tests/any_of_entry.rs` (a whole Entry through the
+application target). The TypeScript, Go and Dart generators never had the
+problem (a union type, `json.RawMessage`, `Object?`).
+
 ## The prebuilt tree is frozen
 
 `src/specs` holds a module for each version `prebuilt-modules.txt` lists (what
