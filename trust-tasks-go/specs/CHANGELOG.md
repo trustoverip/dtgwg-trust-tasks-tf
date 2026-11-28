@@ -4,6 +4,27 @@ All notable changes to `trust-tasks-go/specs` (the generated specification
 packages) are documented here. Entries are generated from conventional commits
 by the release automation (see RELEASING.md).
 
+## 0.3.2 — 2026-11-28
+
+
+### Added
+
+- **vta/events**: Events hosted by a person (phase 8) (#1424)
+
+The vta/events/*/0.1 family for VTI-PEV-001 – 043: events a VTA holds for
+  its principal outside any community, under a persona identifier (the host).
+
+  Principal side: create, update, publish, cancel, delete, list, show,
+  invitations/send, invitations/revoke, registrations/list,
+  registrations/decide. Invitee side, under vta/events/invitee/: show,
+  register, withdraw, access/show, mine/list — proof REQUIRED, accepted only
+  from an invited identifier, charged to the without-standing budget.
+
+  Reuses vtc/events/_shared/0.4 for When, RegistrationSettings,
+  AccessDetails, RegistrationStatus, EventRef; vta/events/_shared/0.1 adds
+  VtaEvent* defs (roster is visible|hidden only). Bindings regenerated for
+  all four libraries; no prebuilt Rust module.
+
 ## 0.3.1 — 2026-11-28
 
 
