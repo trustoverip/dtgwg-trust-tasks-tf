@@ -303,7 +303,9 @@ export class World {
         if (!grant.purposes.includes(p.purpose) || asked.some((c) => !grant.categories.includes(c))) {
           return refuse("permissionDenied", NEUTRAL_DENIAL);
         }
-        const useUntil = this.clock.plus(3600);
+        // A copy is usable for an hour, but never past the grant it was disclosed under (V0's rule).
+        const hour = this.clock.plus(3600);
+        const useUntil = hour < grant.expiresAt ? hour : grant.expiresAt; // both whole-second UTC instants
         const entries = ENTRIES.filter((e) => asked.includes(e.category))
           .slice(0, Math.min(p.maxEntries ?? 5, 20))
           .map((e) => ({

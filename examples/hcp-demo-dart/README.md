@@ -63,10 +63,10 @@ dart run bin/main.dart
 ```
 
 `dart test` runs the tests listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has),
-the same 18 in every port: the golden transcript, the query after revoke, a tampered document, a
+the same 19 in every port: the golden transcript, the query after revoke, a tampered document, a
 schema-invalid document, the notice and its deduplication, the token from another VID, the
-grant-request rules, the reply checks, the hold's hint and the token's lifetime, the decline and the
-hold's timeout. The transcript is compared with the shared
+grant-request rules, the reply checks, the hold's hint and the token's lifetime, the decline, the
+hold's timeout, and a copy's `useUntil` capped at the grant's end. The transcript is compared with the shared
 [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt), so this port and
 the others print the same bytes. If the scenario changes, it changes in `hcp-demo-ts` first.
 

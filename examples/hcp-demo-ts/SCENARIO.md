@@ -119,7 +119,7 @@ Each entry disclosed in a query response is:
   "assertion": { "declarationType": "person-declared" },
   "classification": { "categories": ["<category>"] },
   "standing": { "assurance": "authenticated", "confirmed": true },
-  "useUntil": "<now + 1 hour>"
+  "useUntil": "<now + 1 hour, or the grant's expiresAt where that is earlier>"
 }
 ```
 
@@ -163,7 +163,8 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
 4. The `purpose` is not one of the grant's, or a requested category is outside the grant →
    `permissionDenied`.
 5. Otherwise the response: the matching entries (at most `min(maxEntries ?? 5, 20)`), with
-   `directives: []`.
+   `directives: []`. Each entry's `useUntil` is the earlier of now plus 1 hour and the grant's
+   `expiresAt`: a copy never outlives the grant it was disclosed under.
 
 **`hcp/grants/revoke`**: a token other than the management token, or an unknown `grantId` →
 `permissionDenied`. Otherwise, if the grant is `active`, set it `revoked` and record `revokedAt`
@@ -336,6 +337,10 @@ code.
     request and gets the next step, the clock moves on 298 s (`HOLD_LIFETIME` − 2), and a
     resubmission (issued exactly 300 s after the held request) → a next step, the hold still
     `pending`: the lifetime has not passed.
+19. After the grant: move the clock on 12600 s, so that the grant (ending `2026-11-25T14:00:06Z`)
+    ends inside the hour, then a query with the grant's token and step 3's payload → the query
+    response, every entry's `useUntil` equal to the grant's `expiresAt`, `2026-11-25T14:00:06Z`,
+    not now plus 1 hour (`2026-11-25T14:30:08Z`).
 
 ## Documented differences
 

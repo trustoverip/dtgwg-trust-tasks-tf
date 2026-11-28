@@ -66,7 +66,7 @@ go generate ./... && go run . && go test ./...
 it drifts). `go run .` runs the demo. `go test ./...` runs the tests listed in
 [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the golden transcript, the query
 after revoke, a tampered document, a schema-invalid document, the client's handling of the notice,
-and the provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and the hold's expiry. The golden transcript is
+and the provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline, the hold's expiry, and a copy's `useUntil` capped at the grant's end. The golden transcript is
 shared with the other ports and owned by the TypeScript demo,
 [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt); this port compares
 its output with it and never writes it.

@@ -459,3 +459,29 @@ func Test18OnceTheHoldsLifetimePassesTheThreadIsRefusedAndANewThreadIsHeldAgain(
 		t.Errorf("hold state %d, want pending", s)
 	}
 }
+
+func Test19AUseUntilIsTheGrantsExpiresAtWhereTheGrantEndsInsideTheHour(t *testing.T) {
+	w, _, _ := afterGrant()
+	C, P := w.ContextClient, w.Provider
+	w.Clock.Advance(12600) // the grant ends at 14:00:06; the query is issued at 13:30:08
+	reply := decodeReply(t, w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", QueryPayload(token), "")))
+	if reply.Type != query.ResponseTypeURI {
+		t.Fatalf("got %q, want %s", reply.Type, query.ResponseTypeURI)
+	}
+	var r struct {
+		Entries []struct {
+			UseUntil string `json:"useUntil"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal(reply.Payload, &r); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Entries) == 0 {
+		t.Fatal("no entries")
+	}
+	for _, e := range r.Entries {
+		if e.UseUntil != "2026-11-25T14:00:06Z" { // not now + 1 h, 14:30:08
+			t.Errorf("useUntil %s, want the grant's expiresAt 2026-11-25T14:00:06Z", e.UseUntil)
+		}
+	}
+}

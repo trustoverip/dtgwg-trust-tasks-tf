@@ -70,8 +70,8 @@ npm run all        # generate from trust-tasks.lock, build, run the demo, run th
 `npm start` runs the demo again. `npm test` runs the tests listed in
 [SCENARIO.md](SCENARIO.md#tests-every-port-has): the golden transcript, the query after revoke, a
 tampered document, a schema-invalid document, the client's handling of the notice, the
-provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and
-the hold's expiry. If you change the scenario on purpose,
+provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline,
+the hold's expiry, and a copy's `useUntil` capped at the grant's end. If you change the scenario on purpose,
 run `npm run build && npm run update-golden` and update [SCENARIO.md](SCENARIO.md), which the Rust,
 Go and Dart ports follow.
 

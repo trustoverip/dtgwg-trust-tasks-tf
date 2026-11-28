@@ -403,4 +403,24 @@ void main() {
     );
     expect(fresh.held[firstThread]!.state, 'pending');
   });
+
+  test("19. a copy's useUntil is the grant's expiresAt where the grant ends "
+      'inside the hour', () async {
+    final (world, _) = await afterGrant();
+    final (c, p) = (world.contextClient, world.provider);
+    // The grant ends at 14:00:06; the query is issued at 13:30:08.
+    world.clock.advance(12600);
+    final reply = await world.exchange(
+      c,
+      p,
+      await world.request(c, p, queryType, queryPayload(token)),
+    );
+    expect(reply['type'], query.responseTypeUri);
+    final entries = payloadOf(reply)['entries'] as List;
+    expect(entries, isNotEmpty);
+    for (final entry in entries) {
+      // Not now plus 1 hour, 14:30:08.
+      expect((entry as Map)['useUntil'], '2026-11-25T14:00:06Z');
+    }
+  });
 }
