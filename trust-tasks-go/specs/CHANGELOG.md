@@ -4,6 +4,227 @@ All notable changes to `trust-tasks-go/specs` (the generated specification
 packages) are documented here. Entries are generated from conventional commits
 by the release automation (see RELEASING.md).
 
+## 0.3.1 — 2026-11-28
+
+
+### Added
+
+- **vtc/events**: Event rooms, boards, meetings and polls (phase 6) (#1420)
+
+Twenty new draft tasks (0.1) under vtc/events, for VTI-EVT-240 – 282:
+
+  - attachments/{add,remove,list}: a community room bound to the event's
+    roster (visible rosters only; `admits: goingAndMaybe` only there), an
+    opt-in room with a disclosure on a hidden roster, a board whose audience
+    is the event, a community election, or a material released to each
+    registrant who is going, as access details are.
+  - meeting/show, meeting/agenda/update, meeting/roles/{appoint,remove}
+    (chair, secretary — grants, as hosts are), meeting/quorum/{set,show}
+    (count or percentage of the roster or of a role; counted from the
+    check-ins), meeting/motions/open (a community election through the
+    registrar, roll `listed` = members present at opening, refused unless
+    quorum is met; board ElectionTemplate, so never binding),
+    meeting/minutes/{record,approve}, meeting/actions/{add,update,list}
+    (`assignedToMe` is what a member's VTA reads for its calendar).
+  - polls/{create,show,answer,close}: candidate times answered yes / if need
+    be / no, a voters setting fixed at creation (visible, hostsOnly, hidden),
+    closed optionally into a draft event.
+  - publication/set: mark a calendar or an event public for the website's
+    schema.org Event data and the public calendar feed (read without a task).
+
+  Shared definitions in new sub-family folders (meeting/_shared/0.1,
+  polls/_shared/0.1, attachments/_shared/0.1), so no event shape changes.
+
+  An event as a board's audience arrives with vtc/boards/_shared/0.2
+  (BoardAudience gains `{kind: "event", eventId}`; ElectionTemplate's roll
+  text says how an event board's elections are enfranchised), carried by
+  vtc/boards/{create,update,show,list}/0.2 — the four tasks whose payload or
+  response carries BoardAudience - otherwise identical to 0.1. Boards 0.1 is
+  untouched, so the released TypeScript union is not widened.
+  attachments/add and attachments/_shared name boards 0.2. The 0.2 versions
+  declare the bounds the 0.1 baseline exempted (auditors, show's `state`),
+  so those two allowlist entries go; facilitators/list 0.1 keeps naming
+  show/0.1 under a stale-reference exception.
+
+  All four libraries regenerated; no prebuilt Rust module for the new
+  versions.
+
+- **vtc/booking**: Booking pages — book a meeting with me (phase 7) (#1419)
+
+New family vtc/booking/*/0.1 (VTI Community Booking Pages, VTI-BKG-001 – 053):
+  pages/{create,update,delete,show,list}, slots/list, bookings/{book,reschedule,cancel,list}
+  and busy/put, over _shared/0.1/booking.schema.json.
+
+  A booking is an unlisted meeting event (vtc/events/*): the book/reschedule replies
+  carry the event reference and registration as the receipt. Tiers (members, known,
+  guests) are proven by membership, a partner presentation or a relationship, never
+  asserted — no request carries a tier. busy/put takes merged, quarter-hour intervals
+  at most ninety days ahead from the host's own agent (VTI-CAL-060/061) and replaces
+  the last supply; no response ever says why a slot is not offered.
+
+  Its own family rather than vtc/events/booking-pages/*: a page is not an event and
+  has its own lifecycle, authority (the host alone) and tiers; only bookings become
+  events. Consumer-side only — no prebuilt Rust module (#1411). TS, Go and Dart
+  bindings regenerated.
+
+- **vtc/events**: Check tickets at the door (#1418)
+- **vtc/events**: Recurring series, anonymous and persona registration (phase 5) (#1417)
+
+Implements VTI-EVT-190 – 198 (series), 210 – 218 (anonymous registration on
+  the predicate credential system) and 230 – 232 (persona registration).
+
+- **vtc/events**: Check-in, tickets, guests, attendance, event identity (phase 4) (#1413)
+
+VTI-EVT-140 - 186 (trustoverip/dtgwg-vti-spec#130).
+
+  - _shared/0.3: the 0.2 shapes plus EventIdentity, EventGuestAdmission,
+    EventSelfCheckIn, EventRegistrantKind, EventCheckInMethod,
+    EventDoorChallengeValue, EventCheckIn, EventAttendanceTally; the Event
+    gains identity, guests, tickets, countsAttendance, attendanceBadge;
+    the Calendar gains selfCheckIn and countsAttendance; an invitation
+    link may be forGuests.
+  - 0.3 of create (identity, with noKeyHolder / keyHolderUnavailable,
+    badgeNotFound), update, show, list, publish, cancel; 0.2 of
+    calendars/create, update, list; invitations/links/create 0.2
+    (forGuests, guestsNotAdmitted).
+  - New 0.1: checkin/challenge, checkin/record, checkin/list,
+    tickets/show, attendance/show, guests/register, guests/withdraw.
+  - groups/_shared/0.1 RuleCondition: eventsAttended appended to the
+    fact enum, with optional calendarId and withinDays (additive).
+
+  New versions are consumer-side only (no prebuilt Rust module, #1411).
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vta**: Vta/hosting-account/get/0.1 — a VTA's principal reads its self-registered hosting account (#1410)
+
+A VTA that self-registered its DID with a third-party DID hosting service
+  (did-management/account/register) keeps the account alive itself; this task
+  carries what it knows about that account — the host's lifecycle state and
+  dates as last reported, renewal time, the last expiry notice, the last error
+  reaching the host — to the principal that can act on it. refresh reads the
+  account from the host with account/status (no activity); it never renews.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **vta/calendar**: The member's calendar across communities (#1409)
+
+vta/calendar/*/0.1 (13 tasks) for the VTI The Member's Calendar chapter
+  (VTI-CAL-001 - 071, dtgwg-vti-spec #128): list (the agenda across the
+  contexts the caller has standing in, mine and notified tiers), sync
+  (read each community's vtc/events/mine/list as the member), settings
+  show/update (sync per context, default reminders, quiet hours),
+  alerts set/clear (per-event reminders), feeds create/list/revoke
+  (iCalendar subscriptions; the address returned once), export (ICS and
+  receipts), receipts list/deposit (the communities' signed replies kept
+  as received), busy/share (coarse busy times to a booking page).
+
+  Shared definitions are prefixed VtaCalendar (the events family already
+  has Calendar and CalendarId). Bindings regenerated for Rust, TypeScript,
+  Go and Dart.
+
+- **vtc/events**: Publish/cancel 0.2, withdraw by presentation, invitation revoke (#1407)
+
+Closes three gaps OpenVTC VTI's phase-2 implementation reported
+  (OpenVTC/verifiable-trust-infrastructure#2846):
+
+  - vtc/events/publish/0.2 and cancel/0.2 answer the _shared/0.2 Event
+    (invite mode, membersMayInvite, audience.partners), as create/update
+    0.2 do; their requests are 0.1's.
+  - registrations/withdraw/0.2 gains an optional presentation, in place
+    (an additive optional member): a partner community's member withdraws
+    the registration they made as one (VTI-EVT-037, VTI-EVT-135), verified
+    as register/0.2 verifies it.
+  - vtc/events/invitations/revoke/0.1: a host revokes an invitation
+    (VTI-EVT-103); its notification is withdrawn, it no longer puts the
+    member in the audience, and a registration the member made stands.
+    Codes: invitationNotFound, alreadyRevoked.
+
+  Stale references to cancel/0.1 rewritten. Bindings regenerated for
+  Rust, TypeScript, Go and Dart.
+
+- **did-management/account**: Self-registration of hosted DIDs, with invites, liveness and expiry notices (#1405)
+
+* feat(did-management/account): self-registration of hosted DIDs, with invites, liveness and expiry notices
+
+  Adds the did-management/account family, for a party with no account on a
+  DID hosting service (an agent that minted its own DID before it had
+  anywhere to publish it):
+
+  - account/register/0.1: register a self-certifying did:webvh. Identity
+    comes from the log itself (the proof is checked against the document the
+    log implies, never a network resolution); entitlement from an operator
+    invite or a trust community's signed voucher.
+  - account/renew/0.1, account/status/0.1: the holder keeps its account alive
+    and reads where it stands in the inactivity lifecycle.
+  - account/expiry-notice/0.1: the service warns the holder before its DIDs
+    are disabled, at disablement, and before purge.
+  - account/invite/{issue,list,revoke}/0.1: operator invites (token + claim
+    code, single use, stored hashed).
+  - server/info/0.2 (extends 0.1): publishes each domain's self-registration
+    terms, which a registrant must read before minting, since the path is
+    fixed into the DID.
+  - did-management/_shared/0.4: HostingAccount and AccountInvite.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vtc/events**: Invitations, opt-outs, announcements (phase 2) (#1406)
+
+VTI Community Events phase 2 (VTI-EVT-100 - 135, dtgwg-vti-spec #126).
+
+  New 0.1 tasks: invitations/send, invitations/list, invitations/respond,
+  invitations/links/create, invitations/links/revoke,
+  invitations/links/redeem, optouts/set, optouts/list,
+  announcements/send, announcements/list.
+
+  0.2 of create, update (invite: none | notify | expect,
+  membersMayInvite, audience.partners, partnerInvalid), show and
+  registrations/register (a partner member's MembershipPresentation),
+  registrations/list (othersGoing in the roster view), and list,
+  mine/list, registrations/withdraw, decide, remove (the 0.2 Event and
+  Registration). _shared/0.2: EventInviteMode, EventInvitation(+Id,
+  Inviter, Answer), EventInvitationLink(+Id), EventOptOut(+Scope),
+  EventAnnouncement(+Id), MembershipPresentation, PartnerDid;
+  Registration names a partner's member by registrantDid.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vtc/events**: Community events and calendars, phase 1 (#1402)
+
+* feat(vtc/events): community events and calendars, phase 1 (21 tasks)
+
+  vtc/events/*/0.1, the VTI Community Events chapter (VTI-EVT-001 - 095,
+  dtgwg-vti-spec #125): calendars (create, update, list), events (create,
+  update, publish, cancel, delete, show, list), the member's own events
+  (mine/list), access details released to registrants who are going
+  (access/show), registrations (register, withdraw, list, decide, remove),
+  hosts by appointment (appoint, remove, list), and reports.
+
+  Time is JSCalendar's: local start, IANA time zone, duration. The roster
+  setting (visible | hidden) is fixed at publish and recorded on each
+  registration; register and withdraw answer the registrant's receipt.
+  Reminder offsets are integer minutes; the community never sends a
+  reminder itself (VTI-EVT-040).
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+
+
+### Specifications
+
+- **process-attestation**: Link the CPoE drafts and the process-proof assertion the profile names (#1414)
+
+* spec(process-attestation): link the CPoE drafts and the process-proof assertion the profile names
+
+- **vtc/events**: EventRef carries suggested reminders and the place summary (#1415)
+
+EventRef (_shared/0.2 and 0.3) gains two optional members, in place as a
+  released version may: suggestedReminderMinutes and placeSummary. The
+  member's VTA reads its events only through mine/list (VTI-CAL-011/021),
+  so without them it cannot fire the hosts' suggested reminders
+  (VTI-CAL-041) or put the coarse place in a titlesAndPlaces feed.
+  mine/list/0.2 item 4 now says it carries them where the event has them.
+  Never an address: placeSummary stays the coarse hint (VTI-EVT-062).
+
 ## 0.3.0 — 2026-11-27
 
 
