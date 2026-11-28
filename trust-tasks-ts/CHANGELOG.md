@@ -11,6 +11,54 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.31.13 — 2026-11-28
+
+
+### Added
+
+- **rs,ts,go,dart**: Let a handler keep its response out of the replay record (#1423)
+
+* feat(rs,ts,go,dart): let a handler keep its response out of the replay record
+
+  A handler can now withhold its response from the SPEC §7.2 item 11
+  record. The id stays recorded as executed, so a duplicate is never
+  executed twice; only the response body is not stored. A duplicate of
+  such a document is handed back to the handler as a re-delivery, with an
+  explicit signal, instead of being answered from a stored response. This
+  is what hcp/grants/request 0.1 needs: the provider keeps the access
+  token in no record and answers a re-delivered request with a newly
+  issued token. Opt-in per response; nothing changes for other handlers.
+
+  - Rust: Delivery::current() in the handler (withhold_response,
+    is_redelivery); ReplayGuard::record_withheld (default: record no
+    response); ReplayVerdict::Withheld.
+  - TypeScript: parties.delivery (withholdResponse, redelivery);
+    optional ReplayGuard.recordWithheld; duplicate verdict withheld flag.
+  - Go: trusttasks.DeliveryFrom(ctx) (WithholdResponse, Redelivery);
+    optional WithholdingReplayGuard; ReplayVerdict.Withheld.
+  - Dart: Delivery.current, a zone value (withholdResponse,
+    isRedelivery); optional WithholdingReplayGuard; Duplicate.withheld.
+
+  A guard without the new method stores no response either and absorbs
+  the duplicate in silence. Shared vectors in
+  fixtures/consume/withheld-response.json; docs/runtime-parity.md row.
+
+- **vta/events**: Events hosted by a person (phase 8) (#1424)
+
+The vta/events/*/0.1 family for VTI-PEV-001 – 043: events a VTA holds for
+  its principal outside any community, under a persona identifier (the host).
+
+  Principal side: create, update, publish, cancel, delete, list, show,
+  invitations/send, invitations/revoke, registrations/list,
+  registrations/decide. Invitee side, under vta/events/invitee/: show,
+  register, withdraw, access/show, mine/list — proof REQUIRED, accepted only
+  from an invited identifier, charged to the without-standing budget.
+
+  Reuses vtc/events/_shared/0.4 for When, RegistrationSettings,
+  AccessDetails, RegistrationStatus, EventRef; vta/events/_shared/0.1 adds
+  VtaEvent* defs (roster is visible|hidden only). Bindings regenerated for
+  all four libraries; no prebuilt Rust module.
+
 ## 0.31.12 — 2026-11-28
 
 
