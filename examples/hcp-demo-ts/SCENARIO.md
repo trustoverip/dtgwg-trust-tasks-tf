@@ -82,7 +82,8 @@ Each key is 32 bytes, every byte the same value. Never use such keys for anythin
 
 ## The toy provider
 
-In memory. Three entries of the person's context:
+In memory. Three entries of the person's context, each `person-declared`, recorded with assurance
+`authenticated`, and carrying no confirmation record (HCP 3.8):
 
 | ref | category | value |
 |---|---|---|
@@ -118,10 +119,14 @@ Each entry disclosed in a query response is:
   "content": { "profile": "https://hcp.example/spec/profiles/general-context/2.0", "value": "<value>", "language": "en" },
   "assertion": { "declarationType": "person-declared" },
   "classification": { "categories": ["<category>"] },
-  "standing": { "assurance": "authenticated", "confirmed": true },
+  "standing": { "assurance": "authenticated", "confirmed": false },
   "useUntil": "<now + 1 hour>"
 }
 ```
+
+`standing.confirmed` is `false` because no entry has a confirmation record: it is true only where the
+most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8), never because
+an entry is `person-declared`.
 
 Every `permissionDenied` the handler sends has the fixed message "The request is not authorized."
 and `retryable: false`; every `hcp:invalidToken` has "The access token is not valid." and

@@ -312,7 +312,8 @@ export class World {
             content: { profile: "https://hcp.example/spec/profiles/general-context/2.0", value: e.value, language: "en" },
             assertion: { declarationType: "person-declared" },
             classification: { categories: [e.category] },
-            standing: { assurance: "authenticated", confirmed: true },
+            // No entry carries a confirmation record, so none is confirmed (HCP 7.4, 3.8).
+            standing: { assurance: "authenticated", confirmed: false },
             useUntil,
           }));
         return reply({

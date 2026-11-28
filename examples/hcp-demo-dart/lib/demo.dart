@@ -485,7 +485,9 @@ final class World {
                 'classification': {
                   'categories': [e.category],
                 },
-                'standing': {'assurance': 'authenticated', 'confirmed': true},
+                // No entry carries a confirmation record, so none is
+                // confirmed (HCP 7.4, 3.8).
+                'standing': {'assurance': 'authenticated', 'confirmed': false},
                 'useUntil': useUntil,
               },
         ].take(math.min(p.maxEntries ?? 5, 20)).toList();
