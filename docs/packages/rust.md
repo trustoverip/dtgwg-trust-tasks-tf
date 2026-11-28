@@ -162,6 +162,30 @@ emits must be reachable both as `crate::…` (here) and as `::trust_tasks_rs::�
 door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 `examples/consumer-app` (the `consumer-app` job) is what catches a missing one.
 
+## An `anyOf` of object branches reads each branch whole
+
+Where typify cannot prove the branches of an `anyOf` of objects mutually
+exclusive (any branch carrying a `not`, `allOf` or other subschema defeats its
+check — `hcp/_shared`'s `Disclosure` excludes `Entry` by a `not`), it renders
+the `anyOf` as a struct with one `#[serde(flatten)] Option<Branch>` field per
+branch (`subtype_0`, `subtype_1`, …). serde's derived `Deserialize` reads
+flattened fields from one buffer, and a flattened struct takes the members it
+recognises out of it before it knows whether it will succeed, so a failed
+first branch took the members it shares with the second: a whole `Entry` in
+`hcp/entries/{create,get,revise,query}` 0.1 read as `ResponseEntry {}` and
+wrote back `{}`, and a value matching no branch read as that empty struct.
+
+`trust_tasks_build` (`src/any_of.rs`) therefore replaces the derived
+`Deserialize` of exactly that shape — a struct whose every field is a
+flattened `Option` named `subtype_N` — with one that reads the value once and
+each branch from its own copy, and refuses a value no branch reads ("data did
+not match any anyOf branch of …"), as `anyOf` requires. The struct, its fields,
+`Serialize` and the builder are typify's, unchanged. Tests:
+`trust-tasks-build/tests/any_of_branches.rs` (the generated shape, both
+targets) and `trust-tasks-rs/tests/anyof_object_branches.rs` (round trips on
+the `hcp` modules). The TypeScript, Go and Dart generators never had the
+problem (a union type, `json.RawMessage`, `Object?`).
+
 ## The prebuilt tree is frozen
 
 `src/specs` holds a module for each version `prebuilt-modules.txt` lists (what
