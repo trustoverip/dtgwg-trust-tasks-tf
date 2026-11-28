@@ -1,0 +1,42 @@
+[
+  {
+    "note": "`status` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z"
+    }
+  },
+  {
+    "note": "A guest says going or maybe; the community decides pending.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "status": "pending"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "status": "going",
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`event` is REQUIRED: the receipt names the event.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Hk3Wq9Ls2Dn6Hy4B",
+        "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+        "registrantDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+        "status": "going",
+        "guests": 0,
+        "roster": "hidden",
+        "eventSequence": 1,
+        "createdAt": "2026-11-28T10:00:00Z",
+        "updatedAt": "2026-11-28T10:00:00Z"
+      }
+    }
+  }
+]

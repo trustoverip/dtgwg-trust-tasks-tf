@@ -949,9 +949,21 @@ export type EventAnnouncementId = string;
  */
 export type EventAudienceScope = "members" | "groups" | "roles";
 /**
+ * How a check-in was made (VTI-EVT-162 – 164). `challenge`: the registrant signed over a door challenge. `staff`: door staff checked them in by name. `self`: the registrant checked in during the event without a challenge, where the calendar allows.
+ */
+export type EventCheckInMethod = "challenge" | "staff" | "self";
+/**
  * What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.
  */
 export type EventDescription = string;
+/**
+ * A door challenge: at least 128 random bits, base64url without padding (VTI-EVT-161).
+ */
+export type EventDoorChallengeValue = string;
+/**
+ * Whether the event admits guests — parties who are not members of the community (VTI-EVT-150, 151). `none`: no guests. `invited`: a guest an invitation names, or who redeemed a link made for guests. `open`: any party that signs its own request. The audience never admits a guest.
+ */
+export type EventGuestAdmission = "none" | "invited" | "open";
 /**
  * Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).
  */
@@ -992,6 +1004,14 @@ export type EventLifecycle = "draft" | "published" | "cancelled";
  * What an opt-out covers (VTI-EVT-110): invitations to one `event`, or from one `calendar`.
  */
 export type EventOptOutScope = "event" | "calendar";
+/**
+ * Who a registrant is to the community: `member` (named by `entryId`), `partner` (a partner community's member, VTI-EVT-134), `guest` (VTI-EVT-153).
+ */
+export type EventRegistrantKind = "member" | "partner" | "guest";
+/**
+ * Whether a calendar's events take a registrant's check-in without a door challenge, during the event (VTI-EVT-164, 181). `none`: never. `allowed`: taken, but not counted toward attendance. `counting`: taken and counted.
+ */
+export type EventSelfCheckIn = "none" | "allowed" | "counting";
 /**
  * A short name. Plain text; a reader MUST NOT treat it as instructions.
  */
@@ -9893,6 +9913,51 @@ export interface Calendar {
   createdAt: EventInstant;
 }
 /**
+ * A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.
+ */
+export interface Calendar_VtcEventsV0_3 {
+  calendarId: CalendarId;
+  name: EventTitle;
+  description?: EventDescription;
+  color?: Color;
+  /**
+   * The group whose calendar this is. Absent for the community's own calendar.
+   */
+  groupId?: GroupId;
+  /**
+   * True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).
+   */
+  community?: boolean;
+  /**
+   * The roster setting a new event in this calendar starts with. Absent means `hidden`.
+   */
+  defaultRoster?: RosterSetting;
+  /**
+   * The reminders a new event in this calendar suggests, as minutes before its start.
+   *
+   * @maxItems 4
+   */
+  defaultReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * `archived`: takes no new events; its events are kept.
+   */
+  state: "active" | "archived";
+  createdAt: EventInstant;
+  /**
+   * Absent means `none`.
+   */
+  selfCheckIn?: EventSelfCheckIn;
+  /**
+   * Whether its events count toward attendance unless an event says otherwise (VTI-EVT-180). Absent means true.
+   */
+  countsAttendance?: boolean;
+}
+/**
  * A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.
  */
 export interface CapabilityGrant {
@@ -13539,6 +13604,17 @@ export interface EventAnnouncement {
   createdAt: EventInstant;
 }
 /**
+ * How many counting events a member attended in one calendar in one month (VTI-EVT-185): the record attendance is counted from.
+ */
+export interface EventAttendanceTally {
+  calendarId: CalendarId;
+  /**
+   * `YYYY-MM`, in UTC.
+   */
+  month: string;
+  count: number;
+}
+/**
  * Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.
  */
 export interface EventAudience {
@@ -13594,6 +13670,44 @@ export interface EventAudience_VtcEventsV0_2 {
   partners?: [PartnerDid, ...PartnerDid[]];
 }
 /**
+ * One check-in (VTI-EVT-165): which registration, how, and when. Never a record of who did not come.
+ */
+export interface EventCheckIn {
+  registrationId: RegistrationId;
+  /**
+   * Present for a member.
+   */
+  entryId?: EntryId;
+  /**
+   * Present for a partner's member or a guest.
+   */
+  registrantDid?: string;
+  registrantKind: EventRegistrantKind;
+  method: EventCheckInMethod;
+  checkedInAt: EventInstant;
+  /**
+   * For `staff`: the door staff member who recorded it.
+   */
+  checkedInBy?: EntryId;
+  /**
+   * Whether it counts toward the registrant's attendance (VTI-EVT-180 – 183).
+   */
+  counts?: boolean;
+}
+/**
+ * The event's own identifier (VTI-EVT-140 – 145): minted by the community's VTA from a `vtc-event` template, authorized by a revocable community credential, and used only to sign the event's tickets and attendance records.
+ */
+export interface EventIdentity {
+  /**
+   * The event's identifier.
+   */
+  did: string;
+  /**
+   * When the community's authorization credential to it expires; renewed while the event stands. Hosts only.
+   */
+  authorityValidUntil?: EventInstant;
+}
+/**
  * One member's invitation to one event (VTI-EVT-102). Seen by the event's hosts and by the invitee; never by anyone else (VTI-EVT-106).
  */
 export interface EventInvitation {
@@ -13641,6 +13755,32 @@ export interface EventInvitationLink {
   expiresAt: EventInstant;
   revokedAt?: EventInstant;
   createdAt: EventInstant;
+}
+/**
+ * An invitation link as its hosts see it, never with its code (VTI-EVT-107).
+ */
+export interface EventInvitationLink_VtcEventsV0_3 {
+  linkId: EventInvitationLinkId;
+  eventId: EventId;
+  /**
+   * What the hosts call it — `Flyer at the library`. Plain text.
+   */
+  label?: string;
+  /**
+   * The most members who may redeem it.
+   */
+  maxRedemptions: number;
+  /**
+   * How many have.
+   */
+  redemptions: number;
+  expiresAt: EventInstant;
+  revokedAt?: EventInstant;
+  createdAt: EventInstant;
+  /**
+   * A link for guests — parties who are not members — under the event's `invited` guest setting (VTI-EVT-151). Absent means false: a link for members.
+   */
+  forGuests?: boolean;
 }
 /**
  * A member's opt-out of invitations (VTI-EVT-110). It removes them from no audience and stops no host's invitation by name.
@@ -13744,6 +13884,104 @@ export interface Event_VtcEventsV0_2 {
    * Members of the audience may invite other members of it, within the community's daily limit (VTI-EVT-105). Absent means false.
    */
   membersMayInvite?: boolean;
+}
+/**
+ * An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
+ */
+export interface Event_VtcEventsV0_3 {
+  eventId: EventId;
+  calendarId: CalendarId;
+  kind: EventKind;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
+  when: When;
+  placeSummary?: PlaceSummary;
+  /**
+   * Only where the access details are public, or the caller is a host.
+   */
+  access?: AccessDetails;
+  audience: EventAudience_VtcEventsV0_2;
+  registration: RegistrationSettings;
+  roster: RosterSetting;
+  /**
+   * Show the number going to the audience, subject to `countThreshold`. Absent means false.
+   */
+  showCount?: boolean;
+  /**
+   * Below this many going, a count is shown as `fewerThan`. Absent means 5.
+   */
+  countThreshold?: number;
+  /**
+   * Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).
+   */
+  listed: boolean;
+  accessibility?: Accessibility;
+  /**
+   * Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).
+   *
+   * @maxItems 4
+   */
+  suggestedReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * The event's appointed hosts. Its creator is the first.
+   *
+   * @maxItems 32
+   */
+  hosts?: EntryId[];
+  /**
+   * People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.
+   */
+  goingCount?: Count;
+  /**
+   * True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.
+   */
+  full?: boolean;
+  /**
+   * Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).
+   */
+  sequence: number;
+  /**
+   * Present once cancelled, where the host gave one. Plain text.
+   */
+  cancelReason?: string;
+  publishedAt?: EventInstant;
+  cancelledAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+  /**
+   * Absent means `none`.
+   */
+  invite?: EventInviteMode;
+  /**
+   * Members of the audience may invite other members of it, within the community's daily limit (VTI-EVT-105). Absent means false.
+   */
+  membersMayInvite?: boolean;
+  /**
+   * Present where the event has its own identifier (VTI-EVT-140).
+   */
+  identity?: EventIdentity;
+  /**
+   * Absent means `none` (VTI-EVT-150).
+   */
+  guests?: EventGuestAdmission;
+  /**
+   * Whether registrants going are issued a ticket (VTI-EVT-170). Absent means false.
+   */
+  tickets?: boolean;
+  /**
+   * Whether the event counts toward attendance (VTI-EVT-180). Absent: its calendar's default.
+   */
+  countsAttendance?: boolean;
+  /**
+   * A badge offered to a member when their check-in is recorded, for them to accept (VTI-EVT-186).
+   */
+  attendanceBadge?: BadgeId;
 }
 /**
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
@@ -20388,10 +20626,18 @@ export interface RotationRecord {
   cacheHorizonAt?: string;
 }
 /**
- * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.
+ * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the community events the member checked in to that count toward attendance, optionally only in `calendarId` and only within `withinDays` before evaluation, compared with `atLeast`; read by a badge's group, as the other counts are.
  */
 export interface RuleCondition {
-  fact: "role" | "field" | "personhood" | "joinedAt" | "kudosReceived" | "ideasSelected" | "electionTickets";
+  fact:
+    | "role"
+    | "field"
+    | "personhood"
+    | "joinedAt"
+    | "kudosReceived"
+    | "ideasSelected"
+    | "electionTickets"
+    | "eventsAttended";
   /**
    * Present exactly when `fact` is `field`.
    */
@@ -20407,9 +20653,17 @@ export interface RuleCondition {
    */
   values?: [string, ...string[]];
   /**
-   * With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+   * With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is `atLeast`.
    */
   count?: number;
+  /**
+   * With `eventsAttended` only: count events in this calendar alone.
+   */
+  calendarId?: string;
+  /**
+   * With `eventsAttended` only: count events attended within this many days before the rule is evaluated.
+   */
+  withinDays?: number;
 }
 export interface S3Settings {
   kind: "s3";

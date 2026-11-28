@@ -64,7 +64,7 @@ The **VTC Events — Registrations — List** Trust Task reads who is registered
 
 The roster setting is fixed when the event is published and recorded on every registration (VTI-EVT-051, VTI-EVT-052), so what this task answers never widens under a registrant.
 
-A single registration has no read of its own: its registrant reads it with [`vtc/events/show`](../../../show/0.2/spec.md) (`myRegistration`) or [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md), and a host acts on one by identifier with [`vtc/events/registrations/decide`](../../decide/0.2/spec.md) and [`remove`](../../remove/0.2/spec.md), whose answers carry it. Existence of another member's registration is never load-bearing for a caller, which is why a filter suffices here.
+A single registration has no read of its own: its registrant reads it with [`vtc/events/show`](../../../show/0.3/spec.md) (`myRegistration`) or [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md), and a host acts on one by identifier with [`vtc/events/registrations/decide`](../../decide/0.2/spec.md) and [`remove`](../../remove/0.2/spec.md), whose answers carry it. Existence of another member's registration is never load-bearing for a caller, which is why a filter suffices here.
 
 ## Status of this Document
 
@@ -198,7 +198,7 @@ An event and a status filter in; registrations out, as the caller may see them. 
 
 ### Correlation
 
-The community maintainer's identifier scope is public: it is addressed by the public DID its members already know it by. The roster view tells registrants on a `visible` roster who else is coming, which is what that setting promised them before they registered (VTI-EVT-051, VTI-EVT-052); a `hidden` roster tells them nothing, and no count either except as [`vtc/events/show`](../../../show/0.2/spec.md) states it under the event's `showCount` and threshold (VTI-EVT-054).
+The community maintainer's identifier scope is public: it is addressed by the public DID its members already know it by. The roster view tells registrants on a `visible` roster who else is coming, which is what that setting promised them before they registered (VTI-EVT-051, VTI-EVT-052); a `hidden` roster tells them nothing, and no count either except as [`vtc/events/show`](../../../show/0.3/spec.md) states it under the event's `showCount` and threshold (VTI-EVT-054).
 
 ### Retention
 

@@ -1,0 +1,43 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`changed` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Hk3Wq9Ls2Dn6Hy4B",
+        "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+        "registrantDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+        "status": "going",
+        "guests": 0,
+        "roster": "hidden",
+        "eventSequence": 1,
+        "createdAt": "2026-11-28T10:00:00Z",
+        "updatedAt": "2026-11-28T10:00:00Z"
+      },
+      "event": {
+        "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+        "title": "Intro to Soldering",
+        "when": {
+          "start": "2026-11-30T18:30:00",
+          "timeZone": "Europe/London",
+          "duration": "PT1H30M"
+        },
+        "status": "published",
+        "sequence": 1
+      }
+    }
+  }
+]

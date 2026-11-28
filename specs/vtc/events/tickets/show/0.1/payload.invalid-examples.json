@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`credential` is REQUIRED on every answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+      "validUntil": "2026-11-30T20:00:00Z"
+    }
+  }
+]

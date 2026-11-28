@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`maxRedemptions` is REQUIRED: a link is never unlimited.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "expiresAt": "2026-11-29T23:59:59Z"
+    }
+  },
+  {
+    "note": "`expiresAt` is REQUIRED: a link always lapses.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "maxRedemptions": 20
+    }
+  },
+  {
+    "note": "The code is answered once, with the link.",
+    "variant": "response",
+    "payload": {
+      "link": {
+        "linkId": "lnk_Fl7yerLibrary0000",
+        "eventId": "evt_IntroSoldering2611",
+        "label": "Flyer at the library",
+        "maxRedemptions": 20,
+        "redemptions": 0,
+        "expiresAt": "2026-11-29T23:59:59Z",
+        "createdAt": "2026-11-20T10:00:01Z"
+      }
+    }
+  }
+]

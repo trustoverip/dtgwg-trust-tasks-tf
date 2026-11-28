@@ -102,7 +102,7 @@ A conforming **consumer** (the community) **MUST**:
 3. On `approve`, make the registration `going` where the registrant and their guests fit the event's capacity (VTI-EVT-033); otherwise `waitlisted`, last in the queue, where the event keeps a waitlist; otherwise refuse with `full` and leave it `pending`.
 4. On `decline`, make the registration `declined`. Free nothing: a pending registration held no place.
 5. Record `note`, where given, on the registration, where the registrant reads it, and the event's `sequence` as `eventSequence`.
-6. Answer the decision, the registration as it now stands and an `EventRef` of the event. The answer is a receipt (VTI-EVT-092): the registrant reads the same registration on [`vtc/events/show`](../../../show/0.2/spec.md) and [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md).
+6. Answer the decision, the registration as it now stands and an `EventRef` of the event. The answer is a receipt (VTI-EVT-092): the registrant reads the same registration on [`vtc/events/show`](../../../show/0.3/spec.md) and [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md).
 7. Audit the decision by reference — event, registration, entry, decision, host — never with the registrant's answers (VTI-EVT-091).
 
 ## Authorization

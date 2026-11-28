@@ -370,7 +370,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "RuleCondition": {
       "title": "RuleCondition",
-      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the community events the member checked in to that count toward attendance, optionally only in `calendarId` and only within `withinDays` before evaluation, compared with `atLeast`; read by a badge's group, as the other counts are.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -387,7 +387,8 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "joinedAt",
             "kudosReceived",
             "ideasSelected",
-            "electionTickets"
+            "electionTickets",
+            "eventsAttended"
           ]
         },
         "field": {
@@ -430,7 +431,18 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "integer",
           "minimum": 1,
           "maximum": 100000,
-          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`."
+          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is `atLeast`."
+        },
+        "calendarId": {
+          "type": "string",
+          "pattern": "^cal_[A-Za-z0-9_-]{16,64}$",
+          "description": "With `eventsAttended` only: count events in this calendar alone."
+        },
+        "withinDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3660,
+          "description": "With `eventsAttended` only: count events attended within this many days before the rule is evaluated."
         }
       }
     },

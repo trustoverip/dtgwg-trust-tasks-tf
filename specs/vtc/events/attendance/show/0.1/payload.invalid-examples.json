@@ -1,0 +1,23 @@
+[
+  {
+    "note": "A month is `YYYY-MM`.",
+    "payload": {
+      "sinceMonth": "2026-13"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`total` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "tallies": []
+    }
+  }
+]
