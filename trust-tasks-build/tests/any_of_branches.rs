@@ -1,11 +1,11 @@
 //! A member whose schema is an `anyOf` of object branches sharing members is
 //! a struct of flattened `Option`s (typify's rendering), and `generate_module`
 //! replaces its derived `Deserialize` with one that reads each branch from
-//! its own copy of the value, for both targets. The derived one let a failed
-//! branch take the members it shares with the next, so the next failed too
-//! (`hcp/entries/create` 0.1's `entry`). `trust-tasks-rs/tests/
-//! anyof_object_branches.rs` holds the property at run time on the prebuilt
-//! `hcp` modules.
+//! its own copy of the value, first match wins, for both targets. The derived
+//! one let a failed branch take the members it shares with the next, so the
+//! next failed too (`hcp/entries/create` 0.1's `entry`).
+//! `trust-tasks-rs/tests/anyof_object_branches.rs` holds the property at run
+//! time on the prebuilt `hcp` modules.
 
 use serde_json::json;
 use trust_tasks_build::{generate_module, Bundle, Target};
@@ -122,16 +122,21 @@ fn an_any_of_of_objects_reads_each_branch_from_its_own_copy() {
             deserialize.contains(&format!("impl<'de>{serde}::Deserialize<'de>for{name}")),
             "{deserialize}"
         );
-        for branch in ["subtype_0", "subtype_1"] {
-            assert!(
-                deserialize.contains(&format!(
-                    "{branch}:{serde_json}::from_value(value.clone()).ok()"
-                )),
-                "{deserialize}"
-            );
+        // First match wins: `subtype_0` reads a copy, `subtype_1` (the last)
+        // takes the value itself, and each returns with only its own field
+        // set.
+        for expected in [
+            format!("lete0=match{serde_json}::from_value(value.clone()"),
+            format!("lete1=match{serde_json}::from_value(value"),
+            "Ok(Self{subtype_0:::std::option::Option::Some(branch),subtype_1:::std::option::Option::None".to_owned(),
+            "Ok(Self{subtype_0:::std::option::Option::None,subtype_1:::std::option::Option::Some(branch)".to_owned(),
+            format!("anyOfbranchof{name}:subtype_0:{{e0}};subtype_1:{{e1}}"),
+        ] {
+            assert!(deserialize.contains(&expected), "{expected} in {deserialize}");
         }
-        assert!(
-            deserialize.contains(&format!("anyOfbranchof{name}")),
+        assert_eq!(
+            deserialize.matches("value.clone()").count(),
+            1,
             "{deserialize}"
         );
     }

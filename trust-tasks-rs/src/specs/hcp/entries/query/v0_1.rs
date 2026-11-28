@@ -4662,16 +4662,31 @@ impl<'de> serde::Deserialize<'de> for ResponseEntriesItem {
         D: serde::Deserializer<'de>,
     {
         let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
-        let out = Self {
-            subtype_0: serde_json::from_value(value.clone()).ok(),
-            subtype_1: serde_json::from_value(value.clone()).ok(),
+        let e0 = match serde_json::from_value(value.clone()) {
+            ::std::result::Result::Ok(branch) => {
+                return ::std::result::Result::Ok(Self {
+                    subtype_0: ::std::option::Option::Some(branch),
+                    subtype_1: ::std::option::Option::None,
+                });
+            }
+            ::std::result::Result::Err(e) => e,
         };
-        if out.subtype_0.is_none() && out.subtype_1.is_none() {
-            return ::std::result::Result::Err(<D::Error as serde::de::Error>::custom(
-                "data did not match any anyOf branch of ResponseEntriesItem",
-            ));
-        }
-        ::std::result::Result::Ok(out)
+        let e1 = match serde_json::from_value(value) {
+            ::std::result::Result::Ok(branch) => {
+                return ::std::result::Result::Ok(Self {
+                    subtype_0: ::std::option::Option::None,
+                    subtype_1: ::std::option::Option::Some(branch),
+                });
+            }
+            ::std::result::Result::Err(e) => e,
+        };
+        ::std::result::Result::Err(
+            <D::Error as serde::de::Error>::custom(
+                ::std::format!(
+                    "data did not match any anyOf branch of ResponseEntriesItem: subtype_0: {e0}; subtype_1: {e1}"
+                ),
+            ),
+        )
     }
 }
 impl ::std::default::Default for ResponseEntriesItem {

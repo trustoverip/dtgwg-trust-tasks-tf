@@ -229,13 +229,15 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     )
     .with_context(|| format!("{ctx}: keeping member presence"))?;
     // An `anyOf` of object branches reads each branch from its own copy of
-    // the value: serde's flattened `Option`s would let a failed branch take
-    // the members it shares with the next (see `any_of`).
+    // the value, first match wins: serde's flattened `Option`s would let a
+    // failed branch take the members it shares with the next (see `any_of`).
+    // Fails on any other flattened `Option` it cannot rewrite.
     apply_any_of_deserialize(
         &mut parsed,
         &target.dependency_tokens("serde"),
         &target.dependency_tokens("serde_json"),
-    );
+    )
+    .with_context(|| format!("{ctx}: an anyOf of object branches"))?;
     apply_non_exhaustive(&mut parsed);
     if let Some(note) = &bundle.deprecation {
         apply_deprecation(&mut parsed, note);

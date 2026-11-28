@@ -11,9 +11,9 @@
 //! wrote it back as `{}`.
 //!
 //! The generator now gives such a struct a `Deserialize` that reads each
-//! branch from its own copy of the value (`apply_any_of_deserialize` in
-//! `trust-tasks-build`), and refuses a value no branch reads. Each case pins a
-//! round trip through the generated type.
+//! branch from its own copy of the value, keeps the first branch that reads
+//! (`apply_any_of_deserialize` in `trust-tasks-build`), and refuses a value no
+//! branch reads. Each case pins a round trip through the generated type.
 
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
@@ -154,8 +154,70 @@ mod hcp {
             json!("entry"),
         ] {
             let err = serde_json::from_value::<create::ResponseEntry>(v.clone())
-                .expect_err("a value matching no anyOf branch must not read");
-            assert!(err.to_string().contains("ResponseEntry"), "{v}: {err}");
+                .expect_err("a value matching no anyOf branch must not read")
+                .to_string();
+            // Names the type and why each branch did not read.
+            for part in [
+                "data did not match any anyOf branch of ResponseEntry: subtype_0: ",
+                "; subtype_1: ",
+            ] {
+                assert!(err.contains(part), "{v}: {err}");
+            }
+        }
+    }
+
+    /// A value both branches read: a Disclosure carrying Entry's own members
+    /// too (which breaks Disclosure's `not`, a check typed decoding does not
+    /// make). First match wins: it reads as the Disclosure alone, so
+    /// serializing it can never write a shared member (`content`,
+    /// `assertion`, `classification`) twice; Entry's own members are dropped,
+    /// as an open object's undeclared members are.
+    #[test]
+    fn a_value_both_branches_read_keeps_the_first_only() {
+        let mut both = disclosure();
+        let whole = entry();
+        for member in ["schema", "id", "type", "subject", "record"] {
+            both[member] = whole[member].clone();
+        }
+        // Each branch reads it on its own.
+        serde_json::from_value::<create::Disclosure>(both.clone()).expect("reads as a Disclosure");
+        serde_json::from_value::<create::Entry>(both.clone()).expect("reads as an Entry");
+
+        let read: create::ResponseEntry = serde_json::from_value(both).expect("reads");
+        assert!(read.subtype_0.is_some() && read.subtype_1.is_none());
+        let text = serde_json::to_string(&read).expect("serializes");
+        let keys = serde_json::from_str::<Keys>(&text).expect("an object").0;
+        let mut unique = keys.clone();
+        unique.sort();
+        unique.dedup();
+        assert_eq!(keys.len(), unique.len(), "duplicate keys in {text}");
+        assert_eq!(serde_json::from_str::<Value>(&text).unwrap(), disclosure());
+    }
+
+    /// The top-level keys of a JSON object in the order written, duplicates
+    /// included (a `Value` or a map would keep one of each).
+    struct Keys(Vec<String>);
+
+    impl<'de> serde::Deserialize<'de> for Keys {
+        fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+            struct V;
+            impl<'de> serde::de::Visitor<'de> for V {
+                type Value = Keys;
+                fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    f.write_str("an object")
+                }
+                fn visit_map<A: serde::de::MapAccess<'de>>(
+                    self,
+                    mut map: A,
+                ) -> Result<Keys, A::Error> {
+                    let mut keys = Vec::new();
+                    while let Some((k, _)) = map.next_entry::<String, serde::de::IgnoredAny>()? {
+                        keys.push(k);
+                    }
+                    Ok(Keys(keys))
+                }
+            }
+            d.deserialize_map(V)
         }
     }
 

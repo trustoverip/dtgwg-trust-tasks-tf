@@ -138,3 +138,5 @@ The files:
   steps, one function each.
 - `src/main.rs`: runs the demo and prints the transcript.
 - `tests/demo.rs`: the tests.
+- `tests/any_of_entry.rs`: a Rust-only check that the generated `query` types read a whole
+  `Entry` (not one of the shared tests).
