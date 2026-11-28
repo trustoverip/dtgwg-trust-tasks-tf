@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/checkin/ticket-session/start/0.1",
+  "title": "VTC Events — Check-in — Ticket Session — Start — payload",
+  "description": "An event's door staff open an OpenID4VP 1.0 presentation session asking for that event's ticket, so a registrant's wallet can present it at the door (VTI-EVT-173). The door staff member is the document proof's signer. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "occurrence": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+      "description": "On a series registered by occurrence: the occurrence the door is for, by its original start (VTI-EVT-194, 195). Refused on an event that is not a series."
+    },
+    "clientIdPrefix": {
+      "type": "string",
+      "enum": [
+        "decentralized_identifier",
+        "x509_hash"
+      ],
+      "description": "The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`) or an X.509 certificate (`x509_hash`). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "TicketSessionId": {
+      "type": "string",
+      "minLength": 22,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Opaque, unguessable identifier of a door session, carrying at least 128 bits of entropy, base64url without padding."
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Check-in — Ticket Session — Start — response payload",
+      "description": "The success response to a vtc/events/checkin/ticket-session/start/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/checkin/ticket-session/start/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "eventId",
+        "walletUri",
+        "clientId",
+        "expiresAt"
+      ],
+      "properties": {
+        "sessionId": {
+          "$ref": "#/$defs/TicketSessionId"
+        },
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "occurrence": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+          "description": "The occurrence the session is for, where the event is a series (VTI-EVT-195)."
+        },
+        "walletUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, for the door to show as a QR code. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `haip-vp://` and other OpenID4VP invocation schemes."
+        },
+        "clientId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The full OpenID4VP client identifier the community presents to the wallet, prefix included. It is the audience the wallet's key-binding proof names."
+        },
+        "expiresAt": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventInstant",
+          "description": "When the session closes if no wallet has answered it. Minutes, not hours."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

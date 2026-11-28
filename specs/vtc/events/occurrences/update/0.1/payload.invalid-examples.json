@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`occurrence` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "cancelled": true
+    }
+  },
+  {
+    "note": "`occurrence` is a local date-time, not an instant.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "occurrence": "2026-12-24T18:00:00Z"
+    }
+  },
+  {
+    "note": "Unknown member — the whole rule changes with vtc/events/series/split.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "occurrence": "2026-12-24T18:00:00",
+      "recurrence": {}
+    }
+  },
+  {
+    "note": "The response names the occurrence.",
+    "variant": "response",
+    "payload": {
+      "event": {}
+    }
+  }
+]

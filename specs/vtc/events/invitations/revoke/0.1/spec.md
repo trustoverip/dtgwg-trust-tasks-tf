@@ -54,7 +54,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Invitations — Revoke** Trust Task lets an event's host take back an invitation they or another host made, or one the community made under the event's invitation mode, or one a member or a link made (VTI-EVT-103). The invitation's notification is withdrawn (VTI-NTF-065), and where the invitation was what put the member in the event's audience it no longer does. A registration the member made stands: revoking an invitation is not removing a registrant, which is [`registrations/remove`](../../../registrations/remove/0.2/spec.md).
+The **VTC Events — Invitations — Revoke** Trust Task lets an event's host take back an invitation they or another host made, or one the community made under the event's invitation mode, or one a member or a link made (VTI-EVT-103). The invitation's notification is withdrawn (VTI-NTF-065), and where the invitation was what put the member in the event's audience it no longer does. A registration the member made stands: revoking an invitation is not removing a registrant, which is [`registrations/remove`](../../../registrations/remove/0.3/spec.md).
 
 ## Status of this Document
 

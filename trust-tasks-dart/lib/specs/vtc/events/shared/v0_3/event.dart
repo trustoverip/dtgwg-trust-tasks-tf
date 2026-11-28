@@ -1376,6 +1376,8 @@ class EventRef {
     required this.when,
     required this.status,
     required this.sequence,
+    this.suggestedReminderMinutes,
+    this.placeSummary,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -1385,6 +1387,12 @@ class EventRef {
         when: When.fromJson(json['when'] as Map<String, dynamic>),
         status: EventLifecycle(json['status'] as String),
         sequence: json['sequence'] as int,
+        suggestedReminderMinutes: json['suggestedReminderMinutes'] == null
+            ? null
+            : (json['suggestedReminderMinutes'] as List<dynamic>)
+                .map((e) => e as int)
+                .toList(),
+        placeSummary: json['placeSummary'] as String?,
       );
 
   final EventId eventId;
@@ -1393,6 +1401,15 @@ class EventRef {
   final EventLifecycle status;
   final int sequence;
 
+  /// The reminders the event's hosts suggest, as minutes before its start, so the
+  /// registrant's agent can fire them without reading the event again (VTI-CAL-041).
+  /// Absent where the hosts suggest none.
+  final List<ReminderMinutes>? suggestedReminderMinutes;
+
+  /// The event's coarse place hint, never an address (VTI-EVT-062). Absent where the
+  /// event has none.
+  final PlaceSummary? placeSummary;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'eventId': eventId,
@@ -1400,6 +1417,9 @@ class EventRef {
         'when': when.toJson(),
         'status': status.value,
         'sequence': sequence,
+        if (suggestedReminderMinutes != null)
+          'suggestedReminderMinutes': suggestedReminderMinutes!,
+        if (placeSummary != null) 'placeSummary': placeSummary!,
       };
 }
 
@@ -1710,10 +1730,11 @@ extension type const EventRegistrantKind(String value) {
   ];
 }
 
-/// How a check-in was made (VTI-EVT-162 – 164). `challenge`: the registrant signed
-/// over a door challenge. `staff`: door staff checked them in by name. `self`: the
-/// registrant checked in during the event without a challenge, where the calendar
-/// allows.
+/// How a check-in was made (VTI-EVT-162 – 164, 173). `challenge`: the registrant
+/// signed over a door challenge. `staff`: door staff checked them in by name. `self`:
+/// the registrant checked in during the event without a challenge, where the calendar
+/// allows. `ticket`: the registrant presented their ticket credential at the door
+/// through a door session (vtc/events/checkin/ticket-session/start).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -1722,12 +1743,14 @@ extension type const EventCheckInMethod(String value) {
   static const EventCheckInMethod challenge = EventCheckInMethod('challenge');
   static const EventCheckInMethod staff = EventCheckInMethod('staff');
   static const EventCheckInMethod self = EventCheckInMethod('self');
+  static const EventCheckInMethod ticket = EventCheckInMethod('ticket');
 
   /// Every value this specification's schema permits.
   static const List<EventCheckInMethod> values = <EventCheckInMethod>[
     challenge,
     staff,
-    self
+    self,
+    ticket
   ];
 }
 

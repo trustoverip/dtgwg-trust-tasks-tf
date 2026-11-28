@@ -9,7 +9,7 @@ import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTit
 /**
  * A host removes a registration from an event — going, maybe, waitlisted or pending — with an optional note the registrant reads. A place it held passes to the waitlist. The registrant cannot re-open it. The outer document members are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by vtc/events/registrations/remove/0.2
+ * @deprecated superseded by vtc/events/registrations/remove/0.3
  */
 export interface VTCEventsRegistrationsRemovePayload {
   registrationId: RegistrationId;
@@ -22,7 +22,7 @@ export interface VTCEventsRegistrationsRemovePayload {
 /**
  * The success response to a vtc/events/registrations/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/remove/0.1#response.
  *
- * @deprecated superseded by vtc/events/registrations/remove/0.2
+ * @deprecated superseded by vtc/events/registrations/remove/0.3
  */
 export interface VTCEventsRegistrationsRemoveResponsePayload {
   /**
@@ -57,12 +57,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/events/registrations/remove/0.2";
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/remove/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/remove/0.2
+ * @deprecated superseded by vtc/events/registrations/remove/0.3
  */
 export type Payload = VTCEventsRegistrationsRemovePayload;
 
@@ -72,7 +72,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registr
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/remove/0.2
+ * @deprecated superseded by vtc/events/registrations/remove/0.3
  */
 export type Response = VTCEventsRegistrationsRemoveResponsePayload;
 

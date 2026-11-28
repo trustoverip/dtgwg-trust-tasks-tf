@@ -3,11 +3,13 @@
  * Source: specs/vtc/events/checkin/record/0.1/payload.schema.json
  */
 
-import type { AwardId, EntryId, EventCheckIn, EventCheckInMethod, EventDoorChallengeValue, EventId, EventInstant, EventLifecycle, EventRef, EventRegistrantKind, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, RegistrationId, TimeZoneId, When } from "../../../../../_shared/components.js";
+import type { AwardId, EntryId, EventCheckIn, EventCheckInMethod, EventDoorChallengeValue, EventId, EventInstant, EventLifecycle, EventRef_VtcEventsV0_2 as EventRef, EventRegistrantKind, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, RegistrationId, ReminderMinutes, TimeZoneId, When } from "../../../../../_shared/components.js";
 
 
 /**
  * Check in to an event: a registrant signing over the door challenge, or self check-in where the calendar allows it, or door staff checking a registrant in by name. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/checkin/record/0.2
  */
 export interface VTCEventsCheckInRecordPayload {
   eventId: EventId;
@@ -27,6 +29,8 @@ export interface VTCEventsCheckInRecordPayload {
 }
 /**
  * The success response to a vtc/events/checkin/record/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/checkin/record/0.1#response.
+ *
+ * @deprecated superseded by vtc/events/checkin/record/0.2
  */
 export interface VTCEventsCheckInRecordResponsePayload {
   checkIn: EventCheckIn;
@@ -39,7 +43,7 @@ export interface VTCEventsCheckInRecordResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AwardId, EntryId, EventCheckIn, EventCheckInMethod, EventDoorChallengeValue, EventId, EventInstant, EventLifecycle, EventRef, EventRegistrantKind, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, RegistrationId, TimeZoneId, When };
+export type { AwardId, EntryId, EventCheckIn, EventCheckInMethod, EventDoorChallengeValue, EventId, EventInstant, EventLifecycle, EventRef, EventRegistrantKind, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, RegistrationId, ReminderMinutes, TimeZoneId, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/checkin/record/0.1" as const;
@@ -58,15 +62,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/checkin/record/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/checkin/record/0.2
+ */
 export type Payload = VTCEventsCheckInRecordPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/checkin/record/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/checkin/record/0.2
+ */
 export type Response = VTCEventsCheckInRecordResponsePayload;
 
 /**
@@ -238,8 +250,35 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "sequence": {
           "type": "integer",
           "minimum": 0
+        },
+        "suggestedReminderMinutes": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ReminderMinutes"
+          },
+          "description": "The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none."
+        },
+        "placeSummary": {
+          "$ref": "#/$defs/PlaceSummary",
+          "description": "The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none."
         }
       }
+    },
+    "PlaceSummary": {
+      "title": "PlaceSummary",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text."
+    },
+    "ReminderMinutes": {
+      "title": "ReminderMinutes",
+      "description": "A reminder's offset: how many minutes before the event's start it is due. At most four weeks.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40320
     },
     "EventLifecycle": {
       "title": "EventLifecycle",
@@ -365,12 +404,13 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "EventCheckInMethod": {
       "title": "EventCheckInMethod",
-      "description": "How a check-in was made (VTI-EVT-162 – 164). `challenge`: the registrant signed over a door challenge. `staff`: door staff checked them in by name. `self`: the registrant checked in during the event without a challenge, where the calendar allows.",
+      "description": "How a check-in was made (VTI-EVT-162 – 164, 173). `challenge`: the registrant signed over a door challenge. `staff`: door staff checked them in by name. `self`: the registrant checked in during the event without a challenge, where the calendar allows. `ticket`: the registrant presented their ticket credential at the door through a door session (vtc/events/checkin/ticket-session/start).",
       "type": "string",
       "enum": [
         "challenge",
         "staff",
-        "self"
+        "self",
+        "ticket"
       ]
     },
     "EventRegistrantKind": {

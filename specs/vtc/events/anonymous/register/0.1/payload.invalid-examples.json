@@ -1,0 +1,46 @@
+[
+  {
+    "note": "`attestation` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "status": "going"
+    }
+  },
+  {
+    "note": "No answers on an anonymous event (VTI-EVT-216).",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "status": "going",
+      "attestation": {
+        "suite": "pcs-bls12-381-v1",
+        "attestation": "z3u2en7t5LR2WJQ2YcVPYa1XxYz8XoJ7v1q5pFh3pE6Kp6uJmKq9ZcN2",
+        "tag": "zQ3shVc2UkAfJCdc1TR8E66J85h48P19mxcSvquTzPSnSqgxS",
+        "classLabel": "member/2026-12"
+      },
+      "answers": {
+        "diet": "vegetarian"
+      }
+    }
+  },
+  {
+    "note": "The response names no member.",
+    "variant": "response",
+    "payload": {
+      "tag": "zQ3shVc2UkAfJCdc1TR8E66J85h48P19mxcSvquTzPSnSqgxS",
+      "status": "going",
+      "guests": 0,
+      "event": {
+        "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+        "title": "Thursday Build Night",
+        "when": {
+          "start": "2026-12-03T18:00:00",
+          "timeZone": "Europe/London",
+          "duration": "PT3H"
+        },
+        "status": "published",
+        "sequence": 2
+      },
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR"
+    }
+  }
+]

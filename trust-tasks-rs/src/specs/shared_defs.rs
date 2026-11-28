@@ -8,47 +8,12 @@
 // A family whose feature is off uses none of its definitions.
 #![allow(unused_macros, unused_imports)]
 
-macro_rules! d_AcceptsCriterionId_aab4dcff {
-    () => {
-        "\"AcceptsCriterionId\":{\"description\":\"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\"maxLength\":128,\"minLength\":1,\"title\":\"AcceptsCriterionId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AcceptsCriterionId_aab4dcff;
-
-macro_rules! d_AcceptsCriterion_021040f7 {
-    () => {
-        "\"AcceptsCriterion\":{\"additionalProperties\":false,\"description\":\"A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.\",\"properties\":{\"createdAt\":{\"description\":\"When this criterion was last registered. Registering an existing id replaces it.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the criterion.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/CriterionDescription\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"},\"query\":{\"$ref\":\"#/$defs/DcqlQuery\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"query\",\"createdAt\",\"createdByDid\"],\"title\":\"AcceptsCriterion\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AcceptsCriterion_021040f7;
-
-macro_rules! d_AcceptsCriterion_5cdd9319 {
-    () => {
-        "\"AcceptsCriterion\":{\"additionalProperties\":false,\"dependentRequired\":{\"credentialIssuers\":[\"query\"],\"query\":[\"credentialIssuers\"]},\"description\":\"One way into the community: what an applicant must present, and how a submission that presents it is decided. Every requirement it states must be met; requirements it does not state are not requirements. A criterion stating none is met by every submission. A community's criteria are alternatives: a submission is decided under the one it names. What vtc/join-requests/manifest/0.3 publishes to applicants as a `Criterion` is derived from this.\",\"properties\":{\"admission\":{\"$ref\":\"#/$defs/Admission\"},\"createdAt\":{\"description\":\"When this criterion was last registered. Registering an existing id replaces it.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the criterion.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"credentialIssuers\":{\"$ref\":\"#/$defs/CredentialIssuers\",\"description\":\"Whose credentials meet `query`. Present exactly when `query` is.\"},\"description\":{\"$ref\":\"#/$defs/CriterionDescription\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"},\"invitationRequired\":{\"description\":\"True: a submission meets the criterion only when it carries a valid, unconsumed invitation credential this community issued to the applicant. Absent or false: an invitation plays no part in meeting this criterion (another criterion may still require one).\",\"type\":\"boolean\"},\"query\":{\"$ref\":\"#/$defs/DcqlQuery\",\"description\":\"The credentials an applicant must present, as a DCQL query. Absent: the criterion requires no credential.\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"admission\",\"createdAt\",\"createdByDid\"],\"title\":\"AcceptsCriterion\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AcceptsCriterion_5cdd9319;
-
 macro_rules! d_AccessDetail_770259fe {
     () => {
         "\"AccessDetail\":{\"additionalProperties\":true,\"description\":\"An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.\",\"properties\":{\"actions\":{\"description\":\"What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.\",\"items\":{\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories the detail covers (HCP 4.5).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"additionalProperties\":true,\"description\":\"An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).\",\"type\":\"object\"},\"onwardSharing\":{\"$ref\":\"#/$defs/OnwardSharing\",\"description\":\"The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).\"},\"purposes\":{\"description\":\"The purposes the person approved for these categories; never empty (HCP 6.1.5.2).\",\"items\":{\"$ref\":\"#/$defs/Purpose\"},\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"The HCP authorization detail type (HCP 6.1.5).\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\",\"purposes\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_AccessDetail_770259fe;
-
-macro_rules! d_AccessDetails_d64d030c {
-    () => {
-        "\"AccessDetails\":{\"additionalProperties\":false,\"description\":\"Where the event happens and how to join it (VTI-EVT-060 – 063). Answered by vtc/events/access/show to a registrant who is going, from `revealAt` if set; included in the event itself only where `public` is true.\",\"properties\":{\"notes\":{\"description\":\"Anything else attendees need. Plain text.\",\"maxLength\":2000,\"minLength\":1,\"type\":\"string\"},\"places\":{\"items\":{\"$ref\":\"#/$defs/Place\"},\"maxItems\":8,\"type\":\"array\"},\"public\":{\"description\":\"Show the access details with the event to its whole audience. Absent means false.\",\"type\":\"boolean\"},\"revealAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Not before this, even to a registrant who is going. Absent means on acceptance.\"},\"virtualPlaces\":{\"items\":{\"$ref\":\"#/$defs/VirtualPlace\"},\"maxItems\":8,\"type\":\"array\"}},\"title\":\"AccessDetails\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AccessDetails_d64d030c;
-
-macro_rules! d_Accessibility_cd111cc8 {
-    () => {
-        "\"Accessibility\":{\"additionalProperties\":false,\"description\":\"What the event offers for access, as the host states it (VTI-EVT-036). Each flag absent means not stated, not that it is missing.\",\"properties\":{\"captions\":{\"type\":\"boolean\"},\"hearingLoop\":{\"type\":\"boolean\"},\"notes\":{\"description\":\"Anything else. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"quietSpace\":{\"type\":\"boolean\"},\"remoteOption\":{\"type\":\"boolean\"},\"stepFree\":{\"type\":\"boolean\"}},\"title\":\"Accessibility\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Accessibility_cd111cc8;
 
 macro_rules! d_AccountBinding_4188c14e {
     () => {
@@ -218,47 +183,12 @@ macro_rules! d_AclEntry_84c82c8d {
 }
 pub(crate) use d_AclEntry_84c82c8d;
 
-macro_rules! d_ActionId_616b9b04 {
-    () => {
-        "\"ActionId\":{\"description\":\"Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"ActionId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ActionId_616b9b04;
-
-macro_rules! d_Action_1d9d4c50 {
-    () => {
-        "\"Action\":{\"additionalProperties\":false,\"description\":\"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\"},\"approvals\":{\"description\":\"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"When the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"VID of the approver or acknowledger, as proven by the decision's own proof.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"at\"],\"type\":\"object\"},\"type\":\"array\"},\"approversRemaining\":{\"description\":\"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set.\",\"minimum\":0,\"type\":\"integer\"},\"callerRole\":{\"description\":\"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\"enum\":[\"approver\",\"requester\",\"acknowledger\",\"observer\"],\"type\":\"string\"},\"category\":{\"description\":\"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one.\",\"enum\":[\"approval\",\"acknowledge\",\"queue\"],\"type\":\"string\"},\"challenge\":{\"description\":\"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"},\"closedAt\":{\"description\":\"When the action left `open`. Present exactly when `status` is not `open`.\",\"format\":\"date-time\",\"type\":\"string\"},\"closedReason\":{\"description\":\"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused.\",\"enum\":[\"thresholdMet\",\"declined\",\"expired\",\"cancelledByRequester\",\"invalidated\",\"failedRecheck\",\"acknowledged\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the operation was parked.\",\"format\":\"date-time\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"When an open action lapses. Absent for an `acknowledge` or `queue` action that does not expire; ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days).\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9.]*$\",\"type\":\"string\"},\"payload\":{\"description\":\"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\"type\":\"object\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"},\"requester\":{\"description\":\"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"requesterOpenActions\":{\"description\":\"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"`open` — awaiting decisions. `completed` — the threshold was met and the operation executed (or, for `acknowledge`, every administrator acknowledged). `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\"enum\":[\"open\",\"completed\",\"declined\",\"expired\",\"cancelled\",\"failed\"],\"type\":\"string\"},\"summary\":{\"$ref\":\"#/$defs/Summary\"},\"threshold\":{\"description\":\"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).\",\"minimum\":1,\"type\":\"integer\"},\"typeUri\":{\"description\":\"The Type URI of the parked operation — the Trust Task the community will execute when the action completes. Together with `payload` it is exactly what will run.\",\"format\":\"uri\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actionId\",\"category\",\"kind\",\"typeUri\",\"requester\",\"status\",\"createdAt\",\"approvals\",\"summary\",\"payload\",\"payloadDigest\",\"callerRole\"],\"title\":\"Action\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Action_1d9d4c50;
-
-macro_rules! d_Action_73c748fb {
-    () => {
-        "\"Action\":{\"additionalProperties\":false,\"description\":\"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\"},\"approvals\":{\"description\":\"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"decidedAt\":{\"description\":\"When the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"VID of the approver or acknowledger, as proven by the decision's own proof.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"decidedAt\"],\"type\":\"object\"},\"type\":\"array\"},\"approversRemaining\":{\"description\":\"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\"minimum\":0,\"type\":\"integer\"},\"callerRole\":{\"description\":\"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\"enum\":[\"approver\",\"requester\",\"acknowledger\",\"subject\",\"observer\"],\"type\":\"string\"},\"cancellableBy\":{\"description\":\"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\"enum\":[\"requester\"],\"type\":\"string\"},\"category\":{\"description\":\"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\"enum\":[\"approval\",\"acknowledge\",\"queue\",\"coolingOff\"],\"type\":\"string\"},\"challenge\":{\"description\":\"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"},\"closedAt\":{\"description\":\"When the action left `open`. Present exactly when `status` is not `open`.\",\"format\":\"date-time\",\"type\":\"string\"},\"closedReason\":{\"description\":\"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\"enum\":[\"thresholdMet\",\"declined\",\"expired\",\"cancelledByRequester\",\"invalidated\",\"failedRecheck\",\"acknowledged\",\"landedAfterCoolingOff\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the operation was parked.\",\"format\":\"date-time\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9.]*$\",\"type\":\"string\"},\"landsAt\":{\"description\":\"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\"format\":\"date-time\",\"type\":\"string\"},\"payload\":{\"description\":\"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\"type\":\"object\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"},\"requester\":{\"description\":\"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"requesterOpenActions\":{\"description\":\"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\"enum\":[\"open\",\"completed\",\"declined\",\"expired\",\"cancelled\",\"failed\"],\"type\":\"string\"},\"summary\":{\"$ref\":\"#/$defs/Summary\"},\"threshold\":{\"description\":\"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\"minimum\":1,\"type\":\"integer\"},\"typeUri\":{\"description\":\"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\"format\":\"uri\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actionId\",\"category\",\"kind\",\"typeUri\",\"requester\",\"status\",\"createdAt\",\"approvals\",\"summary\",\"payload\",\"payloadDigest\",\"callerRole\"],\"title\":\"Action\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Action_73c748fb;
-
-macro_rules! d_Action_92ee5ced {
-    () => {
-        "\"Action\":{\"additionalProperties\":false,\"description\":\"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\"},\"approvals\":{\"description\":\"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"When the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"VID of the approver or acknowledger, as proven by the decision's own proof.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"at\"],\"type\":\"object\"},\"type\":\"array\"},\"approversRemaining\":{\"description\":\"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\"minimum\":0,\"type\":\"integer\"},\"callerRole\":{\"description\":\"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\"enum\":[\"approver\",\"requester\",\"acknowledger\",\"subject\",\"observer\"],\"type\":\"string\"},\"cancellableBy\":{\"description\":\"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\"enum\":[\"requester\"],\"type\":\"string\"},\"category\":{\"description\":\"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\"enum\":[\"approval\",\"acknowledge\",\"queue\",\"coolingOff\"],\"type\":\"string\"},\"challenge\":{\"description\":\"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"},\"closedAt\":{\"description\":\"When the action left `open`. Present exactly when `status` is not `open`.\",\"format\":\"date-time\",\"type\":\"string\"},\"closedReason\":{\"description\":\"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\"enum\":[\"thresholdMet\",\"declined\",\"expired\",\"cancelledByRequester\",\"invalidated\",\"failedRecheck\",\"acknowledged\",\"landedAfterCoolingOff\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the operation was parked.\",\"format\":\"date-time\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9.]*$\",\"type\":\"string\"},\"landsAt\":{\"description\":\"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\"format\":\"date-time\",\"type\":\"string\"},\"payload\":{\"description\":\"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\"type\":\"object\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"},\"requester\":{\"description\":\"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"requesterOpenActions\":{\"description\":\"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\"enum\":[\"open\",\"completed\",\"declined\",\"expired\",\"cancelled\",\"failed\"],\"type\":\"string\"},\"summary\":{\"$ref\":\"#/$defs/Summary\"},\"threshold\":{\"description\":\"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\"minimum\":1,\"type\":\"integer\"},\"typeUri\":{\"description\":\"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\"format\":\"uri\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actionId\",\"category\",\"kind\",\"typeUri\",\"requester\",\"status\",\"createdAt\",\"approvals\",\"summary\",\"payload\",\"payloadDigest\",\"callerRole\"],\"title\":\"Action\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Action_92ee5ced;
-
 macro_rules! d_ActivityItem_2ca777f2 {
     () => {
         "\"ActivityItem\":{\"additionalProperties\":false,\"description\":\"One thing that happened in a namespace.\",\"properties\":{\"action\":{\"description\":\"What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9]*(\\\\.[a-zA-Z][a-zA-Z0-9]*)*$\",\"type\":\"string\"},\"actor\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who acted, for an audit item. Absent when a right-to-be-forgotten erasure has removed it from the audit row, and always absent for a job item, which has no actor of its own.\"},\"at\":{\"description\":\"When it happened: the audit row's timestamp, or the job's acceptance time (its creation time if never accepted).\",\"format\":\"date-time\",\"type\":\"string\"},\"detail\":{\"description\":\"A machine-readable qualifier: `departed` on a departure-triggered change, the old name on a rename, a job's queue state, a drift count. A producer MUST NOT put free-form or personal prose here beyond what the qualifier itself names.\",\"maxLength\":1024,\"type\":\"string\"},\"namespace\":{\"$ref\":\"#/$defs/NamespaceId\",\"description\":\"The namespace the item belongs to. Absent only for a community-wide audit row from before any namespace was unbound (visible to a community administrator with no `namespace` filter only).\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"The resource the item concerns, where it names one.\"},\"right\":{\"$ref\":\"#/$defs/Right\",\"description\":\"The right a rights-change item concerns. Absent for a drift report or a job item.\"},\"source\":{\"$ref\":\"#/$defs/Source\",\"description\":\"Where the item came from: an audit row or a bridge job.\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Whose right it was, for a rights-change audit item. Absent likewise on erasure, and always absent for a job item.\"}},\"required\":[\"at\",\"action\",\"source\"],\"title\":\"ActivityItem\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_ActivityItem_2ca777f2;
-
-macro_rules! d_AdminNote_15c2f76b {
-    () => {
-        "\"AdminNote\":{\"additionalProperties\":false,\"properties\":{\"author\":{\"description\":\"DID of the administrator who wrote the note.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"followUp\":{\"description\":\"Optional date by which the note asks for a follow-up.\",\"format\":\"date\",\"type\":\"string\"},\"noteId\":{\"$ref\":\"#/$defs/NoteId\"},\"redactedBy\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a note that a later note redacted.\"},\"redacts\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a redaction: the earlier note this one withdraws.\"},\"text\":{\"$ref\":\"#/$defs/NoteText\",\"description\":\"The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.\"}},\"required\":[\"noteId\",\"entryId\",\"author\",\"createdAt\"],\"title\":\"AdminNote\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AdminNote_15c2f76b;
 
 macro_rules! d_AdminRightRow_e929be24 {
     () => {
@@ -274,20 +204,6 @@ macro_rules! d_AdminRotationAsk_ea3bea73 {
 }
 pub(crate) use d_AdminRotationAsk_ea3bea73;
 
-macro_rules! d_Admission_51782b9a {
-    () => {
-        "\"Admission\":{\"description\":\"How the community decides a submission that meets the criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who admits or rejects it; meeting the criterion never admits by itself. Which a criterion uses is the community's policy; this definition prefers neither.\",\"enum\":[\"automatic\",\"review\"],\"title\":\"Admission\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Admission_51782b9a;
-
-macro_rules! d_AdmittedMembership_a97f3e00 {
-    () => {
-        "\"AdmittedMembership\":{\"additionalProperties\":false,\"description\":\"A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.\",\"properties\":{\"approval\":{\"$ref\":\"#/$defs/Approval\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"returning\":{\"description\":\"True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.\",\"type\":\"boolean\"},\"role\":{\"description\":\"The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }`, the shape vtc/join-requests/decide returns.\",\"type\":\"object\"},\"status\":{\"description\":\"Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.\",\"enum\":[\"admitted\"],\"type\":\"string\"},\"statusListIndex\":{\"description\":\"The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.\",\"minimum\":0,\"type\":\"integer\"},\"subject\":{\"description\":\"The DID admitted.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"vmc\":{\"description\":\"The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.\",\"type\":\"object\"}},\"required\":[\"subject\",\"role\",\"status\",\"returning\",\"approval\",\"statusListIndex\",\"vmc\",\"roleVac\"],\"title\":\"AdmittedMembership\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AdmittedMembership_a97f3e00;
-
 macro_rules! d_AnchorCadence_535baa92 {
     () => {
         "\"AnchorCadence\":{\"description\":\"How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\\n\\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\\n\\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\\n\\nDeliberately not a duration. A room that promised \\\"daily\\\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.\",\"enum\":[\"never\",\"renewal\",\"manual\"],\"title\":\"AnchorCadence\",\"type\":\"string\"}"
@@ -301,34 +217,6 @@ macro_rules! d_Answer_4eb5a0ab {
     };
 }
 pub(crate) use d_Answer_4eb5a0ab;
-
-macro_rules! d_AppStateRecord_b43e1af5 {
-    () => {
-        "\"AppStateRecord\":{\"additionalProperties\":false,\"description\":\"A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.\",\"properties\":{\"contextId\":{\"description\":\"The VTA context the record is scoped to; the isolation boundary.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.\",\"format\":\"date-time\",\"type\":\"string\"},\"deleted\":{\"description\":\"True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.\",\"type\":\"boolean\"},\"deletedAt\":{\"description\":\"When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.\",\"format\":\"date-time\",\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"namespace\":{\"$ref\":\"#/$defs/Namespace\"},\"updatedAt\":{\"description\":\"When the write that produced this `version` was applied. For a tombstone, when the delete was applied.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"description\":\"The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.\"},\"valueBytes\":{\"description\":\"Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.\",\"minimum\":0,\"type\":\"integer\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.\"}},\"required\":[\"contextId\",\"namespace\",\"key\",\"version\",\"deleted\",\"updatedAt\"],\"title\":\"AppStateRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AppStateRecord_b43e1af5;
-
-macro_rules! d_ApplicationSummary_083673cf {
-    () => {
-        "\"ApplicationSummary\":{\"additionalProperties\":false,\"description\":\"An applicant engine as the VTA holds it, without its key.\",\"properties\":{\"applicationId\":{\"description\":\"The VTA's handle for this application. Opaque; never sent to the community.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"attestations\":{\"description\":\"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\"items\":{\"$ref\":\"#/$defs/StatementMeta\"},\"type\":\"array\"},\"community\":{\"description\":\"The community's DID.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the application's key is derived in.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"},\"joinDid\":{\"description\":\"The DID the application joins as.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"applicationId\",\"contextId\",\"community\",\"joinDid\",\"suite\",\"id\",\"attestations\",\"createdAt\"],\"title\":\"ApplicationSummary\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ApplicationSummary_083673cf;
-
-macro_rules! d_ApprovalEvidenceKind_c6476be6 {
-    () => {
-        "\"ApprovalEvidenceKind\":{\"description\":\"The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).\",\"enum\":[\"didSigned\",\"webauthn\",\"approverSigned\"],\"title\":\"ApprovalEvidenceKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ApprovalEvidenceKind_c6476be6;
-
-macro_rules! d_Approval_5e2f378e {
-    () => {
-        "\"Approval\":{\"description\":\"How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.\",\"enum\":[\"policyAllowed\",\"approved\",\"waived\"],\"title\":\"Approval\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Approval_5e2f378e;
 
 macro_rules! d_ApproveCapabilityScopeListed_aa3a7e95 {
     () => {
@@ -364,13 +252,6 @@ macro_rules! d_Approver_20a0461b {
     };
 }
 pub(crate) use d_Approver_20a0461b;
-
-macro_rules! d_ArchiveAccess_bae3d59f {
-    () => {
-        "\"ArchiveAccess\":{\"description\":\"What an archived room's members may still do. `readOnly`: their credentials stand and they keep reading what the room holds; the room's host refuses every write, upload and curation from a member. `noAccess`: every credential the room issued before the archival is withdrawn at its host — a room reset — so the host refuses every member's every task; the content is kept intact, and each withdrawn admission is `suspended`, restored when the room is unarchived or made `readOnly`. Neither recalls what a member already read or saved, and on a sealed tier neither removes anyone from the room's group.\",\"enum\":[\"readOnly\",\"noAccess\"],\"title\":\"ArchiveAccess\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ArchiveAccess_bae3d59f;
 
 macro_rules! d_Artifact_4036e758 {
     () => {
@@ -435,33 +316,12 @@ macro_rules! d_AttestationResponse_66d9807e {
 }
 pub(crate) use d_AttestationResponse_66d9807e;
 
-macro_rules! d_AttestationToken_b0609a85 {
-    () => {
-        "\"AttestationToken\":{\"additionalProperties\":false,\"description\":\"The attestation token spent on one attestation: the label it was drawn under, the serial its spend reveals, and its re-randomised signature. The same members as `token` in vetting/attestation/0.1.\",\"properties\":{\"label\":{\"description\":\"The token label spent under.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"serial\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The serial revealed by the spend.\"},\"shown\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The re-randomised token signature, verifiable under the published token key.\"}},\"required\":[\"label\",\"serial\",\"shown\"],\"title\":\"AttestationToken\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AttestationToken_b0609a85;
-
-macro_rules! d_Attestation_d9f418e3 {
-    () => {
-        "\"Attestation\":{\"additionalProperties\":false,\"description\":\"An attestation as a vetter hands it to an applicant: the payload of vetting/attestation/0.1, without its `ext`. The engine produces it from vta/pcs/attest and takes it into vta/pcs/verify-attestation.\",\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The attestation: a tag, a shown class credential and a proof. It names no vetter.\"},\"meta\":{\"$ref\":\"#/$defs/StatementMeta\"},\"suite\":{\"description\":\"The suite the attestation was made under, as the community publishes it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"token\":{\"$ref\":\"#/$defs/AttestationToken\"}},\"required\":[\"suite\",\"attestation\",\"meta\",\"token\"],\"title\":\"Attestation\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Attestation_d9f418e3;
-
 macro_rules! d_Attribute_133dffe2 {
     () => {
         "\"Attribute\":{\"additionalProperties\":false,\"description\":\"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\"properties\":{\"attributeId\":{\"$ref\":\"#/$defs/Ulid\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endorsements\":{\"description\":\"Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true},\"label\":{\"description\":\"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\"maxLength\":128,\"type\":\"string\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.\"},\"retainedVersions\":{\"description\":\"Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"pinnedBy\":{\"description\":\"The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"updatedAt\":{\"description\":\"When this version was written.\",\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"version\",\"pinnedBy\"],\"type\":\"object\"},\"maxItems\":64,\"type\":\"array\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.\"},\"stale\":{\"description\":\"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\"type\":\"boolean\"},\"staleReason\":{\"description\":\"Why re-derivation failed. Present only alongside `stale`.\",\"enum\":[\"revoked\",\"expired\",\"archived\",\"deleted\",\"notFound\"],\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"description\":\"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"attributeId\",\"type\",\"valueType\",\"provenance\",\"version\",\"updatedAt\"],\"title\":\"Attribute\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Attribute_133dffe2;
-
-macro_rules! d_Audience_76aa3fc6 {
-    () => {
-        "\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Audience_76aa3fc6;
 
 macro_rules! d_AuditDisclosed_fc9343da {
     () => {
@@ -505,13 +365,6 @@ macro_rules! d_AuthModel_d5697c2c {
 }
 pub(crate) use d_AuthModel_d5697c2c;
 
-macro_rules! d_Author_028b2ead {
-    () => {
-        "\"Author\":{\"additionalProperties\":false,\"description\":\"Who proposed an idea or wrote a note, as the board's audience sees them. `entryId` is their directory entry, which survives a rotation of their DID; `name` is their directory display name as this caller may see it, absent where the directory withholds it. A departed member is shown as `formerMember: true` with neither (VTI-BRD-060).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"formerMember\":{\"const\":true},\"name\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"you\":{\"const\":true,\"description\":\"Present when the caller is the author.\"}},\"title\":\"Author\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Author_028b2ead;
-
 macro_rules! d_AuthorityPresentation_709f9d8f {
     () => {
         "\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"}"
@@ -554,132 +407,6 @@ macro_rules! d_AuthorizingPrincipal_97d80a94 {
 }
 pub(crate) use d_AuthorizingPrincipal_97d80a94;
 
-macro_rules! d_AutoGrantStatus_3f2c0593 {
-    () => {
-        "\"AutoGrantStatus\":{\"additionalProperties\":false,\"description\":\"The effective configuration — defaults filled in — and the last sweep.\",\"properties\":{\"enabled\":{\"description\":\"Whether the sweep runs.\",\"type\":\"boolean\"},\"lastSweep\":{\"$ref\":\"#/$defs/AutoGrantSweep\"},\"sweepMinutes\":{\"$ref\":\"#/$defs/SweepMinutes\"},\"validitySeconds\":{\"$ref\":\"#/$defs/GrantValiditySeconds\"}},\"required\":[\"enabled\",\"sweepMinutes\",\"validitySeconds\"],\"title\":\"AutoGrantStatus\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AutoGrantStatus_3f2c0593;
-
-macro_rules! d_AutoGrantSweep_e5c6b70c {
-    () => {
-        "\"AutoGrantSweep\":{\"additionalProperties\":false,\"description\":\"What one sweep did.\",\"properties\":{\"errors\":{\"description\":\"Members the sweep could not decide or act on.\",\"minimum\":0,\"type\":\"integer\"},\"granted\":{\"description\":\"Grants issued.\",\"minimum\":0,\"type\":\"integer\"},\"ranAt\":{\"description\":\"When the sweep finished.\",\"format\":\"date-time\",\"type\":\"string\"},\"revoked\":{\"description\":\"Automatic grants revoked. The sweep revokes only grants it issued.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"ranAt\",\"granted\",\"revoked\",\"errors\"],\"title\":\"AutoGrantSweep\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AutoGrantSweep_e5c6b70c;
-
-macro_rules! d_AwardId_5fa47f9d {
-    () => {
-        "\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AwardId_5fa47f9d;
-
-macro_rules! d_AwardNote_ac713be9 {
-    () => {
-        "\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AwardNote_ac713be9;
-
-macro_rules! d_AwardShare_42a1ec9e {
-    () => {
-        "\"AwardShare\":{\"additionalProperties\":false,\"description\":\"Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).\",\"properties\":{\"bakedImageUrl\":{\"description\":\"The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verificationUrl\":{\"description\":\"The public location that answers the credential and a verification of it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verificationUrl\",\"since\"],\"title\":\"AwardShare\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_AwardShare_42a1ec9e;
-
-macro_rules! d_AwardState_6229f691 {
-    () => {
-        "\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AwardState_6229f691;
-
-macro_rules! d_Award_afc77bea {
-    () => {
-        "\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shared\":{\"$ref\":\"#/$defs/AwardShare\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Award_afc77bea;
-
-macro_rules! d_AwsRoleArn_2c5e33b1 {
-    () => {
-        "\"AwsRoleArn\":{\"description\":\"The ARN of an AWS IAM role, in any AWS partition (`arn:aws:`, `arn:aws-cn:`, `arn:aws-us-gov:`). Validated here because the community passes it to STS AssumeRole and derives the partition of the session policy's resources from it; it must never carry anything but a role ARN.\",\"maxLength\":2048,\"minLength\":20,\"pattern\":\"^arn:aws(-[a-z]+)*:iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_/-]{1,512}$\",\"title\":\"AwsRoleArn\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_AwsRoleArn_2c5e33b1;
-
-macro_rules! d_BackupEnvelope_85148a7d {
-    () => {
-        "\"BackupEnvelope\":{\"$anchor\":\"backupEnvelope\",\"additionalProperties\":false,\"description\":\"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\"properties\":{\"ciphertext\":{\"description\":\"base64url(AEAD(JSON(payload))).\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the export was taken.\",\"format\":\"date-time\",\"type\":\"string\"},\"encryption\":{\"$ref\":\"#/$defs/EncryptionParams\"},\"format\":{\"description\":\"Envelope format tag, e.g. `vtc-backup-v1`.\",\"minLength\":1,\"type\":\"string\"},\"includesAudit\":{\"description\":\"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\"type\":\"boolean\"},\"kdf\":{\"$ref\":\"#/$defs/KdfParams\"},\"sourceDid\":{\"description\":\"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\"type\":[\"string\",\"null\"]},\"sourceVersion\":{\"description\":\"Version of the software that produced the envelope.\",\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Envelope schema version.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"version\",\"format\",\"createdAt\",\"sourceVersion\",\"kdf\",\"encryption\",\"includesAudit\",\"ciphertext\"],\"title\":\"BackupEnvelope\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_BackupEnvelope_85148a7d;
-
-macro_rules! d_BadgeCriteria_e9d1052f {
-    () => {
-        "\"BadgeCriteria\":{\"description\":\"How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeCriteria\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeCriteria_e9d1052f;
-
-macro_rules! d_BadgeDescription_63f0ad7f {
-    () => {
-        "\"BadgeDescription\":{\"description\":\"What the badge is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeDescription_63f0ad7f;
-
-macro_rules! d_BadgeId_ee963a8c {
-    () => {
-        "\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeId_ee963a8c;
-
-macro_rules! d_BadgeKind_307a2a10 {
-    () => {
-        "\"BadgeKind\":{\"description\":\"`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).\",\"enum\":[\"community\",\"kudos\"],\"title\":\"BadgeKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeKind_307a2a10;
-
-macro_rules! d_BadgeLimits_eb1a988e {
-    () => {
-        "\"BadgeLimits\":{\"additionalProperties\":false,\"description\":\"The community's bounds (VTI-BDG-032, VTI-BDG-040). Each has a default a community that states none applies.\",\"properties\":{\"kudosBadgesPerMakerPerMonth\":{\"description\":\"Kudos badges one member may make in a calendar month. Default 5.\",\"maximum\":1000,\"minimum\":0,\"type\":\"integer\"},\"kudosPerGiverPerDay\":{\"description\":\"Kudos one member may give in a day. Default 10.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"maxPinned\":{\"description\":\"Badges a member may pin beside their name. Default 2.\",\"maximum\":8,\"minimum\":0,\"type\":\"integer\"},\"minTenureDays\":{\"description\":\"Days of membership before a member may give kudos or make a kudos badge. Default 7.\",\"maximum\":3650,\"minimum\":0,\"type\":\"integer\"},\"offerExpiresAfterDays\":{\"description\":\"Days an unanswered offer stands before it expires. Absent: offers do not expire.\",\"maximum\":365,\"minimum\":1,\"type\":\"integer\"},\"sameGiverSameMember\":{\"description\":\"How often the same member may give a kudos badge to the same member: at most once a day, once a week, or without bound. Default `day`.\",\"enum\":[\"day\",\"week\",\"unbounded\"],\"type\":\"string\"}},\"title\":\"BadgeLimits\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_BadgeLimits_eb1a988e;
-
-macro_rules! d_BadgeName_3e822f96 {
-    () => {
-        "\"BadgeName\":{\"description\":\"The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":64,\"minLength\":1,\"title\":\"BadgeName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeName_3e822f96;
-
-macro_rules! d_BadgeSettings_1a5b3be8 {
-    () => {
-        "\"BadgeSettings\":{\"additionalProperties\":false,\"description\":\"The community's badge settings (VTI-BDG-004). `enabled` false hides every badge surface and keeps every record; nothing is given or issued while it is false.\",\"properties\":{\"automaticBadges\":{\"description\":\"Whether dynamic badge groups are computed (VTI-BDG-013). False: a community badge may not be created on a dynamic group, and existing ones are not recomputed.\",\"type\":\"boolean\"},\"credentialValidDays\":{\"description\":\"Validity of a badge credential its holders may show outside (VTI-BDG-062). Default 730.\",\"maximum\":3650,\"minimum\":30,\"type\":\"integer\"},\"enabled\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kudosMakers\":{\"$ref\":\"#/$defs/KudosMakers\"},\"limits\":{\"$ref\":\"#/$defs/BadgeLimits\"},\"membersMayRequest\":{\"description\":\"Whether any community badge may be marked `requestable`. False: every badge group is closed.\",\"type\":\"boolean\"},\"showKudosTotals\":{\"description\":\"Whether a member's kudos total is shown on their card (VTI-BDG-043).\",\"type\":\"boolean\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"enabled\",\"kudosMakers\",\"showKudosTotals\",\"automaticBadges\",\"membersMayRequest\"],\"title\":\"BadgeSettings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_BadgeSettings_1a5b3be8;
-
-macro_rules! d_BadgeState_c8382763 {
-    () => {
-        "\"BadgeState\":{\"description\":\"`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).\",\"enum\":[\"active\",\"retired\"],\"title\":\"BadgeState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BadgeState_c8382763;
-
-macro_rules! d_Badge_bcc7edc9 {
-    () => {
-        "\"Badge\":{\"additionalProperties\":false,\"description\":\"A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\"},\"criteria\":{\"$ref\":\"#/$defs/BadgeCriteria\"},\"description\":{\"$ref\":\"#/$defs/BadgeDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.\"},\"holderCount\":{\"description\":\"Holders who show the badge. Only to callers who may see the holders.\",\"minimum\":0,\"type\":\"integer\"},\"image\":{\"$ref\":\"#/$defs/CardBlobRef\",\"description\":\"The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.\"},\"kind\":{\"$ref\":\"#/$defs/BadgeKind\"},\"listed\":{\"description\":\"Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.\",\"type\":\"boolean\"},\"name\":{\"$ref\":\"#/$defs/BadgeName\"},\"repeatable\":{\"description\":\"Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.\",\"type\":\"boolean\"},\"requestable\":{\"description\":\"Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.\",\"type\":\"boolean\"},\"retiredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shareableOutside\":{\"description\":\"Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.\",\"type\":\"boolean\"},\"state\":{\"$ref\":\"#/$defs/BadgeState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badgeId\",\"kind\",\"name\",\"description\",\"image\",\"repeatable\",\"listed\",\"state\",\"createdAt\"],\"title\":\"Badge\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Badge_bcc7edc9;
-
 macro_rules! d_Ballot_4ea3e0e4 {
     () => {
         "\"Ballot\":{\"additionalProperties\":false,\"description\":\"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\"properties\":{\"answers\":{\"items\":{\"$ref\":\"#/$defs/Answer\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"}},\"required\":[\"electionId\",\"manifestDigest\",\"answers\"],\"title\":\"Ballot\",\"type\":\"object\"}"
@@ -715,20 +442,6 @@ macro_rules! d_BlobRef_2e7d4163 {
 }
 pub(crate) use d_BlobRef_2e7d4163;
 
-macro_rules! d_BoardAudience_d042ebfe {
-    () => {
-        "\"BoardAudience\":{\"description\":\"Who may see and use a board (VTI-BRD-003): every active member of the community (`members`), or the members of one community group (`group`, with `groupId`). Facilitators always see the board.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"members\"}},\"required\":[\"kind\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"kind\":{\"const\":\"group\"}},\"required\":[\"kind\",\"groupId\"],\"type\":\"object\"}],\"title\":\"BoardAudience\"}"
-    };
-}
-pub(crate) use d_BoardAudience_d042ebfe;
-
-macro_rules! d_BoardDescription_f6b211f9 {
-    () => {
-        "\"BoardDescription\":{\"description\":\"What the board is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":4000,\"minLength\":1,\"title\":\"BoardDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BoardDescription_f6b211f9;
-
 macro_rules! d_BoardHead_5a21c24f {
     () => {
         "\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"}"
@@ -736,33 +449,12 @@ macro_rules! d_BoardHead_5a21c24f {
 }
 pub(crate) use d_BoardHead_5a21c24f;
 
-macro_rules! d_BoardId_06402afa {
-    () => {
-        "\"BoardId\":{\"description\":\"Opaque identifier of a board: `brd_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BRD-001).\",\"pattern\":\"^brd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BoardId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BoardId_06402afa;
-
-macro_rules! d_BoardStatus_2e867eb3 {
-    () => {
-        "\"BoardStatus\":{\"description\":\"`open`: ideas and notes are taken within the board's windows. `closed`: no new idea or note; facilitators still decide and select. `archived`: no change at all; facilitators can still read it (VTI-BRD-005). `open` → `closed` → `archived`, never back.\",\"enum\":[\"open\",\"closed\",\"archived\"],\"title\":\"BoardStatus\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_BoardStatus_2e867eb3;
-
 macro_rules! d_BoardVisibility_53975230 {
     () => {
         "\"BoardVisibility\":{\"description\":\"`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).\",\"enum\":[\"public\",\"private\"],\"title\":\"BoardVisibility\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_BoardVisibility_53975230;
-
-macro_rules! d_Board_0960eba5 {
-    () => {
-        "\"Board\":{\"additionalProperties\":false,\"description\":\"A board as one caller may see it.\",\"properties\":{\"audience\":{\"$ref\":\"#/$defs/BoardAudience\"},\"boardId\":{\"$ref\":\"#/$defs/BoardId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/BoardDescription\"},\"facilitator\":{\"description\":\"Whether the caller facilitates this board.\",\"type\":\"boolean\"},\"formats\":{\"items\":{\"$ref\":\"#/$defs/IdeaFormat\"},\"maxItems\":16,\"type\":\"array\",\"uniqueItems\":true},\"ideaCounts\":{\"additionalProperties\":false,\"description\":\"How many of the board's ideas are in each state the caller may see.\",\"properties\":{\"declined\":{\"minimum\":0,\"type\":\"integer\"},\"merged\":{\"minimum\":0,\"type\":\"integer\"},\"notSelected\":{\"minimum\":0,\"type\":\"integer\"},\"open\":{\"minimum\":0,\"type\":\"integer\"},\"proposed\":{\"minimum\":0,\"type\":\"integer\"},\"selected\":{\"minimum\":0,\"type\":\"integer\"},\"withdrawn\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"},\"maxIdeasPerMember\":{\"description\":\"The most ideas one member may have on the board that are not `withdrawn` or `declined`. Absent: no limit beyond the community's own.\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"proposals\":{\"$ref\":\"#/$defs/Window\",\"description\":\"When ideas are taken (VTI-BRD-010).\"},\"selectionRule\":{\"description\":\"How facilitators intend to select, in plain words (VTI-BRD-041), e.g. \\\"The twelve ideas the most members would attend\\\".\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/BoardStatus\"},\"template\":{\"$ref\":\"#/$defs/ElectionTemplate\"},\"timetable\":{\"items\":{\"$ref\":\"#/$defs/Slot\"},\"maxItems\":256,\"type\":\"array\"},\"title\":{\"$ref\":\"#/$defs/BoardTitle\"},\"topics\":{\"items\":{\"$ref\":\"#/$defs/Topic\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"voting\":{\"$ref\":\"#/$defs/Window\",\"description\":\"When every idea's election takes ballots. Opens after `proposals` opens and closes after it closes (VTI-BRD-001).\"}},\"required\":[\"boardId\",\"title\",\"status\",\"audience\",\"proposals\",\"voting\",\"template\",\"createdAt\",\"facilitator\",\"ideaCounts\"],\"title\":\"Board\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Board_0960eba5;
 
 macro_rules! d_BootstrapAsk_a08f0353 {
     () => {
@@ -819,27 +511,6 @@ macro_rules! d_BundleId_79042bbe {
     };
 }
 pub(crate) use d_BundleId_79042bbe;
-
-macro_rules! d_CalendarDate_6959b257 {
-    () => {
-        "\"CalendarDate\":{\"description\":\"A calendar date, `YYYY-MM-DD` (RFC 3339 full-date), with no time or zone. Compared as a UTC date.\",\"format\":\"date\",\"pattern\":\"^[0-9]{4}-[0-9]{2}-[0-9]{2}$\",\"title\":\"CalendarDate\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CalendarDate_6959b257;
-
-macro_rules! d_CalendarId_496c49b1 {
-    () => {
-        "\"CalendarId\":{\"description\":\"Opaque identifier of a calendar: `cal_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-010).\",\"pattern\":\"^cal_[A-Za-z0-9_-]{16,64}$\",\"title\":\"CalendarId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CalendarId_496c49b1;
-
-macro_rules! d_Calendar_247bf9f2 {
-    () => {
-        "\"Calendar\":{\"additionalProperties\":false,\"description\":\"A calendar: the community's own, or a group's (VTI-EVT-010 – 014). The unit a member follows, and the scope of a host's authority: a group's calendar is run by those who may manage events for that group.\",\"properties\":{\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"color\":{\"$ref\":\"#/$defs/Color\"},\"community\":{\"description\":\"True on the community's own calendar, which always exists and cannot be archived (VTI-EVT-011).\",\"type\":\"boolean\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"defaultReminderMinutes\":{\"description\":\"The reminders a new event in this calendar suggests, as minutes before its start.\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"defaultRoster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting a new event in this calendar starts with. Absent means `hidden`.\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The group whose calendar this is. Absent for the community's own calendar.\"},\"name\":{\"$ref\":\"#/$defs/EventTitle\"},\"state\":{\"description\":\"`archived`: takes no new events; its events are kept.\",\"enum\":[\"active\",\"archived\"],\"type\":\"string\"}},\"required\":[\"calendarId\",\"name\",\"state\",\"createdAt\"],\"title\":\"Calendar\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Calendar_247bf9f2;
 
 macro_rules! d_CapabilityGrant_b7831816 {
     () => {
@@ -911,34 +582,6 @@ macro_rules! d_Capability_6cd4a607 {
 }
 pub(crate) use d_Capability_6cd4a607;
 
-macro_rules! d_CardBlobRef_354f4f80 {
-    () => {
-        "\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CardBlobRef_354f4f80;
-
-macro_rules! d_CardValues_682755ae {
-    () => {
-        "\"CardValues\":{\"additionalProperties\":{\"$ref\":\"#/$defs/FieldValue\"},\"description\":\"A card's stored values, keyed by field. Holds `member`-, `admin`- and `credential`-sourced fields only; derived fields (`role`, `joinedAt`, `did`, `personhood`) are read from the community's own records when a projection is made, never stored here. At most 64 values, and at most 16 KiB serialized excluding the blobs a `CardBlobRef` names.\",\"maxProperties\":64,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"title\":\"CardValues\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CardValues_682755ae;
-
-macro_rules! d_CarriedDocument_9b430702 {
-    () => {
-        "\"CarriedDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\"minProperties\":1,\"title\":\"CarriedDocument\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CarriedDocument_9b430702;
-
-macro_rules! d_CastDocument_1c3f8271 {
-    () => {
-        "\"CastDocument\":{\"description\":\"A complete, signed voting/ballot/cast/0.1 request document, ready to send to the ballot box. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.\",\"properties\":{\"expiresAt\":{\"description\":\"When present, the manifest's `votingClosesAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"description\":\"A random (version 4) UUID URN, generated for this cast and derived from nothing else.\",\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The did:key generated for this cast alone (VTI-VOT-003).\",\"maxLength\":256,\"pattern\":\"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"payload\":{\"description\":\"The voting/ballot/cast/0.1 request payload — `community`, `electionId` and the Cast the engine built — and nothing else.\",\"type\":\"object\"},\"proof\":{\"description\":\"The Data Integrity proof made with the cast's one-time key.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The manifest's `ballotBox`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/ballot/cast/0.1#request\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"CastDocument\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CastDocument_1c3f8271;
-
 macro_rules! d_Cast_4bc77d23 {
     () => {
         "\"Cast\":{\"additionalProperties\":false,\"description\":\"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"ballot\":{\"$ref\":\"#/$defs/Ballot\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"ballot\",\"tag\",\"attestation\"],\"title\":\"Cast\",\"type\":\"object\"}"
@@ -952,20 +595,6 @@ macro_rules! d_Category_bc23a848 {
     };
 }
 pub(crate) use d_Category_bc23a848;
-
-macro_rules! d_Certification_eb434999 {
-    () => {
-        "\"Certification\":{\"additionalProperties\":false,\"description\":\"The community's certification of the election's result, as vtc/elections/certify recorded it.\",\"properties\":{\"auditAttestations\":{\"items\":{\"description\":\"A verifiable credential from an auditor the manifest names, as received.\",\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"},\"certifiedAt\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"}},\"required\":[\"result\",\"certifiedAt\",\"auditAttestations\"],\"title\":\"Certification\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Certification_eb434999;
-
-macro_rules! d_Checkpoint_5093ddec {
-    () => {
-        "\"Checkpoint\":{\"additionalProperties\":false,\"description\":\"A board head the community read from the ballot box and kept, with the ballot box's signed document that carried it. Certification proves the board's final head consistent with every checkpoint, so a ballot box that rewrote its board after a checkpoint is caught.\",\"properties\":{\"document\":{\"description\":\"The ballot box's signed voting/board/head `#response` document whose payload carries `head`, kept whole and exactly as received — proof included — so anyone can verify it against the ballot box's DID without trusting the community.\",\"type\":\"object\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\"}},\"required\":[\"head\",\"document\"],\"title\":\"Checkpoint\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Checkpoint_5093ddec;
 
 macro_rules! d_ChecksumSha256_dcb2df49 {
     () => {
@@ -1016,34 +645,6 @@ macro_rules! d_ChunkedDescriptor_02848521 {
 }
 pub(crate) use d_ChunkedDescriptor_02848521;
 
-macro_rules! d_ClaimCode_487f9c6b {
-    () => {
-        "\"ClaimCode\":{\"additionalProperties\":false,\"description\":\"A claim code's record, as the badge's owners and administrators see it: never the code (VTI-BDG-027).\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"claimId\":{\"$ref\":\"#/$defs/ClaimId\"},\"claims\":{\"description\":\"How many members have redeemed it.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The issuer's entry, where they have one; the giver of every award the code admits.\"},\"label\":{\"description\":\"What the code is for — the event, say — shown to the badge's owners. Never shown to whoever redeems it.\",\"maxLength\":120,\"minLength\":1,\"type\":\"string\"},\"limit\":{\"description\":\"How many claims the code admits.\",\"maximum\":10000,\"minimum\":1,\"type\":\"integer\"},\"state\":{\"description\":\"`withdrawn` once its issuer withdrew it or the badge was retired. A code past `validUntil` or out of claims stays `active` and admits no one.\",\"enum\":[\"active\",\"withdrawn\"],\"type\":\"string\"},\"validUntil\":{\"description\":\"After this the code admits no one.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"claimId\",\"badgeId\",\"label\",\"validUntil\",\"limit\",\"claims\",\"state\",\"createdAt\"],\"title\":\"ClaimCode\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ClaimCode_487f9c6b;
-
-macro_rules! d_ClaimId_2fef5939 {
-    () => {
-        "\"ClaimId\":{\"description\":\"Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64 base64url characters. Random; never the code itself, which the community keeps only as a digest (VTI-BDG-025).\",\"pattern\":\"^bcl_[A-Za-z0-9_-]{16,64}$\",\"title\":\"ClaimId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ClaimId_2fef5939;
-
-macro_rules! d_ClaimSecret_c4652e6a {
-    () => {
-        "\"ClaimSecret\":{\"description\":\"A claim code itself: at least 128 random bits the community generated, base64url (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by a member, never stored or answered again (VTI-BDG-025).\",\"pattern\":\"^[A-Za-z0-9_-]{22,64}$\",\"title\":\"ClaimSecret\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ClaimSecret_c4652e6a;
-
-macro_rules! d_ClaimSelector_e7c703e5 {
-    () => {
-        "\"ClaimSelector\":{\"additionalProperties\":false,\"description\":\"Which claim a `claim` field accepts, from which credentials and issuers.\",\"properties\":{\"claimPath\":{\"description\":\"JSON Pointer (RFC 6901) to the claim within `credentialSubject`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"credentialType\":{\"description\":\"A `type` the presented credential MUST carry.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuers\":{\"description\":\"Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"credentialType\",\"claimPath\"],\"title\":\"ClaimSelector\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ClaimSelector_e7c703e5;
-
 macro_rules! d_ClaimType_9d5c7e6d {
     () => {
         "\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"}"
@@ -1065,117 +666,12 @@ macro_rules! d_ClientDescription_b9e66f88 {
 }
 pub(crate) use d_ClientDescription_b9e66f88;
 
-macro_rules! d_CodeOfConduct_fe0f0541 {
-    () => {
-        "\"CodeOfConduct\":{\"additionalProperties\":false,\"description\":\"A code of conduct a registrant acknowledges before the registration is accepted (VTI-EVT-035). `sha256` pins the text acknowledged.\",\"properties\":{\"sha256\":{\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"url\":{\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"url\",\"sha256\"],\"title\":\"CodeOfConduct\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CodeOfConduct_fe0f0541;
-
-macro_rules! d_CollectionSetting_5648f015 {
-    () => {
-        "\"CollectionSetting\":{\"additionalProperties\":false,\"dependentSchemas\":{\"changedAt\":{\"required\":[\"changedBy\"]},\"changedBy\":{\"required\":[\"changedAt\"]}},\"description\":\"Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.\",\"properties\":{\"changedAt\":{\"description\":\"When `collectByDefault` was last changed.\",\"format\":\"date-time\",\"type\":\"string\"},\"changedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096).\"},\"collectByDefault\":{\"description\":\"The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts.\",\"type\":\"boolean\"},\"contextId\":{\"$ref\":\"#/$defs/ContextId\",\"description\":\"The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094).\"},\"suspendedByOperator\":{\"description\":\"Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension.\",\"type\":\"boolean\"}},\"required\":[\"contextId\",\"collectByDefault\",\"suspendedByOperator\"],\"title\":\"CollectionSetting\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CollectionSetting_5648f015;
-
-macro_rules! d_Collector_20fdf866 {
-    () => {
-        "\"Collector\":{\"description\":\"Who collects for an identifier: `vta`, the VTA itself; `client`, the claimant of a collection claim in force; or `none`, nobody, for the reason given in `notCollectedReason`.\",\"enum\":[\"vta\",\"client\",\"none\"],\"title\":\"Collector\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Collector_20fdf866;
-
-macro_rules! d_Color_1d45208a {
-    () => {
-        "\"Color\":{\"description\":\"A colour as `#RRGGBB`, for showing a calendar's events apart from another's.\",\"pattern\":\"^#[0-9A-Fa-f]{6}$\",\"title\":\"Color\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Color_1d45208a;
-
-macro_rules! d_CommunityBranding_2905df5f {
-    () => {
-        "\"CommunityBranding\":{\"additionalProperties\":false,\"description\":\"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\"properties\":{\"accentColor\":{\"description\":\"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\"pattern\":\"^#[0-9a-fA-F]{6}$\",\"type\":\"string\"},\"displayName\":{\"description\":\"The community's name as it asks to be shown.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logoUrl\":{\"description\":\"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"title\":\"CommunityBranding\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityBranding_2905df5f;
-
-macro_rules! d_CommunityParameters_bd860fb8 {
-    () => {
-        "\"CommunityParameters\":{\"$ref\":\"#/$defs/PublishedConfig\",\"description\":\"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\"title\":\"CommunityParameters\"}"
-    };
-}
-pub(crate) use d_CommunityParameters_bd860fb8;
-
-macro_rules! d_CommunityProfileSnapshot_58119605 {
-    () => {
-        "\"CommunityProfileSnapshot\":{\"$anchor\":\"communityProfileSnapshot\",\"additionalProperties\":false,\"description\":\"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\"properties\":{\"communityDid\":{\"description\":\"DID of the community this document was taken from. Immutable, set at install.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"createdAt\":{\"description\":\"When the community was created. Provenance only — an import never writes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"description\":\"BCP 47 language tag.\",\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"relationshipIdentifierDefault\":{\"description\":\"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileSnapshot\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityProfileSnapshot_58119605;
-
-macro_rules! d_CommunityProfileView_ba836bcb {
-    () => {
-        "\"CommunityProfileView\":{\"$anchor\":\"communityProfileView\",\"additionalProperties\":false,\"description\":\"A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\\n\\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\\n\\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.\",\"properties\":{\"communityDid\":{\"description\":\"The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"correlationScope\":{\"description\":\"The correlation scope the community declares for its own identifier, carried as `issuerScope` on every credential it issues (its VMC grants, role VACs and statements). Per the DTG Credentials Core Specification, a community's identifier is `directed` at minimum — every party that verifies its members' credentials must be able to resolve it — and `public` where the community is open to outsiders; it can never truthfully be `pairwise`, since a community has more than one member. Absent means the community has not declared one; implementations issue `public`, the scope this registry required before DTG Credentials 0.7.0, so that an existing community's credentials do not change.\",\"enum\":[\"directed\",\"public\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the community was created. Immutable, like `communityDid`.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"What this community's governance asserts about the personhood of its members.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"registryStatus\":{\"description\":\"Trust-registry reachability. Populated on reads; not settable.\",\"enum\":[\"active\",\"degraded\"],\"type\":\"string\"},\"relationshipIdentifierDefault\":{\"description\":\"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileView\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityProfileView_ba836bcb;
-
-macro_rules! d_CommunityRoomV2_1087b2ff {
-    () => {
-        "\"CommunityRoomV2\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/community/{create,get,list}/0.2 and vtc/rooms/community/update/0.1 return: `CommunityRoom` plus the details an administrator keeps track of a room by — `description`, `tags`, and who last changed them and when. A separate definition, not a change to `CommunityRoom`, so that the 0.1 versions of those tasks keep the exact shape they published. The room's creation is `room.createdAt` and `createdBy`.\",\"properties\":{\"admitted\":{\"description\":\"Members in state `admitted`.\",\"minimum\":0,\"type\":\"integer\"},\"createdBy\":{\"description\":\"The administrator who created it.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"detailsUpdatedAt\":{\"description\":\"When `label`, `description` or `tags` last changed. Absent until the first change after creation. Distinct from `room.updatedAt`, which is the host record's and moves with the room's epoch and lifecycle.\",\"format\":\"date-time\",\"type\":\"string\"},\"detailsUpdatedBy\":{\"description\":\"The administrator who made that change. Present exactly when `detailsUpdatedAt` is. The earlier values and who set them are in the community's audit trail, not here.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offered\":{\"description\":\"Offers not yet accepted or withdrawn.\",\"minimum\":0,\"type\":\"integer\"},\"ownerAuthorityValidUntil\":{\"description\":\"When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"storageConfig\":{\"$ref\":\"#/$defs/StorageConfigId\",\"description\":\"The storage config receiving the room's new uploads.\"},\"tags\":{\"$ref\":\"#/$defs/RoomTags\",\"description\":\"Absent or empty when the room has none.\"}},\"required\":[\"room\",\"label\",\"admitted\",\"offered\"],\"title\":\"CommunityRoomV2\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityRoomV2_1087b2ff;
-
-macro_rules! d_CommunityRoomV3_70878649 {
-    () => {
-        "\"CommunityRoomV3\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/community/{get,list}/0.4 and vtc/rooms/community/{archive,unarchive,remove,removal/cancel}/0.1 return: `CommunityRoomV2` plus the room's `status` in its owner's lifecycle and the count of `suspended` admissions. A separate definition, not a change to `CommunityRoomV2`, so that the versions returning that keep the exact shape they published. For a room in state `purging` or `removed`, whose host record a purge deletes, `room` is the host record as it last stood before the purge began — the community keeps that snapshot with the room's record when the purge starts — and its `lifecycle` is what was computed then.\",\"properties\":{\"admitted\":{\"description\":\"Members in state `admitted`.\",\"minimum\":0,\"type\":\"integer\"},\"createdBy\":{\"description\":\"The administrator who created it.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"detailsUpdatedAt\":{\"description\":\"When `label`, `description` or `tags` last changed. Absent until the first change after creation. Distinct from `room.updatedAt`, which is the host record's and moves with the room's epoch and lifecycle.\",\"format\":\"date-time\",\"type\":\"string\"},\"detailsUpdatedBy\":{\"description\":\"The administrator who made that change. Present exactly when `detailsUpdatedAt` is. The earlier values and who set them are in the community's audit trail, not here.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offered\":{\"description\":\"Offers not yet accepted or withdrawn.\",\"minimum\":0,\"type\":\"integer\"},\"ownerAuthorityValidUntil\":{\"description\":\"When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"status\":{\"$ref\":\"#/$defs/RoomStatus\"},\"storageConfig\":{\"$ref\":\"#/$defs/StorageConfigId\",\"description\":\"The storage config receiving the room's new uploads.\"},\"suspended\":{\"description\":\"Admissions in state `suspended`: withdrawn while the room was archived with `noAccess`, and restored when it leaves that state. Absent when zero.\",\"minimum\":0,\"type\":\"integer\"},\"tags\":{\"$ref\":\"#/$defs/RoomTags\",\"description\":\"Absent or empty when the room has none.\"}},\"required\":[\"room\",\"label\",\"admitted\",\"offered\",\"status\"],\"title\":\"CommunityRoomV3\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityRoomV3_70878649;
-
-macro_rules! d_CommunityRoom_3996f270 {
-    () => {
-        "\"CommunityRoom\":{\"additionalProperties\":false,\"description\":\"One room the community owns, as its administrators see it.\",\"properties\":{\"admitted\":{\"description\":\"Members in state `admitted`.\",\"minimum\":0,\"type\":\"integer\"},\"createdBy\":{\"description\":\"The administrator who created it.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offered\":{\"description\":\"Offers not yet accepted or withdrawn.\",\"minimum\":0,\"type\":\"integer\"},\"ownerAuthorityValidUntil\":{\"description\":\"When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"storageConfig\":{\"$ref\":\"#/$defs/StorageConfigId\",\"description\":\"The storage config receiving the room's new uploads.\"}},\"required\":[\"room\",\"label\",\"admitted\",\"offered\"],\"title\":\"CommunityRoom\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CommunityRoom_3996f270;
-
 macro_rules! d_ComposeClaim_a6737698 {
     () => {
         "\"ComposeClaim\":{\"description\":\"One claim of the face being composed: a value typed now, or an attribute the holder already keeps.\",\"oneOf\":[{\"$ref\":\"#/$defs/NewClaim\"},{\"$ref\":\"#/$defs/HeldClaim\"}],\"title\":\"ComposeClaim\"}"
     };
 }
 pub(crate) use d_ComposeClaim_a6737698;
-
-macro_rules! d_ConfigExportDocument_bbb8811c {
-    () => {
-        "\"ConfigExportDocument\":{\"$anchor\":\"configExportDocument\",\"additionalProperties\":false,\"description\":\"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\"properties\":{\"communityProfile\":{\"$ref\":\"#/$defs/CommunityProfileSnapshot\",\"description\":\"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"},\"configOverrides\":{\"additionalProperties\":true,\"description\":\"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\"type\":\"object\"},\"exportedAt\":{\"description\":\"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schemaVersion\":{\"description\":\"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"exportedAt\",\"configOverrides\"],\"title\":\"ConfigExportDocument\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ConfigExportDocument_bbb8811c;
-
-macro_rules! d_ConfigHoldings_8859dea5 {
-    () => {
-        "\"ConfigHoldings\":{\"additionalProperties\":false,\"description\":\"A config holding some of this room's blobs, other than the one it is assigned to.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"files\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"configId\",\"files\",\"bytes\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ConfigHoldings_8859dea5;
-
-macro_rules! d_ConfigItem_28caf079 {
-    () => {
-        "\"ConfigItem\":{\"additionalProperties\":false,\"description\":\"One config and what it holds.\",\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"facts\":{\"$ref\":\"#/$defs/StorageConfigFacts\"}},\"required\":[\"config\",\"facts\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ConfigItem_28caf079;
-
-macro_rules! d_ConfigState_29ed4b1c {
-    () => {
-        "\"ConfigState\":{\"description\":\"`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.\",\"enum\":[\"active\",\"draining\",\"retired\"],\"title\":\"ConfigState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ConfigState_29ed4b1c;
 
 macro_rules! d_ConsentGrant_cd6b481a {
     () => {
@@ -1240,13 +736,6 @@ macro_rules! d_Content_9ff5fa61 {
 }
 pub(crate) use d_Content_9ff5fa61;
 
-macro_rules! d_ContextId_ea8fa6f9 {
-    () => {
-        "\"ContextId\":{\"description\":\"The trust context the notification is held in: the one the addressed DID belongs to.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ContextId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ContextId_ea8fa6f9;
-
 macro_rules! d_ContextPath_b68e12b5 {
     () => {
         "\"ContextPath\":{\"description\":\"Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.\",\"maxLength\":512,\"minLength\":1,\"title\":\"ContextPath\",\"type\":\"string\"}"
@@ -1254,26 +743,12 @@ macro_rules! d_ContextPath_b68e12b5 {
 }
 pub(crate) use d_ContextPath_b68e12b5;
 
-macro_rules! d_ContextRecord_c6828549 {
-    () => {
-        "\"ContextRecord\":{\"additionalProperties\":false,\"description\":\"A context as the VTA holds it.\",\"properties\":{\"basePath\":{\"description\":\"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\"type\":\"string\"},\"createdAt\":{\"description\":\"RFC 3339.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"description\":\"Free-form description.\",\"maxLength\":1024,\"type\":\"string\"},\"did\":{\"description\":\"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"parent\":{\"description\":\"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\"type\":\"string\"},\"updatedAt\":{\"description\":\"RFC 3339.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"name\",\"basePath\",\"createdAt\",\"updatedAt\"],\"title\":\"ContextRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ContextRecord_c6828549;
-
 macro_rules! d_Context_7aaaef56 {
     () => {
         "\"Context\":{\"additionalProperties\":false,\"description\":\"The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.\",\"properties\":{\"activeFrom\":{\"description\":\"When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.\",\"format\":\"date-time\",\"type\":\"string\"},\"activeTo\":{\"description\":\"When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.\",\"format\":\"date-time\",\"type\":\"string\"},\"framework\":{\"description\":\"The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"impliedBy\":{\"$ref\":\"#/$defs/Right\",\"description\":\"Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.\"},\"origin\":{\"description\":\"Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.\",\"enum\":[\"roleDerived\"],\"type\":\"string\"}},\"required\":[\"framework\"],\"title\":\"Context\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Context_7aaaef56;
-
-macro_rules! d_Count_2fbe0580 {
-    () => {
-        "\"Count\":{\"additionalProperties\":false,\"description\":\"A number of registrants as shown to someone who is not a host: `exact` at or above the event's count threshold, `fewerThan` (the threshold) below it, so a small count does not single anyone out (VTI-EVT-054). Exactly one of the two.\",\"maxProperties\":1,\"minProperties\":1,\"properties\":{\"exact\":{\"minimum\":0,\"type\":\"integer\"},\"fewerThan\":{\"maximum\":100,\"minimum\":2,\"type\":\"integer\"}},\"title\":\"Count\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Count_2fbe0580;
 
 macro_rules! d_CredentialCreationOptions_9fe9cef5 {
     () => {
@@ -1289,33 +764,12 @@ macro_rules! d_CredentialDescriptor_6ed351ab {
 }
 pub(crate) use d_CredentialDescriptor_6ed351ab;
 
-macro_rules! d_CredentialId_a53870ee {
-    () => {
-        "\"CredentialId\":{\"$anchor\":\"credentialId\",\"description\":\"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\"minLength\":1,\"title\":\"CredentialId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CredentialId_a53870ee;
-
-macro_rules! d_CredentialIssuers_075f94c2 {
-    () => {
-        "\"CredentialIssuers\":{\"description\":\"Whose credentials meet the criterion's `query`. `community`: only credentials this community issued. `recognised`: credentials this community issued, or issued by a community it recognises (vtc/recognition/check). `any`: any issuer whose credential verifies — the query's own constraints, including DCQL `trusted_authorities`, are then all that limits it. A credential that does not verify (signature, validity window, revocation) never meets a criterion, whichever value is chosen.\",\"enum\":[\"any\",\"community\",\"recognised\"],\"title\":\"CredentialIssuers\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CredentialIssuers_075f94c2;
-
 macro_rules! d_CredentialPurpose_549d3e07 {
     () => {
         "\"CredentialPurpose\":{\"description\":\"Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}"
     };
 }
 pub(crate) use d_CredentialPurpose_549d3e07;
-
-macro_rules! d_CredentialReference_912263e0 {
-    () => {
-        "\"CredentialReference\":{\"$anchor\":\"credentialReference\",\"additionalProperties\":false,\"description\":\"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\"},\"expiresAt\":{\"description\":\"When it lapses, or null when it does not.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"issuedAt\":{\"description\":\"When the credential was minted.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\"],\"title\":\"CredentialReference\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CredentialReference_912263e0;
 
 macro_rules! d_CredentialRequestOptions_f2a4ac63 {
     () => {
@@ -1331,13 +785,6 @@ macro_rules! d_CredentialRevocation_989a3e5c {
 }
 pub(crate) use d_CredentialRevocation_989a3e5c;
 
-macro_rules! d_CredentialSchema_a0cdd148 {
-    () => {
-        "\"CredentialSchema\":{\"additionalProperties\":true,\"description\":\"A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.\",\"title\":\"CredentialSchema\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CredentialSchema_a0cdd148;
-
 macro_rules! d_CredentialScopeCeiling_6e5b7951 {
     () => {
         "\"CredentialScopeCeiling\":{\"additionalProperties\":false,\"description\":\"The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.\",\"properties\":{\"actions\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"prefixes\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"scopes\":{\"items\":{\"maxLength\":256,\"pattern\":\"^[!#-\\\\[\\\\]-~]+$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"CredentialScopeCeiling\",\"type\":\"object\"}"
@@ -1352,20 +799,6 @@ macro_rules! d_CredentialScope_42a8a3bb {
 }
 pub(crate) use d_CredentialScope_42a8a3bb;
 
-macro_rules! d_CredentialState_078dde9c {
-    () => {
-        "\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CredentialState_078dde9c;
-
-macro_rules! d_CredentialState_b3474a0b {
-    () => {
-        "\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"notAllowed\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_CredentialState_b3474a0b;
-
 macro_rules! d_CredentialStatus_4576b380 {
     () => {
         "\"CredentialStatus\":{\"description\":\"Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.\",\"enum\":[\"valid\",\"expired\",\"revoked\",\"unknown\"],\"type\":\"string\"}"
@@ -1373,40 +806,12 @@ macro_rules! d_CredentialStatus_4576b380 {
 }
 pub(crate) use d_CredentialStatus_4576b380;
 
-macro_rules! d_CredentialTypeUri_e610ab0f {
-    () => {
-        "\"CredentialTypeUri\":{\"description\":\"A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.\",\"maxLength\":512,\"minLength\":1,\"title\":\"CredentialTypeUri\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CredentialTypeUri_e610ab0f;
-
 macro_rules! d_Credential_a97dc2e4 {
     () => {
         "\"Credential\":{\"description\":\"A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers.\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Credential_a97dc2e4;
-
-macro_rules! d_CriterionDescription_09269c53 {
-    () => {
-        "\"CriterionDescription\":{\"description\":\"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.\",\"maxLength\":1024,\"title\":\"CriterionDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CriterionDescription_09269c53;
-
-macro_rules! d_CriterionDescription_f5bfddf7 {
-    () => {
-        "\"CriterionDescription\":{\"description\":\"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when the criterion has a `query` — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and the criterion's other members disagree, those govern.\",\"maxLength\":1024,\"title\":\"CriterionDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_CriterionDescription_f5bfddf7;
-
-macro_rules! d_Criterion_e3423dca {
-    () => {
-        "\"Criterion\":{\"additionalProperties\":false,\"dependentRequired\":{\"credentialIssuers\":[\"presentationDefinition\"],\"presentationDefinition\":[\"credentialIssuers\"]},\"properties\":{\"admission\":{\"description\":\"How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.\",\"enum\":[\"automatic\",\"review\"],\"type\":\"string\"},\"credentialIssuers\":{\"description\":\"Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.\",\"enum\":[\"any\",\"community\",\"recognised\"],\"type\":\"string\"},\"description\":{\"description\":\"Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.\",\"maxLength\":1024,\"type\":\"string\"},\"id\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"invitationRequired\":{\"description\":\"True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.\",\"type\":\"boolean\"},\"presentationDefinition\":{\"description\":\"The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.\",\"type\":\"object\"},\"requirementsDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"admission\",\"requirementsDigest\"],\"title\":\"Criterion\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Criterion_e3423dca;
 
 macro_rules! d_DataCommitment_2cf09310 {
     () => {
@@ -1422,26 +827,12 @@ macro_rules! d_DataIntegrityProof_f842c4ae {
 }
 pub(crate) use d_DataIntegrityProof_f842c4ae;
 
-macro_rules! d_DcqlQuery_cb02092e {
-    () => {
-        "\"DcqlQuery\":{\"additionalProperties\":true,\"description\":\"An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.\",\"title\":\"DcqlQuery\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DcqlQuery_cb02092e;
-
 macro_rules! d_Dealing_37d661ed {
     () => {
         "\"Dealing\":{\"additionalProperties\":false,\"description\":\"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\"properties\":{\"commitments\":{\"items\":{\"$ref\":\"#/$defs/GroupElement\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"},\"dealer\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"pok\":{\"$ref\":\"#/$defs/SigmaProof\"},\"shares\":{\"items\":{\"$ref\":\"#/$defs/SealedShare\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"dealer\",\"commitments\",\"pok\",\"shares\"],\"title\":\"Dealing\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Dealing_37d661ed;
-
-macro_rules! d_Decision_332eb377 {
-    () => {
-        "\"Decision\":{\"description\":\"`approve`: the registration becomes going, or waitlisted where the event is full and keeps a waitlist. `decline`: the registration is declined; the registrant cannot re-open it.\",\"enum\":[\"approve\",\"decline\"],\"title\":\"Decision\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Decision_332eb377;
 
 macro_rules! d_Decision_6071b874 {
     () => {
@@ -1513,13 +904,6 @@ macro_rules! d_DepartedGranter_b630b756 {
 }
 pub(crate) use d_DepartedGranter_b630b756;
 
-macro_rules! d_DesignatedService_a0c905ae {
-    () => {
-        "\"DesignatedService\":{\"additionalProperties\":true,\"description\":\"A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.\",\"properties\":{\"id\":{\"description\":\"The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused.\",\"pattern\":\"^#[A-Za-z0-9._~-]+$\",\"type\":\"string\"},\"serviceEndpoint\":{\"description\":\"A URI, a map, or a set of either, as the DID document data model allows.\",\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"additionalProperties\":true,\"type\":\"object\"},{\"items\":{\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"additionalProperties\":true,\"type\":\"object\"}]},\"minItems\":1,\"type\":\"array\"}]},\"type\":{\"description\":\"The service type, matched by peers on its value, never on `id`.\",\"oneOf\":[{\"minLength\":1,\"type\":\"string\"},{\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}]}},\"required\":[\"id\",\"type\",\"serviceEndpoint\"],\"title\":\"DesignatedService\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DesignatedService_a0c905ae;
-
 macro_rules! d_DesiredRole_621560ac {
     () => {
         "\"DesiredRole\":{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"The subject's linked account on this namespace's forge.\"},\"right\":{\"$ref\":\"#/$defs/Right\",\"description\":\"The highest right recorded for the subject on the repository, or `git.commit.sign` recorded on its namespace — never one held only because `git.ns.admin` implies it. A namespace admin with no right of their own there is listed as `git.ns.admin`, which every forge adapter maps to no role. The forge adapter maps the right to one of its roles.\"},\"subject\":{\"$ref\":\"#/$defs/Did\"}},\"required\":[\"subject\",\"account\",\"right\"],\"type\":\"object\"}"
@@ -1562,41 +946,6 @@ macro_rules! d_DeviceLabel_9bc4fc2e {
 }
 pub(crate) use d_DeviceLabel_9bc4fc2e;
 
-macro_rules! d_DidClass_6e95dada {
-    () => {
-        "\"DidClass\":{\"description\":\"The DID class an identity was created in (VTI specification, DID classes, VTI-KEY-190 – 193), fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context. `persona`: a person's own identity. `service`: the durable identity of a node or a service.\",\"enum\":[\"relationship\",\"persona\",\"service\"],\"title\":\"DidClass\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_DidClass_6e95dada;
-
-macro_rules! d_DidDocumentChange_ee683d5c {
-    () => {
-        "\"DidDocumentChange\":{\"additionalProperties\":false,\"properties\":{\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"setPreRotation\"],\"type\":\"string\"},\"preRotationCount\":{\"minimum\":0,\"type\":\"integer\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"DidDocumentChange\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidDocumentChange_ee683d5c;
-
-macro_rules! d_DidDocumentPreview_9a7d2d8b {
-    () => {
-        "\"DidDocumentPreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it, and nothing else (CONVENTIONS.md §3.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"baseVersionId\":{\"description\":\"versionId of the log entry the plan was computed against. The plan is void once the log moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the entry would make, including the ones the caller did not ask for — in particular `rotateUpdateKey`, which accompanies every entry appended under pre-rotation.\",\"items\":{\"$ref\":\"#/$defs/DidDocumentChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete DID document the entry would publish. Public data by construction; no key material beyond public halves.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier for this exact plan. Carried back by the apply request, and the thing every approval is bound to.\",\"minLength\":16,\"type\":\"string\"},\"updateKeyRotates\":{\"description\":\"True when appending this entry also moves the DID's update key to a committed successor. Stated as its own member, not left to be found in `changes`, because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"description\":\"Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must.\",\"items\":{\"enum\":[\"preRotationDisabled\",\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"serverless\"],\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"baseVersionId\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"DidDocumentPreview\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidDocumentPreview_9a7d2d8b;
-
-macro_rules! d_DidMethodName_5e9eddb3 {
-    () => {
-        "\"DidMethodName\":{\"description\":\"The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.\",\"pattern\":\"^[a-z0-9]+(:[a-z0-9]+)*$\",\"title\":\"DidMethodName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_DidMethodName_5e9eddb3;
-
-macro_rules! d_DidMethod_90ee1198 {
-    () => {
-        "\"DidMethod\":{\"description\":\"The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.\",\"enum\":[\"webvh\",\"scid\"],\"title\":\"DidMethod\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_DidMethod_90ee1198;
-
 macro_rules! d_DidRecord_e18b658b {
     () => {
         "\"DidRecord\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"description\":\"RFC3339 timestamp of initial reservation.\",\"format\":\"date-time\",\"type\":\"string\"},\"didId\":{\"description\":\"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\"type\":\"string\"},\"didUrl\":{\"description\":\"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\"format\":\"uri\",\"type\":\"string\"},\"disabled\":{\"description\":\"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\"type\":\"boolean\"},\"domain\":{\"description\":\"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"method\":{\"description\":\"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\"type\":\"string\"},\"owner\":{\"description\":\"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\"type\":\"string\"},\"totalResolves\":{\"description\":\"Lifetime resolve counter, when the host exposes per-DID statistics.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"description\":\"RFC3339 timestamp of the most recent record mutation.\",\"format\":\"date-time\",\"type\":\"string\"},\"versionCount\":{\"description\":\"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"mnemonic\",\"owner\",\"createdAt\",\"updatedAt\",\"versionCount\"],\"title\":\"DidRecord\",\"type\":\"object\"}"
@@ -1604,82 +953,12 @@ macro_rules! d_DidRecord_e18b658b {
 }
 pub(crate) use d_DidRecord_e18b658b;
 
-macro_rules! d_DidSummary_5b2a99de {
-    () => {
-        "\"DidSummary\":{\"additionalProperties\":false,\"description\":\"One identity the VTA holds, as every method has it, with what only its method has under `methodDetails`. CONVENTIONS.md §20.3.\",\"properties\":{\"alsoKnownAs\":{\"description\":\"Other identifiers the identity is published as: a did:scid identity's other form, a did:webs identity's did:web and did:keri forms. Empty where there are none.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"class\":{\"$ref\":\"#/$defs/DidClass\",\"description\":\"The DID class the identity was created in. Absent where none was recorded; a VTA never infers one.\"},\"contextId\":{\"description\":\"The context the identity belongs to. Absent for an identity in no context, which only an unrestricted caller sees.\",\"type\":\"string\"},\"createdAt\":{\"description\":\"When the VTA created or adopted the identity.\",\"format\":\"date-time\",\"type\":\"string\"},\"deactivated\":{\"description\":\"Whether the identity has been ended. It still resolves, as deactivated.\",\"type\":\"boolean\"},\"did\":{\"description\":\"The identity, in the form it is presented in. A did:scid:vh:1 identity is presented in its did:scid form or its did:webvh form, and the other is in `alsoKnownAs`.\",\"pattern\":\"^did:[a-z0-9]+:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyAgreementKeyId\":{\"description\":\"The VTA's id for the identity's current key agreement key. Absent where it has none.\",\"type\":\"string\"},\"label\":{\"description\":\"The VTA's own label for the identity. Not published.\",\"type\":\"string\"},\"level\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The identity's key assurance level. `1` for every identity that is not a key-role identity.\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\",\"description\":\"The method profile that governs the identity: `webvh`, `scid:vh`, `webs`, `key`.\"},\"methodDetails\":{\"additionalProperties\":{\"type\":\"object\"},\"description\":\"What only the identity's method has, as one member named by its `method`, defined by that method profile's Summary details (CONVENTIONS.md §18). Absent where the profile defines none. A consumer ignores a member it does not recognise.\",\"maxProperties\":1,\"minProperties\":1,\"propertyNames\":{\"$ref\":\"#/$defs/DidMethodName\"},\"type\":\"object\"},\"primary\":{\"description\":\"Whether the identity is its context's own DID.\",\"type\":\"boolean\"},\"serverId\":{\"description\":\"The VTA's id for the hosting server the identity is published through. Absent where it is published through none: a serverless did:webvh, a did:key.\",\"type\":\"string\"},\"signingKeyId\":{\"description\":\"The VTA's id for the key the identity currently signs with — what a caller names to have the VTA sign as it. Absent where it has none.\",\"type\":\"string\"},\"updatedAt\":{\"description\":\"When the VTA last changed its record of the identity.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"did\",\"method\",\"level\",\"primary\",\"deactivated\",\"alsoKnownAs\",\"createdAt\",\"updatedAt\"],\"title\":\"DidSummary\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidSummary_5b2a99de;
-
-macro_rules! d_DidTemplateRecord_1424bcdf {
-    () => {
-        "\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplateRecord_1424bcdf;
-
-macro_rules! d_DidTemplateRecord_2e31d320 {
-    () => {
-        "\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2,3],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplateRecord_2e31d320;
-
-macro_rules! d_DidTemplateRecord_78f527e8 {
-    () => {
-        "\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"UTC unix-epoch seconds the template was first stored.\",\"type\":\"integer\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"const\":1,\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"UTC unix-epoch seconds of the last write.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplateRecord_78f527e8;
-
-macro_rules! d_DidTemplateRecord_7c6a1765 {
-    () => {
-        "\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"UTC unix-epoch seconds the template was first stored.\",\"type\":\"integer\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"UTC unix-epoch seconds of the last write.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplateRecord_7c6a1765;
-
 macro_rules! d_DidTemplateRef_507d5161 {
     () => {
         "\"DidTemplateRef\":{\"$anchor\":\"did-template-ref\",\"additionalProperties\":false,\"description\":\"Reference to a DID template already registered at the maintainer. Inline template definitions are deliberately not supported — templates must be uploaded out-of-band first (operator-authored or built-in) so the maintainer can validate `vars` against the template's declared schema.\",\"properties\":{\"name\":{\"description\":\"Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"vars\":{\"additionalProperties\":true,\"default\":{},\"description\":\"Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.\",\"type\":\"object\"}},\"required\":[\"name\"],\"title\":\"DidTemplateRef\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_DidTemplateRef_507d5161;
-
-macro_rules! d_DidTemplate_433cb7b6 {
-    () => {
-        "\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"const\":1,\"description\":\"Template schema version. Currently always 1.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplate_433cb7b6;
-
-macro_rules! d_DidTemplate_4d283807 {
-    () => {
-        "\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplate_4d283807;
-
-macro_rules! d_DidTemplate_a517f97e {
-    () => {
-        "\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.\",\"enum\":[1,2,3],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplate_a517f97e;
-
-macro_rules! d_DidTemplate_f1474ce7 {
-    () => {
-        "\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"const\":1,\"description\":\"Template schema version. Currently always 1.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DidTemplate_f1474ce7;
-
-macro_rules! d_DidVerificationRelationship_262a7643 {
-    () => {
-        "\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_DidVerificationRelationship_262a7643;
 
 macro_rules! d_Did_4695ff71 {
     () => {
@@ -1716,33 +995,12 @@ macro_rules! d_Directive_84bea5d6 {
 }
 pub(crate) use d_Directive_84bea5d6;
 
-macro_rules! d_DirectoryCard_64dc8159 {
-    () => {
-        "\"DirectoryCard\":{\"additionalProperties\":false,\"description\":\"A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.\",\"properties\":{\"discoverability\":{\"$ref\":\"#/$defs/Discoverability\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection.\"},\"externalCard\":{\"$ref\":\"#/$defs/ExternalCard\"},\"groupAudience\":{\"description\":\"The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once.\",\"items\":{\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true},\"introductions\":{\"$ref\":\"#/$defs/Introductions\"},\"revision\":{\"description\":\"Incremented on every accepted change to the card, by its subject or by an administrator's assertion.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"description\":\"When the card last changed.\",\"format\":\"date-time\",\"type\":\"string\"},\"values\":{\"$ref\":\"#/$defs/CardValues\"},\"visibility\":{\"$ref\":\"#/$defs/FieldVisibility\"}},\"required\":[\"entryId\",\"values\",\"visibility\",\"discoverability\",\"introductions\",\"revision\",\"updatedAt\"],\"title\":\"DirectoryCard\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DirectoryCard_64dc8159;
-
-macro_rules! d_DirectoryDisclosure_5245b69e {
-    () => {
-        "\"DirectoryDisclosure\":{\"additionalProperties\":false,\"description\":\"The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.\",\"properties\":{\"adminNotes\":{\"description\":\"Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"externalCards\":{\"description\":\"Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.\",\"type\":\"boolean\"},\"fields\":{\"description\":\"Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.\",\"items\":{\"$ref\":\"#/$defs/DisclosedField\"},\"maxItems\":128,\"type\":\"array\"},\"groups\":{\"$ref\":\"#/$defs/GroupDisclosure\"},\"membershipIdentifiers\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.\"},\"newCard\":{\"$ref\":\"#/$defs/NewCardDefaults\"},\"statementDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.\"}},\"required\":[\"fields\",\"newCard\",\"membershipIdentifiers\",\"adminNotes\",\"externalCards\",\"statementDigest\"],\"title\":\"DirectoryDisclosure\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DirectoryDisclosure_5245b69e;
-
 macro_rules! d_DirectoryEntryId_5647b8ed {
     () => {
         "\"DirectoryEntryId\":{\"description\":\"A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"title\":\"DirectoryEntryId\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_DirectoryEntryId_5647b8ed;
-
-macro_rules! d_DirectoryEntry_8b1bddae {
-    () => {
-        "\"DirectoryEntry\":{\"additionalProperties\":false,\"description\":\"One entry as a particular viewer sees it.\",\"properties\":{\"connected\":{\"description\":\"Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here.\",\"type\":\"boolean\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"fields\":{\"$ref\":\"#/$defs/EntryFields\"},\"sharedGroups\":{\"description\":\"The community groups the viewer and this member both belong to, among those whose membership the viewer may see. Absent when there are none.\",\"items\":{\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"entryId\",\"fields\"],\"title\":\"DirectoryEntry\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DirectoryEntry_8b1bddae;
 
 macro_rules! d_DirectoryRef_44208ffb {
     () => {
@@ -1758,13 +1016,6 @@ macro_rules! d_DisclosedEvidenceItem_3514e7f9 {
 }
 pub(crate) use d_DisclosedEvidenceItem_3514e7f9;
 
-macro_rules! d_DisclosedField_f5830c3e {
-    () => {
-        "\"DisclosedField\":{\"additionalProperties\":false,\"description\":\"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\"properties\":{\"ceiling\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience the field may ever reach, whatever the member chooses.\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"facet\":{\"description\":\"Whether members may filter on the field and see counts by its values. Absent: false.\",\"type\":\"boolean\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"searchable\":{\"description\":\"Whether a member's search may match the field, within what the searcher may see.\",\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\",\"description\":\"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"ceiling\",\"defaultVisibility\",\"searchable\"],\"title\":\"DisclosedField\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DisclosedField_f5830c3e;
-
 macro_rules! d_DisclosedProvenance_20a80e94 {
     () => {
         "\"DisclosedProvenance\":{\"additionalProperties\":true,\"description\":\"Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an identifier of a client, a Client Operator, a grant, a conversation or a document, nor `confirmedBy`.\",\"not\":{\"anyOf\":[{\"required\":[\"id\"]},{\"required\":[\"confirmedBy\"]},{\"required\":[\"authorizedUnder\"]},{\"required\":[\"submittedByClient\"]}]},\"properties\":{\"assertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the assertion was made.\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the version.\"},\"source\":{\"description\":\"The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's own values, carried verbatim.\",\"enum\":[\"conversation\",\"document\",\"person-input\",\"integration\"],\"type\":\"string\"},\"submittedBy\":{\"additionalProperties\":true,\"description\":\"The names of the client that submitted the version disclosed and of its Client Operator.\",\"properties\":{\"name\":{\"description\":\"The client's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"description\":\"The Client Operator's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"operator\"],\"type\":\"object\"}},\"required\":[\"submittedBy\",\"source\",\"assertedAt\",\"recordedAt\"],\"type\":\"object\"}"
@@ -1779,33 +1030,12 @@ macro_rules! d_DisclosedRelationship_411becf4 {
 }
 pub(crate) use d_DisclosedRelationship_411becf4;
 
-macro_rules! d_Disclosure_1106e043 {
-    () => {
-        "\"Disclosure\":{\"additionalProperties\":false,\"description\":\"The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand. Under a `credential` roll it also says whose membership credential counts (`rollCredential`).\",\"properties\":{\"auditors\":{\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"ballotBox\":{\"description\":\"The ballot box's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ballotBoxOperator\":{\"description\":\"Who operates the ballot box, as the community names them.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"boardVisibility\":{\"$ref\":\"#/$defs/BoardVisibility\"},\"coercionResistance\":{\"const\":false,\"description\":\"Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.\"},\"revote\":{\"$ref\":\"#/$defs/Revote\"},\"rollCredential\":{\"$ref\":\"#/$defs/RollCredentialDisclosure\"},\"sameOperator\":{\"description\":\"Whether the party operating the community's VTC also operates the ballot box.\",\"type\":\"boolean\"},\"trustees\":{\"$ref\":\"#/$defs/Trustees\"}},\"required\":[\"ballotBox\",\"ballotBoxOperator\",\"sameOperator\",\"boardVisibility\",\"auditors\",\"revote\",\"coercionResistance\"],\"title\":\"Disclosure\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Disclosure_1106e043;
-
-macro_rules! d_Disclosure_4d47778d {
-    () => {
-        "\"Disclosure\":{\"additionalProperties\":false,\"description\":\"The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand.\",\"properties\":{\"auditors\":{\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"ballotBox\":{\"description\":\"The ballot box's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ballotBoxOperator\":{\"description\":\"Who operates the ballot box, as the community names them.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"boardVisibility\":{\"$ref\":\"#/$defs/BoardVisibility\"},\"coercionResistance\":{\"const\":false,\"description\":\"Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.\"},\"revote\":{\"$ref\":\"#/$defs/Revote\"},\"sameOperator\":{\"description\":\"Whether the party operating the community's VTC also operates the ballot box.\",\"type\":\"boolean\"},\"trustees\":{\"$ref\":\"#/$defs/Trustees\"}},\"required\":[\"ballotBox\",\"ballotBoxOperator\",\"sameOperator\",\"boardVisibility\",\"auditors\",\"revote\",\"coercionResistance\"],\"title\":\"Disclosure\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Disclosure_4d47778d;
-
 macro_rules! d_Disclosure_536f5f00 {
     () => {
         "\"Disclosure\":{\"additionalProperties\":true,\"description\":\"A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`, never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the whole of `record` (status, provenance, relationships, conversion, metadata): those members describe the person's activity with other systems, which no grant authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it receives in `standing`.\",\"not\":{\"anyOf\":[{\"required\":[\"id\"]},{\"required\":[\"subject\"]},{\"required\":[\"record\"]},{\"required\":[\"schema\"]}]},\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/Assertion\",\"description\":\"The assertion, as stored for the version disclosed, including `basis` and `permittedPurposes` (HCP 7.4).\"},\"classification\":{\"$ref\":\"#/$defs/Classification\",\"description\":\"Only the entry's categories the requesting grant covers, with its dimension and its `permittedPurposes` where present; its other categories are withheld (HCP 7.4).\"},\"content\":{\"$ref\":\"#/$defs/Content\",\"description\":\"The content, as stored for the version disclosed (HCP 7.4).\"},\"evidence\":{\"description\":\"The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2), including each item's `verification`, except that a credential may be disclosed in derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The one-`content`-item rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"$ref\":\"#/$defs/DisclosedEvidenceItem\"},\"type\":\"array\"},\"onwardSharing\":{\"const\":true,\"description\":\"Present, and true, only where the client may share from this entry under HCP 3.12: the detail of the grant that reaches the entry carries `onwardSharing` and every category of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4).\"},\"provenance\":{\"$ref\":\"#/$defs/DisclosedProvenance\",\"description\":\"Present only where the requesting grant includes the `provenance` action for a category of the entry (HCP 7.4.1).\"},\"ref\":{\"description\":\"A reference to the entry, opaque to the client, stable for one grant and one entry and different under every other grant, and never derivable into the entry's `id` (HCP 7.4). The client names the entry by it in get entry, revise and withdraw; under any other grant it fails with not authorized.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"relationships\":{\"description\":\"Only the relationships whose target is disclosed in the same response, with the target named by its `ref` (HCP 7.4, 4.2.3).\",\"items\":{\"$ref\":\"#/$defs/DisclosedRelationship\"},\"type\":\"array\"},\"standing\":{\"$ref\":\"#/$defs/Standing\",\"description\":\"What the client needs to judge the entry's standing (HCP 7.4, 3.8).\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The instant after which the client MUST NOT use the copy, or pass it on, without fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit time that applies (such as `assertion.validUntil`), else a heuristic of at least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of High default sensitivity, or 1 hour where the client has no registered notification endpoint (HCP 7.6).\"},\"version\":{\"description\":\"The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"ref\",\"version\",\"content\",\"assertion\",\"classification\",\"standing\",\"useUntil\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Disclosure_536f5f00;
-
-macro_rules! d_Discoverability_1aff1732 {
-    () => {
-        "\"Discoverability\":{\"additionalProperties\":false,\"description\":\"The member's three discoverability decisions, made separately.\",\"properties\":{\"external\":{\"description\":\"Whether the member publishes a public card — the fields whose visibility is `public`, signed by the member — through the community's trust registry. A second consent, separate from registry-publication consent (`publishConsent`), which it requires. A community that cannot yet publish external cards refuses `true` with `notAvailable`.\",\"type\":\"boolean\"},\"listing\":{\"$ref\":\"#/$defs/Listing\"},\"search\":{\"description\":\"What a member's search may match. `byName`: `displayName` or `nickname`. `exactNickname`: only an exact `nickname`. `off`: nothing. A DID is never a search key for a non-administrator, whatever this says.\",\"enum\":[\"byName\",\"exactNickname\",\"off\"],\"type\":\"string\"}},\"required\":[\"listing\",\"search\",\"external\"],\"title\":\"Discoverability\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Discoverability_1aff1732;
 
 macro_rules! d_DisjunctiveProof_cfeecde0 {
     () => {
@@ -1842,27 +1072,6 @@ macro_rules! d_DriftType_74970700 {
 }
 pub(crate) use d_DriftType_74970700;
 
-macro_rules! d_DtgType_de154912 {
-    () => {
-        "\"DtgType\":{\"description\":\"The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9]*$\",\"title\":\"DtgType\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_DtgType_de154912;
-
-macro_rules! d_Duration_854f011f {
-    () => {
-        "\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Duration_854f011f;
-
-macro_rules! d_DynamicRule_fbb17bbd {
-    () => {
-        "\"DynamicRule\":{\"additionalProperties\":false,\"description\":\"A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.\",\"properties\":{\"all\":{\"items\":{\"$ref\":\"#/$defs/RuleCondition\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"all\"],\"title\":\"DynamicRule\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_DynamicRule_fbb17bbd;
-
 macro_rules! d_EdgeStatus_fa4d1dd9 {
     () => {
         "\"EdgeStatus\":{\"description\":\"The credential's status as far as this network can determine it. `unchecked` is a credential whose status list this network does not hold.\",\"enum\":[\"valid\",\"suspended\",\"revoked\",\"unchecked\"],\"type\":\"string\"}"
@@ -1883,13 +1092,6 @@ macro_rules! d_Effect_1131b7aa {
     };
 }
 pub(crate) use d_Effect_1131b7aa;
-
-macro_rules! d_EffectiveLimits_e1a7a6b9 {
-    () => {
-        "\"EffectiveLimits\":{\"additionalProperties\":false,\"description\":\"The limits a room is enforced against now, with where each scope's came from.\",\"properties\":{\"hostCeilingBytes\":{\"description\":\"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"limits\":{\"$ref\":\"#/$defs/RoomLimits\"},\"memberSource\":{\"$ref\":\"#/$defs/LimitSource\"},\"roomSource\":{\"$ref\":\"#/$defs/LimitSource\"}},\"required\":[\"limits\",\"roomSource\",\"memberSource\"],\"title\":\"EffectiveLimits\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EffectiveLimits_e1a7a6b9;
 
 macro_rules! d_ElGamalCiphertext_b18dd4b6 {
     () => {
@@ -1912,20 +1114,6 @@ macro_rules! d_ElectionKey_7939925f {
 }
 pub(crate) use d_ElectionKey_7939925f;
 
-macro_rules! d_ElectionListItem_2ce1e7e6 {
-    () => {
-        "\"ElectionListItem\":{\"additionalProperties\":false,\"description\":\"One election as a list shows it. vtc/elections/show reads it whole.\",\"properties\":{\"binding\":{\"description\":\"The manifest's `binding`.\",\"type\":\"boolean\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"state\":{\"$ref\":\"#/$defs/RegistrarState\"},\"ticketHeld\":{\"description\":\"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\"type\":\"boolean\"},\"title\":{\"description\":\"The manifest's `title`, when it has one.\",\"maxLength\":512,\"type\":\"string\"},\"votingClosesAt\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"votingOpensAt\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"electionId\",\"state\",\"votingOpensAt\",\"votingClosesAt\",\"binding\",\"ticketHeld\"],\"title\":\"ElectionListItem\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ElectionListItem_2ce1e7e6;
-
-macro_rules! d_ElectionListItem_7a73a804 {
-    () => {
-        "\"ElectionListItem\":{\"additionalProperties\":false,\"description\":\"One election as a list shows it. vtc/elections/show reads it whole.\",\"properties\":{\"binding\":{\"description\":\"The manifest's `binding`.\",\"type\":\"boolean\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"state\":{\"$ref\":\"#/$defs/RegistrarState\"},\"ticketHeld\":{\"description\":\"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\"type\":\"boolean\"},\"title\":{\"description\":\"The manifest's `title`, when it has one.\",\"maxLength\":512,\"type\":\"string\"},\"votingCloses\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"votingOpens\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"electionId\",\"state\",\"votingOpens\",\"votingCloses\",\"binding\",\"ticketHeld\"],\"title\":\"ElectionListItem\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ElectionListItem_7a73a804;
-
 macro_rules! d_ElectionResult_5455ba80 {
     () => {
         "\"ElectionResult\":{\"additionalProperties\":false,\"description\":\"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\"properties\":{\"ballotsCounted\":{\"minimum\":0,\"type\":\"integer\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\",\"description\":\"The head of the board as it stood at close: the result counts exactly its entries.\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/QuestionResult\"},\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"ballotsCounted\",\"questions\",\"head\"],\"title\":\"ElectionResult\",\"type\":\"object\"}"
@@ -1939,13 +1127,6 @@ macro_rules! d_ElectionSummary_60c389e2 {
     };
 }
 pub(crate) use d_ElectionSummary_60c389e2;
-
-macro_rules! d_ElectionTemplate_c9b62584 {
-    () => {
-        "\"ElectionTemplate\":{\"additionalProperties\":false,\"description\":\"Every member of an idea's election manifest that the board fixes (VTI-BRD-030). When a facilitator accepts an idea the community completes it: `electionId` (naming the board and the idea), `community`, `title` and `description` from the idea, `registrationOpensAt` and `votingOpensAt` from the board's voting window's `opensAt` or the acceptance, whichever is later, `votingClosesAt` from its `closesAt`, `roll` from the board's audience (rule `members`, or a credential roll naming the group), and `binding: false`. A board's template is never binding, and so has no `binding` member.\",\"properties\":{\"allowEarlyClose\":{\"type\":\"boolean\"},\"ballotBox\":{\"description\":\"The DID of the voting service every idea's election is registered with; one on the community's list (VTI-VOT-082).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"board\":{\"additionalProperties\":false,\"description\":\"The ballot box's board for each idea's election, as a manifest states it (VTI-VOT-052). `public` lets a board show each idea's ballot count while voting is open (VTI-BRD-033).\",\"properties\":{\"auditors\":{\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"visibility\":{\"$ref\":\"#/$defs/BoardVisibility\"}},\"required\":[\"visibility\",\"auditors\"],\"type\":\"object\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/Question\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"resultsBeforeClose\":{\"description\":\"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061). A board SHOULD set it false (VTI-BRD-033).\",\"type\":\"boolean\"},\"revote\":{\"$ref\":\"#/$defs/Revote\"},\"secrecy\":{\"$ref\":\"#/$defs/SecrecyLevel\"},\"textReleaseThreshold\":{\"description\":\"Counted ballots required before any text answer is disclosed (VTI-VOT-065); SHOULD be at least 10.\",\"minimum\":1,\"type\":\"integer\"},\"trustees\":{\"$ref\":\"#/$defs/Trustees\"}},\"required\":[\"questions\",\"secrecy\",\"revote\",\"board\",\"ballotBox\",\"allowEarlyClose\",\"resultsBeforeClose\",\"textReleaseThreshold\"],\"title\":\"ElectionTemplate\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ElectionTemplate_c9b62584;
 
 macro_rules! d_ElevatedRight_f50cff46 {
     () => {
@@ -1982,27 +1163,6 @@ macro_rules! d_EncryptedQuestion_0ec34eb5 {
 }
 pub(crate) use d_EncryptedQuestion_0ec34eb5;
 
-macro_rules! d_EncryptionParams_49534366 {
-    () => {
-        "\"EncryptionParams\":{\"$anchor\":\"encryptionParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"AEAD identifier, e.g. `aes-256-gcm`.\",\"minLength\":1,\"type\":\"string\"},\"nonce\":{\"description\":\"base64url, 12 bytes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"algorithm\",\"nonce\"],\"title\":\"EncryptionParams\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EncryptionParams_49534366;
-
-macro_rules! d_EndorsementType_074b48ac {
-    () => {
-        "\"EndorsementType\":{\"$anchor\":\"endorsementType\",\"additionalProperties\":false,\"properties\":{\"claimSchema\":{\"description\":\"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\"type\":\"object\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"typeUri\":{\"description\":\"The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"typeUri\"],\"title\":\"EndorsementType\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EndorsementType_074b48ac;
-
-macro_rules! d_Endorsement_b2183ac7 {
-    () => {
-        "\"Endorsement\":{\"$anchor\":\"endorsement\",\"additionalProperties\":false,\"properties\":{\"claim\":{\"description\":\"The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.\",\"type\":\"object\"},\"endorsementId\":{\"description\":\"Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.\",\"minLength\":1,\"type\":\"string\"},\"issued\":{\"$ref\":\"#/$defs/CredentialReference\",\"description\":\"A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"},\"revokedAt\":{\"description\":\"When the statement was revoked, or null while live.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"statusListIndex\":{\"description\":\"The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.\",\"minimum\":0,\"type\":\"integer\"},\"subjectDid\":{\"description\":\"DID of the statement's subject (becomes credentialSubject.id).\",\"pattern\":\"^did:\",\"type\":\"string\"},\"typeUri\":{\"description\":\"What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. The reserved value is not an IRI, so it never collides with a registered predicate. A community's own identity check is a statement like any other, under `https://registry.trustoverip.org/dtg/vsc/vetted/1`.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"endorsementId\",\"typeUri\",\"subjectDid\",\"issued\",\"statusListIndex\"],\"title\":\"Endorsement\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Endorsement_b2183ac7;
-
 macro_rules! d_EnrolClient_6e26f32e {
     () => {
         "\"EnrolClient\":{\"additionalProperties\":false,\"description\":\"Who asks to be enrolled, as the client states it in an auth/oob/request for `deviceEnrol`. Revealed only in step 2, to the lock holder, after an admin identity and number proof.\",\"properties\":{\"consumerKind\":{\"$ref\":\"#/$defs/ConsumerKind\",\"description\":\"What kind of client asks to be enrolled, in the device family's own terms: a `companion` (`browser`, `mobile`, `desktop`) or a `service` (`mediator`, `aiAgent`, `daemon`). Self-asserted by the starter. The grant repeats it, and the VTA holds it beside the ACL entry the enrolment creates (CONVENTIONS §7 A9).\"},\"displayName\":{\"description\":\"The name the client gives itself (e.g. `Research agent on laptop`). Self-asserted and untrusted wherever rendered: an approver shows it as the client's own claim, never as a name the service vouches for.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"consumerKind\",\"displayName\"],\"title\":\"EnrolClient\",\"type\":\"object\"}"
@@ -2016,20 +1176,6 @@ macro_rules! d_EnrolledVia_6efc0690 {
     };
 }
 pub(crate) use d_EnrolledVia_6efc0690;
-
-macro_rules! d_EntryFields_0a19a7f7 {
-    () => {
-        "\"EntryFields\":{\"additionalProperties\":{\"$ref\":\"#/$defs/FieldValue\"},\"description\":\"The fields of one entry that a particular viewer may see, keyed by field: the intersection of the member's visibility, the community's ceiling and policy, plus any derived fields that intersection admits. A withheld field is ABSENT, never null.\",\"maxProperties\":64,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"title\":\"EntryFields\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EntryFields_0a19a7f7;
-
-macro_rules! d_EntryId_155910b5 {
-    () => {
-        "\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EntryId_155910b5;
 
 macro_rules! d_EntryKind_32b92702 {
     () => {
@@ -2073,13 +1219,6 @@ macro_rules! d_Entry_97831f86 {
 }
 pub(crate) use d_Entry_97831f86;
 
-macro_rules! d_EnumOption_71fa9210 {
-    () => {
-        "\"EnumOption\":{\"additionalProperties\":false,\"properties\":{\"label\":{\"description\":\"What a reader is shown for it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The stored value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$\",\"type\":\"string\"}},\"required\":[\"value\",\"label\"],\"title\":\"EnumOption\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EnumOption_71fa9210;
-
 macro_rules! d_Envelope_58ba839b {
     () => {
         "\"Envelope\":{\"additionalProperties\":false,\"description\":\"A broadcast in transit.\",\"properties\":{\"hops\":{\"description\":\"One signed hop per relay step, each by the network that owns the previous hop's group.\",\"items\":{\"$ref\":\"#/$defs/Credential\"},\"maxItems\":16,\"type\":\"array\"},\"message\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The message, signed by the origin network.\"}},\"required\":[\"message\",\"hops\"],\"type\":\"object\"}"
@@ -2100,174 +1239,6 @@ macro_rules! d_EpochLink_3162eb88 {
     };
 }
 pub(crate) use d_EpochLink_3162eb88;
-
-macro_rules! d_EventAnnouncementId_e8dc059a {
-    () => {
-        "\"EventAnnouncementId\":{\"description\":\"Opaque identifier of one announcement: `ann_` followed by 16 to 64 base64url characters.\",\"pattern\":\"^ann_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventAnnouncementId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventAnnouncementId_e8dc059a;
-
-macro_rules! d_EventAnnouncement_cb616f2b {
-    () => {
-        "\"EventAnnouncement\":{\"additionalProperties\":false,\"description\":\"A host's announcement to an event's registrants (VTI-EVT-120). It never moves the event (VTI-EVT-121) and its text is never in a notification.\",\"properties\":{\"announcementId\":{\"$ref\":\"#/$defs/EventAnnouncementId\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"postedBy\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The host who posted it.\"},\"text\":{\"description\":\"Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":2000,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"announcementId\",\"eventId\",\"text\",\"createdAt\"],\"title\":\"EventAnnouncement\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventAnnouncement_cb616f2b;
-
-macro_rules! d_EventAudienceScope_cfe64ee2 {
-    () => {
-        "\"EventAudienceScope\":{\"description\":\"Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.\",\"enum\":[\"members\",\"groups\",\"roles\"],\"title\":\"EventAudienceScope\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventAudienceScope_cfe64ee2;
-
-macro_rules! d_EventAudience_c6279516 {
-    () => {
-        "\"EventAudience\":{\"additionalProperties\":false,\"description\":\"Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted. Partners (VTI-EVT-130) widen it to the members of the named communities who prove it.\",\"properties\":{\"groups\":{\"description\":\"Present exactly when `scope` is `groups`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"partners\":{\"description\":\"Optional: partner communities whose members are also in the audience, each proving it by presenting their partner membership credential (VTI-EVT-130 – VTI-EVT-133). The partner is sent one `event` notification and decides any relay.\",\"items\":{\"$ref\":\"#/$defs/PartnerDid\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"roles\":{\"description\":\"Present exactly when `scope` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/RoleName\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.\"},\"scope\":{\"$ref\":\"#/$defs/EventAudienceScope\"}},\"required\":[\"scope\"],\"title\":\"EventAudience\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventAudience_c6279516;
-
-macro_rules! d_EventAudience_ff1e5c43 {
-    () => {
-        "\"EventAudience\":{\"additionalProperties\":false,\"description\":\"Who may see and register for the event (VTI-EVT-020). A member is in the audience when `scope` admits them and, where `rule` is present, the rule does too. The audience is checked when a member reads or registers, never taken from a notification (VTI-EVT-021). The hosts are always admitted.\",\"properties\":{\"groups\":{\"description\":\"Present exactly when `scope` is `groups`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"roles\":{\"description\":\"Present exactly when `scope` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/RoleName\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Optional: a further test over verified facts, in the dynamic-group rule language. Count facts (`kudosReceived`, `ideasSelected`, `electionTickets`) are refused here as a non-badge group refuses them.\"},\"scope\":{\"$ref\":\"#/$defs/EventAudienceScope\"}},\"required\":[\"scope\"],\"title\":\"EventAudience\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventAudience_ff1e5c43;
-
-macro_rules! d_EventDescription_70968dca {
-    () => {
-        "\"EventDescription\":{\"description\":\"What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":10000,\"minLength\":1,\"title\":\"EventDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventDescription_70968dca;
-
-macro_rules! d_EventId_949f8f11 {
-    () => {
-        "\"EventId\":{\"description\":\"Opaque identifier of an event: `evt_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-EVT-001).\",\"pattern\":\"^evt_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventId_949f8f11;
-
-macro_rules! d_EventInstant_9cf8a7cf {
-    () => {
-        "\"EventInstant\":{\"description\":\"An RFC 3339 instant in UTC, whole seconds, such as `2026-11-30T18:30:00Z`.\",\"format\":\"date-time\",\"title\":\"EventInstant\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInstant_9cf8a7cf;
-
-macro_rules! d_EventInvitationAnswer_09813a1c {
-    () => {
-        "\"EventInvitationAnswer\":{\"description\":\"The invitee's answer (VTI-EVT-104). `none`: not answered. `going`, `maybe`: answered by registering. `declined`: the invitee said they will not come — recorded here and nowhere else; not a host's decline of a registration.\",\"enum\":[\"none\",\"going\",\"maybe\",\"declined\"],\"title\":\"EventInvitationAnswer\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInvitationAnswer_09813a1c;
-
-macro_rules! d_EventInvitationId_d53a421f {
-    () => {
-        "\"EventInvitationId\":{\"description\":\"Opaque identifier of one invitation to one event: `inv_` followed by 16 to 64 base64url characters.\",\"pattern\":\"^inv_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventInvitationId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInvitationId_d53a421f;
-
-macro_rules! d_EventInvitationLinkId_66499342 {
-    () => {
-        "\"EventInvitationLinkId\":{\"description\":\"Opaque identifier of one invitation link: `lnk_` followed by 16 to 64 base64url characters. Not the code: the code is shown once, at creation, and kept only as a digest (VTI-EVT-107).\",\"pattern\":\"^lnk_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EventInvitationLinkId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInvitationLinkId_66499342;
-
-macro_rules! d_EventInvitationLink_33331167 {
-    () => {
-        "\"EventInvitationLink\":{\"additionalProperties\":false,\"description\":\"An invitation link as its hosts see it, never with its code (VTI-EVT-107).\",\"properties\":{\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"expiresAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"label\":{\"description\":\"What the hosts call it — `Flyer at the library`. Plain text.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"linkId\":{\"$ref\":\"#/$defs/EventInvitationLinkId\"},\"maxRedemptions\":{\"description\":\"The most members who may redeem it.\",\"maximum\":10000,\"minimum\":1,\"type\":\"integer\"},\"redemptions\":{\"description\":\"How many have.\",\"minimum\":0,\"type\":\"integer\"},\"revokedAt\":{\"$ref\":\"#/$defs/EventInstant\"}},\"required\":[\"linkId\",\"eventId\",\"maxRedemptions\",\"redemptions\",\"expiresAt\",\"createdAt\"],\"title\":\"EventInvitationLink\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventInvitationLink_33331167;
-
-macro_rules! d_EventInvitation_eb8e5b88 {
-    () => {
-        "\"EventInvitation\":{\"additionalProperties\":false,\"description\":\"One member's invitation to one event (VTI-EVT-102). Seen by the event's hosts and by the invitee; never by anyone else (VTI-EVT-106).\",\"properties\":{\"answer\":{\"$ref\":\"#/$defs/EventInvitationAnswer\"},\"answeredAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The invitee.\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"invitationId\":{\"$ref\":\"#/$defs/EventInvitationId\"},\"invitedBy\":{\"$ref\":\"#/$defs/EventInviter\"},\"inviterEntryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The host or member who invited, where `invitedBy` is `host` or `member`. Shown to hosts only.\"},\"replyExpected\":{\"description\":\"The event was `expect` when the invitation was made (VTI-EVT-100).\",\"type\":\"boolean\"},\"revoked\":{\"description\":\"A host revoked it (VTI-EVT-103); its notification was withdrawn. Absent means false.\",\"type\":\"boolean\"}},\"required\":[\"invitationId\",\"eventId\",\"entryId\",\"invitedBy\",\"replyExpected\",\"answer\",\"createdAt\"],\"title\":\"EventInvitation\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventInvitation_eb8e5b88;
-
-macro_rules! d_EventInviteMode_febf9083 {
-    () => {
-        "\"EventInviteMode\":{\"description\":\"How the event invites its audience (VTI-EVT-100). `none`: members find it themselves. `notify`: the community invites each member of the audience, on publication and as members come into it. `expect`: as `notify`, and a reply is expected — hosts see who has not answered. An invitation never registers anyone.\",\"enum\":[\"none\",\"notify\",\"expect\"],\"title\":\"EventInviteMode\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInviteMode_febf9083;
-
-macro_rules! d_EventInviter_4e1d1b67 {
-    () => {
-        "\"EventInviter\":{\"description\":\"Who invited (VTI-EVT-106). `audience`: the community, under the event's invitation mode (VTI-EVT-101). `host`: a host, by name (VTI-EVT-103). `member`: a member of the audience (VTI-EVT-105). `link`: the invitee redeemed an invitation link (VTI-EVT-107).\",\"enum\":[\"audience\",\"host\",\"member\",\"link\"],\"title\":\"EventInviter\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventInviter_4e1d1b67;
-
-macro_rules! d_EventKind_5e885bff {
-    () => {
-        "\"EventKind\":{\"description\":\"`event`: anything that happens at a time — a meetup, a workshop, a social. `meeting`: an event that may also carry an agenda, a chair, a quorum, minutes and motions; tasks that only mean something for a meeting refuse an event. Fixed for the event's life (VTI-EVT-003).\",\"enum\":[\"event\",\"meeting\"],\"title\":\"EventKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventKind_5e885bff;
-
-macro_rules! d_EventLifecycle_3d99bf37 {
-    () => {
-        "\"EventLifecycle\":{\"description\":\"`draft`: seen only by its hosts, changes freely, takes no registrations. `published`: seen by its audience, takes registrations; its roster setting is fixed. `cancelled`: will not happen; kept so registrants and their agents see it was cancelled, and takes no registrations. Whether a published event has ended is read from its time, never stored (VTI-EVT-004).\",\"enum\":[\"draft\",\"published\",\"cancelled\"],\"title\":\"EventLifecycle\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventLifecycle_3d99bf37;
-
-macro_rules! d_EventOptOutScope_7c4c52e3 {
-    () => {
-        "\"EventOptOutScope\":{\"description\":\"What an opt-out covers (VTI-EVT-110): invitations to one `event`, or from one `calendar`.\",\"enum\":[\"event\",\"calendar\"],\"title\":\"EventOptOutScope\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventOptOutScope_7c4c52e3;
-
-macro_rules! d_EventOptOut_31f3f601 {
-    () => {
-        "\"EventOptOut\":{\"additionalProperties\":false,\"description\":\"A member's opt-out of invitations (VTI-EVT-110). It removes them from no audience and stops no host's invitation by name.\",\"properties\":{\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\",\"description\":\"Present exactly when `scope` is `calendar`.\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\",\"description\":\"Present exactly when `scope` is `event`.\"},\"scope\":{\"$ref\":\"#/$defs/EventOptOutScope\"}},\"required\":[\"scope\",\"createdAt\"],\"title\":\"EventOptOut\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventOptOut_31f3f601;
-
-macro_rules! d_EventRef_10be7eb2 {
-    () => {
-        "\"EventRef\":{\"additionalProperties\":false,\"description\":\"What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).\",\"properties\":{\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"sequence\":{\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"title\",\"when\",\"status\",\"sequence\"],\"title\":\"EventRef\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EventRef_10be7eb2;
-
-macro_rules! d_EventTitle_7ed66703 {
-    () => {
-        "\"EventTitle\":{\"description\":\"A short name. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":200,\"minLength\":1,\"title\":\"EventTitle\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_EventTitle_7ed66703;
-
-macro_rules! d_Event_6387e38c {
-    () => {
-        "\"Event\":{\"additionalProperties\":false,\"description\":\"An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"Only where the access details are public, or the caller is a host.\"},\"accessibility\":{\"$ref\":\"#/$defs/Accessibility\"},\"audience\":{\"$ref\":\"#/$defs/EventAudience\"},\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"cancelReason\":{\"description\":\"Present once cancelled, where the host gave one. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"cancelledAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"countThreshold\":{\"description\":\"Below this many going, a count is shown as `fewerThan`. Absent means 5.\",\"maximum\":100,\"minimum\":2,\"type\":\"integer\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"full\":{\"description\":\"True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.\",\"type\":\"boolean\"},\"goingCount\":{\"$ref\":\"#/$defs/Count\",\"description\":\"People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.\"},\"hosts\":{\"description\":\"The event's appointed hosts. Its creator is the first.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"invite\":{\"$ref\":\"#/$defs/EventInviteMode\",\"description\":\"Absent means `none`.\"},\"kind\":{\"$ref\":\"#/$defs/EventKind\"},\"listed\":{\"description\":\"Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).\",\"type\":\"boolean\"},\"membersMayInvite\":{\"description\":\"Members of the audience may invite other members of it, within the community's daily limit (VTI-EVT-105). Absent means false.\",\"type\":\"boolean\"},\"placeSummary\":{\"$ref\":\"#/$defs/PlaceSummary\"},\"publishedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"registration\":{\"$ref\":\"#/$defs/RegistrationSettings\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\"},\"sequence\":{\"description\":\"Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).\",\"minimum\":0,\"type\":\"integer\"},\"showCount\":{\"description\":\"Show the number going to the audience, subject to `countThreshold`. Absent means false.\",\"type\":\"boolean\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"suggestedReminderMinutes\":{\"description\":\"Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"calendarId\",\"kind\",\"status\",\"title\",\"when\",\"audience\",\"registration\",\"roster\",\"listed\",\"sequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Event\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Event_6387e38c;
-
-macro_rules! d_Event_dc4cfcc7 {
-    () => {
-        "\"Event\":{\"additionalProperties\":false,\"description\":\"An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/AccessDetails\",\"description\":\"Only where the access details are public, or the caller is a host.\"},\"accessibility\":{\"$ref\":\"#/$defs/Accessibility\"},\"audience\":{\"$ref\":\"#/$defs/EventAudience\"},\"calendarId\":{\"$ref\":\"#/$defs/CalendarId\"},\"cancelReason\":{\"description\":\"Present once cancelled, where the host gave one. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"cancelledAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"countThreshold\":{\"description\":\"Below this many going, a count is shown as `fewerThan`. Absent means 5.\",\"maximum\":100,\"minimum\":2,\"type\":\"integer\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"description\":{\"$ref\":\"#/$defs/EventDescription\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"full\":{\"description\":\"True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.\",\"type\":\"boolean\"},\"goingCount\":{\"$ref\":\"#/$defs/Count\",\"description\":\"People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.\"},\"hosts\":{\"description\":\"The event's appointed hosts. Its creator is the first.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/EventKind\"},\"listed\":{\"description\":\"Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).\",\"type\":\"boolean\"},\"placeSummary\":{\"$ref\":\"#/$defs/PlaceSummary\"},\"publishedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"registration\":{\"$ref\":\"#/$defs/RegistrationSettings\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\"},\"sequence\":{\"description\":\"Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).\",\"minimum\":0,\"type\":\"integer\"},\"showCount\":{\"description\":\"Show the number going to the audience, subject to `countThreshold`. Absent means false.\",\"type\":\"boolean\"},\"status\":{\"$ref\":\"#/$defs/EventLifecycle\"},\"suggestedReminderMinutes\":{\"description\":\"Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).\",\"items\":{\"$ref\":\"#/$defs/ReminderMinutes\"},\"maxItems\":4,\"type\":\"array\",\"uniqueItems\":true},\"title\":{\"$ref\":\"#/$defs/EventTitle\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"when\":{\"$ref\":\"#/$defs/When\"}},\"required\":[\"eventId\",\"calendarId\",\"kind\",\"status\",\"title\",\"when\",\"audience\",\"registration\",\"roster\",\"listed\",\"sequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Event\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Event_dc4cfcc7;
-
-macro_rules! d_EvidenceDocument_14af4a63 {
-    () => {
-        "\"EvidenceDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.\",\"minProperties\":1,\"title\":\"EvidenceDocument\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_EvidenceDocument_14af4a63;
 
 macro_rules! d_EvidenceItem_b85c3770 {
     () => {
@@ -2297,13 +1268,6 @@ macro_rules! d_ExpectedSizeBytes_dce291dc {
 }
 pub(crate) use d_ExpectedSizeBytes_dce291dc;
 
-macro_rules! d_ExpectedVersion_6cdc4cf8 {
-    () => {
-        "\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_ExpectedVersion_6cdc4cf8;
-
 macro_rules! d_ExpectedVersion_7a342f8b {
     () => {
         "\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"}"
@@ -2318,13 +1282,6 @@ macro_rules! d_ExpiresAt_3d376154 {
 }
 pub(crate) use d_ExpiresAt_3d376154;
 
-macro_rules! d_ExtCritical_96d7d627 {
-    () => {
-        "\"ExtCritical\":{\"description\":\"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\"examples\":[[\"org.openvtc.hidden-vetting\"]],\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"title\":\"ExtCritical\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_ExtCritical_96d7d627;
-
 macro_rules! d_Ext_99ef3684 {
     () => {
         "\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}"
@@ -2332,33 +1289,12 @@ macro_rules! d_Ext_99ef3684 {
 }
 pub(crate) use d_Ext_99ef3684;
 
-macro_rules! d_ExternalAccountContextId_5bc4be8d {
-    () => {
-        "\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ExternalAccountContextId_5bc4be8d;
-
-macro_rules! d_ExternalAccountId_17779510 {
-    () => {
-        "\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ExternalAccountId_17779510;
-
 macro_rules! d_ExternalAccount_c9eb883d {
     () => {
         "\"ExternalAccount\":{\"additionalProperties\":false,\"description\":\"An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.\",\"properties\":{\"bindings\":{\"items\":{\"$ref\":\"#/$defs/AccountBinding\"},\"maxItems\":256,\"type\":\"array\"},\"context\":{\"$ref\":\"#/$defs/AccountContextId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"egressHosts\":{\"description\":\"The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.\",\"items\":{\"maxLength\":253,\"pattern\":\"^[a-z0-9.-]+$\",\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/AccountId\"},\"label\":{\"description\":\"Display name. Untrusted text: render it, never interpret it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"lastProbe\":{\"$ref\":\"#/$defs/AccountProbeReport\"},\"providerSetupRequired\":{\"description\":\"True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.\",\"type\":\"boolean\"},\"publicMaterial\":{\"$ref\":\"#/$defs/AccountPublicMaterial\",\"description\":\"Absent for the static models, which hold a secret rather than a key.\"},\"secret\":{\"$ref\":\"#/$defs/AccountSecretInfo\",\"description\":\"Static models only; absent until the secret is set.\"},\"settings\":{\"$ref\":\"#/$defs/AccountSettings\"},\"state\":{\"$ref\":\"#/$defs/AccountState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"label\",\"context\",\"settings\",\"state\",\"bindings\",\"egressHosts\",\"providerSetupRequired\",\"createdAt\",\"updatedAt\"],\"title\":\"ExternalAccount\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_ExternalAccount_c9eb883d;
-
-macro_rules! d_ExternalCard_53456caf {
-    () => {
-        "\"ExternalCard\":{\"additionalProperties\":false,\"description\":\"Where the member's external card stands. Present on a card exactly when `discoverability.external` is true. `published`: the community is serving the card the member signed, and its trust registry points to it. `awaitingSignature`: the member's `public` values have changed since they signed, so the community has withdrawn the card it was serving and serves none until the member signs the current values (vtc/directory/card/publish). The community never serves a card the member did not sign, and never one that differs from their current `public` values.\",\"properties\":{\"cardDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present while `published`: digest of the card served, as vtc/directory/card/publish defines it.\"},\"publishedAt\":{\"description\":\"Present while `published`: when the card now served was published.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"enum\":[\"published\",\"awaitingSignature\"],\"type\":\"string\"}},\"required\":[\"state\"],\"title\":\"ExternalCard\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ExternalCard_53456caf;
 
 macro_rules! d_FaceReach_a686487a {
     () => {
@@ -2373,76 +1309,6 @@ macro_rules! d_FacetColour_d43978d8 {
     };
 }
 pub(crate) use d_FacetColour_d43978d8;
-
-macro_rules! d_FieldConstraints_3ac9e281 {
-    () => {
-        "\"FieldConstraints\":{\"additionalProperties\":false,\"description\":\"Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.\",\"properties\":{\"claim\":{\"$ref\":\"#/$defs/ClaimSelector\"},\"maxDate\":{\"format\":\"date\",\"type\":\"string\"},\"maxItems\":{\"maximum\":32,\"minimum\":1,\"type\":\"integer\"},\"maxLength\":{\"maximum\":2000,\"minimum\":1,\"type\":\"integer\"},\"minDate\":{\"format\":\"date\",\"type\":\"string\"},\"minLength\":{\"maximum\":2000,\"minimum\":0,\"type\":\"integer\"},\"options\":{\"description\":\"The permitted values of an `enum` or `multiEnum` field.\",\"items\":{\"$ref\":\"#/$defs/EnumOption\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"pattern\":{\"description\":\"ECMA-262 regular expression a text value MUST match.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"title\":\"FieldConstraints\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_FieldConstraints_3ac9e281;
-
-macro_rules! d_FieldDefinition_41e0494f {
-    () => {
-        "\"FieldDefinition\":{\"additionalProperties\":false,\"description\":\"One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.\",\"properties\":{\"base\":{\"description\":\"`true` for a base field, present in every community; `false` for a field this community defined.\",\"type\":\"boolean\"},\"ceiling\":{\"$ref\":\"#/$defs/Audience\"},\"constraints\":{\"$ref\":\"#/$defs/FieldConstraints\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.\"},\"facet\":{\"type\":\"boolean\"},\"jsContactPath\":{\"description\":\"Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"order\":{\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"},\"purgeAfter\":{\"description\":\"When the values of a retired field are purged. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"required\":{\"type\":\"boolean\"},\"retiredAt\":{\"description\":\"When the field was retired. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"searchable\":{\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\"},\"state\":{\"$ref\":\"#/$defs/FieldState\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"base\",\"ceiling\",\"defaultVisibility\",\"required\",\"searchable\",\"facet\",\"order\",\"state\"],\"title\":\"FieldDefinition\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_FieldDefinition_41e0494f;
-
-macro_rules! d_FieldDescription_2882f96d {
-    () => {
-        "\"FieldDescription\":{\"description\":\"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":280,\"minLength\":1,\"title\":\"FieldDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_FieldDescription_2882f96d;
-
-macro_rules! d_FieldKey_ce81c5ff {
-    () => {
-        "\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_FieldKey_ce81c5ff;
-
-macro_rules! d_FieldSource_7b92d155 {
-    () => {
-        "\"FieldSource\":{\"description\":\"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\"enum\":[\"member\",\"admin\",\"credential\",\"derived\"],\"title\":\"FieldSource\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_FieldSource_7b92d155;
-
-macro_rules! d_FieldState_621bd2e4 {
-    () => {
-        "\"FieldState\":{\"description\":\"`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.\",\"enum\":[\"active\",\"disabled\",\"retired\"],\"title\":\"FieldState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_FieldState_621bd2e4;
-
-macro_rules! d_FieldType_2bf9ffcb {
-    () => {
-        "\"FieldType\":{\"description\":\"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\"enum\":[\"text\",\"longText\",\"url\",\"email\",\"phone\",\"enum\",\"multiEnum\",\"date\",\"country\",\"image\",\"did\",\"claim\"],\"title\":\"FieldType\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_FieldType_2bf9ffcb;
-
-macro_rules! d_FieldValue_cf2c24f2 {
-    () => {
-        "\"FieldValue\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"items\":{\"maxLength\":500,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},{\"$ref\":\"#/$defs/CardBlobRef\"},{\"$ref\":\"#/$defs/VerifiedValue\"}],\"description\":\"The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.\",\"title\":\"FieldValue\"}"
-    };
-}
-pub(crate) use d_FieldValue_cf2c24f2;
-
-macro_rules! d_FieldVisibility_23c9709b {
-    () => {
-        "\"FieldVisibility\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Audience\"},\"description\":\"The audience the member chose for each field. A field with no entry here takes its definition's `defaultVisibility`. The community MUST NOT widen a member's choice: widening a field's ceiling or default changes no visibility already recorded.\",\"maxProperties\":64,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"title\":\"FieldVisibility\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_FieldVisibility_23c9709b;
-
-macro_rules! d_Field_4366a296 {
-    () => {
-        "\"Field\":{\"additionalProperties\":false,\"description\":\"One displayed value, with where it comes from and how to render it.\",\"properties\":{\"format\":{\"description\":\"How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.\",\"enum\":[\"did\",\"capabilityList\",\"duration\",\"datetime\",\"text\"],\"type\":\"string\"},\"pointer\":{\"description\":\"RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.\",\"maxLength\":512,\"pattern\":\"^(/([^~/]|~[01])*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.\"}},\"required\":[\"pointer\",\"format\",\"value\"],\"title\":\"Field\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Field_4366a296;
 
 macro_rules! d_FileManifest_46391ddf {
     () => {
@@ -2521,13 +1387,6 @@ macro_rules! d_ForgeStatus_b9fc9b50 {
 }
 pub(crate) use d_ForgeStatus_b9fc9b50;
 
-macro_rules! d_GcsSettings_028432ac {
-    () => {
-        "\"GcsSettings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.\",\"maxLength\":222,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$\",\"type\":\"string\"},\"kind\":{\"const\":\"gcs\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"}},\"required\":[\"kind\",\"bucket\"],\"title\":\"GcsSettings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GcsSettings_028432ac;
-
 macro_rules! d_GitNamespace_3e215e0f {
     () => {
         "\"GitNamespace\":{\"additionalProperties\":false,\"description\":\"The VTC's binding to one owner on one forge.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/NamespaceId\"},\"kind\":{\"description\":\"Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.\",\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"mode\":{\"description\":\"`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on the forge, lowercased.\"},\"state\":{\"description\":\"`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.\",\"enum\":[\"pending\",\"bound\"],\"type\":\"string\"}},\"required\":[\"id\",\"forge\",\"owner\",\"mode\",\"state\"],\"title\":\"GitNamespace\",\"type\":\"object\"}"
@@ -2541,13 +1400,6 @@ macro_rules! d_GitNamespace_5451d78d {
     };
 }
 pub(crate) use d_GitNamespace_5451d78d;
-
-macro_rules! d_GovernancePolicyClaims_7c909415 {
-    () => {
-        "\"GovernancePolicyClaims\":{\"$anchor\":\"governancePolicyClaims\",\"additionalProperties\":false,\"description\":\"Claims profile activated by credentialType \\\"GovernancePolicyCredential\\\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.\",\"properties\":{\"contextId\":{\"description\":\"Trust context the domain belongs to, when the issuing VTA partitions per context.\",\"minLength\":1,\"type\":\"string\"},\"domain\":{\"description\":\"The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name.\",\"minLength\":1,\"type\":\"string\"},\"policy\":{\"description\":\"The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose.\",\"minProperties\":1,\"type\":\"object\"},\"policyHash\":{\"description\":\"Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation.\",\"minLength\":1,\"type\":\"string\"},\"policyMediaType\":{\"description\":\"Media type of the `policy` document. Default application/json.\",\"type\":\"string\"}},\"required\":[\"domain\",\"policy\",\"policyHash\"],\"title\":\"GovernancePolicyClaims\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GovernancePolicyClaims_7c909415;
 
 macro_rules! d_GrantClient_7a868e56 {
     () => {
@@ -2591,13 +1443,6 @@ macro_rules! d_GrantStatement_6d9867d5 {
 }
 pub(crate) use d_GrantStatement_6d9867d5;
 
-macro_rules! d_GrantValiditySeconds_3f5757cf {
-    () => {
-        "\"GrantValiditySeconds\":{\"description\":\"Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.\",\"maximum\":63072000,\"minimum\":86400,\"title\":\"GrantValiditySeconds\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_GrantValiditySeconds_3f5757cf;
-
 macro_rules! d_GrantView_195c841a {
     () => {
         "\"GrantView\":{\"additionalProperties\":false,\"description\":\"The mediator's view of one stored grant, as messaging/mux/list and messaging/mux/update return it: the grant statement verbatim, with the state and the effective scope and expiry beside it.\",\"properties\":{\"attachedNow\":{\"description\":\"Principal view only: whether the member is attached through this grant to the connection that carried the list request.\",\"type\":\"boolean\"},\"expiresAt\":{\"description\":\"The effective expiry: the signed `exp` rendered as RFC 3339, or the earlier one messaging/mux/update set.\",\"format\":\"date-time\",\"type\":\"string\"},\"narrowed\":{\"description\":\"True when messaging/mux/update narrowed the effective scope or expiry below what the statement signs.\",\"type\":\"boolean\"},\"scope\":{\"$ref\":\"#/$defs/MuxScope\",\"description\":\"The effective scope: the signed scope, or the narrower one messaging/mux/update set.\"},\"state\":{\"$ref\":\"#/$defs/GrantState\"},\"statement\":{\"$ref\":\"#/$defs/GrantStatement\",\"description\":\"The grant statement exactly as the member signed it and the mediator stored it, proof included, so either party can re-verify it.\"}},\"required\":[\"statement\",\"state\",\"scope\",\"expiresAt\"],\"title\":\"GrantView\",\"type\":\"object\"}"
@@ -2612,61 +1457,12 @@ macro_rules! d_Grant_b4ede789 {
 }
 pub(crate) use d_Grant_b4ede789;
 
-macro_rules! d_GrantsBindingSpec_ea7c546c {
-    () => {
-        "\"GrantsBindingSpec\":{\"additionalProperties\":false,\"description\":\"A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.\",\"properties\":{\"grants\":{\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"const\":\"grants\",\"type\":\"string\"}},\"required\":[\"kind\",\"grants\"],\"title\":\"GrantsBindingSpec\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GrantsBindingSpec_ea7c546c;
-
-macro_rules! d_GraphNode_79596fd2 {
-    () => {
-        "\"GraphNode\":{\"$anchor\":\"graphNode\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"A DID participating in at least one live relationship.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"GraphNode\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GraphNode_79596fd2;
-
 macro_rules! d_Graph_7266f5b5 {
     () => {
         "\"Graph\":{\"additionalProperties\":false,\"description\":\"The graph.\",\"properties\":{\"edges\":{\"description\":\"The credentials.\",\"items\":{\"$ref\":\"#/$defs/Edge\"},\"type\":\"array\"},\"nodes\":{\"description\":\"The parties.\",\"items\":{\"$ref\":\"#/$defs/Node\"},\"type\":\"array\"}},\"required\":[\"nodes\",\"edges\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Graph_7266f5b5;
-
-macro_rules! d_GroupAudience_bff2a4aa {
-    () => {
-        "\"GroupAudience\":{\"description\":\"Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.\",\"enum\":[\"admins\",\"groupMembers\",\"members\"],\"title\":\"GroupAudience\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupAudience_bff2a4aa;
-
-macro_rules! d_GroupBinding_8dba285e {
-    () => {
-        "\"GroupBinding\":{\"additionalProperties\":false,\"properties\":{\"binding\":{\"$ref\":\"#/$defs/BindingSpec\"},\"bindingId\":{\"$ref\":\"#/$defs/BindingId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"state\":{\"description\":\"`pending`: waiting for the consent the community requires. `active`: in force; the community's reconciler keeps members' admissions and grants in line with it. `removing`: being withdrawn; the reconciler is removing what only this binding provided.\",\"enum\":[\"pending\",\"active\",\"removing\"],\"type\":\"string\"}},\"required\":[\"bindingId\",\"binding\",\"state\",\"createdAt\"],\"title\":\"GroupBinding\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GroupBinding_8dba285e;
-
-macro_rules! d_GroupCredentialId_1e3f7326 {
-    () => {
-        "\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupCredentialId_1e3f7326;
-
-macro_rules! d_GroupDescription_d2f6325b {
-    () => {
-        "\"GroupDescription\":{\"description\":\"What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"GroupDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupDescription_d2f6325b;
-
-macro_rules! d_GroupDisclosure_b351f66a {
-    () => {
-        "\"GroupDisclosure\":{\"additionalProperties\":false,\"description\":\"Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.\",\"properties\":{\"credentialValidity\":{\"description\":\"How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"type\":\"string\"}},\"required\":[\"credentialValidity\"],\"title\":\"GroupDisclosure\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GroupDisclosure_b351f66a;
 
 macro_rules! d_GroupElement_14d49113 {
     () => {
@@ -2675,54 +1471,12 @@ macro_rules! d_GroupElement_14d49113 {
 }
 pub(crate) use d_GroupElement_14d49113;
 
-macro_rules! d_GroupId_22a30415 {
-    () => {
-        "\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupId_22a30415;
-
-macro_rules! d_GroupJoinRequest_4b361cd1 {
-    () => {
-        "\"GroupJoinRequest\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"decidedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"decidedBy\":{\"description\":\"The manager who decided. Shown to managers only.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"message\":{\"$ref\":\"#/$defs/JoinRequestMessage\"},\"requestId\":{\"$ref\":\"#/$defs/JoinRequestId\"},\"state\":{\"enum\":[\"pending\",\"approved\",\"declined\",\"withdrawn\"],\"type\":\"string\"}},\"required\":[\"requestId\",\"groupId\",\"entryId\",\"createdAt\",\"state\"],\"title\":\"GroupJoinRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GroupJoinRequest_4b361cd1;
-
-macro_rules! d_GroupKind_bf3b945d {
-    () => {
-        "\"GroupKind\":{\"description\":\"`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.\",\"enum\":[\"static\",\"dynamic\"],\"title\":\"GroupKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupKind_bf3b945d;
-
-macro_rules! d_GroupMember_263b0a0e {
-    () => {
-        "\"GroupMember\":{\"additionalProperties\":false,\"properties\":{\"credentialId\":{\"anyOf\":[{\"$ref\":\"#/$defs/GroupCredentialId\"},{\"type\":\"null\"}],\"description\":\"The member's current group membership credential, or null when the group issues none.\"},\"credentialValidUntil\":{\"description\":\"When the member's current group credential expires. Shown to the member themselves and to managers only.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"fields\":{\"$ref\":\"#/$defs/EntryFields\",\"description\":\"The member's directory fields that the caller may see, projected exactly as vtc/directory/entries/show would project them. Absent when the caller may see none.\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"source\":{\"$ref\":\"#/$defs/MembershipSource\"},\"state\":{\"description\":\"`active`: a member. `pending`: an addition to a group carrying authority that is waiting for the consent the community requires for a grant.\",\"enum\":[\"active\",\"pending\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"source\",\"since\",\"state\"],\"title\":\"GroupMember\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_GroupMember_263b0a0e;
-
-macro_rules! d_GroupName_3d3abf73 {
-    () => {
-        "\"GroupName\":{\"description\":\"The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.\",\"maxLength\":128,\"minLength\":1,\"title\":\"GroupName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_GroupName_3d3abf73;
-
 macro_rules! d_GroupScalar_264d774f {
     () => {
         "\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_GroupScalar_264d774f;
-
-macro_rules! d_Group_6ce28cc0 {
-    () => {
-        "\"Group\":{\"additionalProperties\":false,\"description\":\"A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\",\"description\":\"Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012).\"},\"carriesAuthority\":{\"description\":\"`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.\",\"type\":\"boolean\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The creating administrator's directory entry, where they have one.\"},\"credentialAuthorityValidUntil\":{\"description\":\"When the community's authorization credential to the group expires. The community renews it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/GroupDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupDid\":{\"description\":\"The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"issuesCredentials\":{\"description\":\"Whether the group's DID issues its members a membership credential. Default true.\",\"type\":\"boolean\"},\"joinPolicy\":{\"$ref\":\"#/$defs/JoinPolicy\",\"description\":\"Present exactly when `kind` is `static`.\"},\"kind\":{\"$ref\":\"#/$defs/GroupKind\"},\"managers\":{\"description\":\"Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"memberCount\":{\"description\":\"Active members. Only to callers who may see the member list.\",\"minimum\":0,\"type\":\"integer\"},\"name\":{\"$ref\":\"#/$defs/GroupName\"},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Present exactly when `kind` is `dynamic`.\"},\"showMembers\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see that the group exists, and its name and description.\"}},\"required\":[\"groupId\",\"groupDid\",\"name\",\"kind\",\"visibility\",\"showMembers\",\"issuesCredentials\",\"carriesAuthority\",\"createdAt\"],\"title\":\"Group\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Group_6ce28cc0;
 
 macro_rules! d_Handle_75d792d7 {
     () => {
@@ -2745,41 +1499,6 @@ macro_rules! d_HeldClaim_53849982 {
 }
 pub(crate) use d_HeldClaim_53849982;
 
-macro_rules! d_HeldNotification_856cf473 {
-    () => {
-        "\"HeldNotification\":{\"additionalProperties\":false,\"dependentSchemas\":{\"dismissedAt\":{\"properties\":{\"state\":{\"const\":\"dismissed\"}}},\"state\":{\"anyOf\":[{\"required\":[\"dismissedAt\"]},{\"properties\":{\"state\":{\"const\":\"active\"}}}]}},\"description\":\"One notification the VTA holds, as a client with standing in its context sees it. `originator` and every entry of `relayedBy` were verified by the VTA when it accepted the notification (VTI-NTF-042); a client that does not take the VTA's word for them reads the document with vta/notifications/show and verifies it itself.\",\"properties\":{\"addressee\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The principal's DID the notification, or the relay that delivered it, was addressed to.\"},\"contextId\":{\"$ref\":\"#/$defs/ContextId\"},\"dismissedAt\":{\"description\":\"When the principal dismissed it. Present exactly when `state` is `dismissed`.\",\"format\":\"date-time\",\"type\":\"string\"},\"notification\":{\"$ref\":\"#/$defs/Notification\",\"description\":\"The notification's members at the revision held.\"},\"originator\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The issuer of the notifications/notify document: who said the thing exists.\"},\"receivedAt\":{\"description\":\"When the VTA accepted the revision held.\",\"format\":\"date-time\",\"type\":\"string\"},\"recordId\":{\"$ref\":\"#/$defs/RecordId\"},\"relayedBy\":{\"description\":\"The relayers the held revision passed through, in the order they relayed it: the first is the notification's own addressee, the last the relayer that delivered it to `addressee`. Empty for a notification the originator sent to `addressee` directly. The acceptance policy counted the last one (VTI-NTF-031).\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"maxItems\":4,\"type\":\"array\"},\"state\":{\"$ref\":\"#/$defs/State\"}},\"required\":[\"recordId\",\"contextId\",\"addressee\",\"originator\",\"relayedBy\",\"notification\",\"state\",\"receivedAt\"],\"title\":\"HeldNotification\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_HeldNotification_856cf473;
-
-macro_rules! d_HistogramBucket_6f712135 {
-    () => {
-        "\"HistogramBucket\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"description\":\"Number of observations at or below `le`.\",\"minimum\":0,\"type\":\"integer\"},\"le\":{\"description\":\"Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.\",\"type\":\"number\"}},\"required\":[\"le\",\"count\"],\"title\":\"HistogramBucket\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_HistogramBucket_6f712135;
-
-macro_rules! d_Histogram_9449ef69 {
-    () => {
-        "\"Histogram\":{\"additionalProperties\":false,\"description\":\"One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.\",\"properties\":{\"buckets\":{\"description\":\"Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.\",\"items\":{\"$ref\":\"#/$defs/HistogramBucket\"},\"type\":\"array\"},\"count\":{\"description\":\"Total number of observations.\",\"minimum\":0,\"type\":\"integer\"},\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The histogram's stable name (e.g. `did_hosting_resolve_seconds`).\",\"minLength\":1,\"type\":\"string\"},\"sum\":{\"description\":\"Sum of all observed values.\",\"type\":\"number\"}},\"required\":[\"name\",\"count\",\"sum\",\"buckets\"],\"title\":\"Histogram\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Histogram_9449ef69;
-
-macro_rules! d_HostedRoom_4cdf96a1 {
-    () => {
-        "\"HostedRoom\":{\"additionalProperties\":false,\"description\":\"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.2, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"epoch\":{\"minimum\":0,\"type\":\"integer\"},\"epochExpiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lifecycle\":{\"enum\":[\"live\",\"lapsed\",\"dormant\",\"reclaimable\"],\"type\":\"string\"},\"mirrorOf\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ownerDid\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"retentionDays\":{\"minimum\":0,\"type\":\"integer\"},\"retentionPolicy\":{\"$ref\":\"#/$defs/RetentionPolicy\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"ownerDid\",\"visibility\",\"retentionPolicy\",\"epoch\",\"lifecycle\",\"retentionDays\",\"createdAt\",\"updatedAt\"],\"title\":\"HostedRoom\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_HostedRoom_4cdf96a1;
-
-macro_rules! d_HostedRoom_d9c421e6 {
-    () => {
-        "\"HostedRoom\":{\"additionalProperties\":false,\"description\":\"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\"properties\":{\"createdAt\":{\"minimum\":0,\"type\":\"integer\"},\"epoch\":{\"minimum\":0,\"type\":\"integer\"},\"epochExpiresAt\":{\"minimum\":0,\"type\":\"integer\"},\"lifecycle\":{\"enum\":[\"live\",\"lapsed\",\"dormant\",\"reclaimable\"],\"type\":\"string\"},\"mirrorOf\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ownerDid\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"retentionDays\":{\"minimum\":0,\"type\":\"integer\"},\"retentionPolicy\":{\"$ref\":\"#/$defs/RetentionPolicy\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"minimum\":0,\"type\":\"integer\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"ownerDid\",\"visibility\",\"retentionPolicy\",\"epoch\",\"lifecycle\",\"retentionDays\",\"createdAt\",\"updatedAt\"],\"title\":\"HostedRoom\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_HostedRoom_d9c421e6;
-
 macro_rules! d_HostingAccount_9af1dd6a {
     () => {
         "\"HostingAccount\":{\"additionalProperties\":false,\"description\":\"One account on a DID hosting service: who holds it, how it was admitted, and where it stands in the service's inactivity lifecycle.\",\"properties\":{\"admission\":{\"description\":\"How the account was admitted: `invite`, an operator-issued invite; `voucher`, a voucher from a trust community the domain trusts. Absent for an account an administrator created directly.\",\"enum\":[\"invite\",\"voucher\"],\"type\":\"string\"},\"disableAt\":{\"description\":\"When the account's DIDs will be disabled if nothing keeps the account alive before then. Present for an `active` or `warned` account that is subject to expiry; absent for an account that is not (one an administrator exempted, for example) and for a `disabled` one.\",\"format\":\"date-time\",\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain the account was admitted on. A self-registered account may hold DIDs on this domain only.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"exempt\":{\"description\":\"`true` when an administrator has exempted the account from its domain's terms (did-management/account/exempt): no path prefixes, agent names allowed, no inactivity lifecycle. Absent or `false`: the terms apply. Only on a self-registered account.\",\"type\":\"boolean\"},\"lastActiveAt\":{\"description\":\"The last time the holder sent a task the service accepted, renewals included. A service MAY record this coarsely (for example at most once a day); it is a liveness signal, not an audit trail. Absent when the service has recorded none since registration.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastResolvedAt\":{\"description\":\"The last time any of the account's DIDs was resolved from the service, as far as the service knows. Absent when the service does not count resolutions toward liveness or has recorded none.\",\"format\":\"date-time\",\"type\":\"string\"},\"maxDidCount\":{\"description\":\"The most DIDs the account may hold. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"maxTotalSizeBytes\":{\"description\":\"The most bytes of DID content the account may hold in total. Absent when the service does not state one.\",\"minimum\":0,\"type\":\"integer\"},\"purgeAt\":{\"description\":\"When a `disabled` account, its DIDs and its access are deleted. Present exactly when `state` is `disabled`.\",\"format\":\"date-time\",\"type\":\"string\"},\"referral\":{\"$ref\":\"#/$defs/AccountReferral\"},\"registeredAt\":{\"description\":\"When the account was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"description\":\"The role the hosting service holds the account under, in the service's own role vocabulary (opaque here, as in the acl/* family) — for a self-registered account, its ordinary DID-owner role. What sets a self-registered account apart is not its role but its terms: its domain's path prefixes, quotas and inactivity lifecycle, and no agent names.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/AccountState\"},\"subject\":{\"description\":\"The DID that holds the account, exactly as it authenticated when it registered. A `did:scid` subject is recorded without its `src` query parameter, which locates the log and is not part of the identity.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"subject\",\"role\",\"domain\",\"state\",\"registeredAt\"],\"title\":\"HostingAccount\",\"type\":\"object\"}"
@@ -2801,152 +1520,12 @@ macro_rules! d_HpkeArmoredEnvelope_a7518bec {
 }
 pub(crate) use d_HpkeArmoredEnvelope_a7518bec;
 
-macro_rules! d_IdeaDecision_e2636e5b {
-    () => {
-        "\"IdeaDecision\":{\"additionalProperties\":false,\"description\":\"A facilitator's decision on an idea: declining or merging it (VTI-BRD-013), or selecting it or not (VTI-BRD-040). The deciding facilitator is not named to the audience.\",\"properties\":{\"decidedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"departsFromRule\":{\"description\":\"`selected` or `notSelected` only: whether the facilitator said the decision departs from the board's `selectionRule` (VTI-BRD-041); `reason` then says why.\",\"type\":\"boolean\"},\"mergedInto\":{\"$ref\":\"#/$defs/IdeaId\",\"description\":\"Present exactly when the idea is `merged`.\"},\"ownIdea\":{\"const\":true,\"description\":\"Present when a facilitator decided their own idea because no other facilitator existed (VTI-BRD-013).\"},\"reason\":{\"$ref\":\"#/$defs/Reason\"},\"slotId\":{\"$ref\":\"#/$defs/Key\",\"description\":\"A `selected` idea's place in the board's timetable, where it has one.\"}},\"required\":[\"decidedAt\"],\"title\":\"IdeaDecision\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdeaDecision_e2636e5b;
-
-macro_rules! d_IdeaDescription_6de75cb3 {
-    () => {
-        "\"IdeaDescription\":{\"description\":\"What the idea is: for a session, what it covers and who should come. Becomes its election's manifest `description` when accepted. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":4000,\"minLength\":1,\"title\":\"IdeaDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdeaDescription_6de75cb3;
-
-macro_rules! d_IdeaElection_ca45c89b {
-    () => {
-        "\"IdeaElection\":{\"additionalProperties\":false,\"description\":\"An idea's election as a board shows it (VTI-BRD-033): never who took a ticket or cast a ballot.\",\"properties\":{\"ballotsOnBoard\":{\"description\":\"The ballot box's latest board head's ballot count, where its board is public (VTI-VOT-052); absent otherwise. Counts ballots, not voters, where a later ballot replaces an earlier one.\",\"minimum\":0,\"type\":\"integer\"},\"boardHeadIssuedAt\":{\"description\":\"When the head `ballotsOnBoard` was read from was issued.\",\"format\":\"date-time\",\"type\":\"string\"},\"certified\":{\"description\":\"Present with `result`: whether the community certified it (VTI-VOT-071).\",\"type\":\"boolean\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\",\"description\":\"Present once the election is tallied.\"},\"state\":{\"$ref\":\"#/$defs/ElectionState\"}},\"required\":[\"electionId\",\"state\"],\"title\":\"IdeaElection\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdeaElection_ca45c89b;
-
-macro_rules! d_IdeaFormat_bab20f8b {
-    () => {
-        "\"IdeaFormat\":{\"description\":\"What kind of idea it is (for an unconference: `Discussion`, `Talk`, `Workshop`, `Demo`). One of the board's `formats` where the board states them.\",\"maxLength\":32,\"minLength\":1,\"title\":\"IdeaFormat\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdeaFormat_bab20f8b;
-
-macro_rules! d_IdeaId_bc47934d {
-    () => {
-        "\"IdeaId\":{\"description\":\"Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^ida_[A-Za-z0-9_-]{16,64}$\",\"title\":\"IdeaId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdeaId_bc47934d;
-
-macro_rules! d_IdeaOpening_710362d7 {
-    () => {
-        "\"IdeaOpening\":{\"additionalProperties\":false,\"description\":\"Shown to facilitators only: an accepted idea whose election the ballot box has not yet registered, so the idea is still `proposed` (VTI-BRD-031). `refusal` is the ballot box's or community's refusal of the last attempt, after which the idea is no longer being opened.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"refusal\":{\"additionalProperties\":false,\"properties\":{\"code\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"refusedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"code\",\"refusedAt\"],\"type\":\"object\"},\"startedAt\":{\"description\":\"When the facilitator accepted the idea.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"electionId\",\"startedAt\"],\"title\":\"IdeaOpening\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdeaOpening_710362d7;
-
-macro_rules! d_IdeaState_4912711c {
-    () => {
-        "\"IdeaState\":{\"description\":\"Where an idea stands (VTI-BRD-011).\",\"enum\":[\"proposed\",\"open\",\"selected\",\"notSelected\",\"declined\",\"merged\",\"withdrawn\"],\"title\":\"IdeaState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdeaState_4912711c;
-
-macro_rules! d_IdeaTitle_8ba418db {
-    () => {
-        "\"IdeaTitle\":{\"description\":\"An idea's title. Becomes the title of its election's manifest when the idea is accepted, and cannot change after that (VTI-BRD-012). Plain text.\",\"maxLength\":200,\"minLength\":1,\"title\":\"IdeaTitle\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdeaTitle_8ba418db;
-
-macro_rules! d_Idea_2e541ed5 {
-    () => {
-        "\"Idea\":{\"additionalProperties\":false,\"description\":\"An idea as one caller may see it.\",\"properties\":{\"boardId\":{\"$ref\":\"#/$defs/BoardId\"},\"decision\":{\"$ref\":\"#/$defs/IdeaDecision\",\"description\":\"Present in `declined`, `merged`, `selected` and `notSelected`.\"},\"description\":{\"$ref\":\"#/$defs/IdeaDescription\"},\"election\":{\"$ref\":\"#/$defs/IdeaElection\",\"description\":\"Present once an election was opened for the idea.\"},\"format\":{\"$ref\":\"#/$defs/IdeaFormat\"},\"ideaId\":{\"$ref\":\"#/$defs/IdeaId\"},\"noteCount\":{\"description\":\"Notes on the idea the caller may read.\",\"minimum\":0,\"type\":\"integer\"},\"opening\":{\"$ref\":\"#/$defs/IdeaOpening\"},\"proposedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"proposer\":{\"$ref\":\"#/$defs/Author\"},\"state\":{\"$ref\":\"#/$defs/IdeaState\"},\"title\":{\"$ref\":\"#/$defs/IdeaTitle\"},\"topic\":{\"$ref\":\"#/$defs/Topic\"}},\"required\":[\"ideaId\",\"boardId\",\"state\",\"title\",\"description\",\"proposer\",\"proposedAt\",\"noteCount\"],\"title\":\"Idea\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Idea_2e541ed5;
-
-macro_rules! d_IdentityChangePreview_04e0872e {
-    () => {
-        "\"IdentityChangePreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The key assurance level the resulting document declares (CONVENTIONS.md §3.4).\"},\"baseVersionId\":{\"description\":\"The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.\",\"items\":{\"$ref\":\"#/$defs/IdentityChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete identifier document the change would publish, `keyRoles` included. Public data by construction.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.\",\"minLength\":16,\"type\":\"string\"},\"recoverySigning\":{\"$ref\":\"#/$defs/RecoverySigningRequest\"},\"updateKeyRotates\":{\"description\":\"True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"items\":{\"$ref\":\"#/$defs/PreviewWarning\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"method\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"IdentityChangePreview\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdentityChangePreview_04e0872e;
-
-macro_rules! d_IdentityChange_caa2658d {
-    () => {
-        "\"IdentityChange\":{\"additionalProperties\":false,\"properties\":{\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"`declareAssuranceLevel` only: the level declared.\"},\"commitment\":{\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"commitUpdateKey\",\"replaceRecoveryCommitment\",\"useRecoveryKey\",\"declareAssuranceLevel\"],\"type\":\"string\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"IdentityChange\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdentityChange_caa2658d;
-
-macro_rules! d_IdentityKeyCustody_963981e9 {
-    () => {
-        "\"IdentityKeyCustody\":{\"additionalProperties\":false,\"description\":\"How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"boundary\":{\"description\":\"Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"custodian\":{\"$ref\":\"#/$defs/RecoveryCustodian\",\"description\":\"The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published.\"},\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5).\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"protection\":{\"$ref\":\"#/$defs/ProtectionClass\"}},\"required\":[\"exportable\",\"neverExportable\",\"inBackups\",\"protection\"],\"title\":\"IdentityKeyCustody\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdentityKeyCustody_963981e9;
-
-macro_rules! d_IdentityKeyRole_6c361eac {
-    () => {
-        "\"IdentityKeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"IdentityKeyRole\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IdentityKeyRole_6c361eac;
-
-macro_rules! d_IdentityRoleKey_efdf0ca9 {
-    () => {
-        "\"IdentityRoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.\",\"format\":\"date-time\",\"type\":\"string\"},\"commitment\":{\"description\":\"For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.\",\"minLength\":1,\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/IdentityKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"Version identifier of the change that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyLifecycleState\"},\"updateKeyClass\":{\"$ref\":\"#/$defs/UpdateKeyClass\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"state\"],\"title\":\"IdentityRoleKey\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IdentityRoleKey_efdf0ca9;
-
-macro_rules! d_ImageMediaType_9a754050 {
-    () => {
-        "\"ImageMediaType\":{\"description\":\"The media types a directory image may have — those a `CardBlobRef` admits.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"title\":\"ImageMediaType\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ImageMediaType_9a754050;
-
-macro_rules! d_InForce_39b8f200 {
-    () => {
-        "\"InForce\":{\"additionalProperties\":false,\"description\":\"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\"properties\":{\"by\":{\"description\":\"Present for `superseded`: the digest of the credential that displaced it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"endedAt\":{\"description\":\"Present for `superseded` and `withdrawn`: when the edge stopped being in force.\",\"format\":\"date-time\",\"type\":\"string\"},\"reason\":{\"description\":\"Present for `indeterminate`: why the window could not be read. Written by the community.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"since\":{\"description\":\"Present for `suspended`: when the standing suspension was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"description\":\"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\"enum\":[\"yes\",\"notYetValid\",\"expired\",\"suspended\",\"superseded\",\"withdrawn\",\"indeterminate\"],\"type\":\"string\"},\"validFrom\":{\"description\":\"Present for `notYetValid`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"Present for `expired`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"title\":\"InForce\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_InForce_39b8f200;
-
-macro_rules! d_InForce_d0c0637e {
-    () => {
-        "\"InForce\":{\"additionalProperties\":false,\"description\":\"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\"properties\":{\"at\":{\"description\":\"Present for `superseded` and `withdrawn`.\",\"format\":\"date-time\",\"type\":\"string\"},\"by\":{\"description\":\"Present for `superseded`: the digest of the credential that displaced it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Present for `indeterminate`: why the window could not be read. Written by the community.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"since\":{\"description\":\"Present for `suspended`: when the standing suspension was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"description\":\"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\"enum\":[\"yes\",\"notYetValid\",\"expired\",\"suspended\",\"superseded\",\"withdrawn\",\"indeterminate\"],\"type\":\"string\"},\"validFrom\":{\"description\":\"Present for `notYetValid`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"Present for `expired`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"title\":\"InForce\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_InForce_d0c0637e;
-
 macro_rules! d_IndexEntry_3400763d {
     () => {
         "\"IndexEntry\":{\"additionalProperties\":false,\"description\":\"An entry as the network publishes it, with the credentials a verifier needs.\",\"properties\":{\"acknowledged\":{\"description\":\"Whether the party acknowledged: true only for a member. Every published entry states it (VTI-VTN-013).\",\"type\":\"boolean\"},\"acknowledgement\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The party's acknowledgement.\"},\"did\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The listed party's DID.\"},\"grant\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The membership grant, once acknowledged.\"},\"kind\":{\"$ref\":\"#/$defs/EntryKind\"},\"label\":{\"description\":\"The name the directory shows.\",\"maxLength\":200,\"type\":\"string\"},\"listing\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The listing credential.\"},\"profile\":{\"$ref\":\"#/$defs/EntryProfile\"},\"repudiation\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The party's repudiation.\"},\"state\":{\"$ref\":\"#/$defs/EntryState\"}},\"required\":[\"did\",\"kind\",\"state\",\"acknowledged\",\"profile\",\"listing\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_IndexEntry_3400763d;
-
-macro_rules! d_Introductions_2d8125c4 {
-    () => {
-        "\"Introductions\":{\"description\":\"Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.\",\"enum\":[\"anyone\",\"groups\",\"connections\",\"off\"],\"title\":\"Introductions\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Introductions_2d8125c4;
-
-macro_rules! d_InviteKind_0652884c {
-    () => {
-        "\"InviteKind\":{\"$anchor\":\"inviteKind\",\"description\":\"`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1).\",\"enum\":[\"wallet\",\"passkey\"],\"title\":\"InviteKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_InviteKind_0652884c;
-
-macro_rules! d_InviteStatus_445d018b {
-    () => {
-        "\"InviteStatus\":{\"$anchor\":\"inviteStatus\",\"description\":\"`issued` is outstanding and revocable; `consumed` and `expired` are terminal.\",\"enum\":[\"issued\",\"consumed\",\"expired\"],\"title\":\"InviteStatus\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_InviteStatus_445d018b;
 
 macro_rules! d_InviteSummary_3849b61e {
     () => {
@@ -2955,40 +1534,12 @@ macro_rules! d_InviteSummary_3849b61e {
 }
 pub(crate) use d_InviteSummary_3849b61e;
 
-macro_rules! d_IssuedCredentialStatus_f1e7d6df {
-    () => {
-        "\"IssuedCredentialStatus\":{\"description\":\"Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.\",\"enum\":[\"active\",\"expired\",\"revoked\"],\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_IssuedCredentialStatus_f1e7d6df;
-
-macro_rules! d_IssuedCredentialSummary_5583224f {
-    () => {
-        "\"IssuedCredentialSummary\":{\"additionalProperties\":false,\"description\":\"A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\",\"description\":\"The id `vta/credentials/revoke` is keyed on.\"},\"credentialType\":{\"description\":\"The type tag beyond `VerifiableCredential`, when the credential carries one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"holder\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who the credential was issued to.\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"revocationReason\":{\"description\":\"Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.\",\"maxLength\":1024,\"type\":\"string\"},\"revokedAt\":{\"description\":\"Present iff `status` is `revoked`.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/IssuedCredentialStatus\"}},\"required\":[\"credentialId\",\"holder\",\"issuedAt\",\"expiresAt\",\"status\"],\"title\":\"IssuedCredentialSummary\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_IssuedCredentialSummary_5583224f;
-
 macro_rules! d_Issued_43396018 {
     () => {
         "\"Issued\":{\"additionalProperties\":false,\"description\":\"A credential the network issued, with where its status is kept.\",\"properties\":{\"credential\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The credential as issued.\"},\"statusIndex\":{\"description\":\"The credential's index in the network's status lists.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"credential\",\"statusIndex\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Issued_43396018;
-
-macro_rules! d_JSCalendarDuration_1512b122 {
-    () => {
-        "\"JSCalendarDuration\":{\"description\":\"A non-negative duration in the subset of ISO 8601 JSCalendar uses: `P` then weeks or days, then `T` with hours, minutes and seconds, such as `PT1H30M`, `P1D` or `P2W`. No months or years. Used only for `When.duration`, which carries JSCalendar's own member and encoding verbatim; this family's own offsets are integers naming their unit (`ReminderMinutes`).\",\"maxLength\":32,\"minLength\":3,\"pattern\":\"^P(?!$)([0-9]+W)?([0-9]+D)?(T(?=[0-9])([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$\",\"title\":\"JSCalendarDuration\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_JSCalendarDuration_1512b122;
-
-macro_rules! d_JSContactCard_1820fb15 {
-    () => {
-        "\"JSContactCard\":{\"additionalProperties\":true,\"description\":\"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\"title\":\"JSContactCard\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_JSContactCard_1820fb15;
 
 macro_rules! d_JobId_8eabbd22 {
     () => {
@@ -3025,90 +1576,6 @@ macro_rules! d_JobState_ed1c1e1b {
 }
 pub(crate) use d_JobState_ed1c1e1b;
 
-macro_rules! d_Job_e933ae9d {
-    () => {
-        "\"Job\":{\"additionalProperties\":false,\"properties\":{\"attempts\":{\"description\":\"Attempts made so far. `1` on a failed job means the registry answered and refused; a value at the maintainer's retry ceiling means it never answered.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"description\":\"When the job was enqueued.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"description\":\"Identifier of the queued job. The handle `vtc/registry/sync-jobs/retry` and `.../discard` take.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/Kind\"},\"lastAttemptedAt\":{\"description\":\"When it was last dispatched.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"lastError\":{\"description\":\"The registry's last answer, verbatim. Diagnostic prose for an operator; a consumer MUST NOT parse it.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"memberDid\":{\"description\":\"The member whose registry record the job carries. In the clear, because an operator holding a hash cannot tell who stopped publishing.\",\"minLength\":1,\"type\":\"string\"},\"nextAttemptAt\":{\"description\":\"When it is next due. Null on a failed job: nothing is scheduled.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"purgeDueAt\":{\"description\":\"When the maintainer's retention sweep will delete this row. A deadline, not a fix — the member stays unpublished.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"state\":{\"$ref\":\"#/$defs/State\"}},\"required\":[\"jobId\",\"kind\",\"memberDid\",\"state\",\"attempts\",\"createdAt\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Job_e933ae9d;
-
-macro_rules! d_JoinDiscovery_f6a8d340 {
-    () => {
-        "\"JoinDiscovery\":{\"additionalProperties\":false,\"description\":\"Whether this community answers vtc/join-requests/manifest to a caller it cannot identify.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"public\":{\"description\":\"True: the manifest is answered to any caller, identified or not — the setting of every community that never chose, because the manifest is a public read by design (an applicant has to know what is asked of them before they disclose anything). False: the manifest is answered only to a caller the community can identify — one with a verified proof or a transport-authenticated sender. Not secrecy: an identified caller is answered either way. False makes the answer attributable, which is what a closed or invite-only community wants rather than a crawler enumerating its criteria.\",\"type\":\"boolean\"}},\"required\":[\"public\"],\"title\":\"JoinDiscovery\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_JoinDiscovery_f6a8d340;
-
-macro_rules! d_JoinPolicy_d191b2d5 {
-    () => {
-        "\"JoinPolicy\":{\"description\":\"How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.\",\"enum\":[\"closed\",\"request\",\"open\"],\"title\":\"JoinPolicy\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_JoinPolicy_d191b2d5;
-
-macro_rules! d_JoinRequestMessage_e1e65683 {
-    () => {
-        "\"JoinRequestMessage\":{\"description\":\"An optional note from the member to the group's managers. Plain text.\",\"maxLength\":280,\"minLength\":1,\"title\":\"JoinRequestMessage\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_JoinRequestMessage_e1e65683;
-
-macro_rules! d_JoinRequest_b48181d8 {
-    () => {
-        "\"JoinRequest\":{\"$anchor\":\"joinRequest\",\"additionalProperties\":false,\"description\":\"One application to join a Verifiable Trust Community.\",\"properties\":{\"applicantDid\":{\"description\":\"DID of the applicant.\",\"minLength\":1,\"type\":\"string\"},\"attributes\":{\"description\":\"What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"}},\"required\":[\"type\",\"value\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"},\"decision\":{\"additionalProperties\":false,\"description\":\"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\"properties\":{\"code\":{\"description\":\"Stable refusal code, safe to branch on.\",\"type\":\"string\"},\"decidedAt\":{\"description\":\"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\"format\":\"date-time\",\"type\":\"string\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]}},\"required\":[\"code\",\"decidedAt\"],\"type\":[\"object\",\"null\"]},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"id\":{\"description\":\"Stable id of this join request (a UUID).\",\"minLength\":1,\"type\":\"string\"},\"policyDecision\":{\"description\":\"The community policy verdict recorded for this request (opaque here); absent while pending.\",\"type\":\"object\"},\"registryConsent\":{\"description\":\"Whether the applicant consented to trust-registry publication.\",\"type\":\"boolean\"},\"status\":{\"enum\":[\"pending\",\"approved\",\"rejected\",\"withdrawn\",\"deferred\"],\"type\":\"string\"},\"submittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"vp\":{\"description\":\"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\"type\":\"object\"},\"vpClaims\":{\"description\":\"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\"type\":[\"object\",\"null\"]}},\"required\":[\"id\",\"applicantDid\",\"vp\",\"submittedAt\",\"status\"],\"title\":\"JoinRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_JoinRequest_b48181d8;
-
-macro_rules! d_KdfParams_bdf20fae {
-    () => {
-        "\"KdfParams\":{\"$anchor\":\"kdfParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"KDF identifier, e.g. `argon2id`.\",\"minLength\":1,\"type\":\"string\"},\"mCost\":{\"description\":\"Argon2id memory cost (KiB).\",\"minimum\":1,\"type\":\"integer\"},\"pCost\":{\"description\":\"Argon2id parallelism.\",\"minimum\":1,\"type\":\"integer\"},\"salt\":{\"description\":\"base64url, 32 bytes.\",\"minLength\":1,\"type\":\"string\"},\"tCost\":{\"description\":\"Argon2id time cost (iterations).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"algorithm\",\"salt\",\"mCost\",\"tCost\",\"pCost\"],\"title\":\"KdfParams\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_KdfParams_bdf20fae;
-
-macro_rules! d_KeyAssuranceLevel_1df07dee {
-    () => {
-        "\"KeyAssuranceLevel\":{\"description\":\"A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member.\",\"enum\":[1,2,3],\"title\":\"KeyAssuranceLevel\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_KeyAssuranceLevel_1df07dee;
-
-macro_rules! d_KeyChangeApprovalState_f7dc1025 {
-    () => {
-        "\"KeyChangeApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).\",\"properties\":{\"approvals\":{\"description\":\"The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"$ref\":\"#/$defs/RecordedApproval\"},\"type\":\"array\"},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, the initiator's own included.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyChangeApprovalState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_KeyChangeApprovalState_f7dc1025;
-
-macro_rules! d_KeyChangeKind_5dd14c1d {
-    () => {
-        "\"KeyChangeKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.\",\"enum\":[\"planned\",\"compromise\",\"addition\",\"recovery\"],\"title\":\"KeyChangeKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyChangeKind_5dd14c1d;
-
-macro_rules! d_KeyChangeOutcome_e04f6c0f {
-    () => {
-        "\"KeyChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\",\"awaitingRecoveryProof\"],\"title\":\"KeyChangeOutcome\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyChangeOutcome_e04f6c0f;
-
-macro_rules! d_KeyChangeRecord_e6de1cea {
-    () => {
-        "\"KeyChangeRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/KeyChangeKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyChangeState\"},\"successors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"KeyChangeRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_KeyChangeRecord_e6de1cea;
-
-macro_rules! d_KeyChangeState_9f07db21 {
-    () => {
-        "\"KeyChangeState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"awaitingRecoveryProof\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"KeyChangeState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyChangeState_9f07db21;
-
 macro_rules! d_KeyCustody_23caa09c {
     () => {
         "\"KeyCustody\":{\"additionalProperties\":false,\"description\":\"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\"properties\":{\"keyAgreementCurve\":{\"description\":\"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\"type\":\"string\"},\"signingAlg\":{\"description\":\"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\"type\":\"string\"},\"tier\":{\"description\":\"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\"enum\":[\"hardware\",\"software\"],\"type\":\"string\"}},\"required\":[\"tier\"],\"title\":\"KeyCustody\",\"type\":\"object\"}"
@@ -3123,13 +1590,6 @@ macro_rules! d_KeyError_2da90e33 {
 }
 pub(crate) use d_KeyError_2da90e33;
 
-macro_rules! d_KeyLifecycleState_1ebfb735 {
-    () => {
-        "\"KeyLifecycleState\":{\"description\":\"Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\",\"committed\"],\"title\":\"KeyLifecycleState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyLifecycleState_1ebfb735;
-
 macro_rules! d_KeyOrigin_8e7dc5f0 {
     () => {
         "\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"}"
@@ -3143,27 +1603,6 @@ macro_rules! d_KeyRecord_a42d2826 {
     };
 }
 pub(crate) use d_KeyRecord_a42d2826;
-
-macro_rules! d_KeyRoleApprovalState_47ffae64 {
-    () => {
-        "\"KeyRoleApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).\",\"properties\":{\"approvers\":{\"description\":\"VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, including the initiator's own.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyRoleApprovalState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_KeyRoleApprovalState_47ffae64;
-
-macro_rules! d_KeyRoleChangeOutcome_d0bd27ad {
-    () => {
-        "\"KeyRoleChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the entry was appended (and published, unless `serverless`). `pendingApproval` — the plan is recorded and awaits further approvals; nothing is published until they arrive (CONVENTIONS.md §3.3).\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\"],\"title\":\"KeyRoleChangeOutcome\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyRoleChangeOutcome_d0bd27ad;
-
-macro_rules! d_KeyRole_75f1de43 {
-    () => {
-        "\"KeyRole\":{\"description\":\"The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\"],\"title\":\"KeyRole\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_KeyRole_75f1de43;
 
 macro_rules! d_KeyScopeAll_1ea8901f {
     () => {
@@ -3207,20 +1646,6 @@ macro_rules! d_KeyType_7d32efa1 {
 }
 pub(crate) use d_KeyType_7d32efa1;
 
-macro_rules! d_Key_74d28c96 {
-    () => {
-        "\"Key\":{\"description\":\"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[^\\\\u0000]+$\",\"title\":\"Key\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Key_74d28c96;
-
-macro_rules! d_Kind_018a091a {
-    () => {
-        "\"Kind\":{\"description\":\"What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^([a-z][a-zA-Z0-9]{0,63}|[a-z0-9]+(-[a-z0-9]+)*(\\\\.[a-z0-9]+(-[a-z0-9]+)*)+:[a-z][a-zA-Z0-9]{0,63})$\",\"title\":\"Kind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Kind_018a091a;
-
 macro_rules! d_Kind_c89c547c {
     () => {
         "\"Kind\":{\"description\":\"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\"enum\":[\"dm\",\"group\",\"channel\"],\"type\":\"string\"}"
@@ -3228,47 +1653,12 @@ macro_rules! d_Kind_c89c547c {
 }
 pub(crate) use d_Kind_c89c547c;
 
-macro_rules! d_KudosMakers_d52e4e6b {
-    () => {
-        "\"KudosMakers\":{\"additionalProperties\":false,\"description\":\"Who may make a kudos badge (VTI-BDG-004). `nobody`: no kudos badges. `roles`: holders of any of `roles`, or members of any of `groups`. `members`: every active member.\",\"properties\":{\"groups\":{\"description\":\"Read exactly when `policy` is `roles`.\",\"items\":{\"$ref\":\"#/$defs/GroupId\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true},\"policy\":{\"enum\":[\"nobody\",\"roles\",\"members\"],\"type\":\"string\"},\"roles\":{\"description\":\"Community role names. Read exactly when `policy` is `roles`.\",\"items\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"policy\"],\"title\":\"KudosMakers\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_KudosMakers_d52e4e6b;
-
-macro_rules! d_LanguageTag_8062fe1f {
-    () => {
-        "\"LanguageTag\":{\"description\":\"A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively.\",\"maxLength\":35,\"minLength\":2,\"pattern\":\"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$\",\"title\":\"LanguageTag\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_LanguageTag_8062fe1f;
-
 macro_rules! d_LegalRetention_151b6ef2 {
     () => {
         "\"LegalRetention\":{\"additionalProperties\":true,\"description\":\"A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).\",\"properties\":{\"obligation\":{\"description\":\"The law or rule that requires it.\",\"maxLength\":4096,\"type\":\"string\"},\"period\":{\"description\":\"How long it is kept.\",\"maxLength\":1024,\"type\":\"string\"},\"record\":{\"description\":\"The record kept.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"record\",\"obligation\",\"period\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_LegalRetention_151b6ef2;
-
-macro_rules! d_LifecycleReason_9ca4820e {
-    () => {
-        "\"LifecycleReason\":{\"description\":\"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\"maxLength\":500,\"minLength\":1,\"title\":\"LifecycleReason\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_LifecycleReason_9ca4820e;
-
-macro_rules! d_LimitSource_707dc4c9 {
-    () => {
-        "\"LimitSource\":{\"description\":\"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\"enum\":[\"policy\",\"override\",\"default\"],\"title\":\"LimitSource\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_LimitSource_707dc4c9;
-
-macro_rules! d_LimitTarget_55aa91d1 {
-    () => {
-        "\"LimitTarget\":{\"additionalProperties\":false,\"description\":\"Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.\",\"properties\":{\"kind\":{\"enum\":[\"room\",\"memberDefault\",\"member\"],\"type\":\"string\"},\"member\":{\"description\":\"The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"LimitTarget\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_LimitTarget_55aa91d1;
 
 macro_rules! d_LinkedAccount_7345fed8 {
     () => {
@@ -3319,41 +1709,6 @@ macro_rules! d_ListOrder_b5eeb49d {
 }
 pub(crate) use d_ListOrder_b5eeb49d;
 
-macro_rules! d_Listing_57d1f4c7 {
-    () => {
-        "\"Listing\":{\"description\":\"Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.\",\"enum\":[\"listed\",\"findable\",\"hidden\"],\"title\":\"Listing\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Listing_57d1f4c7;
-
-macro_rules! d_LocalDateTime_1e3e06f7 {
-    () => {
-        "\"LocalDateTime\":{\"description\":\"A local date and time with no offset, `YYYY-MM-DDTHH:MM:SS`, as JSCalendar's LocalDateTime. Read in the event's `timeZone`.\",\"pattern\":\"^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$\",\"title\":\"LocalDateTime\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_LocalDateTime_1e3e06f7;
-
-macro_rules! d_LocalSettings_cd510bad {
-    () => {
-        "\"LocalSettings\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"local\"},\"root\":{\"description\":\"Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^/\",\"type\":\"string\"}},\"required\":[\"kind\",\"root\"],\"title\":\"LocalSettings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_LocalSettings_cd510bad;
-
-macro_rules! d_LogoMediaType_5493be58 {
-    () => {
-        "\"LogoMediaType\":{\"description\":\"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\"],\"title\":\"LogoMediaType\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_LogoMediaType_5493be58;
-
-macro_rules! d_LogoRef_4d5c2b80 {
-    () => {
-        "\"LogoRef\":{\"additionalProperties\":false,\"description\":\"The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.\",\"properties\":{\"height\":{\"description\":\"The stored image's height in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"},\"mediaType\":{\"$ref\":\"#/$defs/LogoMediaType\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"The length of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"width\":{\"description\":\"The stored image's width in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sha256\",\"mediaType\",\"size\",\"width\",\"height\"],\"title\":\"LogoRef\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_LogoRef_4d5c2b80;
-
 macro_rules! d_Manifest_1286045f {
     () => {
         "\"Manifest\":{\"additionalProperties\":false,\"description\":\"What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).\",\"properties\":{\"allowEarlyClose\":{\"type\":\"boolean\"},\"ballotBox\":{\"description\":\"The DID of the voting service that holds the board.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"binding\":{\"description\":\"Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).\",\"type\":\"boolean\"},\"board\":{\"additionalProperties\":false,\"properties\":{\"auditors\":{\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"visibility\":{\"$ref\":\"#/$defs/BoardVisibility\"}},\"required\":[\"visibility\",\"auditors\"],\"type\":\"object\"},\"community\":{\"description\":\"The community's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"description\":{\"maxLength\":8192,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/Question\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"registrationOpensAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"resultsBeforeClose\":{\"description\":\"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).\",\"type\":\"boolean\"},\"revote\":{\"$ref\":\"#/$defs/Revote\"},\"roll\":{\"$ref\":\"#/$defs/RollRule\"},\"secrecy\":{\"$ref\":\"#/$defs/SecrecyLevel\"},\"textReleaseThreshold\":{\"description\":\"Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).\",\"minimum\":1,\"type\":\"integer\"},\"title\":{\"maxLength\":512,\"type\":\"string\"},\"trustees\":{\"$ref\":\"#/$defs/Trustees\"},\"votingClosesAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"votingOpensAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"electionId\",\"community\",\"questions\",\"secrecy\",\"roll\",\"registrationOpensAt\",\"votingOpensAt\",\"votingClosesAt\",\"revote\",\"board\",\"ballotBox\",\"binding\",\"allowEarlyClose\",\"resultsBeforeClose\",\"textReleaseThreshold\"],\"title\":\"Manifest\",\"type\":\"object\"}"
@@ -3389,47 +1744,12 @@ macro_rules! d_MediatorAcl_980769c4 {
 }
 pub(crate) use d_MediatorAcl_980769c4;
 
-macro_rules! d_MemberAction_5b8cb156 {
-    () => {
-        "\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MemberAction_5b8cb156;
-
-macro_rules! d_MemberActions_4a072ad6 {
-    () => {
-        "\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_MemberActions_4a072ad6;
-
 macro_rules! d_MemberChangeReason_0f76b4d3 {
     () => {
         "\"MemberChangeReason\":{\"description\":\"The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins.\",\"enum\":[\"connect\",\"grant\",\"attach\",\"reactivated\",\"revokedByMember\",\"revokedByPrincipal\",\"epochBumped\",\"suspendedUnknownKey\",\"keyRotated\",\"expired\",\"accountBlocked\",\"superseded\",\"admin\",\"detachRequested\",\"accountRemoved\",\"resolutionFailed\",\"connectionFull\"],\"title\":\"MemberChangeReason\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_MemberChangeReason_0f76b4d3;
-
-macro_rules! d_MemberResponse_2ff888f5 {
-    () => {
-        "\"MemberResponse\":{\"$anchor\":\"memberResponse\",\"additionalProperties\":false,\"description\":\"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\"properties\":{\"currentRoleVacId\":{\"description\":\"Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`.\",\"type\":[\"string\",\"null\"]},\"currentVmcId\":{\"description\":\"Id of the member's current Verifiable Membership Credential, if issued.\",\"type\":[\"string\",\"null\"]},\"departurePreference\":{\"description\":\"How the member's record is handled on departure.\",\"enum\":[\"purge\",\"tombstone\",\"historical\",\"policydefault\"],\"type\":\"string\"},\"did\":{\"description\":\"The member's DID.\",\"minLength\":1,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\"type\":\"object\"},\"joinedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"joinedViaInvitation\":{\"description\":\"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\"type\":\"boolean\"},\"label\":{\"description\":\"Optional human-readable label.\",\"maxLength\":256,\"type\":[\"string\",\"null\"]},\"memberVmcId\":{\"description\":\"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\"type\":[\"string\",\"null\"]},\"memberVmcReceivedAt\":{\"description\":\"When that reciprocal credential was received. Paired with `memberVmcId`.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"personhood\":{\"description\":\"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\"type\":\"boolean\"},\"personhoodAssertedAt\":{\"description\":\"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"publishConsent\":{\"description\":\"Whether the member consented to being published in the community directory.\",\"type\":\"boolean\"},\"role\":{\"description\":\"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\"minLength\":1,\"type\":\"string\"},\"statusListIndex\":{\"description\":\"The member's slot on the community's membership status list, when allocated.\",\"type\":[\"integer\",\"null\"]}},\"required\":[\"did\",\"role\",\"joinedAt\",\"publishConsent\",\"departurePreference\",\"extensions\"],\"title\":\"MemberResponse\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MemberResponse_2ff888f5;
-
-macro_rules! d_MemberStateV2_d15cea62 {
-    () => {
-        "\"MemberStateV2\":{\"description\":\"`MemberState` plus `suspended`. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `suspended`: admitted, but the room was archived with `noAccess` (or scheduled for removal), so the room's host refuses the member's credentials; on a sealed tier they are still in the room's group. Restored to `admitted` with freshly issued credentials when the room leaves that state, and never restored if it is removed. `removed`: an administrator removed them, or withdrew their offer — archiving withdraws every open offer; on a sealed tier the room has advanced past an admitted member.\",\"enum\":[\"offered\",\"admitted\",\"suspended\",\"removed\"],\"title\":\"MemberStateV2\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MemberStateV2_d15cea62;
-
-macro_rules! d_MemberState_5cbdd563 {
-    () => {
-        "\"MemberState\":{\"description\":\"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\"enum\":[\"offered\",\"admitted\",\"removed\"],\"title\":\"MemberState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MemberState_5cbdd563;
 
 macro_rules! d_MembershipChange_d0a336e9 {
     () => {
@@ -3445,68 +1765,12 @@ macro_rules! d_MembershipFilter_1aca8fdd {
 }
 pub(crate) use d_MembershipFilter_1aca8fdd;
 
-macro_rules! d_MembershipPresentation_db4ceeca {
-    () => {
-        "\"MembershipPresentation\":{\"anyOf\":[{\"description\":\"A W3C Verifiable Presentation whose `nonce` is the request's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof.\",\"type\":\"object\"},{\"description\":\"A compact presentation: an SD-JWT with a key-binding JWT whose `nonce` is the request's `id` and whose `aud` is the community's DID.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}],\"description\":\"A partner member's presentation of the membership credential a partner the event's audience names issued them, made by the credential's subject — who signs the request — and bound to it: its `nonce` the request's `id`, its `domain` this community's DID (VTI-EVT-132). The community verifies it before, and without reference to, the event, and discards it once it has decided (VTI-EVT-133).\",\"title\":\"MembershipPresentation\"}"
-    };
-}
-pub(crate) use d_MembershipPresentation_db4ceeca;
-
-macro_rules! d_MembershipSource_dcd83e86 {
-    () => {
-        "\"MembershipSource\":{\"description\":\"How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.\",\"enum\":[\"added\",\"joined\",\"requestApproved\",\"rule\"],\"title\":\"MembershipSource\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MembershipSource_dcd83e86;
-
 macro_rules! d_Membership_ed2c2017 {
     () => {
         "\"Membership\":{\"description\":\"A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`.\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Membership_ed2c2017;
-
-macro_rules! d_MemoryExpectedVersion_5275ff79 {
-    () => {
-        "\"MemoryExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.\",\"minimum\":0,\"title\":\"MemoryExpectedVersion\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_MemoryExpectedVersion_5275ff79;
-
-macro_rules! d_MemoryKey_7fb8d6a6 {
-    () => {
-        "\"MemoryKey\":{\"description\":\"Agent-chosen identifier for an item within a context. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `vta/memory/list` is a byte-prefix comparison over the UTF-8 encoding. Agents SHOULD use `/`-delimited hierarchical keys (`contact/billing`, `preference/timezone`) so that `prefix` can address a family of items, but the delimiter is a convention between an agent and itself. A key is content as well as an address: a key naming a person, a condition or a dispute discloses something to anyone who can list the context, even without its value.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[^\\\\u0000]+$\",\"title\":\"MemoryKey\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MemoryKey_7fb8d6a6;
-
-macro_rules! d_MemoryPurpose_ce5e3789 {
-    () => {
-        "\"MemoryPurpose\":{\"$ref\":\"#/$defs/Purpose\",\"description\":\"The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).\",\"title\":\"MemoryPurpose\"}"
-    };
-}
-pub(crate) use d_MemoryPurpose_ce5e3789;
-
-macro_rules! d_MemoryRecord_6a45c983 {
-    () => {
-        "\"MemoryRecord\":{\"additionalProperties\":false,\"description\":\"A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.\",\"properties\":{\"contextId\":{\"description\":\"The VTA context the item is scoped to; the isolation boundary.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions.\",\"format\":\"date-time\",\"type\":\"string\"},\"deleted\":{\"description\":\"True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`.\",\"type\":\"boolean\"},\"deletedAt\":{\"description\":\"When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.\",\"format\":\"date-time\",\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/MemoryKey\"},\"updatedAt\":{\"description\":\"When the write that produced this `version` was applied. For a tombstone, when the delete was applied.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"$ref\":\"#/$defs/MemoryValue\",\"description\":\"The remembered text. Absent when this is a tombstone or a metadata-only view.\"},\"valueBytes\":{\"description\":\"Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.\",\"minimum\":0,\"type\":\"integer\"},\"version\":{\"$ref\":\"#/$defs/MemoryVersion\",\"description\":\"The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.\"}},\"required\":[\"contextId\",\"key\",\"version\",\"deleted\",\"updatedAt\"],\"title\":\"MemoryRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MemoryRecord_6a45c983;
-
-macro_rules! d_MemoryValue_b01c4bbe {
-    () => {
-        "\"MemoryValue\":{\"description\":\"The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).\",\"title\":\"MemoryValue\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MemoryValue_b01c4bbe;
-
-macro_rules! d_MemoryVersion_9d7cb96b {
-    () => {
-        "\"MemoryVersion\":{\"description\":\"A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"MemoryVersion\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_MemoryVersion_9d7cb96b;
 
 macro_rules! d_MerklePath_a75c8d45 {
     () => {
@@ -3535,55 +1799,6 @@ macro_rules! d_MessageState_e33b2396 {
     };
 }
 pub(crate) use d_MessageState_e33b2396;
-
-macro_rules! d_Metric_9c48c18a {
-    () => {
-        "\"Metric\":{\"additionalProperties\":false,\"description\":\"One counter or gauge reading.\",\"properties\":{\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the value is broken down by (e.g. `{\\\"method\\\": \\\"resolve\\\"}`). Absent or empty when the metric carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.\",\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The current reading.\",\"type\":\"number\"}},\"required\":[\"name\",\"value\"],\"title\":\"Metric\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Metric_9c48c18a;
-
-macro_rules! d_MetricsSnapshot_97a01367 {
-    () => {
-        "\"MetricsSnapshot\":{\"additionalProperties\":false,\"properties\":{\"counters\":{\"description\":\"Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \\\"no counters\\\" from \\\"the field was dropped\\\".\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"gauges\":{\"description\":\"Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"histograms\":{\"description\":\"Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Histogram\"},\"type\":\"array\"},\"takenAt\":{\"description\":\"When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"takenAt\",\"counters\",\"gauges\",\"histograms\"],\"title\":\"MetricsSnapshot\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MetricsSnapshot_97a01367;
-
-macro_rules! d_MigrationLastError_1e0b3fd5 {
-    () => {
-        "\"MigrationLastError\":{\"description\":\"A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents.\",\"maxLength\":500,\"minLength\":1,\"title\":\"MigrationLastError\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MigrationLastError_1e0b3fd5;
-
-macro_rules! d_MigrationPauseCause_9e8282b2 {
-    () => {
-        "\"MigrationPauseCause\":{\"description\":\"Why a migration is `paused`. `capacity`: the destination config cannot hold the rest. `source`: a config the blobs are being moved off keeps failing to serve them. `destination`: the destination config keeps refusing writes, or is no longer `active`. `credential`: the community cannot obtain a credential for one of the configs.\",\"enum\":[\"capacity\",\"source\",\"destination\",\"credential\"],\"title\":\"MigrationPauseCause\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MigrationPauseCause_9e8282b2;
-
-macro_rules! d_MigrationProgress_aca98c34 {
-    () => {
-        "\"MigrationProgress\":{\"additionalProperties\":false,\"description\":\"Progress of the room's migration, as vtc/rooms/storage/migrate reports it.\",\"properties\":{\"doneBytes\":{\"minimum\":0,\"type\":\"integer\"},\"doneFiles\":{\"minimum\":0,\"type\":\"integer\"},\"lastError\":{\"$ref\":\"#/$defs/MigrationLastError\",\"description\":\"Present when `state` is `paused`; MAY be present while `running`, when a step is being retried.\"},\"migrationId\":{\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"nextAttemptAt\":{\"description\":\"When the community will next try by itself. Present while a `running` migration waits out a backoff, and on a `paused` one the community will retry unprompted; absent on a `paused` one only re-issuing vtc/rooms/storage/migrate resumes (such as `capacity`).\",\"format\":\"date-time\",\"type\":\"string\"},\"pausedCause\":{\"$ref\":\"#/$defs/MigrationPauseCause\",\"description\":\"Present exactly when `state` is `paused`.\"},\"state\":{\"$ref\":\"#/$defs/MigrationState\"},\"toConfig\":{\"$ref\":\"#/$defs/StorageConfigId\",\"description\":\"The config this migration moves blobs to. After a reassignment during the migration it differs from `storage.configId`.\"},\"totalBytes\":{\"minimum\":0,\"type\":\"integer\"},\"totalFiles\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"migrationId\",\"toConfig\",\"state\",\"totalFiles\",\"totalBytes\",\"doneFiles\",\"doneBytes\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MigrationProgress_aca98c34;
-
-macro_rules! d_MigrationState_40f79c68 {
-    () => {
-        "\"MigrationState\":{\"description\":\"`queued`: approved and waiting for another migration on this community to finish; nothing copied yet (a community that runs one migration at a time). `running`: copying, including while it retries a failing step with backoff. `paused`: halted after its automatic retries reached their cap without success, or on a cause that retrying cannot clear (`pausedCause`); resumed by issuing vtc/rooms/storage/migrate again, and by the community itself at `nextAttemptAt` when present. `complete`: every blob that was to move has moved. `failed`: halted on a blob whose copy did not verify against its manifest; that blob stays where it was.\",\"enum\":[\"queued\",\"running\",\"paused\",\"complete\",\"failed\"],\"title\":\"MigrationState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_MigrationState_40f79c68;
-
-macro_rules! d_MineItem_d0f07d22 {
-    () => {
-        "\"MineItem\":{\"additionalProperties\":false,\"description\":\"One of the caller's registrations and the event it belongs to.\",\"properties\":{\"event\":{\"$ref\":\"#/$defs/EventRef\"},\"registration\":{\"$ref\":\"#/$defs/Registration\"}},\"required\":[\"registration\",\"event\"],\"title\":\"MineItem\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MineItem_d0f07d22;
 
 macro_rules! d_MinimizationReport_00feca86 {
     () => {
@@ -3619,13 +1834,6 @@ macro_rules! d_Multibase_1b1ac9ed {
     };
 }
 pub(crate) use d_Multibase_1b1ac9ed;
-
-macro_rules! d_Multibase_95fce4d3 {
-    () => {
-        "\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Multibase_95fce4d3;
 
 macro_rules! d_MuxDataIntegrityProof_5aa7a0f7 {
     () => {
@@ -3683,13 +1891,6 @@ macro_rules! d_MuxWire_ab25e7fe {
 }
 pub(crate) use d_MuxWire_ab25e7fe;
 
-macro_rules! d_MyBadge_3a4d09fe {
-    () => {
-        "\"MyBadge\":{\"additionalProperties\":false,\"description\":\"A badge as its holder sees it in their own list: the wall entry plus what only the holder knows — whether they hid it, their position for it, and the credential that evidences it.\",\"properties\":{\"badge\":{\"$ref\":\"#/$defs/Badge\"},\"count\":{\"minimum\":1,\"type\":\"integer\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"credentialValidUntil\":{\"format\":\"date-time\",\"type\":\"string\"},\"hidden\":{\"description\":\"The holder hid it: off their wall, out of the badge's holder list for members, out of its count; the awards, the membership and the credential stand (VTI-BDG-030).\",\"type\":\"boolean\"},\"latestAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"pinned\":{\"type\":\"boolean\"},\"position\":{\"description\":\"The holder's order on their wall, lowest first.\",\"minimum\":0,\"type\":\"integer\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badge\",\"count\",\"since\",\"pinned\",\"hidden\"],\"title\":\"MyBadge\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_MyBadge_3a4d09fe;
-
 macro_rules! d_Named_e4fd4d7d {
     () => {
         "\"Named\":{\"additionalProperties\":true,\"description\":\"An organization, by identifier and a name a person can recognize.\",\"properties\":{\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Its name. The minLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"}"
@@ -3711,33 +1912,12 @@ macro_rules! d_NamespaceStatus_16631d52 {
 }
 pub(crate) use d_NamespaceStatus_16631d52;
 
-macro_rules! d_Namespace_eb9ffc4a {
-    () => {
-        "\"Namespace\":{\"description\":\"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\"title\":\"Namespace\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Namespace_eb9ffc4a;
-
 macro_rules! d_NarrowAct_0c099083 {
     () => {
         "\"NarrowAct\":{\"additionalProperties\":false,\"description\":\"Narrow the entry's act scope to `act`, which MUST be strictly narrower than the stored act scope (a subset of its contexts, or `none`). The entry, and every other axis of it, remains.\",\"properties\":{\"act\":{\"$ref\":\"#/$defs/AuthorityScope\",\"description\":\"The resulting act scope, in the explicit form. Stating the result rather than a list of contexts to remove means the producer and the maintainer cannot disagree about what remains.\"},\"kind\":{\"const\":\"act\"}},\"required\":[\"kind\",\"act\"],\"title\":\"NarrowAct\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_NarrowAct_0c099083;
-
-macro_rules! d_NetworkMembership_fb648562 {
-    () => {
-        "\"NetworkMembership\":{\"additionalProperties\":false,\"properties\":{\"acknowledgement\":{\"description\":\"The community's acknowledgement (VMC carrying the grant's digest).\",\"type\":\"object\"},\"grant\":{\"description\":\"The network's membership grant (VMC), once the community acknowledged.\",\"type\":\"object\"},\"groups\":{\"items\":{\"$ref\":\"#/$defs/RegisteredGroup\"},\"maxItems\":64,\"type\":\"array\"},\"joinedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"listing\":{\"description\":\"The network's listing credential naming the community, as the community verified it.\",\"type\":\"object\"},\"name\":{\"description\":\"The network's name, as its profile gives it.\",\"maxLength\":200,\"type\":\"string\"},\"network\":{\"description\":\"The network's DID.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"repudiation\":{\"description\":\"The community's repudiation (VSC) of the listing, or — on departure — of the grant.\",\"type\":\"object\"},\"state\":{\"description\":\"`acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.\",\"enum\":[\"acknowledged\",\"repudiated\",\"departed\"],\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"url\":{\"description\":\"Where the network's API is reached: the base its `/.well-known/vtn` profile is served under.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"network\",\"url\",\"state\",\"listing\",\"groups\",\"updatedAt\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_NetworkMembership_fb648562;
-
-macro_rules! d_NewCardDefaults_5af26b0b {
-    () => {
-        "\"NewCardDefaults\":{\"additionalProperties\":false,\"description\":\"The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.\",\"properties\":{\"introductions\":{\"$ref\":\"#/$defs/Introductions\",\"description\":\"From whom a new card accepts introductions. Absent where the community does not deliver introductions.\"},\"listing\":{\"$ref\":\"#/$defs/Listing\",\"description\":\"The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.\"},\"search\":{\"description\":\"What a member's search may match, as the card's `discoverability.search`.\",\"enum\":[\"byName\",\"exactNickname\",\"off\"],\"type\":\"string\"}},\"required\":[\"listing\",\"search\"],\"title\":\"NewCardDefaults\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_NewCardDefaults_5af26b0b;
 
 macro_rules! d_NewClaim_dde849b4 {
     () => {
@@ -3753,75 +1933,12 @@ macro_rules! d_Node_6b8c8468 {
 }
 pub(crate) use d_Node_6b8c8468;
 
-macro_rules! d_NoteId_42411291 {
-    () => {
-        "\"NoteId\":{\"description\":\"Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.\",\"pattern\":\"^note_[A-Za-z0-9_-]{16,64}$\",\"title\":\"NoteId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_NoteId_42411291;
-
-macro_rules! d_NoteId_dbf4db56 {
-    () => {
-        "\"NoteId\":{\"description\":\"Opaque identifier of a note: `bnt_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^bnt_[A-Za-z0-9_-]{16,64}$\",\"title\":\"NoteId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_NoteId_dbf4db56;
-
-macro_rules! d_NoteText_1c5cbcd5 {
-    () => {
-        "\"NoteText\":{\"description\":\"The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.\",\"maxLength\":2000,\"minLength\":1,\"title\":\"NoteText\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_NoteText_1c5cbcd5;
-
-macro_rules! d_NoteText_c7d1eee5 {
-    () => {
-        "\"NoteText\":{\"description\":\"A note's text (VTI-BRD-020). Plain text; a reader MUST NOT treat it as instructions. Never changes once added (VTI-BRD-021).\",\"maxLength\":1000,\"minLength\":1,\"title\":\"NoteText\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_NoteText_c7d1eee5;
-
-macro_rules! d_Note_cbf4ce89 {
-    () => {
-        "\"Note\":{\"additionalProperties\":false,\"description\":\"A note as one caller may see it. `text` is absent from a `withdrawn` or `hidden` note for anyone but its author and the board's facilitators (VTI-BRD-021).\",\"properties\":{\"author\":{\"$ref\":\"#/$defs/Author\"},\"boardId\":{\"$ref\":\"#/$defs/BoardId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"hiddenReason\":{\"$ref\":\"#/$defs/Reason\",\"description\":\"A `hidden` note's reason, shown to everyone who sees the note.\"},\"ideaId\":{\"$ref\":\"#/$defs/IdeaId\",\"description\":\"The idea the note is attached to; absent for a note on the board itself.\"},\"noteId\":{\"$ref\":\"#/$defs/NoteId\"},\"state\":{\"$ref\":\"#/$defs/NoteState\"},\"text\":{\"$ref\":\"#/$defs/NoteText\"}},\"required\":[\"noteId\",\"boardId\",\"author\",\"createdAt\",\"state\"],\"title\":\"Note\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Note_cbf4ce89;
-
 macro_rules! d_NotificationId_e0537716 {
     () => {
         "\"NotificationId\":{\"description\":\"The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"NotificationId\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_NotificationId_e0537716;
-
-macro_rules! d_Notification_5deee8e7 {
-    () => {
-        "\"Notification\":{\"additionalProperties\":false,\"description\":\"The members of one notification, as notifications/notify carries them and as a recipient's agent records them. The originator is the `issuer` of the notifications/notify document and the addressee its `recipient`; neither is repeated here, because the originator's proof covers both.\",\"properties\":{\"audience\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The DID whose holders or members the thing concerns — for an election under a credential roll, the DID the roll names (`roll.memberOf`); otherwise the community's own. It says whom the thing is for, not that the recipient is one of them: a recipient may be the audience itself, or a party the audience relayed the notification to.\"},\"kind\":{\"$ref\":\"#/$defs/Kind\"},\"notificationId\":{\"$ref\":\"#/$defs/NotificationId\"},\"relayable\":{\"description\":\"Whether the addressee may relay this notification to the parties it stands for (notifications/relay). The originator states it explicitly; an addressee MUST NOT relay a notification whose `relayable` is false, or whose kind may not be relayed (VTI-NTF-041).\",\"type\":\"boolean\"},\"revision\":{\"description\":\"The revision of this notification. A recipient replaces the record it holds with a higher revision and leaves it unchanged for an equal or lower one (VTI-NTF-022). The first revision is 1.\",\"maximum\":1000000,\"minimum\":1,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/Status\"},\"subject\":{\"$ref\":\"#/$defs/Subject\"},\"validFrom\":{\"description\":\"When the thing can first be acted on — for an election, when voting opens. Absent: it can be acted on now.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the thing can no longer be acted on, and the notification lapses — for an election, when voting closes. A recipient discards a notification received after it (VTI-NTF-032). Absent: the kind's definition says when it lapses.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"notificationId\",\"revision\",\"kind\",\"subject\",\"audience\",\"status\",\"relayable\"],\"title\":\"Notification\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Notification_5deee8e7;
-
-macro_rules! d_ObjectPrefix_126867a4 {
-    () => {
-        "\"ObjectPrefix\":{\"description\":\"A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9!_.*'()/-]+/$\",\"title\":\"ObjectPrefix\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ObjectPrefix_126867a4;
-
-macro_rules! d_OfferCredentials_bc087c42 {
-    () => {
-        "\"OfferCredentials\":{\"additionalProperties\":false,\"description\":\"The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.\",\"properties\":{\"authority\":{\"description\":\"The Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"invitation\":{\"description\":\"The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"invitation\",\"membership\",\"authority\"],\"title\":\"OfferCredentials\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_OfferCredentials_bc087c42;
-
-macro_rules! d_OfferV2_1a7a3288 {
-    () => {
-        "\"OfferV2\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"credentials\":{\"$ref\":\"#/$defs/OfferCredentials\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"host\":{\"description\":\"The room's host: this community.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"description\":\"`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.\",\"enum\":[\"open\",\"accepted\"],\"type\":\"string\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"host\",\"label\",\"visibility\",\"actions\",\"validUntil\",\"offeredAt\",\"state\",\"credentials\"],\"title\":\"OfferV2\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_OfferV2_1a7a3288;
 
 macro_rules! d_OnwardSharing_e3f512bc {
     () => {
@@ -3858,47 +1975,12 @@ macro_rules! d_Origin_c8f36e16 {
 }
 pub(crate) use d_Origin_c8f36e16;
 
-macro_rules! d_OutcomeEvidence_fb8d4b27 {
-    () => {
-        "\"OutcomeEvidence\":{\"additionalProperties\":false,\"description\":\"One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).\",\"properties\":{\"outcome\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\"},\"session\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).\"}},\"required\":[\"session\",\"outcome\"],\"title\":\"OutcomeEvidence\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_OutcomeEvidence_fb8d4b27;
-
 macro_rules! d_PartialDecryption_6afdd569 {
     () => {
         "\"PartialDecryption\":{\"additionalProperties\":false,\"description\":\"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\"properties\":{\"d\":{\"$ref\":\"#/$defs/GroupElement\"},\"proof\":{\"$ref\":\"#/$defs/SigmaProof\"},\"target\":{\"$ref\":\"#/$defs/DecryptionTarget\"}},\"required\":[\"target\",\"d\",\"proof\"],\"title\":\"PartialDecryption\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_PartialDecryption_6afdd569;
-
-macro_rules! d_PartnerDid_8ee7bdd2 {
-    () => {
-        "\"PartnerDid\":{\"description\":\"A partner community, by its DID: a community that is a member of this one, or with which it holds a relationship in force (VTI-EVT-130).\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[A-Za-z0-9._:%-]+$\",\"title\":\"PartnerDid\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_PartnerDid_8ee7bdd2;
-
-macro_rules! d_PasskeyVerificationMethod_2a6cf7c3 {
-    () => {
-        "\"PasskeyVerificationMethod\":{\"additionalProperties\":false,\"properties\":{\"controller\":{\"description\":\"The DID this verificationMethod is published on (the DID being augmented).\",\"minLength\":1,\"type\":\"string\"},\"id\":{\"description\":\"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"Multikey\",\"description\":\"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\"type\":\"string\"},\"webauthnCredentialId\":{\"description\":\"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\"minLength\":1,\"type\":\"string\"},\"webauthnTransports\":{\"description\":\"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"id\",\"type\",\"controller\",\"publicKeyMultibase\",\"webauthnCredentialId\"],\"title\":\"PasskeyVerificationMethod\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PasskeyVerificationMethod_2a6cf7c3;
-
-macro_rules! d_PcsValue_9105b1ae {
-    () => {
-        "\"PcsValue\":{\"description\":\"A suite value, multibase base58btc over its canonical (compressed) encoding.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"PcsValue\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_PcsValue_9105b1ae;
-
-macro_rules! d_PendingChange_554ce89f {
-    () => {
-        "\"PendingChange\":{\"additionalProperties\":false,\"description\":\"A change of state the community began and has not finished, because a step at its VTA did not complete — most often a room reset the host accepted, after which the community's own credentials must be re-issued before it can act on the room again. `RoomStatus.state` stays what it was until the change finishes, but what the room's host enforces may already be the new state's: a pending move to `noAccess` means members' credentials may already be refused. The community finishes it by itself, retrying with backoff, and repeating the request that began it finishes it too; nothing else changes the room until it is finished.\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/ArchiveAccess\",\"description\":\"The access it leads to, where `state` has one.\"},\"beganAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastError\":{\"description\":\"What stopped the last attempt, for an administrator. Plain text; it names no member and carries no credential.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoomState\",\"description\":\"The state the change leads to.\"}},\"required\":[\"state\",\"beganAt\"],\"title\":\"PendingChange\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PendingChange_554ce89f;
 
 macro_rules! d_PermittedUse_794d73c6 {
     () => {
@@ -3949,40 +2031,12 @@ macro_rules! d_PersonalLabel_b1bcd704 {
 }
 pub(crate) use d_PersonalLabel_b1bcd704;
 
-macro_rules! d_PersonhoodGovernance_0413100d {
-    () => {
-        "\"PersonhoodGovernance\":{\"$anchor\":\"personhoodGovernance\",\"additionalProperties\":false,\"description\":\"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\"properties\":{\"acceptedIdvps\":{\"description\":\"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"governanceFrameworkUrl\":{\"description\":\"Where the governance framework these assertions refer to can be read.\",\"type\":[\"string\",\"null\"]},\"realHuman\":{\"description\":\"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\"type\":\"boolean\"},\"singleMembership\":{\"description\":\"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\"type\":\"boolean\"}},\"title\":\"PersonhoodGovernance\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PersonhoodGovernance_0413100d;
-
 macro_rules! d_Petname_33af9d2b {
     () => {
         "\"Petname\":{\"description\":\"The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"Petname\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_Petname_33af9d2b;
-
-macro_rules! d_PlaceName_95cfdec7 {
-    () => {
-        "\"PlaceName\":{\"description\":\"A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.\",\"maxLength\":128,\"minLength\":1,\"title\":\"PlaceName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_PlaceName_95cfdec7;
-
-macro_rules! d_PlaceSummary_3534e514 {
-    () => {
-        "\"PlaceSummary\":{\"description\":\"A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text.\",\"maxLength\":200,\"minLength\":1,\"title\":\"PlaceSummary\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_PlaceSummary_3534e514;
-
-macro_rules! d_Place_37d00bf7 {
-    () => {
-        "\"Place\":{\"additionalProperties\":false,\"description\":\"A physical location, as JSCalendar's Location.\",\"properties\":{\"address\":{\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"description\":{\"description\":\"Directions, a door code. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\"],\"title\":\"Place\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Place_37d00bf7;
 
 macro_rules! d_PolicyChangedEvent_4fa7e5e4 {
     () => {
@@ -4033,13 +2087,6 @@ macro_rules! d_PresignRequest_80ca5b92 {
 }
 pub(crate) use d_PresignRequest_80ca5b92;
 
-macro_rules! d_PreviewWarning_7907a2ce {
-    () => {
-        "\"PreviewWarning\":{\"description\":\"Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).\",\"enum\":[\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"selfPublish\",\"noWitnesses\",\"protectionBelowPolicy\",\"recoveryKeyRevealed\",\"roleKeysInBackups\"],\"title\":\"PreviewWarning\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_PreviewWarning_7907a2ce;
-
 macro_rules! d_ProfileEntry_3cd981fe {
     () => {
         "\"ProfileEntry\":{\"description\":\"One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\\n\\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\\n\\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\\n\\n`{ref, override}` — the same fact, a different value here. (\\\"In the gaming profile my display name is different.\\\")\\n\\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\\n\\nOmission is exclusion; there is no removal marker.\\n\\nAny form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"ref\":{\"$ref\":\"#/$defs/Ulid\"},\"slot\":{\"$ref\":\"#/$defs/Slot\"}},\"required\":[\"ref\"]},{\"additionalProperties\":false,\"properties\":{\"pinVersion\":{\"$ref\":\"#/$defs/Version\"},\"ref\":{\"$ref\":\"#/$defs/Ulid\"},\"slot\":{\"$ref\":\"#/$defs/Slot\"}},\"required\":[\"ref\",\"pinVersion\"]},{\"additionalProperties\":false,\"properties\":{\"override\":{\"additionalProperties\":false,\"description\":\"Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.\",\"properties\":{\"label\":{\"maxLength\":128,\"type\":\"string\"},\"value\":{}},\"required\":[\"value\"],\"type\":\"object\"},\"ref\":{\"$ref\":\"#/$defs/Ulid\"},\"slot\":{\"$ref\":\"#/$defs/Slot\"}},\"required\":[\"ref\",\"override\"]},{\"additionalProperties\":false,\"properties\":{\"inline\":{\"additionalProperties\":false,\"properties\":{\"label\":{\"maxLength\":128,\"type\":\"string\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"value\":{},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"}},\"required\":[\"type\",\"valueType\",\"value\",\"provenance\"],\"type\":\"object\"},\"slot\":{\"$ref\":\"#/$defs/Slot\"}},\"required\":[\"inline\"]}],\"title\":\"ProfileEntry\",\"type\":\"object\"}"
@@ -4067,13 +2114,6 @@ macro_rules! d_Proposal_903b3a28 {
     };
 }
 pub(crate) use d_Proposal_903b3a28;
-
-macro_rules! d_ProtectionClass_e8d832ae {
-    () => {
-        "\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ProtectionClass_e8d832ae;
 
 macro_rules! d_ProtocolCounts_f336e34b {
     () => {
@@ -4117,54 +2157,12 @@ macro_rules! d_ProviderObjectPrefix_18293ed3 {
 }
 pub(crate) use d_ProviderObjectPrefix_18293ed3;
 
-macro_rules! d_Publication_2edbbdf9 {
-    () => {
-        "\"Publication\":{\"additionalProperties\":false,\"description\":\"How the change reaches resolvers.\",\"properties\":{\"artifacts\":{\"description\":\"Present when `selfPublish` is true.\",\"items\":{\"$ref\":\"#/$defs/PublishedArtifact\"},\"type\":\"array\"},\"selfPublish\":{\"description\":\"True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.\",\"type\":\"boolean\"}},\"required\":[\"selfPublish\"],\"title\":\"Publication\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Publication_2edbbdf9;
-
-macro_rules! d_PublishedArtifact_830efeab {
-    () => {
-        "\"PublishedArtifact\":{\"additionalProperties\":false,\"description\":\"A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).\",\"properties\":{\"content\":{\"description\":\"The artefact's content, or for an append-only artefact the appended part, as text.\",\"type\":\"string\"},\"mediaType\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"mediaType\",\"content\"],\"title\":\"PublishedArtifact\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PublishedArtifact_830efeab;
-
-macro_rules! d_PublishedCard_4043f74d {
-    () => {
-        "\"PublishedCard\":{\"additionalProperties\":true,\"description\":\"A member's external card: a JSContact `Card` (RFC 9553) holding exactly their values whose visibility is `public`, mapped as `JSContactCard` maps them, with the member's W3C Data Integrity `proof`. The community serves it as received and never signs, composes or edits it (VTI-REG-004 item 4).\\n\\nCarried as an open object, and deliberately so: the proof covers every member of the card, and a typed binding that kept only the members named here would drop the rest and break the signature. So this schema constrains none of its members, and a consumer MUST check them itself: `@type`, `version`, `uid`, `issuer` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid` is `urn:vtc-directory:<EntryId>`; `issuer` is the member's membership DID; `proof` is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's membership DID authorized for `assertionMethod`; and the proof verifies over the card without it, before any member is relied on.\",\"title\":\"PublishedCard\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PublishedCard_4043f74d;
-
-macro_rules! d_PublishedConfig_b9752817 {
-    () => {
-        "\"PublishedConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/PublishedEvent\"},\"type\":\"array\"},\"helperKey\":{\"description\":\"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tokenKey\":{\"description\":\"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"vetterLabels\":{\"description\":\"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"suite\",\"helperKey\",\"tokenKey\",\"vetterLabels\",\"tokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"PublishedConfig\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PublishedConfig_b9752817;
-
-macro_rules! d_PublishedEvent_bfb8a633 {
-    () => {
-        "\"PublishedEvent\":{\"additionalProperties\":false,\"description\":\"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\"properties\":{\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"groupFloor\",\"tiers\"],\"title\":\"PublishedEvent\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PublishedEvent_bfb8a633;
-
 macro_rules! d_PublishedRow_6a47ff4c {
     () => {
         "\"PublishedRow\":{\"additionalProperties\":false,\"description\":\"One record the VTC has published to the Trust Registry.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Right\",\"description\":\"The TRQP action the record is published under.\"},\"context\":{\"$ref\":\"#/$defs/Context\"},\"entity\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The DID the record is about — the right's subject.\"},\"publishedAt\":{\"description\":\"When the VTC last wrote this record to the registry.\",\"format\":\"date-time\",\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"}},\"required\":[\"entity\",\"action\",\"resource\",\"context\",\"publishedAt\"],\"title\":\"PublishedRow\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_PublishedRow_6a47ff4c;
-
-macro_rules! d_PurgeProgress_5b14d7e4 {
-    () => {
-        "\"PurgeProgress\":{\"additionalProperties\":false,\"description\":\"How a purge is going. A purge deletes at the room's host and at each storage config holding its files, and some of those are remote; a step that fails is retried with backoff until it succeeds, and nothing is reported removed until every step has.\",\"properties\":{\"attempts\":{\"description\":\"Passes made so far; 0 until the first.\",\"minimum\":0,\"type\":\"integer\"},\"lastAttemptAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastError\":{\"description\":\"What stopped the last pass, for an administrator. Present only after a pass failed. Plain text, written by the community; it names no member and carries no credential.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"nextAttemptAt\":{\"description\":\"When the next pass is due. Absent while one runs.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"attempts\"],\"title\":\"PurgeProgress\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_PurgeProgress_5b14d7e4;
 
 macro_rules! d_PurposeCode_364056e0 {
     () => {
@@ -4299,47 +2297,12 @@ macro_rules! d_ReadVerification_3b74557b {
 }
 pub(crate) use d_ReadVerification_3b74557b;
 
-macro_rules! d_Reason_10599dc9 {
-    () => {
-        "\"Reason\":{\"description\":\"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Reason_10599dc9;
-
-macro_rules! d_Reason_97f7ad6a {
-    () => {
-        "\"Reason\":{\"description\":\"A facilitator's stated reason, shown to the board's audience with the decision it explains. Plain text.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Reason_97f7ad6a;
-
 macro_rules! d_Receipt_ac10a804 {
     () => {
         "\"Receipt\":{\"additionalProperties\":false,\"description\":\"The outcome of one delivery.\",\"properties\":{\"detail\":{\"description\":\"Why, for anything but `delivered`.\",\"maxLength\":1000,\"type\":\"string\"},\"group\":{\"description\":\"The group delivered to.\",\"maxLength\":2048,\"type\":\"string\"},\"member\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The member that owns it.\"},\"network\":{\"description\":\"Whether the group is a network group, which relays further.\",\"type\":\"boolean\"},\"relayed\":{\"description\":\"The receipts the network group's own relay returned.\",\"items\":{\"$ref\":\"#/$defs/Receipt\"},\"type\":\"array\"},\"status\":{\"$ref\":\"#/$defs/DeliveryStatus\"}},\"required\":[\"group\",\"member\",\"status\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Receipt_ac10a804;
-
-macro_rules! d_ReceivedNotification_07cb885a {
-    () => {
-        "\"ReceivedNotification\":{\"additionalProperties\":false,\"description\":\"One notification the community holds, as an administrator with `vtc.notifications.read` sees it. `originator`, `deliveredBy` and every entry of `relayedBy` were verified by the community when it accepted the notification (VTI-NTF-042); an administrator that does not take the community's word for them reads the document with vtc/notifications/show and verifies it.\",\"properties\":{\"mayRelay\":{\"description\":\"Whether the community may relay the revision held now: its `relayable` is true, its kind may be relayed, the received chain carries at most three relays so that the community's own makes at most four (VTI-NTF-041), and it is neither withdrawn nor past its `validUntil`.\",\"type\":\"boolean\"},\"notification\":{\"$ref\":\"#/$defs/Notification\",\"description\":\"The notification's members at the revision held.\"},\"originator\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The issuer of the notifications/notify document: who said the thing exists.\"},\"receivedAt\":{\"description\":\"When the community accepted the revision held.\",\"format\":\"date-time\",\"type\":\"string\"},\"recordId\":{\"$ref\":\"#/$defs/RecordId\"},\"relayDecisions\":{\"description\":\"The relay decisions made for this notification, oldest first. Empty while none has been. Every later revision, a withdrawal included, is relayed to every party an earlier one was, without a new decision (VTI-NTF-044).\",\"items\":{\"$ref\":\"#/$defs/RelayDecision\"},\"type\":\"array\"},\"relayDisclosure\":{\"description\":\"What a relay of the notification discloses about the community, as the kind's definition states it (VTI-NTF-046) — for the kind `election`, that the community is a member of the community holding the election. Present exactly when the kind's definition says a relay discloses something; the administrator deciding a relay is shown it, and acknowledges it in vtc/notifications/relay.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"relayedBy\":{\"description\":\"The relayers the held revision passed through before it reached the community, in the order they relayed it; the last delivered it here, and is the party the acceptance policy counted (VTI-NTF-031). Empty for a notification the originator sent the community directly.\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"maxItems\":4,\"type\":\"array\"}},\"required\":[\"recordId\",\"originator\",\"relayedBy\",\"notification\",\"receivedAt\",\"mayRelay\",\"relayDecisions\"],\"title\":\"ReceivedNotification\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ReceivedNotification_07cb885a;
-
-macro_rules! d_RecipientScope_701f8ca9 {
-    () => {
-        "\"RecipientScope\":{\"description\":\"Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.\",\"enum\":[\"allMembers\",\"group\",\"role\"],\"title\":\"RecipientScope\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RecipientScope_701f8ca9;
-
-macro_rules! d_Recipients_eee1824c {
-    () => {
-        "\"Recipients\":{\"additionalProperties\":false,\"dependentSchemas\":{\"groupId\":{\"properties\":{\"scope\":{\"const\":\"group\"}}},\"role\":{\"properties\":{\"scope\":{\"const\":\"role\"}}},\"scope\":{\"anyOf\":[{\"required\":[\"groupId\"]},{\"required\":[\"role\"]},{\"properties\":{\"scope\":{\"const\":\"allMembers\"}}}]}},\"description\":\"The members a relay decision reaches, resolved by the community from its own records when the decision is made (VTI-NTF-072). `groupId` is present exactly when `scope` is `group`, and `role` exactly when `scope` is `role`. Whatever the scope, the community never relays to itself, to the notification's originator, or to any relayer the received chain names (VTI-NTF-047), and relays to each party at most once per revision.\",\"properties\":{\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The community group whose active members the relay reaches.\"},\"role\":{\"description\":\"The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/RecipientScope\"}},\"required\":[\"scope\"],\"title\":\"Recipients\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Recipients_eee1824c;
 
 macro_rules! d_RecordBasis_3c4e3c32 {
     () => {
@@ -4396,20 +2359,6 @@ macro_rules! d_RecordEvidence_724c2ddd {
     };
 }
 pub(crate) use d_RecordEvidence_724c2ddd;
-
-macro_rules! d_RecordId_73fc7fe6 {
-    () => {
-        "\"RecordId\":{\"description\":\"The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"RecordId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RecordId_73fc7fe6;
-
-macro_rules! d_RecordId_b8e09d4b {
-    () => {
-        "\"RecordId\":{\"description\":\"The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"RecordId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RecordId_b8e09d4b;
 
 macro_rules! d_RecordKind_1cb78ea3 {
     () => {
@@ -4502,26 +2451,12 @@ macro_rules! d_RecordWrittenAt_db0523ac {
 }
 pub(crate) use d_RecordWrittenAt_db0523ac;
 
-macro_rules! d_Record_1654f9d8 {
-    () => {
-        "\"Record\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"The action the assertion covers.\",\"minLength\":1,\"type\":\"string\"},\"authorityId\":{\"description\":\"The authority asserting it.\",\"minLength\":1,\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"entityId\":{\"description\":\"The entity the record is about.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"recordType\":{\"description\":\"Record discriminator, as the trust registry states it.\",\"minLength\":1,\"type\":\"string\"},\"resource\":{\"description\":\"The resource the assertion covers.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"recordType\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Record_1654f9d8;
-
 macro_rules! d_Record_fb040dcd {
     () => {
         "\"Record\":{\"additionalProperties\":true,\"description\":\"The provider's record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).\",\"properties\":{\"conversion\":{\"additionalProperties\":true,\"description\":\"Present only on an entry converted from HCP v1 (HCP 4.3).\",\"properties\":{\"convertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When it was converted.\"},\"convertedBy\":{\"description\":\"Who converted it.\",\"maxLength\":2048,\"type\":\"string\"},\"from\":{\"description\":\"What the entry was converted from.\",\"maxLength\":2048,\"type\":\"string\"},\"unmapped\":{\"additionalProperties\":true,\"description\":\"v1 members the conversion did not map.\",\"type\":\"object\"}},\"required\":[\"from\",\"convertedAt\",\"convertedBy\"],\"type\":\"object\"},\"metadata\":{\"additionalProperties\":true,\"description\":\"Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).\",\"type\":\"object\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).\"},\"relationships\":{\"description\":\"Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Relationship\"},\"type\":\"array\"},\"status\":{\"description\":\"The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"deprecated\",\"conflicted\",\"expired\",\"revoked\",\"suspended\",\"deleted\"],\"type\":\"string\"},\"version\":{\"description\":\"The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"status\",\"version\",\"provenance\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Record_fb040dcd;
-
-macro_rules! d_RecordedApproval_e3f102e6 {
-    () => {
-        "\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RecordedApproval_e3f102e6;
 
 macro_rules! d_RecordedProposal_3a611e4e {
     () => {
@@ -4530,41 +2465,6 @@ macro_rules! d_RecordedProposal_3a611e4e {
 }
 pub(crate) use d_RecordedProposal_3a611e4e;
 
-macro_rules! d_RecoveryCommitmentOrThreshold_15bf9f3f {
-    () => {
-        "\"RecoveryCommitmentOrThreshold\":{\"description\":\"A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7).\",\"oneOf\":[{\"$ref\":\"#/$defs/RecoveryCommitment\"},{\"$ref\":\"#/$defs/ThresholdRecoveryCommitment\"}],\"title\":\"RecoveryCommitmentOrThreshold\"}"
-    };
-}
-pub(crate) use d_RecoveryCommitmentOrThreshold_15bf9f3f;
-
-macro_rules! d_RecoveryCommitment_6ac59521 {
-    () => {
-        "\"RecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).\",\"properties\":{\"custodian\":{\"$ref\":\"#/$defs/RecoveryCustodian\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"RecoveryCommitment\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RecoveryCommitment_6ac59521;
-
-macro_rules! d_RecoveryCustodianKind_7fc1bfd1 {
-    () => {
-        "\"RecoveryCustodianKind\":{\"description\":\"The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.\",\"enum\":[\"separateKey\",\"vta\",\"thresholdGroup\"],\"title\":\"RecoveryCustodianKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RecoveryCustodianKind_7fc1bfd1;
-
-macro_rules! d_RecoveryCustodian_7e95e5df {
-    () => {
-        "\"RecoveryCustodian\":{\"additionalProperties\":false,\"description\":\"What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).\",\"properties\":{\"did\":{\"description\":\"`vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RecoveryCustodianKind\"},\"participants\":{\"description\":\"`thresholdGroup` only, in custody records: the members' VTA DIDs where members are VTAs. n is at least three, because 2 ≤ t < n (VTI-KEY-210).\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":3,\"type\":\"array\",\"uniqueItems\":true},\"threshold\":{\"description\":\"`thresholdGroup` only: t, the number of members that must authorize. MUST be less than the number of members.\",\"minimum\":2,\"type\":\"integer\"}},\"required\":[\"kind\"],\"title\":\"RecoveryCustodian\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RecoveryCustodian_7e95e5df;
-
-macro_rules! d_RecoverySigningRequest_296a42cd {
-    () => {
-        "\"RecoverySigningRequest\":{\"additionalProperties\":false,\"description\":\"What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.\",\"properties\":{\"commitment\":{\"description\":\"The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"proofOptions\":{\"description\":\"The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).\",\"type\":\"object\"},\"unsignedChange\":{\"description\":\"The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"commitment\",\"keyType\",\"unsignedChange\",\"proofOptions\"],\"title\":\"RecoverySigningRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RecoverySigningRequest_296a42cd;
-
 macro_rules! d_Referral_fb032f5d {
     () => {
         "\"Referral\":{\"additionalProperties\":false,\"description\":\"How a self-registered account came to the service, as attribution: who sent it (`via`) and a free-text note (`label`). Never authority — a service MUST NOT authorise anything on it.\",\"properties\":{\"label\":{\"description\":\"A short note on the source — a campaign, an invitation's origin. Free text, never interpreted.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"via\":{\"description\":\"The DID of the party that sent the registrant, usually a trust community. Absent when only a `label` was given.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"title\":\"Referral\",\"type\":\"object\"}"
@@ -4572,124 +2472,12 @@ macro_rules! d_Referral_fb032f5d {
 }
 pub(crate) use d_Referral_fb032f5d;
 
-macro_rules! d_RegisteredGroup_ee5e6c36 {
-    () => {
-        "\"RegisteredGroup\":{\"additionalProperties\":false,\"properties\":{\"acceptance\":{\"description\":\"The network's `groupRegistered/1` statement (VSC) accepting the registration: subject the group, `object.digestMultibase` the registration's digest — SHA-256 over the RFC 8785 (JCS) form of the signed request including its proof.\",\"type\":\"object\"},\"endpoint\":{\"description\":\"Where the network delivers broadcasts for the group: the community's Trust Task endpoint, at which the network sends them as `vtc/networks/deliver`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"groupDid\":{\"description\":\"The group's own DID, which the registration names as its `group`.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"groupId\":{\"description\":\"The community's identifier for the group.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"registration\":{\"description\":\"The registration: the community's signed `vtn/groups/register` request as the network accepted it — a complete Trust Task document, with its proof, naming the network as `recipient` and the group, `role` and `endpoint` in its payload.\",\"type\":\"object\"},\"role\":{\"description\":\"A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.\",\"pattern\":\"^[a-z0-9_-]{1,64}$\",\"type\":\"string\"}},\"required\":[\"role\",\"groupId\",\"groupDid\",\"endpoint\",\"registration\",\"acceptance\",\"registeredAt\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RegisteredGroup_ee5e6c36;
-
 macro_rules! d_RegisteredGroup_ef4eaddf {
     () => {
         "\"RegisteredGroup\":{\"additionalProperties\":false,\"description\":\"A group serving a role: the member's signed registration and the network's groupRegistered credential accepting it.\",\"properties\":{\"acceptance\":{\"$ref\":\"#/$defs/Credential\",\"description\":\"The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list.\"},\"endpoint\":{\"description\":\"Where the network delivers broadcasts for the group.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"group\":{\"description\":\"The group: a DID, or for a network group a DID URL on the network's DID (`<did>#role-<name>`).\",\"maxLength\":2048,\"type\":\"string\"},\"member\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The member that registered the group.\"},\"registeredAt\":{\"description\":\"When the network accepted the registration.\",\"format\":\"date-time\",\"type\":\"string\"},\"registration\":{\"$ref\":\"#/$defs/SignedTask\",\"description\":\"The member's signed vtn/groups/register request.\"},\"role\":{\"$ref\":\"#/$defs/RoleName\"}},\"required\":[\"member\",\"role\",\"group\",\"endpoint\",\"registration\",\"acceptance\",\"registeredAt\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RegisteredGroup_ef4eaddf;
-
-macro_rules! d_RegisteredGroup_fc4d003c {
-    () => {
-        "\"RegisteredGroup\":{\"additionalProperties\":false,\"properties\":{\"acceptance\":{\"description\":\"The network's `groupRegistered` statement (VSC), bound to the registration's digest.\",\"type\":\"object\"},\"endpoint\":{\"description\":\"Where the network delivers broadcasts for the group: the community's relay endpoint for it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"groupDid\":{\"description\":\"The group's own DID, which the registration names as its subject.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"groupId\":{\"description\":\"The community's identifier for the group.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"registration\":{\"description\":\"The community's `servesRole` statement (VSC): the group serves `role` in the network.\",\"type\":\"object\"},\"role\":{\"description\":\"A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.\",\"pattern\":\"^[a-z0-9_-]{1,64}$\",\"type\":\"string\"}},\"required\":[\"role\",\"groupId\",\"groupDid\",\"endpoint\",\"registration\",\"acceptance\",\"registeredAt\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RegisteredGroup_fc4d003c;
-
-macro_rules! d_RegistrarState_0ac4473b {
-    () => {
-        "\"RegistrarState\":{\"description\":\"An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).\",\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\",\"pendingRegistration\",\"registrationRefused\"],\"title\":\"RegistrarState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrarState_0ac4473b;
-
-macro_rules! d_RegistrationAnswer_aa96e019 {
-    () => {
-        "\"RegistrationAnswer\":{\"anyOf\":[{\"maxLength\":500,\"type\":\"string\"},{\"type\":\"boolean\"}],\"description\":\"An answer to a question: a string for `text` and `choice`, a boolean for `boolean`.\",\"title\":\"RegistrationAnswer\"}"
-    };
-}
-pub(crate) use d_RegistrationAnswer_aa96e019;
-
-macro_rules! d_RegistrationAnswers_94e05d0e {
-    () => {
-        "\"RegistrationAnswers\":{\"additionalProperties\":{\"$ref\":\"#/$defs/RegistrationAnswer\"},\"description\":\"Answers keyed by `questionId`.\",\"maxProperties\":20,\"propertyNames\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"title\":\"RegistrationAnswers\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RegistrationAnswers_94e05d0e;
-
-macro_rules! d_RegistrationId_aadbc7a5 {
-    () => {
-        "\"RegistrationId\":{\"description\":\"Opaque identifier of one registrant's registration for one event: `reg_` followed by 16 to 64 base64url characters. Random and unique within the community; a registrant has at most one registration per event (VTI-EVT-030).\",\"pattern\":\"^reg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"RegistrationId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrationId_aadbc7a5;
-
-macro_rules! d_RegistrationMode_085109d4 {
-    () => {
-        "\"RegistrationMode\":{\"description\":\"`open`: a member of the audience who registers is going at once (or waitlisted when full). `approval`: a registration is pending until a host decides it. `closed`: no registrations; the event is for information only (VTI-EVT-031).\",\"enum\":[\"open\",\"approval\",\"closed\"],\"title\":\"RegistrationMode\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrationMode_085109d4;
-
-macro_rules! d_RegistrationQuestionId_2b2977be {
-    () => {
-        "\"RegistrationQuestionId\":{\"description\":\"A question's key within its event.\",\"pattern\":\"^[a-z][a-z0-9-]{0,31}$\",\"title\":\"RegistrationQuestionId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrationQuestionId_2b2977be;
-
-macro_rules! d_RegistrationQuestionKind_addaa298 {
-    () => {
-        "\"RegistrationQuestionKind\":{\"description\":\"`text`: a free answer of at most 500 characters. `choice`: one of `choices`. `boolean`: yes or no.\",\"enum\":[\"text\",\"choice\",\"boolean\"],\"title\":\"RegistrationQuestionKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrationQuestionKind_addaa298;
-
-macro_rules! d_RegistrationQuestion_df1f5f45 {
-    () => {
-        "\"RegistrationQuestion\":{\"additionalProperties\":false,\"description\":\"A question a registrant answers when registering. Answers are read by the event's hosts only, and are deleted on the event's retention schedule (VTI-EVT-034, VTI-EVT-090).\",\"properties\":{\"choices\":{\"description\":\"Present exactly when `kind` is `choice`.\",\"items\":{\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"maxItems\":20,\"minItems\":2,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"$ref\":\"#/$defs/RegistrationQuestionKind\"},\"label\":{\"description\":\"The question as shown. Plain text.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"questionId\":{\"$ref\":\"#/$defs/RegistrationQuestionId\"},\"required\":{\"description\":\"The registration is refused without an answer. Absent means false.\",\"type\":\"boolean\"}},\"required\":[\"questionId\",\"label\",\"kind\"],\"title\":\"RegistrationQuestion\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RegistrationQuestion_df1f5f45;
-
-macro_rules! d_RegistrationSettings_e3ff7b85 {
-    () => {
-        "\"RegistrationSettings\":{\"additionalProperties\":false,\"description\":\"How the event takes registrations (VTI-EVT-031 – 036).\",\"properties\":{\"capacity\":{\"description\":\"The most people who may be going, plus-ones included. Absent means no limit.\",\"maximum\":100000,\"minimum\":1,\"type\":\"integer\"},\"closesAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations and changes are refused after this, except withdrawal (VTI-EVT-037). Absent means at the event's start.\"},\"codeOfConduct\":{\"$ref\":\"#/$defs/CodeOfConduct\"},\"mode\":{\"$ref\":\"#/$defs/RegistrationMode\"},\"opensAt\":{\"$ref\":\"#/$defs/EventInstant\",\"description\":\"Registrations are refused before this. Absent means from publication.\"},\"plusOnes\":{\"description\":\"The most guests a registrant may bring. Absent means 0.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/RegistrationQuestion\"},\"maxItems\":20,\"type\":\"array\"},\"waitlist\":{\"description\":\"Registrations beyond `capacity` are waitlisted, and the first on the waitlist becomes going when a place frees (VTI-EVT-033). Absent means false: a registration beyond capacity is refused.\",\"type\":\"boolean\"}},\"required\":[\"mode\"],\"title\":\"RegistrationSettings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RegistrationSettings_e3ff7b85;
-
-macro_rules! d_RegistrationStatus_acc918c7 {
-    () => {
-        "\"RegistrationStatus\":{\"description\":\"Where a registration stands (VTI-EVT-032). `going`: has a place. `maybe`: has said maybe; holds no place. `pending`: awaits a host's decision. `waitlisted`: waits for a place, in order. `withdrawn`: the registrant withdrew. `declined`: a host declined a pending registration. `removed`: a host removed it.\",\"enum\":[\"going\",\"maybe\",\"pending\",\"waitlisted\",\"withdrawn\",\"declined\",\"removed\"],\"title\":\"RegistrationStatus\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RegistrationStatus_acc918c7;
-
-macro_rules! d_Registration_09aa7d29 {
-    () => {
-        "\"Registration\":{\"additionalProperties\":false,\"description\":\"One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053). Exactly one of `entryId` (a member) and `registrantDid` (a partner's member, VTI-EVT-134) names the registrant.\",\"properties\":{\"answers\":{\"$ref\":\"#/$defs/RegistrationAnswers\",\"description\":\"The registrant's and the hosts' view only.\"},\"codeOfConductAcknowledged\":{\"description\":\"The `sha256` of the code of conduct the registrant acknowledged.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The registrant's directory entry, where they are a member. Exactly one of `entryId` and `registrantDid` is present.\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"eventSequence\":{\"description\":\"The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.\",\"minimum\":0,\"type\":\"integer\"},\"guests\":{\"description\":\"Plus-ones the registrant brings.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"note\":{\"description\":\"A host's note on a decline or removal, shown to the registrant. Plain text.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"registrantDid\":{\"description\":\"A registrant who is not a member of the community — a partner's member (VTI-EVT-134) — by the DID they presented as. Shown to the event's hosts and to the registrant only.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[A-Za-z0-9._:%-]+$\",\"type\":\"string\"},\"registrationId\":{\"$ref\":\"#/$defs/RegistrationId\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting the registration was made under (VTI-EVT-052).\"},\"status\":{\"$ref\":\"#/$defs/RegistrationStatus\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"waitlistPosition\":{\"description\":\"While `waitlisted`: the registrant's place in the queue, 1 first.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"registrationId\",\"eventId\",\"status\",\"guests\",\"roster\",\"eventSequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Registration\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Registration_09aa7d29;
-
-macro_rules! d_Registration_50244eab {
-    () => {
-        "\"Registration\":{\"additionalProperties\":false,\"description\":\"One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053).\",\"properties\":{\"answers\":{\"$ref\":\"#/$defs/RegistrationAnswers\",\"description\":\"The registrant's and the hosts' view only.\"},\"codeOfConductAcknowledged\":{\"description\":\"The `sha256` of the code of conduct the registrant acknowledged.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"createdAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"eventId\":{\"$ref\":\"#/$defs/EventId\"},\"eventSequence\":{\"description\":\"The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.\",\"minimum\":0,\"type\":\"integer\"},\"guests\":{\"description\":\"Plus-ones the registrant brings.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"note\":{\"description\":\"A host's note on a decline or removal, shown to the registrant. Plain text.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"$ref\":\"#/$defs/RegistrationId\"},\"roster\":{\"$ref\":\"#/$defs/RosterSetting\",\"description\":\"The roster setting the registration was made under (VTI-EVT-052).\"},\"status\":{\"$ref\":\"#/$defs/RegistrationStatus\"},\"updatedAt\":{\"$ref\":\"#/$defs/EventInstant\"},\"waitlistPosition\":{\"description\":\"While `waitlisted`: the registrant's place in the queue, 1 first.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"registrationId\",\"eventId\",\"entryId\",\"status\",\"guests\",\"roster\",\"eventSequence\",\"createdAt\",\"updatedAt\"],\"title\":\"Registration\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Registration_50244eab;
-
-macro_rules! d_ReissuanceFollowUp_f5768d3e {
-    () => {
-        "\"ReissuanceFollowUp\":{\"additionalProperties\":false,\"description\":\"What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.\",\"properties\":{\"artefactsToReissue\":{\"description\":\"Attestation artefacts still in force that the VTA's signing record shows the key signed, which the node MUST re-issue with identical claims and expiry.\",\"minimum\":0,\"type\":\"integer\"},\"statusListsToResign\":{\"description\":\"Status lists signed by the revoked or lost key, which the node MUST re-sign at once under a sound attestation key.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ReissuanceFollowUp\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ReissuanceFollowUp_f5768d3e;
-
-macro_rules! d_RejectedKey_9551801b {
-    () => {
-        "\"RejectedKey\":{\"$anchor\":\"rejectedKey\",\"additionalProperties\":false,\"description\":\"A key a patch declined to apply, with the reason.\",\"properties\":{\"key\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"key\",\"reason\"],\"title\":\"RejectedKey\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RejectedKey_9551801b;
 
 macro_rules! d_RelationshipType_41a887f3 {
     () => {
@@ -4705,33 +2493,12 @@ macro_rules! d_Relationship_6d76680c {
 }
 pub(crate) use d_Relationship_6d76680c;
 
-macro_rules! d_RelayDecision_fd508449 {
-    () => {
-        "\"RelayDecision\":{\"additionalProperties\":false,\"description\":\"One administrator's decision to relay a received notification, as the community records it (VTI-NTF-073). It records the selection and how many parties it added, never who they are: the record of whom the community relayed to exists only to relay later revisions to them (VTI-NTF-044).\",\"properties\":{\"decidedAt\":{\"description\":\"When the decision was made.\",\"format\":\"date-time\",\"type\":\"string\"},\"decidedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The administrator who made it.\"},\"recipientCount\":{\"description\":\"How many parties this decision added to those the notification is relayed to. Parties an earlier decision already reached are not counted again.\",\"minimum\":0,\"type\":\"integer\"},\"recipients\":{\"$ref\":\"#/$defs/Recipients\"}},\"required\":[\"decidedAt\",\"decidedBy\",\"recipients\",\"recipientCount\"],\"title\":\"RelayDecision\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RelayDecision_fd508449;
-
 macro_rules! d_ReleaseRequirement_bddc3a3e {
     () => {
         "\"ReleaseRequirement\":{\"description\":\"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\"enum\":[\"consent\",\"stepUp\"],\"title\":\"ReleaseRequirement\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_ReleaseRequirement_bddc3a3e;
-
-macro_rules! d_ReminderMinutes_e2ca1103 {
-    () => {
-        "\"ReminderMinutes\":{\"description\":\"A reminder's offset: how many minutes before the event's start it is due. At most four weeks.\",\"maximum\":40320,\"minimum\":1,\"title\":\"ReminderMinutes\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_ReminderMinutes_e2ca1103;
-
-macro_rules! d_RenewalCredentials_c0c37d2b {
-    () => {
-        "\"RenewalCredentials\":{\"additionalProperties\":false,\"description\":\"The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.\",\"properties\":{\"authority\":{\"description\":\"The renewed Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The renewed Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"RenewalCredentials\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RenewalCredentials_c0c37d2b;
 
 macro_rules! d_RepoResource_3e774ffa {
     () => {
@@ -4774,20 +2541,6 @@ macro_rules! d_RequestId_d514f0eb {
     };
 }
 pub(crate) use d_RequestId_d514f0eb;
-
-macro_rules! d_RequestedAttribute_a87082b1 {
-    () => {
-        "\"RequestedAttribute\":{\"additionalProperties\":false,\"properties\":{\"purpose\":{\"description\":\"Why the community asks, in words shown to the applicant before they disclose.\",\"maxLength\":256,\"type\":\"string\"},\"required\":{\"default\":true,\"description\":\"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\"type\":\"boolean\"},\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"}},\"required\":[\"type\"],\"title\":\"RequestedAttribute\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RequestedAttribute_a87082b1;
-
-macro_rules! d_RequestedAttributes_14db4dcc {
-    () => {
-        "\"RequestedAttributes\":{\"description\":\"What the community asks an applicant to tell it about themselves, as claim types — never values. At most 32 entries, and no claim type twice: two answers to one question is a question nobody can answer. Self-asserted by the applicant when answered; a community MUST NOT describe an answer as verified. Empty means the community asks nothing.\",\"items\":{\"$ref\":\"#/$defs/RequestedAttribute\"},\"maxItems\":32,\"title\":\"RequestedAttributes\",\"type\":\"array\"}"
-    };
-}
-pub(crate) use d_RequestedAttributes_14db4dcc;
 
 macro_rules! d_RequestedScope_06a5a6b4 {
     () => {
@@ -4859,13 +2612,6 @@ macro_rules! d_Response_05b06197 {
 }
 pub(crate) use d_Response_05b06197;
 
-macro_rules! d_Response_05b717aa {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"doneBytes\":{\"minimum\":0,\"type\":\"integer\"},\"doneFiles\":{\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"fromConfigs\":{\"items\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"maxItems\":64,\"type\":\"array\"},\"lastError\":{\"$ref\":\"#/$defs/MigrationLastError\",\"description\":\"Present when `state` is `paused`; MAY be present while `running`, when a step is being retried.\"},\"migrationId\":{\"description\":\"Community-generated handle for this room's migration.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"nextAttemptAt\":{\"description\":\"When the community will next try by itself. Present while a `running` migration waits out a backoff, and on a `paused` one the community will retry unprompted; absent on a `paused` one only re-issuing vtc/rooms/storage/migrate resumes (such as `capacity`).\",\"format\":\"date-time\",\"type\":\"string\"},\"pausedCause\":{\"$ref\":\"#/$defs/MigrationPauseCause\",\"description\":\"Present exactly when `state` is `paused`.\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MigrationState\"},\"toConfig\":{\"$ref\":\"#/$defs/StorageConfigId\",\"description\":\"The config this migration moves blobs to: the room's assigned config when the migration was approved. It does not change if the room is reassigned while the migration is under way.\"},\"totalBytes\":{\"minimum\":0,\"type\":\"integer\"},\"totalFiles\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"migrationId\",\"roomId\",\"toConfig\",\"fromConfigs\",\"state\",\"totalFiles\",\"totalBytes\",\"doneFiles\",\"doneBytes\"],\"title\":\"VTC Rooms — Storage — Migrate — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_05b717aa;
-
 macro_rules! d_Response_0b455ea8 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What is published, and how far it is from what the VTC's records currently call for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"},\"pendingChanges\":{\"description\":\"How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.\",\"minimum\":0,\"type\":\"integer\"},\"published\":{\"description\":\"Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.\",\"items\":{\"$ref\":\"#/$defs/PublishedRow\"},\"type\":\"array\"},\"registryConfigured\":{\"description\":\"Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.\",\"type\":\"boolean\"}},\"required\":[\"registryConfigured\",\"published\",\"pendingChanges\"],\"title\":\"Git Namespaces — Show Trust Registry Projection — response payload\",\"type\":\"object\"}"
@@ -4886,13 +2632,6 @@ macro_rules! d_Response_0d25ded4 {
     };
 }
 pub(crate) use d_Response_0d25ded4;
-
-macro_rules! d_Response_0d5fec92 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"criterion\":{\"$ref\":\"#/$defs/AcceptsCriterion\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"criterion\"],\"title\":\"VTC Schemas — Accepts — Show — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_0d5fec92;
 
 macro_rules! d_Response_0dd4be78 {
     () => {
@@ -4928,41 +2667,6 @@ macro_rules! d_Response_13779dbf {
     };
 }
 pub(crate) use d_Response_13779dbf;
-
-macro_rules! d_Response_13eb704f {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"branding\":{\"$ref\":\"#/$defs/CommunityBranding\"},\"communityDid\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"criteria\":{\"items\":{\"$ref\":\"#/$defs/Criterion\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestedAttributes\":{\"description\":\"What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"purpose\":{\"description\":\"Why the community asks, in words shown to the applicant before they disclose.\",\"maxLength\":256,\"type\":\"string\"},\"required\":{\"default\":true,\"description\":\"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\"type\":\"boolean\"},\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"communityDid\",\"criteria\"],\"title\":\"VTC Join-Requests Manifest — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_13eb704f;
-
-macro_rules! d_Response_15037c00 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Update — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_15037c00;
-
-macro_rules! d_Response_15b187b0 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"config\"],\"title\":\"VTC Storage — Configs — Update — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_15b187b0;
-
-macro_rules! d_Response_170cbba6 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"largestBlobs\":{\"description\":\"The room's largest committed blobs, by size only.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"size\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"size\",\"configId\",\"createdAt\"],\"type\":\"object\"},\"maxItems\":10,\"type\":\"array\"},\"limits\":{\"$ref\":\"#/$defs/EffectiveLimits\"},\"membersWithUsage\":{\"description\":\"On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.\",\"minimum\":0,\"type\":\"integer\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"storage\":{\"additionalProperties\":false,\"description\":\"Where the room's blobs are.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"earlierConfigs\":{\"items\":{\"$ref\":\"#/$defs/ConfigHoldings\"},\"maxItems\":64,\"type\":\"array\"},\"migration\":{\"$ref\":\"#/$defs/MigrationProgress\",\"description\":\"Present while the room has a migration `queued`, `running` or `paused`; MAY remain, `complete` or `failed`, for the room's most recent finished one.\"}},\"required\":[\"configId\",\"earlierConfigs\"],\"type\":\"object\"},\"usage\":{\"additionalProperties\":false,\"properties\":{\"orphans\":{\"additionalProperties\":false,\"description\":\"Blobs no record names, awaiting deletion after the grace window.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"files\":{\"minimum\":0,\"type\":\"integer\"},\"oldestOrphanedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"files\",\"bytes\"],\"type\":\"object\"},\"room\":{\"$ref\":\"#/$defs/Usage\"}},\"required\":[\"room\",\"orphans\"],\"type\":\"object\"}},\"required\":[\"room\",\"storage\",\"limits\",\"usage\"],\"title\":\"VTC Rooms — Get — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_170cbba6;
-
-macro_rules! d_Response_1a53a3a2 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the ballot box.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Read — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_1a53a3a2;
 
 macro_rules! d_Response_1e68fd68 {
     () => {
@@ -5006,33 +2710,12 @@ macro_rules! d_Response_268e490a {
 }
 pub(crate) use d_Response_268e490a;
 
-macro_rules! d_Response_269a48d5 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"castDocument\":{\"description\":\"The voting/ballot/cast-encrypted request, signed by a key made for this cast alone (VTI-VOT-003).\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"CastDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"castDocument\",\"tag\"],\"title\":\"VTA PCS — Vote Encrypted — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_269a48d5;
-
-macro_rules! d_Response_28bd58c6 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Every stored template in the selected scope, in an array.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"templates\":{\"description\":\"Every stored template in the selected scope, sorted by name; empty when none exist.\",\"items\":{\"$ref\":\"#/$defs/DidTemplateRecord\"},\"type\":\"array\"}},\"required\":[\"templates\"],\"title\":\"VTA DID-Template List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_28bd58c6;
-
 macro_rules! d_Response_308ab2b3 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"policies\":{\"items\":{\"$ref\":\"#/$defs/PolicyModule\"},\"type\":\"array\"},\"truncated\":{\"type\":\"boolean\"}},\"required\":[\"policies\",\"truncated\"],\"title\":\"Policy List — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_308ab2b3;
-
-macro_rules! d_Response_31795c4c {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/list. Type https://trusttasks.org/spec/vtc/rooms/community/list/0.2#response. One page of the rooms the community owns.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/CommunityRoomV2\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Rooms Community List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_31795c4c;
 
 macro_rules! d_Response_31e7998a {
     () => {
@@ -5055,13 +2738,6 @@ macro_rules! d_Response_35f1bbc7 {
 }
 pub(crate) use d_Response_35f1bbc7;
 
-macro_rules! d_Response_3a8252b9 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Retire — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_3a8252b9;
-
 macro_rules! d_Response_3ac06d7f {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite. The claim code is returned only here.\",\"properties\":{\"claimCode\":{\"description\":\"A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When the invite stops being redeemable.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"inviteId\":{\"description\":\"The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"url\":{\"description\":\"Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"inviteId\",\"url\",\"claimCode\",\"expiresAt\"],\"title\":\"Auth — Step-up Approver Invite — response payload\",\"type\":\"object\"}"
@@ -5075,27 +2751,6 @@ macro_rules! d_Response_3b1cb06e {
     };
 }
 pub(crate) use d_Response_3b1cb06e;
-
-macro_rules! d_Response_3b88675f {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"Candidate admin DID derived from the passkey's Ed25519 public key.\",\"pattern\":\"^did:key:z\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Finish — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_3b88675f;
-
-macro_rules! d_Response_3ba17df8 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.\",\"title\":\"VTA DID-Template Create — response payload\"}"
-    };
-}
-pub(crate) use d_Response_3ba17df8;
-
-macro_rules! d_Response_3d1916c7 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/enrol request, signed as the trustee, to send to the ballot box unchanged.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/enrol/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"EnrolDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Enrol — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_3d1916c7;
 
 macro_rules! d_Response_3d354505 {
     () => {
@@ -5118,13 +2773,6 @@ macro_rules! d_Response_3f703e8b {
 }
 pub(crate) use d_Response_3f703e8b;
 
-macro_rules! d_Response_42895831 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"credentialState\":{\"$ref\":\"#/$defs/CredentialState\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"probeOk\":{\"description\":\"Present when the community probed the config with the new credential.\",\"type\":\"boolean\"}},\"required\":[\"configId\",\"credentialState\"],\"title\":\"VTC Storage — Credentials — Set — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_42895831;
-
 macro_rules! d_Response_42e0da83 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sealedSessionBlob\":{\"$ref\":\"#/$defs/SealedEnvelope\",\"description\":\"Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.\"}},\"required\":[\"sealedSessionBlob\"],\"title\":\"Vault Proxy-Login — response payload\",\"type\":\"object\"}"
@@ -5145,13 +2793,6 @@ macro_rules! d_Response_44a6debd {
     };
 }
 pub(crate) use d_Response_44a6debd;
-
-macro_rules! d_Response_492a81e3 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"data\":{\"additionalProperties\":false,\"properties\":{\"accessExpiresAt\":{\"description\":\"Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil).\",\"minimum\":0,\"type\":\"integer\"},\"accessToken\":{\"type\":\"string\"},\"foreignIssuerDid\":{\"type\":\"string\"},\"mappedRole\":{\"description\":\"The LOCAL role from cross_community_roles policy — not the foreign role.\",\"type\":\"string\"}},\"required\":[\"accessToken\",\"accessExpiresAt\",\"foreignIssuerDid\",\"mappedRole\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\"pattern\":\"^xc-\",\"type\":\"string\"}},\"required\":[\"sessionId\",\"data\"],\"title\":\"VTC Auth Recognise — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_492a81e3;
 
 macro_rules! d_Response_497288ee {
     () => {
@@ -5188,26 +2829,12 @@ macro_rules! d_Response_4e7bc868 {
 }
 pub(crate) use d_Response_4e7bc868;
 
-macro_rules! d_Response_4e91cf00 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action with the caller's acknowledgement recorded in `approvals`. When the caller was the last administrator expected to acknowledge it, `status` is `completed` and `closedReason` is `acknowledged`. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Acknowledge — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_4e91cf00;
-
 macro_rules! d_Response_4ea97789 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.\",\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point.\",\"type\":\"string\"},\"entries\":{\"description\":\"Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty.\",\"items\":{\"$ref\":\"#/$defs/VaultEntry\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"redactedFields\":{\"description\":\"Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"truncated\":{\"description\":\"true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.\",\"type\":\"boolean\"}},\"required\":[\"entries\",\"truncated\"],\"title\":\"Vault List — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_4ea97789;
-
-macro_rules! d_Response_4fb20e35 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The membership with the group registered.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/NetworkMembership\"}},\"required\":[\"membership\"],\"title\":\"VTC Networks — Groups — Register — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_4fb20e35;
 
 macro_rules! d_Response_5164d66f {
     () => {
@@ -5244,47 +2871,12 @@ macro_rules! d_Response_58dd4b4d {
 }
 pub(crate) use d_Response_58dd4b4d;
 
-macro_rules! d_Response_59d5b440 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord after replacement. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata (createdAt/createdBy preserved, updatedAt advanced). Same shape returned by create/get.\",\"title\":\"VTA DID-Template Update — response payload\"}"
-    };
-}
-pub(crate) use d_Response_59d5b440;
-
-macro_rules! d_Response_5a52bab9 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"mediators\":{\"description\":\"One entry per mediator that carried inbound traffic in the window.\",\"items\":{\"$ref\":\"#/$defs/MediatorStats\"},\"maxItems\":1000,\"type\":\"array\"},\"senders\":{\"description\":\"One entry per sender that reached the agent in the window.\",\"items\":{\"$ref\":\"#/$defs/SenderLastSeen\"},\"maxItems\":100000,\"type\":\"array\"},\"since\":{\"description\":\"The lower bound applied, when the request gave one.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"The upper bound applied — now, when the request gave none.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"until\",\"mediators\",\"senders\"],\"title\":\"VTA Services Report — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_5a52bab9;
-
-macro_rules! d_Response_5dd3912f {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Add — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_5dd3912f;
-
-macro_rules! d_Response_607dc8f8 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/justify request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/justify/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"JustifyDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Justify — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_607dc8f8;
-
 macro_rules! d_Response_632591db {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"binding\":{\"$ref\":\"#/$defs/DeviceBinding\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"binding\"],\"title\":\"Device Register — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_632591db;
-
-macro_rules! d_Response_637fa14a {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/decrypt request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"DecryptDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Decrypt — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_637fa14a;
 
 macro_rules! d_Response_6381347d {
     () => {
@@ -5293,33 +2885,12 @@ macro_rules! d_Response_6381347d {
 }
 pub(crate) use d_Response_6381347d;
 
-macro_rules! d_Response_63bc96a2 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.\",\"properties\":{\"aclCount\":{\"description\":\"How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"auditCount\":{\"description\":\"How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.\",\"minimum\":0,\"type\":\"integer\"},\"bundleId\":{\"description\":\"Echoed so the response stands alone as a record.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"contextCount\":{\"description\":\"How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"importedSecretCount\":{\"description\":\"How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"keyCount\":{\"description\":\"How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"message\":{\"description\":\"Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"sourceDid\":{\"description\":\"Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.\",\"enum\":[\"preview\",\"committed\"],\"type\":\"string\"}},\"required\":[\"bundleId\",\"status\",\"keyCount\",\"aclCount\",\"contextCount\",\"auditCount\"],\"title\":\"VTA Backup Finalize Import — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_63bc96a2;
-
 macro_rules! d_Response_66282eee {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What the caller may see — or, with `scope: administrator`, everything in the namespaces they administer — and the caller's own linked forge accounts.\",\"properties\":{\"accounts\":{\"description\":\"The forge accounts linked to the caller's own DID — never another member's — at most one per forge. With `resource`, only the account on that resource's forge. Empty when the caller has linked none.\",\"items\":{\"$ref\":\"#/$defs/LinkedAccount\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespaces\":{\"description\":\"Namespaces bound to this VTC that contain, or are contained by, `resource`. With `scope: administrator`, only those the caller administers. With `breakGlass: true`, only those containing a returned record.\",\"items\":{\"$ref\":\"#/$defs/GitNamespace\"},\"type\":\"array\"},\"repos\":{\"description\":\"Repositories within `resource`. `unmanaged` repositories are included only for callers holding `git.ns.admin` over them, or with `scope: administrator`. With `breakGlass: true`, only those carrying a returned record.\",\"items\":{\"$ref\":\"#/$defs/RepoSummary\"},\"type\":\"array\"},\"rights\":{\"description\":\"Rights within `resource` the caller may see: always the caller's own; every right on a resource the caller owns or administers; every unratified break-glass record in a namespace they administer or on a resource they own. With `scope: administrator`, every recorded right in the namespaces the caller administers. `reason` is omitted except on resources the caller owns or administers. With `breakGlass: true`, only records carrying `breakGlass`.\",\"items\":{\"$ref\":\"#/$defs/RightRecord\"},\"type\":\"array\"}},\"required\":[\"namespaces\",\"repos\",\"rights\",\"accounts\"],\"title\":\"Git Namespaces — View — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_66282eee;
-
-macro_rules! d_Response_67ebd7b3 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"Id of the created join request (a UUID).\",\"minLength\":1,\"type\":\"string\"},\"verdict\":{\"$ref\":\"#/$defs/Verdict\",\"description\":\"What the community decided about this submission.\\n\\n`0.1` returned `status: \\\"pending\\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.\"}},\"required\":[\"requestId\",\"verdict\"],\"title\":\"VTC Join-Requests Submit — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_67ebd7b3;
-
-macro_rules! d_Response_682e93a0 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"$ref\":\"#/$defs/ReissuanceFollowUp\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Revoke — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_682e93a0;
 
 macro_rules! d_Response_6c8cf7a4 {
     () => {
@@ -5335,13 +2906,6 @@ macro_rules! d_Response_6dbb3393 {
 }
 pub(crate) use d_Response_6dbb3393;
 
-macro_rules! d_Response_753b0c52 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.\",\"title\":\"VTA DID-Template Get — response payload\"}"
-    };
-}
-pub(crate) use d_Response_753b0c52;
-
 macro_rules! d_Response_75a953de {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"account\"],\"title\":\"External Accounts — Archive — response payload\",\"type\":\"object\"}"
@@ -5355,27 +2919,6 @@ macro_rules! d_Response_75e7391f {
     };
 }
 pub(crate) use d_Response_75e7391f;
-
-macro_rules! d_Response_76a00cc5 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"assignedRooms\":{\"items\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"maxItems\":100,\"type\":\"array\"},\"assignedRoomsTruncated\":{\"type\":\"boolean\"},\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"facts\":{\"$ref\":\"#/$defs/StorageConfigFacts\"}},\"required\":[\"config\",\"facts\",\"assignedRooms\",\"assignedRoomsTruncated\"],\"title\":\"VTC Storage — Configs — Get — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_76a00cc5;
-
-macro_rules! d_Response_772bf49d {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/AcceptsCriterion\"},\"maxItems\":50,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more criteria remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Schemas — Accepts — List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_772bf49d;
-
-macro_rules! d_Response_780a8b9f {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action as it now stands — `status: cancelled`, `closedReason: cancelledByRequester`. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Cancel — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_780a8b9f;
 
 macro_rules! d_Response_7dc25511 {
     () => {
@@ -5391,34 +2934,6 @@ macro_rules! d_Response_7e39a18d {
 }
 pub(crate) use d_Response_7e39a18d;
 
-macro_rules! d_Response_7e921d23 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"blobsOnEarlierConfigs\":{\"description\":\"The room's blobs now on a config other than its assigned one. vtc/rooms/storage/migrate moves them.\",\"minimum\":0,\"type\":\"integer\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"previousConfigId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"configId\",\"previousConfigId\",\"blobsOnEarlierConfigs\"],\"title\":\"VTC Rooms — Storage — Assign — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_7e921d23;
-
-macro_rules! d_Response_7ec38fa2 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invites\":{\"description\":\"Every invite the community holds, outstanding and terminal.\",\"items\":{\"$ref\":\"#/$defs/InviteSummary\"},\"type\":\"array\"}},\"required\":[\"invites\"],\"title\":\"VTC Admin Invites List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_7ec38fa2;
-
-macro_rules! d_Response_86f4d919 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_86f4d919;
-
-macro_rules! d_Response_8759fe55 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Echoed.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/InForce\"}},\"required\":[\"id\",\"state\"],\"title\":\"VTC Relationships — Restore — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_8759fe55;
-
 macro_rules! d_Response_8ad2d7eb {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccount\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"account\"],\"title\":\"External Accounts — Resume — response payload\",\"type\":\"object\"}"
@@ -5433,40 +2948,12 @@ macro_rules! d_Response_8b3499d9 {
 }
 pub(crate) use d_Response_8b3499d9;
 
-macro_rules! d_Response_8b82dd6e {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"blobsRemaining\":{\"minimum\":0,\"type\":\"integer\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"state\":{\"enum\":[\"draining\",\"retired\"],\"type\":\"string\"}},\"required\":[\"configId\",\"state\",\"blobsRemaining\"],\"title\":\"VTC Storage — Configs — Retire — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_8b82dd6e;
-
 macro_rules! d_Response_90608a32 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"minLength\":1,\"type\":\"string\"},\"policy\":{\"$ref\":\"#/$defs/WakeTriggerPolicy\",\"description\":\"The effective allowlist the gateway recorded.\"}},\"required\":[\"handle\",\"policy\"],\"title\":\"Push Provision — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_90608a32;
-
-macro_rules! d_Response_90ca391a {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The credential the community delivered again.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"validUntil\":{\"description\":\"That credential's `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"validUntil\"],\"title\":\"VTC Vetting — Vetters Resend — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_90ca391a;
-
-macro_rules! d_Response_9a3807c5 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_9a3807c5;
-
-macro_rules! d_Response_9b2c256f {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/get. Type https://trusttasks.org/spec/vtc/rooms/community/get/0.2#response. One room the community owns, with its counts. Its members are vtc/rooms/community/members/list's.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"room\":{\"$ref\":\"#/$defs/CommunityRoomV2\"}},\"required\":[\"room\"],\"title\":\"VTC Rooms Community Get — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_9b2c256f;
 
 macro_rules! d_Response_9b911ae6 {
     () => {
@@ -5475,26 +2962,12 @@ macro_rules! d_Response_9b911ae6 {
 }
 pub(crate) use d_Response_9b911ae6;
 
-macro_rules! d_Response_9b95e2ab {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"config\"],\"title\":\"VTC Storage — Configs — Create — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_9b95e2ab;
-
 macro_rules! d_Response_9d2b13d5 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\"properties\":{\"enabled\":{\"description\":\"The effective master switch the maintainer now holds.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"floors\":{\"description\":\"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\"items\":{\"$ref\":\"#/$defs/Floor\"},\"type\":\"array\"}},\"required\":[\"enabled\",\"floors\"],\"title\":\"Auth — Step-up Policy — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_9d2b13d5;
-
-macro_rules! d_Response_a23377a6 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/ConfigItem\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Storage — Configs — List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_a23377a6;
 
 macro_rules! d_Response_a2d96c48 {
     () => {
@@ -5517,40 +2990,12 @@ macro_rules! d_Response_a8621148 {
 }
 pub(crate) use d_Response_a8621148;
 
-macro_rules! d_Response_aa5f2702 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The membership, in state `departed`.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/NetworkMembership\"}},\"required\":[\"membership\"],\"title\":\"VTC Networks — Leave — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_aa5f2702;
-
-macro_rules! d_Response_ad39c4e3 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"heartbeatSeconds\":{\"description\":\"The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.\",\"maximum\":60,\"minimum\":5,\"type\":\"integer\"},\"resumeToken\":{\"$ref\":\"#/$defs/ResumeToken\",\"description\":\"The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.\"},\"resumed\":{\"description\":\"`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.\",\"type\":\"boolean\"},\"topics\":{\"description\":\"The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.\",\"items\":{\"$ref\":\"#/$defs/Topic\"},\"maxItems\":10,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"topics\",\"heartbeatSeconds\",\"resumed\",\"resumeToken\"],\"title\":\"VTC Admin Events — Subscribe — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_ad39c4e3;
-
-macro_rules! d_Response_b0c2d0f4 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/deal request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/deal/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"DealDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Deal — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_b0c2d0f4;
-
 macro_rules! d_Response_b169ac93 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"decision\":{\"$ref\":\"#/$defs/PolicyDecision\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"matchedPolicies\":{\"description\":\"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"trace\":{\"description\":\"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\"items\":{\"maxLength\":1024,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"decision\"],\"title\":\"Policy Evaluate — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_b169ac93;
-
-macro_rules! d_Response_b215af9a {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The community's network memberships, by network DID.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/NetworkMembership\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Networks — List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_b215af9a;
 
 macro_rules! d_Response_b24c9fa0 {
     () => {
@@ -5573,26 +3018,12 @@ macro_rules! d_Response_b8e31b92 {
 }
 pub(crate) use d_Response_b8e31b92;
 
-macro_rules! d_Response_bbe07834 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The outcome. `preview` and `pendingApproval` carry the plan; `applied` carries the published entry.\",\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\"},\"did\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newLogEntry\":{\"description\":\"The appended log entry, as JSON text.\",\"type\":\"string\"},\"newScid\":{\"type\":\"string\"},\"newVersionId\":{\"description\":\"versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyRoleChangeOutcome\"},\"preRotationKeyCount\":{\"description\":\"Pre-rotation commitments published by this entry.\",\"minimum\":0,\"type\":\"integer\"},\"preview\":{\"$ref\":\"#/$defs/DidDocumentPreview\"},\"serverless\":{\"description\":\"True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.\",\"type\":\"boolean\"},\"updateKeysCount\":{\"description\":\"Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"WebVH DID Update — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_bbe07834;
-
 macro_rules! d_Response_bc05e3d9 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"events\":{\"description\":\"Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form.\",\"items\":{\"$ref\":\"#/$defs/SyncEvent\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newSinceSeq\":{\"description\":\"The seq value the consumer should persist for its next vault/sync call. Equal to the highest event seq in this response, or the consumer's prior `sinceSeq` if the response was empty.\",\"minimum\":0,\"type\":\"integer\"},\"truncated\":{\"description\":\"true if more events exist beyond this page. Consumer SHOULD immediately call vault/sync again with `sinceSeq = newSinceSeq`.\",\"type\":\"boolean\"}},\"required\":[\"events\",\"newSinceSeq\",\"truncated\"],\"title\":\"Vault Sync — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_bc05e3d9;
-
-macro_rules! d_Response_bc703b40 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"castDocument\":{\"$ref\":\"#/$defs/CastDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"tag\":{\"description\":\"The cast's tag (the election's nullifier for this ticket), as the cast carries it. The same for every cast this ticket makes in this election.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"castDocument\",\"tag\"],\"title\":\"VTA PCS — Vote — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_bc703b40;
 
 macro_rules! d_Response_bf7913a4 {
     () => {
@@ -5601,20 +3032,6 @@ macro_rules! d_Response_bf7913a4 {
 }
 pub(crate) use d_Response_bf7913a4;
 
-macro_rules! d_Response_c00484b2 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The membership as it now stands.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/NetworkMembership\"}},\"required\":[\"membership\"],\"title\":\"VTC Networks — Join — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_c00484b2;
-
-macro_rules! d_Response_c0b7172c {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/create. Type https://trusttasks.org/spec/vtc/rooms/community/create/0.3#response. The room as created, owned by the community.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"room\":{\"$ref\":\"#/$defs/CommunityRoomV2\"},\"roomProfile\":{\"description\":\"Whether the room's own profile — its label and description, sealed inside the room for its members — has been written. `written`: the room's members can read it. `pending`: the room exists and the community has not yet written its profile — its VTA or the room's host did not answer, or refused — and will keep trying. The room is created either way.\",\"enum\":[\"written\",\"pending\"],\"type\":\"string\"}},\"required\":[\"room\",\"roomProfile\"],\"title\":\"VTC Rooms Community Create — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_c0b7172c;
-
 macro_rules! d_Response_c11b1123 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"election\":{\"$ref\":\"#/$defs/ElectionSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"election\"],\"title\":\"Voting — Election Register — response payload\",\"type\":\"object\"}"
@@ -5622,26 +3039,12 @@ macro_rules! d_Response_c11b1123 {
 }
 pub(crate) use d_Response_c11b1123;
 
-macro_rules! d_Response_c178e7ff {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"complaints\":{\"items\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"maxItems\":64,\"type\":\"array\"},\"document\":{\"description\":\"The voting/trustees/confirm request, signed as the trustee. Absent once the key share is held.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/confirm/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"ConfirmDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyHeld\":{\"description\":\"Whether the VTA now holds the trustee's key share, checked against the election key's verification key.\",\"type\":\"boolean\"}},\"required\":[\"complaints\",\"keyHeld\"],\"title\":\"VTA PCS — Trustee Keys — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_c178e7ff;
-
 macro_rules! d_Response_c2bf7906 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instance\":{\"$ref\":\"#/$defs/ServiceInstance\",\"description\":\"The entry as it stands after the re-evaluation.\"}},\"required\":[\"instance\"],\"title\":\"Registry Check — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_c2bf7906;
-
-macro_rules! d_Response_c8cebfbf {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The membership record, in state `repudiated`.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/NetworkMembership\"}},\"required\":[\"membership\"],\"title\":\"VTC Networks — Repudiate — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_c8cebfbf;
 
 macro_rules! d_Response_c8f87b00 {
     () => {
@@ -5671,27 +3074,6 @@ macro_rules! d_Response_cb4550b6 {
 }
 pub(crate) use d_Response_cb4550b6;
 
-macro_rules! d_Response_ceaad8e9 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/elections/list/0.2: one page of the elections the caller may see.\",\"properties\":{\"elections\":{\"items\":{\"$ref\":\"#/$defs/ElectionListItem\"},\"maxItems\":100,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"elections\"],\"title\":\"VTC Elections — List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_ceaad8e9;
-
-macro_rules! d_Response_d01ff6dd {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The membership.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/NetworkMembership\"}},\"required\":[\"membership\"],\"title\":\"VTC Networks — Show — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_d01ff6dd;
-
-macro_rules! d_Response_d8932220 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rendered DID document.\",\"properties\":{\"document\":{\"description\":\"The rendered DID document with all placeholders substituted.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"VTA DID-Template Render — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_d8932220;
-
 macro_rules! d_Response_d8995f20 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTC has recorded the event. Nothing else is returned.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[],\"title\":\"Git Namespaces — Bridge Event — response payload\",\"type\":\"object\"}"
@@ -5699,33 +3081,12 @@ macro_rules! d_Response_d8995f20 {
 }
 pub(crate) use d_Response_d8995f20;
 
-macro_rules! d_Response_dc1dc802 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.\"},\"request\":{\"$ref\":\"#/$defs/TicketRequest\"},\"ticketDocument\":{\"$ref\":\"#/$defs/TicketDocument\"}},\"required\":[\"electionId\",\"manifestDigest\",\"request\"],\"title\":\"VTA PCS — Voter Register — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_dc1dc802;
-
 macro_rules! d_Response_e047dd4d {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/read. Type https://trusttasks.org/spec/rooms/keys/read/0.2#response. For a request naming `key`, the record and its verdict, as in 0.1, with `createdAt` and `createdBy`. For a request naming `keys`, `results`: one entry per key, each its own success or error.\",\"properties\":{\"author\":{\"description\":\"The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.\",\"type\":\"string\"},\"bodyStoredAt\":{\"description\":\"When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none.\",\"format\":\"date-time\",\"type\":\"string\"},\"cleartext\":{\"additionalProperties\":true,\"description\":\"The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.\",\"type\":\"object\"},\"createdAt\":{\"description\":\"When the host stored the record's first version, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.createdAt`). Absent where the host served none.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"type\":\"string\"},\"plaintext\":{\"description\":\"The opened record, base64url — the sealed tiers. **Never the key**, which is the whole reason this task exists rather than the record being handed to the member to open. Spelled as `rooms/keys/open` spells it, because it is the same bytes by the same route.\",\"type\":\"string\"},\"results\":{\"description\":\"Present, and only present, when the request named `keys`: one entry per key, in the request's order. Each entry is that key's own answer — a record or an error — and one key's failure never fails another's.\",\"items\":{\"$ref\":\"#/$defs/ReadResult\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\"},\"roomId\":{\"type\":\"string\"},\"status\":{\"description\":\"Curation state, passed through. A `retracted` record has no body: the tombstone is the answer, not a failure.\",\"enum\":[\"active\",\"deprecated\",\"retracted\"],\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"verification\":{\"$ref\":\"#/$defs/ReadVerification\",\"description\":\"What the recipient checked and what it found. REQUIRED: an agent that returns a record without saying what it checked has made the member's decision for them.\"},\"version\":{\"description\":\"The record's version at the host.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\"],\"title\":\"Rooms Keys Read — response payload\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_Response_e047dd4d;
-
-macro_rules! d_Response_e0a9693e {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The level the resulting document declares.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"$ref\":\"#/$defs/ReissuanceFollowUp\",\"description\":\"What the node must re-sign and re-issue: every status list at once, and, with `previousKeys: revoke`, every attestation artefact the replaced keys signed that is still in force (VTI-KEY-149).\"},\"fromLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The identity's level before the raise.\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Upgrade — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_e0a9693e;
-
-macro_rules! d_Response_e0cc5176 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of actions and the caller's badge counts. Failures use trust-task-error, not this shape.\",\"properties\":{\"actions\":{\"description\":\"The page, in the view's order: open views by deadline soonest first — `expiresAt`, or `landsAt` for `coolingOff` — (actions with neither last, then by `createdAt`), `history` by `closedAt` newest first, `all` open-before-closed in those orders. An empty array is a successful answer: nothing in this view.\",\"items\":{\"$ref\":\"#/$defs/Action\"},\"maxItems\":100,\"type\":\"array\"},\"counts\":{\"additionalProperties\":false,\"description\":\"Totals across the whole collection, not the page — what a console badge shows. Computed for the caller regardless of which `view` was requested.\",\"properties\":{\"requestedByMe\":{\"description\":\"Open actions the caller requested.\",\"minimum\":0,\"type\":\"integer\"},\"waitingForMe\":{\"description\":\"Open actions awaiting the caller's decision or acknowledgement.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"waitingForMe\",\"requestedByMe\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more actions follow. Pass it back as `cursor` with the same `view` and `since`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actions\",\"counts\"],\"title\":\"VTC Admin Actions — List — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_e0cc5176;
 
 macro_rules! d_Response_e22beaa4 {
     () => {
@@ -5762,13 +3123,6 @@ macro_rules! d_Response_e8bde6b1 {
 }
 pub(crate) use d_Response_e8bde6b1;
 
-macro_rules! d_Response_e9eb6e5d {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Show — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_e9eb6e5d;
-
 macro_rules! d_Response_ecc73bae {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sealedSecret\":{\"$ref\":\"#/$defs/SealedEnvelope\",\"description\":\"Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.\"},\"secretKind\":{\"$ref\":\"#/$defs/SecretKind\",\"description\":\"Discriminator so the consumer can pre-allocate the right type before unsealing.\"},\"ttlSeconds\":{\"description\":\"Cache TTL the consumer MUST enforce — wipe the cleartext after this many seconds, even if the user has not finished interacting with it.\",\"maximum\":600,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sealedSecret\",\"secretKind\",\"ttlSeconds\"],\"title\":\"Vault Release — response payload\",\"type\":\"object\"}"
@@ -5783,34 +3137,6 @@ macro_rules! d_Response_ed913a64 {
 }
 pub(crate) use d_Response_ed913a64;
 
-macro_rules! d_Response_ee1d18e6 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the community.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Voter Read — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_ee1d18e6;
-
-macro_rules! d_Response_ef315a34 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The level the identity is created at, as its document declares it.\"},\"contextId\":{\"type\":\"string\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Create — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_ef315a34;
-
-macro_rules! d_Response_ef939039 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/update. Type https://trusttasks.org/spec/vtc/rooms/community/update/0.2#response. The room as it now stands, and whether this request changed it.\",\"properties\":{\"changed\":{\"description\":\"`false` when every value given already matched what the room had: nothing was written, `detailsUpdatedAt` and `detailsUpdatedBy` did not move, and no change was audited.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"room\":{\"$ref\":\"#/$defs/CommunityRoomV2\"},\"roomProfile\":{\"description\":\"Whether the room's own profile — sealed inside the room for its members — now carries the new label and description. `written`: it does. `pending`: the details changed and the profile has not yet been re-written — the room is lapsed, or its VTA or host did not answer, or refused — and the community will keep trying. `unchanged`: nothing the profile carries changed (only tags, or `changed: false`), so nothing was written.\",\"enum\":[\"written\",\"pending\",\"unchanged\"],\"type\":\"string\"}},\"required\":[\"room\",\"changed\",\"roomProfile\"],\"title\":\"VTC Rooms Community Update — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_ef939039;
-
-macro_rules! d_Response_f459b556 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"$ref\":\"#/$defs/ReissuanceFollowUp\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Recover — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_f459b556;
-
 macro_rules! d_Response_f4fc6ed9 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"wakeHandle\":{\"$ref\":\"#/$defs/WakeHandle\",\"description\":\"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"}},\"required\":[\"wakeHandle\"],\"title\":\"Push Register — response payload\",\"type\":\"object\"}"
@@ -5818,47 +3144,12 @@ macro_rules! d_Response_f4fc6ed9 {
 }
 pub(crate) use d_Response_f4fc6ed9;
 
-macro_rules! d_Response_f6e836a6 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"criterion\":{\"$ref\":\"#/$defs/AcceptsCriterion\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"criterion\"],\"title\":\"VTC Schemas — Accepts — Register — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_f6e836a6;
-
-macro_rules! d_Response_fa272b70 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"verificationMethod\":{\"$ref\":\"#/$defs/PasskeyVerificationMethod\",\"description\":\"The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative.\"},\"webvhVersion\":{\"description\":\"The WebVH log-entry version that recorded the change (e.g. \\\"3-Qm…\\\").\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"verificationMethod\",\"webvhVersion\"],\"title\":\"VTA Passkey-VM Enroll Submit — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_fa272b70;
-
-macro_rules! d_Response_fe64ef87 {
-    () => {
-        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Echoed.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/InForce\"}},\"required\":[\"id\",\"state\"],\"title\":\"VTC Relationships — Suspend — response payload\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Response_fe64ef87;
-
-macro_rules! d_ResumeToken_694c1cae {
-    () => {
-        "\"ResumeToken\":{\"description\":\"Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~-]+$\",\"title\":\"ResumeToken\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ResumeToken_694c1cae;
-
 macro_rules! d_RetentionPolicy_3edd7373 {
     () => {
         "\"RetentionPolicy\":{\"$comment\":\"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\"description\":\"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\"enum\":[\"chained\",\"fromJoin\"],\"title\":\"RetentionPolicy\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_RetentionPolicy_3edd7373;
-
-macro_rules! d_ReviewState_c50ea595 {
-    () => {
-        "\"ReviewState\":{\"description\":\"Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.\",\"enum\":[\"noAdmission\",\"needsReview\"],\"title\":\"ReviewState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ReviewState_c50ea595;
 
 macro_rules! d_RevocationEntry_60145b1a {
     () => {
@@ -5930,75 +3221,12 @@ macro_rules! d_Right_5c611d95 {
 }
 pub(crate) use d_Right_5c611d95;
 
-macro_rules! d_RoleAssignment_27aded8a {
-    () => {
-        "\"RoleAssignment\":{\"additionalProperties\":false,\"properties\":{\"groupId\":{\"description\":\"The community group to serve the role.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.\",\"pattern\":\"^[a-z0-9_-]{1,64}$\",\"type\":\"string\"}},\"required\":[\"role\",\"groupId\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleAssignment_27aded8a;
-
-macro_rules! d_RoleBindingSpec_9e019c34 {
-    () => {
-        "\"RoleBindingSpec\":{\"additionalProperties\":false,\"description\":\"A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.\",\"properties\":{\"kind\":{\"const\":\"role\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/RoleName\"}},\"required\":[\"kind\",\"role\"],\"title\":\"RoleBindingSpec\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleBindingSpec_9e019c34;
-
-macro_rules! d_RoleDefinition_64b8dfae {
-    () => {
-        "\"RoleDefinition\":{\"additionalProperties\":false,\"description\":\"One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\\n\\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\\n\\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \\\"everything\\\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\\n\\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\\n\\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.\",\"properties\":{\"approveScope\":{\"description\":\"The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"builtIn\":{\"description\":\"`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.\",\"type\":\"boolean\"},\"ceiling\":{\"description\":\"The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"description\":{\"description\":\"Optional human-readable description. Confers nothing.\",\"maxLength\":512,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.\"},\"name\":{\"$ref\":\"#/$defs/RoleName\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"builtIn\",\"ceiling\",\"approveScope\"],\"title\":\"RoleDefinition\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleDefinition_64b8dfae;
-
-macro_rules! d_RoleKeyCustody_28119f7a {
-    () => {
-        "\"RoleKeyCustody\":{\"additionalProperties\":false,\"description\":\"How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.\",\"type\":\"boolean\"},\"hardwareBacked\":{\"description\":\"True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key.\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"}},\"required\":[\"keyId\",\"exportable\",\"neverExportable\",\"inBackups\"],\"title\":\"RoleKeyCustody\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleKeyCustody_28119f7a;
-
-macro_rules! d_RoleKeyState_bba48d40 {
-    () => {
-        "\"RoleKeyState\":{\"description\":\"Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\"],\"title\":\"RoleKeyState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoleKeyState_bba48d40;
-
-macro_rules! d_RoleKey_e08090ec {
-    () => {
-        "\"RoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).\",\"format\":\"date-time\",\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/RoleKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"versionId of the log entry that first published the key. Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"versionId of the log entry that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap window. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by, when it was.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoleKeyState\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"publicKeyMultibase\",\"state\"],\"title\":\"RoleKey\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleKey_e08090ec;
-
-macro_rules! d_RoleLayout_274cb29d {
-    () => {
-        "\"RoleLayout\":{\"additionalProperties\":false,\"description\":\"The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.\",\"properties\":{\"algorithms\":{\"description\":\"The algorithms to mint, one key each, in publication order — `[\\\"ed25519\\\", \\\"mldsa44\\\"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.\",\"items\":{\"$ref\":\"#/$defs/KeyType\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"}},\"required\":[\"role\",\"algorithms\"],\"title\":\"RoleLayout\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoleLayout_274cb29d;
-
 macro_rules! d_RoleMap_fc06f190 {
     () => {
         "\"RoleMap\":{\"additionalProperties\":false,\"description\":\"The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.\",\"properties\":{\"commit\":{\"$ref\":\"#/$defs/MappedRole\"},\"maintain\":{\"$ref\":\"#/$defs/MappedRole\"},\"own\":{\"$ref\":\"#/$defs/MappedRole\"}},\"required\":[\"own\",\"maintain\",\"commit\"],\"title\":\"RoleMap\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RoleMap_fc06f190;
-
-macro_rules! d_RoleName_815682fb {
-    () => {
-        "\"RoleName\":{\"description\":\"A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.\",\"pattern\":\"^[a-z][a-z0-9-]{0,63}$\",\"title\":\"RoleName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoleName_815682fb;
-
-macro_rules! d_RollCredentialDisclosure_c2186b03 {
-    () => {
-        "\"RollCredentialDisclosure\":{\"additionalProperties\":false,\"description\":\"Under a `credential` roll, whose membership credential admits a party to a ticket, as a member is shown it before they claim one (VTI-VOT-090): the DID the roll names, what kind of party it is to this community, and its name as the community knows it. Present in a disclosure exactly when the election's roll rule is `credential`.\",\"properties\":{\"memberOf\":{\"description\":\"The manifest's `roll.memberOf`.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:\\\\S+$\",\"type\":\"string\"},\"memberOfKind\":{\"description\":\"`thisCommunity`: the community itself. `communityGroup`: one of the community's own groups, whose membership credentials it authorizes the group to issue (VTI-DIR-083). `memberParty`: a party outside the community that is itself an active member of it — another community, a group of another community, or a network — whose own membership credentials admit their holders (VTI-VOT-026).\",\"enum\":[\"thisCommunity\",\"communityGroup\",\"memberParty\"],\"type\":\"string\"},\"memberOfName\":{\"description\":\"The name the community shows for the party `memberOf` names: the group's name, or the member party's name as the community's records hold it. Absent where showing it would disclose more than the group's visibility admits (VTI-DIR-070).\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"presenterDisclosed\":{\"const\":true,\"description\":\"Always true: claiming a ticket shows the community the presenter's membership credential for `memberOf`, so the community learns that the presenter is a member of that party.\"}},\"required\":[\"memberOf\",\"memberOfKind\"],\"title\":\"RollCredentialDisclosure\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RollCredentialDisclosure_c2186b03;
 
 macro_rules! d_RollRule_2365525e {
     () => {
@@ -6014,47 +3242,12 @@ macro_rules! d_RollRule_2f79624b {
 }
 pub(crate) use d_RollRule_2f79624b;
 
-macro_rules! d_RollbackResult_df7521f0 {
-    () => {
-        "\"RollbackResult\":{\"additionalProperties\":false,\"description\":\"The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \\\"noOp\\\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.\",\"properties\":{\"drainUntil\":{\"description\":\"When that drain completes.\",\"format\":\"date-time\",\"type\":\"string\"},\"drainingMediator\":{\"description\":\"Present when rolling back DIDComm left a mediator draining.\",\"type\":\"string\"},\"effectiveAt\":{\"description\":\"RFC 3339 instant the rollback took effect. Absent for `noOp`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.\",\"enum\":[\"disabled\",\"enabled\",\"updated\",\"noOp\"],\"type\":\"string\"},\"logEntryVersionId\":{\"description\":\"Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.\",\"type\":\"string\"},\"serverless\":{\"default\":false,\"description\":\"True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.\",\"type\":\"boolean\"},\"vtaDid\":{\"description\":\"The agent's own DID.\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"RollbackResult\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RollbackResult_df7521f0;
-
-macro_rules! d_RoomBindingSpec_bd532882 {
-    () => {
-        "\"RoomBindingSpec\":{\"additionalProperties\":false,\"description\":\"Links a room the community owns to the group: joining the group offers the member admission to the room with `actions`, valid for `validFor`, renewed while they stay in the group (collected with vtc/rooms/offers/list at 0.3 or later); leaving removes them unless another source still covers them.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"kind\":{\"const\":\"room\",\"type\":\"string\"},\"roomId\":{\"description\":\"The community-owned room's DID.\",\"maxLength\":512,\"pattern\":\"^did:\",\"type\":\"string\"},\"validFor\":{\"description\":\"How long each admission's authority runs, as an ISO 8601 duration in whole days (`P365D`). The community renews it while the member stays in the group.\",\"pattern\":\"^P[1-9][0-9]{0,4}D$\",\"type\":\"string\"}},\"required\":[\"kind\",\"roomId\",\"actions\",\"validFor\"],\"title\":\"RoomBindingSpec\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoomBindingSpec_bd532882;
-
 macro_rules! d_RoomDef_adba7d29 {
     () => {
         "\"RoomDef\":{\"additionalProperties\":false,\"description\":\"A room.\",\"properties\":{\"description\":{\"description\":\"What it is for.\",\"maxLength\":1000,\"type\":\"string\"},\"id\":{\"description\":\"The room's id.\",\"pattern\":\"^[a-z0-9][a-z0-9-]{0,62}$\",\"type\":\"string\"},\"name\":{\"description\":\"Its name.\",\"maxLength\":200,\"type\":\"string\"},\"passMinutes\":{\"description\":\"How long a pass lasts, in minutes: at most 1440 (24 hours). A pass is short-lived because it is not revoked; eligibility is re-proved for the next one.\",\"maximum\":1440,\"minimum\":1,\"type\":\"integer\"},\"role\":{\"$ref\":\"#/$defs/RoleName\",\"description\":\"The role whose groups' members may enter.\"},\"url\":{\"description\":\"Where the room is.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"id\",\"name\",\"role\",\"passMinutes\"],\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RoomDef_adba7d29;
-
-macro_rules! d_RoomDescription_52d18cbb {
-    () => {
-        "\"RoomDescription\":{\"description\":\"What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"RoomDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoomDescription_52d18cbb;
-
-macro_rules! d_RoomLabel_6be5a8a6 {
-    () => {
-        "\"RoomLabel\":{\"description\":\"A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.\",\"maxLength\":128,\"minLength\":1,\"title\":\"RoomLabel\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoomLabel_6be5a8a6;
-
-macro_rules! d_RoomLifecycle_18048de4 {
-    () => {
-        "\"RoomLifecycle\":{\"description\":\"Where a room sits on the hosting lifecycle clock, computed at the time of the read from its epoch expiry and retention: `live`, `lapsed`, `dormant` or `reclaimable`. Computed, never stored — minting an epoch is the renewal.\",\"enum\":[\"live\",\"lapsed\",\"dormant\",\"reclaimable\"],\"title\":\"RoomLifecycle\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoomLifecycle_18048de4;
 
 macro_rules! d_RoomLimits_08e89423 {
     () => {
@@ -6063,33 +3256,12 @@ macro_rules! d_RoomLimits_08e89423 {
 }
 pub(crate) use d_RoomLimits_08e89423;
 
-macro_rules! d_RoomMemberV2_6004ea14 {
-    () => {
-        "\"RoomMemberV2\":{\"additionalProperties\":false,\"description\":\"`RoomMember` with `MemberStateV2`, and `suspendedAt`.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberStateV2\"},\"suspendedAt\":{\"description\":\"Present exactly when `state` is `suspended`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMemberV2\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoomMemberV2_6004ea14;
-
-macro_rules! d_RoomMember_4211d0a7 {
-    () => {
-        "\"RoomMember\":{\"additionalProperties\":false,\"description\":\"One party the community admitted to a room it owns, or offered admission to.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberState\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMember\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoomMember_4211d0a7;
-
 macro_rules! d_RoomProfile_489d8c74 {
     () => {
         "\"RoomProfile\":{\"additionalProperties\":false,\"description\":\"What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\\n\\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\\n\\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\\n\\n**Growth.** A new optional member arrives in place, additively, as `recordMembers` did, or in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.\",\"properties\":{\"description\":{\"description\":\"What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"emoji\":{\"description\":\"One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.\",\"maxLength\":16,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.\"},\"name\":{\"description\":\"The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"recordMembers\":{\"description\":\"The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, and `width`, `height` and `preview`, which name the `FileManifest` members of those names inside a record's `file`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use these members*). A writer MAY rely on a profile it resolved within the room's current epoch. The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all) — with `rooms/keys/profile/write` on a sealed tier, or `rooms/records/put` at `room-profile` on an `open` room — and never by default. Whether the room's readers are ready is the owner's or a curator's decision, made out of band; the order is readers (profile readers included, since a reader that predates this member refuses the profile carrying it), then the owner's key holder, which re-writes the profile after a removal and so MUST accept this member before any profile carries it, then on the sealed tiers the key holders that seal for writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member never obliges a writer to use it, and removing one stops writers using it by the room's next epoch at the latest; records already written keep it.\",\"items\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9]*$\",\"type\":\"string\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"tags\":{\"description\":\"Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.\",\"items\":{\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]{0,31}$\",\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\"],\"title\":\"RoomProfile\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RoomProfile_489d8c74;
-
-macro_rules! d_RoomRecordMembers_17e99b43 {
-    () => {
-        "\"RoomRecordMembers\":{\"description\":\"The record members a community-owned room's profile lists: the optional `SealedRecordBody` members its writers may use beyond the base set, as a set (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`, `inReplyTo` and `writtenAt` are what a room used as a conversation needs for replies, reactions and the order of its messages. The community writes them into the room's profile through its VTA, as the room's owner; a value a writer does not know grants it nothing.\",\"items\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9]*$\",\"type\":\"string\"},\"maxItems\":32,\"minItems\":1,\"title\":\"RoomRecordMembers\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_RoomRecordMembers_17e99b43;
 
 macro_rules! d_RoomRevocation_40f8434e {
     () => {
@@ -6098,82 +3270,12 @@ macro_rules! d_RoomRevocation_40f8434e {
 }
 pub(crate) use d_RoomRevocation_40f8434e;
 
-macro_rules! d_RoomState_7d753896 {
-    () => {
-        "\"RoomState\":{\"description\":\"Where a room the community owns stands in its owner's lifecycle — distinct from `HostedRoom.lifecycle`, which is the host's clock (`live`, `lapsed`, `dormant`, `reclaimable`) and is computed from the room's epoch, never set. `active`: open to change. `archived`: closed to change by an administrator — no admissions, and the room's host accepts no writes from its members; what members may still do is `ArchiveAccess`. Reversible with vtc/rooms/community/unarchive. `removalScheduled`: an administrator removed the room with a grace period; it admits nobody and its content is kept until `purgeAt`, and vtc/rooms/community/removal/cancel returns it to `archived`. `purging`: the grace period ended (or there was none) and the community is deleting the room's content from its host and storage; not reversible. `removed`: the content is gone; the community keeps only this record of the room, for its history.\",\"enum\":[\"active\",\"archived\",\"removalScheduled\",\"purging\",\"removed\"],\"title\":\"RoomState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoomState_7d753896;
-
-macro_rules! d_RoomStatus_7dbc6921 {
-    () => {
-        "\"RoomStatus\":{\"additionalProperties\":false,\"description\":\"A room's state in its owner's lifecycle, and what that state needs to be understood.\",\"properties\":{\"access\":{\"$ref\":\"#/$defs/ArchiveAccess\",\"description\":\"Present exactly when `state` is `archived` or `removalScheduled`; always `noAccess` for `removalScheduled`.\"},\"changedAt\":{\"description\":\"When the room entered `state`. Absent for a room that has been `active` since it was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"changedBy\":{\"description\":\"The administrator whose act put the room in `state`. Present exactly when `changedAt` is, except for `purging` and `removed` reached when a grace period ended, which no one did at that moment: then the administrator who scheduled the removal. The reason each gave is in the community's audit trail, not here.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"pendingChange\":{\"$ref\":\"#/$defs/PendingChange\",\"description\":\"Present while a change of state is begun and not finished.\"},\"purge\":{\"$ref\":\"#/$defs/PurgeProgress\",\"description\":\"Present exactly when `state` is `purging`.\"},\"purgeAt\":{\"description\":\"Present when `state` is `removalScheduled`: when the grace period ends and the purge begins. Kept when `state` is `purging` or `removed`, as when it became due.\",\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"description\":\"Present exactly when `state` is `removed`: when the last of the room's content was deleted.\",\"format\":\"date-time\",\"type\":\"string\"},\"restoring\":{\"description\":\"Admissions still `suspended` that the community is restoring, after the room left `noAccess` — the room re-issues each member's credentials and the member collects them as a renewal. Absent when there are none.\",\"minimum\":1,\"type\":\"integer\"},\"state\":{\"$ref\":\"#/$defs/RoomState\"}},\"required\":[\"state\"],\"title\":\"RoomStatus\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RoomStatus_7dbc6921;
-
-macro_rules! d_RoomTag_fc3058ac {
-    () => {
-        "\"RoomTag\":{\"description\":\"A short identifier an administrator files a community-owned room under — `board`, `working-group`, `finance` — so the room list can be filtered. Lower-case letters, digits and hyphens, starting with a letter or digit. Owner-side tracking metadata for holders of `vtc.rooms.manage` only: never shown to members, never sent on the room's host path, and it confers nothing.\",\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]{0,31}$\",\"title\":\"RoomTag\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RoomTag_fc3058ac;
-
-macro_rules! d_RoomTags_8c4c391c {
-    () => {
-        "\"RoomTags\":{\"description\":\"The room's tags, at most eight, as a set: order carries no meaning. An empty list means the room has none — a tag grants nothing, so empty has no more dangerous reading.\",\"items\":{\"$ref\":\"#/$defs/RoomTag\"},\"maxItems\":8,\"title\":\"RoomTags\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_RoomTags_8c4c391c;
-
 macro_rules! d_RoomWatchRequest_a1a6e4b0 {
     () => {
         "\"RoomWatchRequest\":{\"additionalProperties\":false,\"description\":\"One room of the request, with the version the caller has read it to.\",\"properties\":{\"roomId\":{\"description\":\"The room.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"sinceVersion\":{\"description\":\"The highest version of the room the caller has read to, passed to the host as rooms/watch's sinceVersion: the host signals as soon as the room is above it, at once if it already is. Absent means the room's latest version when the host arms the watch. Ignored on a cancel.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"roomId\"],\"title\":\"Room to watch\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_RoomWatchRequest_a1a6e4b0;
-
-macro_rules! d_RootRequest_533f6109 {
-    () => {
-        "\"RootRequest\":{\"additionalProperties\":false,\"description\":\"The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.\",\"properties\":{\"encoding\":{\"description\":\"The issuance encoding the suite carries.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"proof\":{\"description\":\"The proof that the commitment is well formed and the requester holds its secret.\",\"maxLength\":8192,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"t0\":{\"description\":\"The request's tag under the root context.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"proof\"],\"title\":\"RootRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RootRequest_533f6109;
-
-macro_rules! d_RosterItem_eeeb8754 {
-    () => {
-        "\"RosterItem\":{\"additionalProperties\":false,\"description\":\"Another registrant as the roster view shows them: who, whether going or maybe, and how many guests. Never their answers, their acknowledgement or when they registered (VTI-EVT-053).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"guests\":{\"description\":\"Plus-ones the registrant brings; 0 where none.\",\"maximum\":10,\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"Whether the registrant is going or maybe; the roster view shows no other status.\",\"enum\":[\"going\",\"maybe\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"status\",\"guests\"],\"title\":\"RosterItem\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RosterItem_eeeb8754;
-
-macro_rules! d_RosterSetting_f5d25358 {
-    () => {
-        "\"RosterSetting\":{\"description\":\"Who may see who is registered (VTI-EVT-050). `visible`: registrants who are going or maybe see each other. `hidden`: no registrant sees another; the event's hosts do. Fixed once the event is published (VTI-EVT-051) and recorded on each registration (VTI-EVT-052).\",\"enum\":[\"visible\",\"hidden\"],\"title\":\"RosterSetting\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RosterSetting_f5d25358;
-
-macro_rules! d_RotationKind_58732040 {
-    () => {
-        "\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\"enum\":[\"planned\",\"compromise\",\"addition\"],\"title\":\"RotationKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RotationKind_58732040;
-
-macro_rules! d_RotationRecord_a5d09c99 {
-    () => {
-        "\"RotationRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\",\"description\":\"Custody projection only.\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RotationKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap window.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RotationState\"},\"successors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"RotationRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RotationRecord_a5d09c99;
-
-macro_rules! d_RotationState_d43e1339 {
-    () => {
-        "\"RotationState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"RotationState\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_RotationState_d43e1339;
 
 macro_rules! d_Route_e5d33023 {
     () => {
@@ -6182,47 +3284,12 @@ macro_rules! d_Route_e5d33023 {
 }
 pub(crate) use d_Route_e5d33023;
 
-macro_rules! d_RuleCondition_8eb676b0 {
-    () => {
-        "\"RuleCondition\":{\"additionalProperties\":false,\"description\":\"One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the community events the member checked in to that count toward attendance, optionally only in `calendarId` and only within `withinDays` before evaluation, compared with `atLeast`; read by a badge's group, as the other counts are.\",\"properties\":{\"calendarId\":{\"description\":\"With `eventsAttended` only: count events in this calendar alone.\",\"pattern\":\"^cal_[A-Za-z0-9_-]{16,64}$\",\"type\":\"string\"},\"count\":{\"description\":\"With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is `atLeast`.\",\"maximum\":100000,\"minimum\":1,\"type\":\"integer\"},\"fact\":{\"enum\":[\"role\",\"field\",\"personhood\",\"joinedAt\",\"kudosReceived\",\"ideasSelected\",\"electionTickets\",\"eventsAttended\"],\"type\":\"string\"},\"field\":{\"$ref\":\"#/$defs/FieldKey\",\"description\":\"Present exactly when `fact` is `field`.\"},\"op\":{\"description\":\"`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`.\",\"enum\":[\"equals\",\"oneOf\",\"exists\",\"before\",\"after\",\"atLeast\"],\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":256,\"type\":\"string\"},{\"type\":\"boolean\"}]},\"values\":{\"items\":{\"maxLength\":256,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"withinDays\":{\"description\":\"With `eventsAttended` only: count events attended within this many days before the rule is evaluated.\",\"maximum\":3660,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"fact\",\"op\"],\"title\":\"RuleCondition\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_RuleCondition_8eb676b0;
-
-macro_rules! d_S3Settings_ef3b781c {
-    () => {
-        "\"S3Settings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.\",\"maxLength\":63,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",\"type\":\"string\"},\"endpoint\":{\"description\":\"The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"kind\":{\"const\":\"s3\"},\"pathStyle\":{\"description\":\"Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.\",\"type\":\"boolean\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"},\"region\":{\"description\":\"The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"region\",\"bucket\"],\"title\":\"S3Settings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_S3Settings_ef3b781c;
-
 macro_rules! d_SameNetwork_d81b8749 {
     () => {
         "\"SameNetwork\":{\"description\":\"Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.\",\"oneOf\":[{\"type\":\"boolean\"},{\"const\":\"unknown\",\"type\":\"string\"}],\"title\":\"SameNetwork\"}"
     };
 }
 pub(crate) use d_SameNetwork_d81b8749;
-
-macro_rules! d_SchemaDescription_acc20a33 {
-    () => {
-        "\"SchemaDescription\":{\"description\":\"An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.\",\"maxLength\":1024,\"title\":\"SchemaDescription\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_SchemaDescription_acc20a33;
-
-macro_rules! d_SchemaEntry_b8a5afdb {
-    () => {
-        "\"SchemaEntry\":{\"additionalProperties\":false,\"description\":\"One registered credential type, as the community stores it.\",\"properties\":{\"createdAt\":{\"description\":\"When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the entry.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"credentialSchema\":{\"$ref\":\"#/$defs/CredentialSchema\"},\"description\":{\"$ref\":\"#/$defs/SchemaDescription\"},\"dtgType\":{\"$ref\":\"#/$defs/DtgType\"},\"kind\":{\"$ref\":\"#/$defs/SchemaKind\"},\"typeUri\":{\"$ref\":\"#/$defs/CredentialTypeUri\"}},\"required\":[\"typeUri\",\"kind\",\"createdAt\",\"createdByDid\"],\"title\":\"SchemaEntry\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_SchemaEntry_b8a5afdb;
-
-macro_rules! d_SchemaKind_8e172980 {
-    () => {
-        "\"SchemaKind\":{\"description\":\"Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.\",\"enum\":[\"issues\",\"accepts\"],\"title\":\"SchemaKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_SchemaKind_8e172980;
 
 macro_rules! d_ScopeLimits_1e8c25e8 {
     () => {
@@ -6237,20 +3304,6 @@ macro_rules! d_Scope_0d23efcc {
     };
 }
 pub(crate) use d_Scope_0d23efcc;
-
-macro_rules! d_Scope_95588fe1 {
-    () => {
-        "\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Scope_95588fe1;
-
-macro_rules! d_SealedCredentialCleartext_6115b2dc {
-    () => {
-        "\"SealedCredentialCleartext\":{\"$ref\":\"#/$defs/SealedStorageCredential\",\"description\":\"Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.\"}"
-    };
-}
-pub(crate) use d_SealedCredentialCleartext_6115b2dc;
 
 macro_rules! d_SealedEnvelope_317b72d0 {
     () => {
@@ -6279,13 +3332,6 @@ macro_rules! d_SealedShare_b7e6851f {
     };
 }
 pub(crate) use d_SealedShare_b7e6851f;
-
-macro_rules! d_SealedStorageCredential_721e79b1 {
-    () => {
-        "\"SealedStorageCredential\":{\"description\":\"The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).\",\"properties\":{\"accessKeyId\":{\"description\":\"The access key's identifier.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"s3\"},\"secretAccessKey\":{\"description\":\"The secret half.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"},\"sessionToken\":{\"description\":\"Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.\",\"maxLength\":8192,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"accessKeyId\",\"secretAccessKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"A Google Cloud service-account key.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"gcs\"},\"serviceAccountKey\":{\"additionalProperties\":true,\"description\":\"The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.\",\"properties\":{\"client_email\":{\"maxLength\":320,\"minLength\":3,\"pattern\":\"^[^@\\\\s]+@[^@\\\\s]+$\",\"type\":\"string\"},\"private_key\":{\"description\":\"The PKCS #8 PEM private key.\",\"maxLength\":8192,\"minLength\":64,\"pattern\":\"^-----BEGIN PRIVATE KEY-----\",\"type\":\"string\"},\"private_key_id\":{\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"type\":{\"const\":\"service_account\"}},\"required\":[\"type\",\"client_email\",\"private_key_id\",\"private_key\"],\"type\":\"object\"}},\"required\":[\"kind\",\"configId\",\"serviceAccountKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The Sui key that pays for a `walrus` config's storage.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"walrus\"},\"suiPrivateKey\":{\"description\":\"The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.\",\"maxLength\":256,\"minLength\":20,\"pattern\":\"^suiprivkey1[02-9ac-hj-np-z]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"suiPrivateKey\"],\"type\":\"object\"}],\"title\":\"SealedStorageCredential\"}"
-    };
-}
-pub(crate) use d_SealedStorageCredential_721e79b1;
 
 macro_rules! d_SealedTransferBundle_06b61495 {
     () => {
@@ -6350,13 +3396,6 @@ macro_rules! d_SelfRegistrationPolicy_a134b0e1 {
 }
 pub(crate) use d_SelfRegistrationPolicy_a134b0e1;
 
-macro_rules! d_SenderLastSeen_e1a99f6e {
-    () => {
-        "\"SenderLastSeen\":{\"additionalProperties\":false,\"properties\":{\"lastSeenAt\":{\"description\":\"When that message arrived.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastSeenMediator\":{\"description\":\"The mediator its most recent message arrived through.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"lastSeenTransport\":{\"description\":\"The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.\",\"enum\":[\"didcomm\",\"tsp\"],\"type\":\"string\"},\"senderDid\":{\"description\":\"A sender that reached the agent in the window.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"senderDid\",\"lastSeenMediator\",\"lastSeenAt\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_SenderLastSeen_e1a99f6e;
-
 macro_rules! d_Sensitivity_372f6ec0 {
     () => {
         "\"Sensitivity\":{\"description\":\"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\"enum\":[\"normal\",\"high\"],\"title\":\"Sensitivity\",\"type\":\"string\"}"
@@ -6378,41 +3417,6 @@ macro_rules! d_ServiceInstance_f1b7acb8 {
 }
 pub(crate) use d_ServiceInstance_f1b7acb8;
 
-macro_rules! d_ServiceKind_2d6b6c7c {
-    () => {
-        "\"ServiceKind\":{\"description\":\"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\"enum\":[\"didcomm\",\"rest\",\"tsp\",\"webauthn\"],\"title\":\"ServiceKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_ServiceKind_2d6b6c7c;
-
-macro_rules! d_ServiceMutationResult_3aae9690 {
-    () => {
-        "\"ServiceMutationResult\":{\"additionalProperties\":false,\"description\":\"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\"properties\":{\"drainEndsAt\":{\"description\":\"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\"format\":\"date-time\",\"type\":\"string\"},\"drainingMediator\":{\"description\":\"The mediator being drained, when `drainEndsAt` is present.\",\"type\":\"string\"},\"effectiveAt\":{\"description\":\"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logEntryVersionId\":{\"description\":\"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\"minLength\":1,\"type\":\"string\"},\"serverless\":{\"default\":false,\"description\":\"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\"type\":\"boolean\"},\"vtaDid\":{\"description\":\"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\"type\":\"string\"}},\"required\":[\"logEntryVersionId\",\"effectiveAt\"],\"title\":\"ServiceMutationResult\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ServiceMutationResult_3aae9690;
-
-macro_rules! d_ServiceMutationResult_ee198ad0 {
-    () => {
-        "\"ServiceMutationResult\":{\"additionalProperties\":false,\"description\":\"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\"properties\":{\"drainUntil\":{\"description\":\"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\"format\":\"date-time\",\"type\":\"string\"},\"drainingMediator\":{\"description\":\"The mediator being drained, when `drainUntil` is present.\",\"type\":\"string\"},\"effectiveAt\":{\"description\":\"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logEntryVersionId\":{\"description\":\"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\"minLength\":1,\"type\":\"string\"},\"serverless\":{\"default\":false,\"description\":\"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\"type\":\"boolean\"},\"vtaDid\":{\"description\":\"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\"type\":\"string\"}},\"required\":[\"logEntryVersionId\",\"effectiveAt\"],\"title\":\"ServiceMutationResult\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ServiceMutationResult_ee198ad0;
-
-macro_rules! d_ServiceState_907a9a92 {
-    () => {
-        "\"ServiceState\":{\"additionalProperties\":false,\"description\":\"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\"properties\":{\"drainEndsAt\":{\"description\":\"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\"format\":\"date-time\",\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the agent currently advertises this transport in its DID document.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/ServiceKind\"},\"mediatorDid\":{\"description\":\"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\"type\":\"string\"},\"url\":{\"description\":\"The advertised endpoint. Present for `rest` and `webauthn`.\",\"type\":\"string\"}},\"required\":[\"kind\",\"enabled\"],\"title\":\"ServiceState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ServiceState_907a9a92;
-
-macro_rules! d_ServiceState_9f6648ae {
-    () => {
-        "\"ServiceState\":{\"additionalProperties\":false,\"description\":\"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\"properties\":{\"drainsUntil\":{\"description\":\"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\"format\":\"date-time\",\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the agent currently advertises this transport in its DID document.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/ServiceKind\"},\"mediatorDid\":{\"description\":\"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\"type\":\"string\"},\"url\":{\"description\":\"The advertised endpoint. Present for `rest` and `webauthn`.\",\"type\":\"string\"}},\"required\":[\"kind\",\"enabled\"],\"title\":\"ServiceState\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ServiceState_9f6648ae;
-
 macro_rules! d_Service_359a64d8 {
     () => {
         "\"Service\":{\"additionalProperties\":false,\"description\":\"Who the service says it is.\",\"properties\":{\"did\":{\"description\":\"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"name\":{\"description\":\"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"name\"],\"title\":\"Service\",\"type\":\"object\"}"
@@ -6426,13 +3430,6 @@ macro_rules! d_Service_8dc97a3a {
     };
 }
 pub(crate) use d_Service_8dc97a3a;
-
-macro_rules! d_SessionId_81f3c33a {
-    () => {
-        "\"SessionId\":{\"description\":\"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\"maxLength\":256,\"minLength\":1,\"title\":\"SessionId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_SessionId_81f3c33a;
 
 macro_rules! d_SessionId_b15e0069 {
     () => {
@@ -6539,26 +3536,12 @@ macro_rules! d_Slot_1664d731 {
 }
 pub(crate) use d_Slot_1664d731;
 
-macro_rules! d_Slot_1a27fc82 {
-    () => {
-        "\"Slot\":{\"additionalProperties\":false,\"description\":\"One place in a board's timetable that a selected idea can be put in (VTI-BRD-040): a place (`label`, e.g. a room) and a time.\",\"properties\":{\"endsAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"label\":{\"maxLength\":100,\"minLength\":1,\"type\":\"string\"},\"slotId\":{\"$ref\":\"#/$defs/Key\"},\"startsAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"slotId\",\"label\",\"startsAt\",\"endsAt\"],\"title\":\"Slot\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Slot_1a27fc82;
-
 macro_rules! d_Source_7d320f15 {
     () => {
         "\"Source\":{\"description\":\"`audit` — a git-ns audit row: a rights change or a drift report. `job` — a bridge job's queue state, as git-ns/bridge/job/list also reports it.\",\"enum\":[\"audit\",\"job\"],\"title\":\"Source\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_Source_7d320f15;
-
-macro_rules! d_Source_ce495190 {
-    () => {
-        "\"Source\":{\"description\":\"`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.\",\"enum\":[\"registry\",\"local\"],\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Source_ce495190;
 
 macro_rules! d_StandingRule_5334a7d4 {
     () => {
@@ -6581,40 +3564,12 @@ macro_rules! d_StateChange_b8fd9ada {
 }
 pub(crate) use d_StateChange_b8fd9ada;
 
-macro_rules! d_State_afed9264 {
-    () => {
-        "\"State\":{\"description\":\"The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).\",\"enum\":[\"active\",\"dismissed\"],\"title\":\"State\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_State_afed9264;
-
-macro_rules! d_State_bc71cc9f {
-    () => {
-        "\"State\":{\"description\":\"`failed` is terminal: the reconciler has abandoned the job and will not retry it without an operator. `pending` and `inFlight` are moving on their own.\",\"enum\":[\"pending\",\"inFlight\",\"failed\"],\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_State_bc71cc9f;
-
-macro_rules! d_StatementMeta_6ceb2835 {
-    () => {
-        "\"StatementMeta\":{\"additionalProperties\":false,\"description\":\"What a Vetting Statement would have said, minus its issuer.\",\"properties\":{\"cardDigestMultibase\":{\"description\":\"Digest of that card, as the vetter verified it.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"claimsVerified\":{\"description\":\"The claim types the vetter checked.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"community\":{\"description\":\"The community this attestation is for. An attestation is not portable between communities.\",\"minLength\":1,\"type\":\"string\"},\"declaredRelationship\":{\"description\":\"The relationship the vetter declared, which the community's independence rules count.\",\"enum\":[\"none\",\"family\",\"sameEmployer\",\"closeFriend\",\"other\"],\"type\":\"string\"},\"identityCommitment\":{\"description\":\"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"livenessConfirmed\":{\"description\":\"Whether the vetter confirmed a live person.\",\"type\":\"boolean\"},\"method\":{\"description\":\"How the vetter met the applicant.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"type\":\"string\"},\"requirementsDigest\":{\"description\":\"The digest of the criterion's requirements as the vetter read them.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabel\":{\"description\":\"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tokenSerial\":{\"description\":\"The token serial spent, likewise bound.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"validFrom\":{\"description\":\"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\"format\":\"date\",\"type\":\"string\"},\"validUntil\":{\"description\":\"A date, for the same reason.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"community\",\"requirementsDigest\",\"method\",\"claimsVerified\",\"livenessConfirmed\",\"declaredRelationship\",\"identityCommitment\",\"cardDigestMultibase\",\"validFrom\",\"validUntil\",\"tokenLabel\",\"tokenSerial\"],\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StatementMeta_6ceb2835;
-
 macro_rules! d_StatementScope_6a476982 {
     () => {
         "\"StatementScope\":{\"description\":\"The scope a member DID signs into a statement: a JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses. It MUST NOT be empty; an empty signed scope is refused with the task's `emptyScope` code, never read as \\\"all\\\". Unlike MuxScope, emptiness is not a schema failure here, so that the refusal is reported per statement rather than failing the whole batch.\",\"items\":{\"$ref\":\"#/$defs/MuxScopeValue\"},\"maxItems\":16,\"title\":\"StatementScope\",\"type\":\"array\"}"
     };
 }
 pub(crate) use d_StatementScope_6a476982;
-
-macro_rules! d_Status_d381d6b8 {
-    () => {
-        "\"Status\":{\"description\":\"Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).\",\"enum\":[\"available\",\"withdrawn\"],\"title\":\"Status\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Status_d381d6b8;
 
 macro_rules! d_StepName_c90e3cf1 {
     () => {
@@ -6644,83 +3599,6 @@ macro_rules! d_StepUpProof_69253637 {
 }
 pub(crate) use d_StepUpProof_69253637;
 
-macro_rules! d_StorageAuth_7651801b {
-    () => {
-        "\"StorageAuth\":{\"description\":\"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself under the rules of vtc/storage/configs/create/0.2 — on `s3`, by assuming `roleArn` (or the role the host is configured with) with an inline session policy; on `gcs`, by a Credential Access Boundary. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`; `roleArn` is valid only on `s3`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set (0.2: a `SealedStorageCredential`). Protects against every administrator through every surface the community offers; does NOT protect against whoever operates the machine, and a community labels it so wherever the config is shown.\\n\\n`ambient` and `sealed` are host-operator choices: a community MAY refuse either by its own host configuration, whatever its administrators ask.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\"},\"mode\":{\"const\":\"vta-account\"}},\"required\":[\"mode\",\"context\",\"account\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"ambient\"},\"roleArn\":{\"$ref\":\"#/$defs/AwsRoleArn\",\"description\":\"`s3` only: the IAM role the community assumes, with the machine's ambient identity, to obtain each room-scoped session. Absent, the community assumes the role its host configuration names, and with none configured, the role of the ambient identity itself (which must then trust itself to be assumed). Refused on any other kind with `authNotAllowed`.\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"sealed\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"StorageAuth\"}"
-    };
-}
-pub(crate) use d_StorageAuth_7651801b;
-
-macro_rules! d_StorageAuth_778d3387 {
-    () => {
-        "\"StorageAuth\":{\"description\":\"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\"},\"mode\":{\"const\":\"vta-account\"}},\"required\":[\"mode\",\"context\",\"account\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"ambient\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"sealed\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"StorageAuth\"}"
-    };
-}
-pub(crate) use d_StorageAuth_778d3387;
-
-macro_rules! d_StorageConfigFacts_a9f8f390 {
-    () => {
-        "\"StorageConfigFacts\":{\"additionalProperties\":false,\"description\":\"What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.\",\"minimum\":0,\"type\":\"integer\"},\"credential\":{\"$ref\":\"#/$defs/CredentialState\"},\"files\":{\"description\":\"Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.\",\"minimum\":0,\"type\":\"integer\"},\"health\":{\"$ref\":\"#/$defs/StorageHealth\"},\"pendingDeleteBytes\":{\"description\":\"Bytes of orphaned blobs awaiting deletion after their grace window.\",\"minimum\":0,\"type\":\"integer\"},\"rooms\":{\"description\":\"Rooms assigned to this config.\",\"minimum\":0,\"type\":\"integer\"},\"walrus\":{\"additionalProperties\":false,\"description\":\"Present on a `walrus` config.\",\"properties\":{\"nextExtensionDueAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"signerAddress\":{\"description\":\"The Sui address that pays for storage, derived from the VTA account's key.\",\"pattern\":\"^0x[0-9a-f]{64}$\",\"type\":\"string\"}},\"type\":\"object\"}},\"required\":[\"rooms\",\"files\",\"bytes\",\"pendingDeleteBytes\",\"credential\",\"health\"],\"title\":\"StorageConfigFacts\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StorageConfigFacts_a9f8f390;
-
-macro_rules! d_StorageConfigId_2659d556 {
-    () => {
-        "\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_StorageConfigId_2659d556;
-
-macro_rules! d_StorageConfig_aaa867a1 {
-    () => {
-        "\"StorageConfig\":{\"additionalProperties\":false,\"description\":\"One storage config as the community holds it. Carries no secret.\",\"properties\":{\"auth\":{\"$ref\":\"#/$defs/StorageAuth\"},\"capacityBytes\":{\"description\":\"Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"isDefault\":{\"description\":\"True for the config a room is assigned to when neither the community's policy nor its creator names one.\",\"type\":\"boolean\"},\"label\":{\"description\":\"A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"settings\":{\"$ref\":\"#/$defs/StorageSettings\"},\"state\":{\"$ref\":\"#/$defs/ConfigState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"label\",\"settings\",\"state\",\"createdBy\",\"createdAt\"],\"title\":\"StorageConfig\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StorageConfig_aaa867a1;
-
-macro_rules! d_StorageHealth_a7be821c {
-    () => {
-        "\"StorageHealth\":{\"additionalProperties\":false,\"description\":\"The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.\",\"properties\":{\"lastDeleteAt\":{\"description\":\"The last successful deletion (on `walrus`, the last lapse the community observed).\",\"format\":\"date-time\",\"type\":\"string\"},\"lastGetAt\":{\"description\":\"The last successful chunk read.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeOk\":{\"type\":\"boolean\"},\"lastPutAt\":{\"description\":\"The last successful blob write.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"StorageHealth\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StorageHealth_a7be821c;
-
-macro_rules! d_StorageKind_5b2759e6 {
-    () => {
-        "\"StorageKind\":{\"description\":\"Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.\",\"enum\":[\"local\",\"s3\",\"gcs\",\"walrus\"],\"title\":\"StorageKind\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_StorageKind_5b2759e6;
-
-macro_rules! d_StorageSettings_2f03cabf {
-    () => {
-        "\"StorageSettings\":{\"description\":\"A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.\",\"oneOf\":[{\"$ref\":\"#/$defs/LocalSettings\"},{\"$ref\":\"#/$defs/S3Settings\"},{\"$ref\":\"#/$defs/GcsSettings\"},{\"$ref\":\"#/$defs/WalrusSettings\"}],\"title\":\"StorageSettings\"}"
-    };
-}
-pub(crate) use d_StorageSettings_2f03cabf;
-
-macro_rules! d_StoredConfig_d1701916 {
-    () => {
-        "\"StoredConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as the community stores them, including the helper key it never publishes.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/StoredEvent\"},\"type\":\"array\"},\"hvk\":{\"description\":\"The helper verification key, multibase. A public value, published as helperKey.\",\"minLength\":1,\"type\":\"string\"},\"livePeriods\":{\"description\":\"Live vetter class periods, current first, stored as the bare YYYY-MM period.\",\"items\":{\"pattern\":\"^[0-9]{4}-(0[1-9]|1[0-2])$\",\"type\":\"string\"},\"type\":\"array\"},\"liveTokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"suite\":{\"description\":\"The blind-signature suite in force, e.g. ps-ddh-bls12381.\",\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tvk\":{\"description\":\"The token verification key, multibase. Never the same key as hvk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"suite\",\"hvk\",\"tvk\",\"livePeriods\",\"liveTokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"StoredConfig\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StoredConfig_d1701916;
-
-macro_rules! d_StoredEvent_58bb315d {
-    () => {
-        "\"StoredEvent\":{\"additionalProperties\":false,\"properties\":{\"approvedBy\":{\"description\":\"Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).\",\"type\":[\"string\",\"null\"]},\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"graceDays\":{\"minimum\":0,\"type\":\"integer\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"graceDays\",\"groupFloor\",\"tiers\"],\"title\":\"StoredEvent\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StoredEvent_58bb315d;
-
-macro_rules! d_StoredWitnessing_a342c21b {
-    () => {
-        "\"StoredWitnessing\":{\"additionalProperties\":false,\"description\":\"One VWC vta/witness/accept stored, as accept answered it, with the time it was stored. The VWC itself travels once, inside evidence.outcome, under the witness's proof.\",\"properties\":{\"acceptedAt\":{\"description\":\"When vta/witness/accept stored the VWC.\",\"format\":\"date-time\",\"type\":\"string\"},\"credentialId\":{\"description\":\"The credential-vault handle the VWC is stored under: the credentialId vta/witness/accept returned.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/OutcomeEvidence\",\"description\":\"The outcome evidence stored with the VWC, each document exactly as stored, never re-serialised: `session`, the witness/session document as the VTA built it, and `outcome`, the witness/session/submit #response as received, which carries the VWC. Of whichever version the session was conducted under.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"relationshipDid\":{\"description\":\"The relationship DID the VWC names as its credentialSubject.id.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"vwcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The VWC's digest, as the witness returned it and the VTA checked it at accept: over the RFC 8785 canonicalization of the VWC, proof included.\"},\"witness\":{\"description\":\"The witness that issued the VWC: its issuer, which is the recipient of evidence.session.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"witness\",\"relationshipDid\",\"vwcDigestMultibase\",\"acceptedAt\",\"evidence\"],\"title\":\"StoredWitnessing\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_StoredWitnessing_a342c21b;
-
 macro_rules! d_StreamDescriptor_851a2889 {
     () => {
         "\"StreamDescriptor\":{\"additionalProperties\":false,\"description\":\"A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.\",\"properties\":{\"algorithm\":{\"description\":\"The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"bundleId\":{\"$ref\":\"#/$defs/BundleId\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\"},\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"},\"transportToken\":{\"description\":\"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"transportUrl\":{\"description\":\"Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"bundleId\",\"algorithm\",\"transportUrl\",\"transportToken\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"StreamDescriptor\",\"type\":\"object\"}"
@@ -6735,33 +3613,12 @@ macro_rules! d_SubjectRevocation_eb23f17f {
 }
 pub(crate) use d_SubjectRevocation_eb23f17f;
 
-macro_rules! d_Subject_305d0113 {
-    () => {
-        "\"Subject\":{\"additionalProperties\":false,\"description\":\"Where the thing is and how to open it. Only these three members: what the thing contains is shown by its holder, to a reader it admits, when the thing is opened with `openWith`.\",\"properties\":{\"heldBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The DID of the party holding the thing — for an election, the community. The party a recipient sends `openWith` to.\"},\"id\":{\"description\":\"The thing's identifier at `heldBy`, in the form the `openWith` task takes it — for an election, its `electionId`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"openWith\":{\"description\":\"The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^https://\\\\S+$\",\"type\":\"string\"}},\"required\":[\"heldBy\",\"id\",\"openWith\"],\"title\":\"Subject\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Subject_305d0113;
-
 macro_rules! d_SuiMoveCall_fb442c6d {
     () => {
         "\"SuiMoveCall\":{\"additionalProperties\":false,\"description\":\"One Move function an account's transactions may call.\",\"properties\":{\"function\":{\"pattern\":\"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\"type\":\"string\"},\"module\":{\"pattern\":\"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\"type\":\"string\"},\"package\":{\"pattern\":\"^0x[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"package\",\"module\",\"function\"],\"title\":\"SuiMoveCall\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_SuiMoveCall_fb442c6d;
-
-macro_rules! d_Summary_29aa704a {
-    () => {
-        "\"Summary\":{\"additionalProperties\":false,\"description\":\"What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.\",\"properties\":{\"effect\":{\"description\":\"One or two sentences from the template saying what executing the operation will do.\",\"maxLength\":1024,\"type\":\"string\"},\"fields\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Field\"},\"description\":\"Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.\",\"propertyNames\":{\"maxLength\":64,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\"},\"type\":\"object\"},\"templateDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.\"},\"title\":{\"description\":\"One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"title\",\"fields\",\"templateDigest\"],\"title\":\"Summary\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Summary_29aa704a;
-
-macro_rules! d_SweepMinutes_e256d07b {
-    () => {
-        "\"SweepMinutes\":{\"description\":\"Minutes between sweeps: at most every five minutes, at least once a day.\",\"maximum\":1440,\"minimum\":5,\"title\":\"SweepMinutes\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_SweepMinutes_e256d07b;
 
 macro_rules! d_SyncEvent_f13dc4e9 {
     () => {
@@ -6791,110 +3648,12 @@ macro_rules! d_TemplateBootstrapAsk_223571d0 {
 }
 pub(crate) use d_TemplateBootstrapAsk_223571d0;
 
-macro_rules! d_ThresholdRecoveryCommitment_5faee114 {
-    () => {
-        "\"ThresholdRecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.\",\"properties\":{\"label\":{\"description\":\"Operator-facing name of the group. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"members\":{\"description\":\"The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211).\",\"items\":{\"$ref\":\"#/$defs/ThresholdRecoveryMember\"},\"minItems\":3,\"type\":\"array\"},\"threshold\":{\"description\":\"t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`.\",\"minimum\":2,\"type\":\"integer\"}},\"required\":[\"threshold\",\"members\"],\"title\":\"ThresholdRecoveryCommitment\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ThresholdRecoveryCommitment_5faee114;
-
-macro_rules! d_ThresholdRecoveryMember_c59d471a {
-    () => {
-        "\"ThresholdRecoveryMember\":{\"additionalProperties\":false,\"description\":\"One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).\",\"properties\":{\"custodian\":{\"$ref\":\"#/$defs/RecoveryCustodian\",\"description\":\"Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published.\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"ThresholdRecoveryMember\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_ThresholdRecoveryMember_c59d471a;
-
-macro_rules! d_TickLength_ac59e156 {
-    () => {
-        "\"TickLength\":{\"description\":\"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\"pattern\":\"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\"title\":\"TickLength\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_TickLength_ac59e156;
-
-macro_rules! d_TicketDocument_281cffac {
-    () => {
-        "\"TicketDocument\":{\"description\":\"A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The request's `member`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The request's `community`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"TicketDocument\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_TicketDocument_281cffac;
-
-macro_rules! d_TicketRequest_58102bf2 {
-    () => {
-        "\"TicketRequest\":{\"additionalProperties\":false,\"description\":\"The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.\",\"properties\":{\"id\":{\"$ref\":\"#/$defs/PcsValue\"},\"label\":{\"description\":\"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2).\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"request\":{\"additionalProperties\":false,\"description\":\"The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.\",\"properties\":{\"encoding\":{\"$ref\":\"#/$defs/PcsValue\"},\"proof\":{\"description\":\"The proof that the commitment is well formed and the requester holds its secret.\",\"maxLength\":8192,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"t0\":{\"$ref\":\"#/$defs/PcsValue\"}},\"required\":[\"proof\"],\"type\":\"object\"}},\"required\":[\"label\",\"id\",\"request\"],\"title\":\"TicketRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_TicketRequest_58102bf2;
-
-macro_rules! d_TicketRequest_be02b5b9 {
-    () => {
-        "\"TicketRequest\":{\"additionalProperties\":false,\"description\":\"The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.\",\"properties\":{\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).\"},\"label\":{\"description\":\"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"request\":{\"$ref\":\"#/$defs/RootRequest\"}},\"required\":[\"label\",\"id\",\"request\"],\"title\":\"TicketRequest\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_TicketRequest_be02b5b9;
-
-macro_rules! d_Tier_c778cdf8 {
-    () => {
-        "\"Tier\":{\"additionalProperties\":false,\"properties\":{\"dripPerTick\":{\"description\":\"How many tokens a tick under this tier yields.\",\"minimum\":1,\"type\":\"integer\"},\"name\":{\"description\":\"How the menu names it: desk, busy-desk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"dripPerTick\"],\"title\":\"Tier\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Tier_c778cdf8;
-
-macro_rules! d_TimeZoneId_d7536905 {
-    () => {
-        "\"TimeZoneId\":{\"description\":\"An IANA time zone name, such as `Europe/London`, or `Etc/UTC`. A responder MUST refuse a name its time zone database does not know.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+){0,2}$\",\"title\":\"TimeZoneId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_TimeZoneId_d7536905;
-
 macro_rules! d_TokenBundle_eb16e850 {
     () => {
         "\"TokenBundle\":{\"$anchor\":\"tokenBundle\",\"additionalProperties\":false,\"description\":\"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\"properties\":{\"accessToken\":{\"description\":\"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\"minLength\":1,\"type\":\"string\"},\"expiresIn\":{\"description\":\"Seconds from issuance until the access token expires.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"refreshExpiresIn\":{\"description\":\"Seconds from issuance until the refresh token expires, when one was issued.\",\"minimum\":1,\"type\":\"integer\"},\"refreshToken\":{\"description\":\"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"description\":\"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"tokenType\":{\"description\":\"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"accessToken\",\"tokenType\",\"expiresIn\"],\"title\":\"TokenBundle\",\"type\":\"object\"}"
     };
 }
 pub(crate) use d_TokenBundle_eb16e850;
-
-macro_rules! d_TokenDraw_5e087500 {
-    () => {
-        "\"TokenDraw\":{\"additionalProperties\":false,\"description\":\"One draw of the token drip: a label and a tick.\",\"properties\":{\"label\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tick\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\"],\"title\":\"TokenDraw\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_TokenDraw_5e087500;
-
-macro_rules! d_Topic_04aa2214 {
-    () => {
-        "\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\"],\"title\":\"Topic\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Topic_04aa2214;
-
-macro_rules! d_Topic_47c3211d {
-    () => {
-        "\"Topic\":{\"description\":\"A topic an idea is filed under. One of the board's `topics` where the board states them.\",\"maxLength\":64,\"minLength\":1,\"title\":\"Topic\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Topic_47c3211d;
-
-macro_rules! d_Topic_6fe6c61b {
-    () => {
-        "\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\",\"rooms\",\"directory\",\"groups\"],\"title\":\"Topic\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Topic_6fe6c61b;
-
-macro_rules! d_Topic_e8b26388 {
-    () => {
-        "\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\",\"rooms\"],\"title\":\"Topic\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Topic_e8b26388;
-
-macro_rules! d_Topic_eea5cea0 {
-    () => {
-        "\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\",\"rooms\",\"directory\",\"groups\",\"communityRooms\"],\"title\":\"Topic\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_Topic_eea5cea0;
 
 macro_rules! d_TrafficChannel_a28df3e5 {
     () => {
@@ -6987,13 +3746,6 @@ macro_rules! d_TrustedIssuer_9b011a20 {
 }
 pub(crate) use d_TrustedIssuer_9b011a20;
 
-macro_rules! d_TrusteeCeremony_b4b3b398 {
-    () => {
-        "\"TrusteeCeremony\":{\"description\":\"The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.\",\"items\":{\"$ref\":\"#/$defs/SignedRequest\"},\"maxItems\":4224,\"minItems\":1,\"title\":\"TrusteeCeremony\",\"type\":\"array\"}"
-    };
-}
-pub(crate) use d_TrusteeCeremony_b4b3b398;
-
 macro_rules! d_TrusteeIndex_c6329406 {
     () => {
         "\"TrusteeIndex\":{\"description\":\"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\"maximum\":64,\"minimum\":1,\"title\":\"TrusteeIndex\",\"type\":\"integer\"}"
@@ -7049,27 +3801,6 @@ macro_rules! d_UnsignedRoomRequest_e4af2318 {
     };
 }
 pub(crate) use d_UnsignedRoomRequest_e4af2318;
-
-macro_rules! d_UpdateKeyClass_d7935c9f {
-    () => {
-        "\"UpdateKeyClass\":{\"description\":\"For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).\",\"enum\":[\"routine\",\"recovery\"],\"title\":\"UpdateKeyClass\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_UpdateKeyClass_d7935c9f;
-
-macro_rules! d_UploadId_4215c803 {
-    () => {
-        "\"UploadId\":{\"description\":\"Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"title\":\"UploadId\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_UploadId_4215c803;
-
-macro_rules! d_UploadTarget_5f2a75fe {
-    () => {
-        "\"UploadTarget\":{\"additionalProperties\":false,\"description\":\"What the uploaded bytes are for, committed before any byte moves. `file`: one file at `path`, written into the site when the upload commits — the single-file write. `bundle`: a gzip-compressed tar of the whole site, staged when the upload commits and published by vtc/website/deploy. `path` is required for a `file` target and forbidden for a `bundle`, and `ifMatch` is allowed only for a `file` — rules over two members that this schema does not express; a community refuses a violation with `malformedRequest`. `ifMatch` is optimistic concurrency: the write commits only if the file's current content hash is this value.\",\"properties\":{\"ifMatch\":{\"$ref\":\"#/$defs/WebsiteEtag\"},\"kind\":{\"enum\":[\"file\",\"bundle\"],\"type\":\"string\"},\"path\":{\"$ref\":\"#/$defs/WebsitePath\"}},\"required\":[\"kind\"],\"title\":\"UploadTarget\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_UploadTarget_5f2a75fe;
 
 macro_rules! d_UpstreamGroup_6ccd285d {
     () => {
@@ -7162,110 +3893,12 @@ macro_rules! d_VaultUpsertedEvent_7512b4bf {
 }
 pub(crate) use d_VaultUpsertedEvent_7512b4bf;
 
-macro_rules! d_VerdictEffect_a3bf5d27 {
-    () => {
-        "\"VerdictEffect\":{\"$anchor\":\"verdictEffect\",\"description\":\"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.\",\"enum\":[\"allow\",\"deny\",\"refer\",\"requestMore\"],\"title\":\"VerdictEffect\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VerdictEffect_a3bf5d27;
-
-macro_rules! d_VerdictWith_aa216786 {
-    () => {
-        "\"VerdictWith\":{\"$anchor\":\"verdictWith\",\"additionalProperties\":false,\"description\":\"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.\",\"properties\":{\"bundleRef\":{\"description\":\"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.\",\"type\":\"object\"},\"code\":{\"description\":\"Stable refusal code, safe to branch on. `deny` only.\",\"minLength\":1,\"type\":\"string\"},\"needs\":{\"description\":\"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"obligations\":{\"description\":\"Conditions attached to the grant. `allow` only.\",\"type\":\"object\"},\"presentationDefinition\":{\"description\":\"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.\",\"type\":\"object\"},\"queue\":{\"description\":\"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.\",\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one. `deny` and `refer`.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"role\":{\"description\":\"The granted local role. `allow` only.\",\"minLength\":1,\"type\":\"string\"}},\"title\":\"VerdictWith\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VerdictWith_aa216786;
-
-macro_rules! d_Verdict_c8d835d1 {
-    () => {
-        "\"Verdict\":{\"$anchor\":\"verdict\",\"additionalProperties\":false,\"description\":\"A ceremony decision: the effect, plus its effect-dependent detail.\",\"properties\":{\"effect\":{\"$ref\":\"#/$defs/VerdictEffect\"},\"with\":{\"$ref\":\"#/$defs/VerdictWith\"}},\"required\":[\"effect\",\"with\"],\"title\":\"Verdict\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Verdict_c8d835d1;
-
-macro_rules! d_VerifiedValue_080e7e2b {
-    () => {
-        "\"VerifiedValue\":{\"additionalProperties\":false,\"description\":\"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\"properties\":{\"credentialType\":{\"description\":\"The most specific `type` of the credential the claim came from.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"DID of the credential's issuer, shown as the field's verification badge.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the credential expires, where it does. The community withdraws the value once it passes.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"type\":\"number\"}],\"description\":\"The disclosed claim value.\"},\"verifiedAt\":{\"description\":\"When the community verified the presentation.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"value\",\"issuer\",\"verifiedAt\"],\"title\":\"VerifiedValue\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VerifiedValue_080e7e2b;
-
 macro_rules! d_Version_292c9dbc {
     () => {
         "\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}"
     };
 }
 pub(crate) use d_Version_292c9dbc;
-
-macro_rules! d_Version_4bef2f27 {
-    () => {
-        "\"Version\":{\"description\":\"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}"
-    };
-}
-pub(crate) use d_Version_4bef2f27;
-
-macro_rules! d_VetterAcceptsDocumentation_fdbe6901 {
-    () => {
-        "\"VetterAcceptsDocumentation\":{\"description\":\"What documentation the vetter relies on, in the same tokens as vetting/request's `acceptsDocumentation` — `passport`, `nationalId`, `driverLicence`, `none`, or another lowerCamelCase class. The vetter's own choice; empty says nothing either way.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"maxItems\":16,\"title\":\"VetterAcceptsDocumentation\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_VetterAcceptsDocumentation_fdbe6901;
-
-macro_rules! d_VetterAvailability_48ead274 {
-    () => {
-        "\"VetterAvailability\":{\"description\":\"Vetter-authored free text on when they are available to vet. Attributed to the vetter.\",\"maxLength\":500,\"minLength\":1,\"title\":\"VetterAvailability\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VetterAvailability_48ead274;
-
-macro_rules! d_VetterContactHint_41106a23 {
-    () => {
-        "\"VetterContactHint\":{\"description\":\"Vetter-authored free text on how to obtain a ticket from them, e.g. `Find me at the OpenVTC booth`. A hint, not an address a request can be sent to: vetting/request still needs a ticket or an introduction the vetter accepts.\",\"maxLength\":300,\"minLength\":1,\"title\":\"VetterContactHint\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VetterContactHint_41106a23;
-
-macro_rules! d_VetterDisplayName_8fa74837 {
-    () => {
-        "\"VetterDisplayName\":{\"description\":\"The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter.\",\"maxLength\":128,\"minLength\":1,\"title\":\"VetterDisplayName\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VetterDisplayName_8fa74837;
-
-macro_rules! d_VetterEvent_74df11f1 {
-    () => {
-        "\"VetterEvent\":{\"additionalProperties\":false,\"description\":\"An event the vetter will attend and vet at. `endDate` is on or after `startDate` and no more than 31 days after it; JSON Schema cannot compare two members, so the community checks both and refuses a violation with `malformedRequest`.\",\"properties\":{\"endDate\":{\"$ref\":\"#/$defs/CalendarDate\"},\"location\":{\"$ref\":\"#/$defs/VetterLocation\"},\"name\":{\"description\":\"The event's name, e.g. `Linux Plumbers Conference 2026`.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"startDate\":{\"$ref\":\"#/$defs/CalendarDate\"},\"url\":{\"description\":\"OPTIONAL. The event's own https page.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"name\",\"startDate\",\"endDate\"],\"title\":\"VetterEvent\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VetterEvent_74df11f1;
-
-macro_rules! d_VetterLocation_34eec7e9 {
-    () => {
-        "\"VetterLocation\":{\"additionalProperties\":false,\"description\":\"Where a vetter can meet people, as coarse as the vetter chooses: a country, optionally a region, optionally a city. Never a street address.\",\"properties\":{\"city\":{\"$ref\":\"#/$defs/PlaceName\"},\"country\":{\"$ref\":\"#/$defs/CountryCode\"},\"region\":{\"$ref\":\"#/$defs/PlaceName\"}},\"required\":[\"country\"],\"title\":\"VetterLocation\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VetterLocation_34eec7e9;
-
-macro_rules! d_VetterMethods_590eaa3e {
-    () => {
-        "\"VetterMethods\":{\"description\":\"The methods the vetter offers, from `inPerson`, `video`, `priorAcquaintance`.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"maxItems\":3,\"minItems\":1,\"title\":\"VetterMethods\",\"type\":\"array\",\"uniqueItems\":true}"
-    };
-}
-pub(crate) use d_VetterMethods_590eaa3e;
-
-macro_rules! d_VetterSummary_0c1bdeed {
-    () => {
-        "\"VetterSummary\":{\"additionalProperties\":false,\"description\":\"A vetter engine as the VTA holds it, without its key, its credentials or its tokens.\",\"properties\":{\"attested\":{\"description\":\"Attestations made through this engine.\",\"minimum\":0,\"type\":\"integer\"},\"community\":{\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"drawsInFlight\":{\"description\":\"Draws requested and not yet accepted or abandoned.\",\"items\":{\"$ref\":\"#/$defs/TokenDraw\"},\"type\":\"array\"},\"enrolledLabels\":{\"description\":\"Class labels this vetter holds a credential under, newest first.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The vetter's PCS identifier for this community.\"},\"memberDid\":{\"description\":\"The member DID the engine draws tokens as. Bound into every token request.\",\"minLength\":1,\"type\":\"string\"},\"pendingLabels\":{\"description\":\"Class labels requested and not yet accepted.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"tokensFree\":{\"description\":\"Tokens held and not reserved.\",\"minimum\":0,\"type\":\"integer\"},\"tokensHeld\":{\"description\":\"Tokens held in all.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"contextId\",\"community\",\"memberDid\",\"suite\",\"id\",\"enrolledLabels\",\"pendingLabels\",\"tokensFree\",\"tokensHeld\",\"drawsInFlight\",\"attested\"],\"title\":\"VetterSummary\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VetterSummary_0c1bdeed;
-
-macro_rules! d_VettingDocumentation_82b5fcbc {
-    () => {
-        "\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VettingDocumentation_82b5fcbc;
 
 macro_rules! d_VettingMethod_d9db2232 {
     () => {
@@ -7274,54 +3907,12 @@ macro_rules! d_VettingMethod_d9db2232 {
 }
 pub(crate) use d_VettingMethod_d9db2232;
 
-macro_rules! d_VettingRelationship_74961a19 {
-    () => {
-        "\"VettingRelationship\":{\"description\":\"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\"enum\":[\"none\",\"communityColleague\",\"sameEmployer\",\"family\",\"otherPersonal\"],\"title\":\"VettingRelationship\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VettingRelationship_74961a19;
-
-macro_rules! d_VettingRequirements_86709bf0 {
-    () => {
-        "\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\\n\\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\",\"description\":\"Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\\n\\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VettingRequirements_86709bf0;
-
-macro_rules! d_VettingRequirements_ce1f74f4 {
-    () => {
-        "\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VettingRequirements_ce1f74f4;
-
 macro_rules! d_Vid_354245ac {
     () => {
         "\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}"
     };
 }
 pub(crate) use d_Vid_354245ac;
-
-macro_rules! d_View_b124e703 {
-    () => {
-        "\"View\":{\"description\":\"Which view the caller was given. `host`: the event's hosts — every registration, all of it (VTI-EVT-073). `roster`: a registrant on a `visible` roster — who else is going or maybe (VTI-EVT-053).\",\"enum\":[\"host\",\"roster\"],\"title\":\"View\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_View_b124e703;
-
-macro_rules! d_VirtualFeature_522d40e1 {
-    () => {
-        "\"VirtualFeature\":{\"description\":\"What a virtual location offers, as JSCalendar's VirtualLocation `features`.\",\"enum\":[\"audio\",\"chat\",\"feed\",\"moderator\",\"phone\",\"screen\",\"video\"],\"title\":\"VirtualFeature\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_VirtualFeature_522d40e1;
-
-macro_rules! d_VirtualPlace_dc4c8311 {
-    () => {
-        "\"VirtualPlace\":{\"additionalProperties\":false,\"description\":\"A way to join online, as JSCalendar's VirtualLocation.\",\"properties\":{\"description\":{\"description\":\"A passcode, dial-in numbers. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"features\":{\"items\":{\"$ref\":\"#/$defs/VirtualFeature\"},\"maxItems\":7,\"type\":\"array\",\"uniqueItems\":true},\"name\":{\"maxLength\":200,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"How to join: an `https` link, or a `tel`, `sip` or `sips` URI for a dial-in. No other scheme.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^(https|tel|sip|sips):\",\"type\":\"string\"}},\"required\":[\"uri\"],\"title\":\"VirtualPlace\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_VirtualPlace_dc4c8311;
 
 macro_rules! d_Visibility_c9eee55b {
     () => {
@@ -7351,97 +3942,6 @@ macro_rules! d_WakeTriggerPolicy_e6565f9d {
 }
 pub(crate) use d_WakeTriggerPolicy_e6565f9d;
 
-macro_rules! d_WallVisibility_042978e0 {
-    () => {
-        "\"WallVisibility\":{\"description\":\"Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.\",\"enum\":[\"members\",\"nobody\"],\"title\":\"WallVisibility\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_WallVisibility_042978e0;
-
-macro_rules! d_WalrusSettings_34fc086c {
-    () => {
-        "\"WalrusSettings\":{\"additionalProperties\":false,\"properties\":{\"aggregatorUrl\":{\"description\":\"The Walrus aggregator the community reads through.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"epochs\":{\"description\":\"Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.\",\"maximum\":53,\"minimum\":1,\"type\":\"integer\"},\"extendBeforeEpochs\":{\"description\":\"How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.\",\"maximum\":52,\"minimum\":1,\"type\":\"integer\"},\"kind\":{\"const\":\"walrus\"},\"relayUrl\":{\"description\":\"The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"kind\",\"relayUrl\",\"aggregatorUrl\",\"epochs\",\"extendBeforeEpochs\"],\"title\":\"WalrusSettings\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_WalrusSettings_34fc086c;
-
-macro_rules! d_WebsDidClass_5462cc1b {
-    () => {
-        "\"WebsDidClass\":{\"description\":\"The DID class the DID belongs to (VTI specification, DID classes, VTI-KEY-190 – 193), stated when it is created and fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context, and nothing else. `persona`: a person's own identity. `service`: the durable identity of a node or a service — the VTA itself, a VTC, a VTN, a trust registry, a host service, a mediator, or an integration the VTA provisions — at key assurance level 1. A DID belongs to one class only (VTI-KEY-193): a persona or relationship DID is never adopted as a node's identity, and a service DID is never used as a person's. A service did:webs is alpha: see CONVENTIONS.md §1.\",\"enum\":[\"relationship\",\"persona\",\"service\"],\"title\":\"WebsDidClass\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_WebsDidClass_5462cc1b;
-
-macro_rules! d_WebsDidRecord_9a39d9f3 {
-    () => {
-        "\"WebsDidRecord\":{\"additionalProperties\":false,\"description\":\"A did:webs DID as the VTA holds it. The DID document is not here: the host derives it from `keri.cesr`, which `vta/webs/dids/get` returns on request. Every key named here is public, and every key id names a key the VTA holds and never returns.\",\"properties\":{\"aid\":{\"description\":\"The KERI autonomic identifier: the self-addressing digest of the inception event, and the DID's final segment. It never changes: a rotation changes the keys, not the AID.\",\"minLength\":1,\"type\":\"string\"},\"alsoKnownAs\":{\"description\":\"The designated aliases in force, the DID itself first. The did:webs resolution of the DID requires the AID to designate it, so the list is never empty while the DID is live.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"contextId\":{\"description\":\"Context the DID belongs to. Its keys were derived in it, and deleting that context destroys them.\",\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"deactivated\":{\"description\":\"True once `vta/webs/dids/delete` has published the rotation to no next keys. Irreversible.\",\"type\":\"boolean\"},\"deactivatedAt\":{\"description\":\"When the deactivating rotation was published. Present exactly when `deactivated` is true.\",\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The DID: `did:webs:<domain>:<path segments>:<AID>`, a port in the domain written `%3A<port>`.\",\"pattern\":\"^did:webs:\",\"type\":\"string\"},\"didJsonUrl\":{\"description\":\"Where the derived document is served: `https://<domain>/<slot>/did.json`.\",\"format\":\"uri\",\"type\":\"string\"},\"domain\":{\"description\":\"The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keriCesrUrl\":{\"description\":\"Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.\",\"format\":\"uri\",\"type\":\"string\"},\"keyAgreementKey\":{\"description\":\"The designated key agreement key in CESR (an X25519 key, `C…`). Never the X25519 key converted from a signing key.\",\"type\":\"string\"},\"keyAgreementKeyId\":{\"description\":\"The VTA's id for the designated key agreement key.\",\"type\":\"string\"},\"label\":{\"description\":\"Operator-facing label. Never published.\",\"maxLength\":256,\"type\":\"string\"},\"nextKeyId\":{\"description\":\"The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.\",\"type\":\"string\"},\"primary\":{\"description\":\"Whether this is its context's primary DID.\",\"type\":\"boolean\"},\"sequenceNumber\":{\"description\":\"Sequence number of the latest event in the key event log.\",\"minimum\":0,\"type\":\"integer\"},\"serverId\":{\"description\":\"The VTA's id for the hosting server that serves the slot.\",\"type\":\"string\"},\"services\":{\"description\":\"The designated services in force, `#didcomm` and `#tsp` included when present.\",\"items\":{\"$ref\":\"#/$defs/DesignatedService\"},\"type\":\"array\"},\"signingKey\":{\"description\":\"The current signing key in CESR (an Ed25519 key, `D…`). The document's verification method for it is `<did>#<signingKey>`.\",\"type\":\"string\"},\"signingKeyId\":{\"description\":\"The VTA's id for the current signing key, the one key of the key state (`kt` 1). It signs the DID's key events and what the DID signs as itself. After deactivation, the key the final rotation installed, which the VTA signs nothing more with.\",\"type\":\"string\"},\"slot\":{\"description\":\"The slot on the hosting server: the path segments, then the AID, separated by `/`.\",\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"versionId\":{\"description\":\"The latest event as `<sequence number>:<SAID>`, the form `expectedVersionId` is compared against (vta/dids method profile `webs`, §3). Both parts are compared: a sequence number alone does not distinguish two events at the same position.\",\"pattern\":\"^[0-9]+:[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"did\",\"aid\",\"contextId\",\"serverId\",\"domain\",\"slot\",\"keriCesrUrl\",\"didJsonUrl\",\"sequenceNumber\",\"versionId\",\"signingKeyId\",\"signingKey\",\"keyAgreementKeyId\",\"keyAgreementKey\",\"alsoKnownAs\",\"services\",\"deactivated\",\"createdAt\",\"updatedAt\"],\"title\":\"WebsDidRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_WebsDidRecord_9a39d9f3;
-
-macro_rules! d_WebsSlotPath_396febba {
-    () => {
-        "\"WebsSlotPath\":{\"description\":\"The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.\",\"maxLength\":200,\"minLength\":1,\"pattern\":\"^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$\",\"title\":\"WebsSlotPath\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_WebsSlotPath_396febba;
-
-macro_rules! d_WebsiteEtag_7788187b {
-    () => {
-        "\"WebsiteEtag\":{\"description\":\"A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"title\":\"WebsiteEtag\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_WebsiteEtag_7788187b;
-
-macro_rules! d_WebsitePath_48c3550a {
-    () => {
-        "\"WebsitePath\":{\"description\":\"A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[^\\\\\\\\]+$\",\"title\":\"WebsitePath\",\"type\":\"string\"}"
-    };
-}
-pub(crate) use d_WebsitePath_48c3550a;
-
-macro_rules! d_WebvhDidRecord_87a3a62e {
-    () => {
-        "\"WebvhDidRecord\":{\"additionalProperties\":false,\"description\":\"A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.\",\"properties\":{\"contextId\":{\"description\":\"Context this DID belongs to. Deleting that context destroys this DID.\",\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The DID, e.g. `did:webvh:<scid>:example.com:alice`.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logEntryCount\":{\"description\":\"Number of entries in the log.\",\"minimum\":0,\"type\":\"integer\"},\"mnemonic\":{\"description\":\"The hosting server's handle for the record. Unrelated to a BIP-39 phrase; the collision of terms is historical.\",\"type\":\"string\"},\"nextFragmentId\":{\"default\":1,\"description\":\"Next `#key-{n}` fragment id to mint. Monotonic and never decremented, so a fragment is never reused for a different key.\",\"minimum\":1,\"type\":\"integer\"},\"portable\":{\"description\":\"Whether the DID may be moved to another domain without losing its identity. Fixed at creation: a DID created non-portable cannot be made portable later, because portability is a commitment recorded in the log's first entry.\",\"type\":\"boolean\"},\"preRotationCount\":{\"default\":0,\"description\":\"Pre-rotation keys committed by the most recent entry. `0` means pre-rotation is disabled — a compromise of the current key is then unrecoverable by rotation, because the successor was never committed in advance.\",\"minimum\":0,\"type\":\"integer\"},\"scid\":{\"description\":\"Self-certifying identifier: the hash committing to the log's first entry. It is what makes the DID's history tamper-evident, and it changes only when the log is re-created — never in place.\",\"type\":\"string\"},\"serverId\":{\"description\":\"Id of the hosting server serving this DID's log. Empty for a serverless DID, whose location comes from the URL it was created with.\",\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"did\",\"serverId\",\"mnemonic\",\"scid\",\"contextId\",\"portable\",\"logEntryCount\",\"createdAt\",\"updatedAt\"],\"title\":\"WebvhDidRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_WebvhDidRecord_87a3a62e;
-
-macro_rules! d_WebvhPathMode_921544e8 {
-    () => {
-        "\"WebvhPathMode\":{\"description\":\"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"wellKnown\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"explicit\"},\"path\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mode\",\"path\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"autoAssign\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"WebvhPathMode\"}"
-    };
-}
-pub(crate) use d_WebvhPathMode_921544e8;
-
-macro_rules! d_WebvhServerRecord_112e8b1e {
-    () => {
-        "\"WebvhServerRecord\":{\"additionalProperties\":false,\"description\":\"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The server's own DID, used to authenticate it.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Local id for the server, chosen by the operator.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"did\",\"createdAt\",\"updatedAt\"],\"title\":\"WebvhServerRecord\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_WebvhServerRecord_112e8b1e;
-
-macro_rules! d_When_a8906ca9 {
-    () => {
-        "\"When\":{\"additionalProperties\":false,\"description\":\"When the event happens, in JSCalendar's terms. `start` is local time in `timeZone`; `duration` is how long it lasts. With `showWithoutTime` true it is an all-day event: `start`'s time MUST be `T00:00:00` and `duration` whole days (VTI-EVT-005).\",\"properties\":{\"duration\":{\"$ref\":\"#/$defs/JSCalendarDuration\"},\"showWithoutTime\":{\"description\":\"An all-day event. Absent means false.\",\"type\":\"boolean\"},\"start\":{\"$ref\":\"#/$defs/LocalDateTime\"},\"timeZone\":{\"$ref\":\"#/$defs/TimeZoneId\"}},\"required\":[\"start\",\"timeZone\",\"duration\"],\"title\":\"When\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_When_a8906ca9;
-
-macro_rules! d_Window_85bd7e01 {
-    () => {
-        "\"Window\":{\"additionalProperties\":false,\"description\":\"A period, open from `opensAt` until `closesAt`. `closesAt` is after `opensAt` (a consumer check; JSON Schema cannot compare them).\",\"properties\":{\"closesAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"opensAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"opensAt\",\"closesAt\"],\"title\":\"Window\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Window_85bd7e01;
-
-macro_rules! d_Window_c532bf19 {
-    () => {
-        "\"Window\":{\"additionalProperties\":false,\"description\":\"The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.\",\"properties\":{\"endDate\":{\"description\":\"Last day of the event, inclusive. It is not before `startDate`.\",\"format\":\"date\",\"type\":\"string\"},\"startDate\":{\"description\":\"First day of the event, inclusive.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"startDate\",\"endDate\"],\"title\":\"Event window\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Window_c532bf19;
-
 macro_rules! d_WireProtocol_e798e0be {
     () => {
         "\"WireProtocol\":{\"description\":\"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\"enum\":[\"didcomm\",\"didcommV1\",\"tsp\",\"other\"],\"title\":\"WireProtocol\",\"type\":\"string\"}"
@@ -7469,10 +3969,3 @@ macro_rules! d_WriteRelationship_2674584a {
     };
 }
 pub(crate) use d_WriteRelationship_2674584a;
-
-macro_rules! d_Write_1533e72a {
-    () => {
-        "\"Write\":{\"additionalProperties\":false,\"description\":\"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\"oneOf\":[{\"not\":{\"required\":[\"mergePatch\"]},\"required\":[\"value\"]},{\"not\":{\"required\":[\"value\"]},\"required\":[\"mergePatch\"]}],\"properties\":{\"expectedVersion\":{\"$ref\":\"#/$defs/ExpectedVersion\",\"description\":\"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"mergePatch\":{\"description\":\"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\"type\":\"object\"},\"value\":{\"description\":\"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"}},\"required\":[\"key\"],\"title\":\"Write\",\"type\":\"object\"}"
-    };
-}
-pub(crate) use d_Write_1533e72a;

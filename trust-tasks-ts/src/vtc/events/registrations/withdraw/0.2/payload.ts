@@ -3,11 +3,13 @@
  * Source: specs/vtc/events/registrations/withdraw/0.2/payload.schema.json
  */
 
-import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
+import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef_VtcEventsV0_2 as EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, ReminderMinutes, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
 
 
 /**
  * A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.3
  */
 export interface VTCEventsRegistrationsWithdrawPayload {
   eventId: EventId;
@@ -19,6 +21,8 @@ export interface VTCEventsRegistrationsWithdrawPayload {
 }
 /**
  * The success response to a vtc/events/registrations/withdraw/0.2 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2#response.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.3
  */
 export interface VTCEventsRegistrationsWithdrawResponsePayload {
   /**
@@ -37,7 +41,7 @@ export interface VTCEventsRegistrationsWithdrawResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When };
+export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, ReminderMinutes, RosterSetting, TimeZoneId, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2" as const;
@@ -56,15 +60,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/withdraw/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.3
+ */
 export type Payload = VTCEventsRegistrationsWithdrawPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/withdraw/0.3
+ */
 export type Response = VTCEventsRegistrationsWithdrawResponsePayload;
 
 /**
@@ -211,8 +223,35 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "sequence": {
           "type": "integer",
           "minimum": 0
+        },
+        "suggestedReminderMinutes": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ReminderMinutes"
+          },
+          "description": "The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none."
+        },
+        "placeSummary": {
+          "$ref": "#/$defs/PlaceSummary",
+          "description": "The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none."
         }
       }
+    },
+    "PlaceSummary": {
+      "title": "PlaceSummary",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text."
+    },
+    "ReminderMinutes": {
+      "title": "ReminderMinutes",
+      "description": "A reminder's offset: how many minutes before the event's start it is due. At most four weeks.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40320
     },
     "EventLifecycle": {
       "title": "EventLifecycle",

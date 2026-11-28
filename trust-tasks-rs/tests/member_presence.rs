@@ -182,41 +182,50 @@ fn the_builder_writes_each_state() {
 
 /// An optional map member: `{}` stays present and empty, absent stays absent,
 /// and `null` (no null form) reads as absent.
-#[cfg(feature = "vta")]
+// `hcp/import/0.1`'s `categoryMap` takes the place `vta/did-templates/update/3.2`'s
+// `template.defaults` held: `vta` has no prebuilt modules (its applications generate them with
+// trust-tasks-build), and both are optional maps of string keys to a schema.
+#[cfg(feature = "hcp")]
 mod map_member {
     use super::*;
-    use trust_tasks_rs::specs::vta::did_templates::update::v3_2 as templates;
+    use trust_tasks_rs::specs::hcp::import::v0_1 as import;
 
-    fn payload(defaults: Option<Value>) -> Value {
-        let mut template = json!({
-            "schemaVersion": 1,
-            "kind": "agent",
-            "name": "example",
-            "document": { "id": "did:webvh:{SCID}:example.com:{DID}" }
+    fn payload(category_map: Option<Value>) -> Value {
+        let mut p = json!({
+            "export": {
+                "@context": "https://hcp.example/contexts/v2",
+                "type": "ContextExport",
+                "schema": "https://hcp.example/spec/export/2.0",
+                "subject": { "id": "did:example:subject" },
+                "exportedBy": "did:example:provider",
+                "exportedAt": "2026-11-28T00:00:00Z",
+                "entries": [],
+                "rules": []
+            }
         });
-        if let Some(d) = defaults {
-            template["defaults"] = d;
+        if let Some(m) = category_map {
+            p["categoryMap"] = m;
         }
-        json!({ "name": "example", "template": template })
+        p
     }
 
     #[test]
     fn an_empty_map_stays_present_and_empty() {
-        let p: templates::Payload = round_trips(payload(Some(json!({}))));
-        assert_eq!(p.template.defaults.map(|m| m.len()), Some(0));
+        let p: import::Payload = round_trips(payload(Some(json!({}))));
+        assert_eq!(p.category_map.map(|m| m.len()), Some(0));
     }
 
     #[test]
     fn an_absent_map_stays_absent() {
-        let p: templates::Payload = round_trips(payload(None));
-        assert!(p.template.defaults.is_none());
+        let p: import::Payload = round_trips(payload(None));
+        assert!(p.category_map.is_none());
     }
 
     #[test]
     fn a_null_map_reads_as_absent() {
-        let p: templates::Payload =
+        let p: import::Payload =
             serde_json::from_value(payload(Some(Value::Null))).expect("decode");
-        assert!(p.template.defaults.is_none());
+        assert!(p.category_map.is_none());
     }
 }
 

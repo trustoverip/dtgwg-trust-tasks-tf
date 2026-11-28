@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`sessionId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A session identifier is base64url, at least 22 characters.",
+    "payload": {
+      "sessionId": "short"
+    }
+  },
+  {
+    "note": "`state` is a closed set.",
+    "variant": "response",
+    "payload": {
+      "sessionId": "x7Qm2Lk9Tn4Bv1Xs7Qm2Lk9",
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "state": "scanning"
+    }
+  },
+  {
+    "note": "A refusal names a reason from the closed set, never free text.",
+    "variant": "response",
+    "payload": {
+      "sessionId": "x7Qm2Lk9Tn4Bv1Xs7Qm2Lk9",
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "state": "refused",
+      "refusal": "the ticket looked odd"
+    }
+  }
+]

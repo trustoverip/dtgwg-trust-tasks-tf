@@ -160,30 +160,41 @@ mod rooms {
     }
 }
 
-#[cfg(feature = "vtc")]
-mod vtc {
+// `rooms/records/curate/0.1` takes the place `vtc/directory/notes/append/0.1` held: `vtc` has
+// no prebuilt modules (its applications generate them with trust-tasks-build), and curate's
+// `anyOf` (`status` or `pinned`) is the same shape notes/append's (`text` or `redacts`) was.
+#[cfg(feature = "rooms")]
+mod curate {
     use super::*;
     use serde_json::json;
-    use trust_tasks_rs::specs::vtc::directory::notes::append::v0_1 as append;
+    use trust_tasks_rs::specs::rooms::records::curate::v0_1 as curate;
 
-    /// A note that redacts an earlier one and says why in the same entry.
-    #[test]
-    fn notes_append_with_text_and_redacts_round_trips() {
-        let payload = json!({
-            "entryId": "dir_0123456789abcdefgh",
-            "text": "Superseded: wrong contact.",
-            "redacts": "note_0123456789abcdefgh"
+    fn with(extra: serde_json::Value) -> serde_json::Value {
+        let mut v = json!({
+            "roomId": "did:example:room",
+            "key": "notes/agenda",
+            "presentation": { "membership": "eyJhbGciOiJFZERTQSJ9.e30.sig", "authority": ["eyJhbGciOiJFZERTQSJ9.e30.sig"] }
         });
-        let parsed: append::Payload = round_trips(payload);
-        assert!(parsed.text.is_some());
-        assert!(parsed.redacts.is_some());
+        for (k, x) in extra.as_object().unwrap() {
+            v[k] = x.clone();
+        }
+        v
+    }
+
+    /// Both alternatives at once round-trip, each kept.
+    #[test]
+    fn curate_with_status_and_pinned_round_trips() {
+        let parsed: curate::Payload =
+            round_trips(with(json!({ "status": "deprecated", "pinned": true })));
+        assert!(parsed.status.is_some());
+        assert!(parsed.pinned.is_some());
     }
 
     #[cfg(feature = "validate")]
     #[test]
-    fn notes_append_validation_still_requires_text_or_redacts() {
+    fn curate_validation_still_requires_status_or_pinned() {
         use trust_tasks_rs::validate::ValidatedPayload;
-        append::Payload::validate_value(&json!({ "entryId": "dir_0123456789abcdefgh" }))
-            .expect_err("a note with neither text nor redacts must be refused");
+        curate::Payload::validate_value(&with(json!({})))
+            .expect_err("a curation with neither status nor pinned must be refused");
     }
 }

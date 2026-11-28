@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/list/0.4",
+  "title": "VTC Events — List — payload",
+  "description": "List the events the caller may see. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only events still running at or after this instant."
+    },
+    "to": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only events starting before this instant."
+    },
+    "calendarId": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/CalendarId",
+      "description": "Only events in this calendar."
+    },
+    "kind": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventKind",
+      "description": "Only events of this kind."
+    },
+    "mine": {
+      "type": "boolean",
+      "description": "Only events the caller is going to, said maybe to, awaits a decision on, or is waitlisted for."
+    },
+    "includeDrafts": {
+      "type": "boolean",
+      "description": "Also drafts the caller hosts."
+    },
+    "includeCancelled": {
+      "type": "boolean",
+      "description": "Also cancelled events."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the filters; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — List — response payload",
+      "description": "The success response to a vtc/events/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/list/0.4#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 200,
+          "description": "The events the caller may see, earliest start first.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event"
+            ],
+            "properties": {
+              "event": {
+                "$ref": "../../_shared/0.4/event.schema.json#/$defs/Event"
+              },
+              "myStatus": {
+                "$ref": "../../_shared/0.4/event.schema.json#/$defs/RegistrationStatus",
+                "description": "The caller's own registration status, where they have a registration."
+              },
+              "occurrence": {
+                "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventOccurrence",
+                "description": "On a series listed within a range: the occurrence this item is (VTI-EVT-192)."
+              }
+            }
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more items follow: pass it as `cursor` to continue."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

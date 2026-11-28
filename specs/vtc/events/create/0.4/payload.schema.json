@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/create/0.4",
+  "title": "VTC Events — Create — payload",
+  "description": "Create a draft event or meeting in a calendar. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "when"
+  ],
+  "properties": {
+    "calendarId": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/CalendarId",
+      "description": "The calendar it belongs to. Absent: the community's own calendar."
+    },
+    "kind": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventKind",
+      "description": "Absent means `event`. Fixed for the event's life (VTI-EVT-003)."
+    },
+    "title": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventTitle"
+    },
+    "description": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventDescription"
+    },
+    "when": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/When"
+    },
+    "placeSummary": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/PlaceSummary"
+    },
+    "access": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/AccessDetails"
+    },
+    "audience": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventAudience"
+    },
+    "invite": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventInviteMode",
+      "description": "How the event invites its audience (VTI-EVT-100). Absent on create: `none`."
+    },
+    "membersMayInvite": {
+      "type": "boolean",
+      "description": "Members of the audience may invite other members of it (VTI-EVT-105)."
+    },
+    "registration": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/RegistrationSettings"
+    },
+    "roster": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/RosterSetting",
+      "description": "Absent: the calendar's `defaultRoster`, else `hidden`. Fixed once published (VTI-EVT-051)."
+    },
+    "showCount": {
+      "type": "boolean",
+      "description": "Show the number going to the audience, subject to `countThreshold`."
+    },
+    "countThreshold": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 100,
+      "description": "Below this many going, a count is shown as `fewerThan`. Absent means 5."
+    },
+    "listed": {
+      "type": "boolean",
+      "description": "Listed to its whole audience. Absent means true."
+    },
+    "accessibility": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/Accessibility"
+    },
+    "suggestedReminderMinutes": {
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.4/event.schema.json#/$defs/ReminderMinutes"
+      },
+      "description": "Reminders the hosts suggest, as minutes before the start. Absent: the calendar's `defaultReminderMinutes`."
+    },
+    "guests": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventGuestAdmission",
+      "description": "Absent: `none` (VTI-EVT-150)."
+    },
+    "tickets": {
+      "type": "boolean",
+      "description": "Issue a ticket to each registrant going (VTI-EVT-170). Absent: false."
+    },
+    "countsAttendance": {
+      "type": "boolean",
+      "description": "Whether it counts toward attendance (VTI-EVT-180). Absent: the calendar's default."
+    },
+    "attendanceBadge": {
+      "$ref": "../../../badges/_shared/0.1/badge.schema.json#/$defs/BadgeId",
+      "description": "A community badge offered on check-in (VTI-EVT-186)."
+    },
+    "identity": {
+      "type": "boolean",
+      "description": "Give the event its own identifier (VTI-EVT-140), fixed for its life: minted by the community's VTA before the event is stored. Absent: false."
+    },
+    "recurrence": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventRecurrence",
+      "description": "Make the event a series (VTI-EVT-190)."
+    },
+    "registrationScope": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventRegistrationScope",
+      "description": "On a series: what a registration is for (VTI-EVT-194). Absent means `series`."
+    },
+    "identified": {
+      "type": "boolean",
+      "description": "Require identified registration (VTI-EVT-231)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Create — response payload",
+      "description": "The success response to a vtc/events/create/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/create/0.4#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.4/event.schema.json#/$defs/Event",
+          "description": "The draft as its host sees it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

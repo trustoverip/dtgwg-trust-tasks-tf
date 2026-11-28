@@ -23,6 +23,33 @@
     "hcp/import": {
       "timestamp-name timestamp": "Human Context Protocol (HCP) 2.0-draft-3 audit event `timestamp` (8.2), carried verbatim as external vocabulary (SPEC §4.10 rule 5) in `ImportedAuditEvent`, HCP's own audit-event shape, so that an export written to HCP's schema alone is taken unchanged (5.4.1, 5.4.3).",
       "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 member names carried verbatim as external vocabulary (SPEC §4.10 rule 5) in `ImportedEvidenceItem` and `ImportedDelegation`, HCP's own shapes: evidence `verification.at` (4.2.2) and delegation `ended.at` (17.2, 17.6), so that an export valid under HCP's schemas is taken unchanged (5.4.1, 5.4.3)."
+    },
+    "vtc/events/cancel": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/create": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/list": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/publish": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/show": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/update": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vta/pcs/member/attest": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/occurrences/update": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
+    },
+    "vtc/events/series/split": {
+      "duration-unit interval": "JSCalendar's RecurrenceRule `interval` (RFC 8984 §4.3.3, carried verbatim as external vocabulary): a count of recurrence periods (every N days/weeks/months/years), not a duration."
     }
   }
 }

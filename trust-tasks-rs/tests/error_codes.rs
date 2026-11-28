@@ -9,18 +9,19 @@
 //!
 //! The index half needs `schema_index`, which is behind the `validate` feature.
 //!
-//! The specimens come from the `keys`, `vta` and `vtc` families (and `rooms`
+//! The specimens come from the `keys`, `device` and `auth` families (and `rooms`
 //! and `vault` for the details checks), so the file compiles only when those
 //! are enabled, and a single-family build such as
-//! `--features acl` skips it instead of failing.
-#![cfg(all(feature = "keys", feature = "vta", feature = "vtc"))]
+//! `--features acl` skips it instead of failing. (`vtc` and `vta` have no
+//! prebuilt modules: their applications generate them with trust-tasks-build.)
+#![cfg(all(feature = "keys", feature = "device", feature = "auth"))]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
 #![allow(deprecated)]
+use trust_tasks_rs::specs::auth::challenge::v0_1 as challenge;
+use trust_tasks_rs::specs::device::disable::v0_1 as withdraw;
 use trust_tasks_rs::specs::keys::revoke::v0_1 as keys_revoke;
 use trust_tasks_rs::specs::trust_task_discovery::v0_3 as discovery;
-use trust_tasks_rs::specs::vta::management::reload_services::v1_0 as reload_services;
-use trust_tasks_rs::specs::vtc::join_requests::withdraw::v0_1 as withdraw;
 use trust_tasks_rs::{DeclaredErrorCode, ErrorPayload, Payload, TrustTaskCode};
 
 /// The wire string is usable where a consumer keeps its own `&str` constant, so
@@ -34,28 +35,25 @@ fn declaring_nothing_is_an_empty_slice() {
 
 #[test]
 fn a_module_carries_its_declarations_in_order() {
-    assert_eq!(WITHDRAW_NOT_FOUND, "vtc/join-requests/withdraw:notFound");
+    assert_eq!(WITHDRAW_NOT_FOUND, "device/disable:notFound");
     assert_eq!(
         withdraw::ERROR_CODES
             .iter()
             .map(|c| c.code)
             .collect::<Vec<_>>(),
-        [
-            "vtc/join-requests/withdraw:notFound",
-            "vtc/join-requests/withdraw:alreadyDecided",
-        ]
+        ["device/disable:notFound", "device/disable:alreadyDisabled",]
     );
     assert!(withdraw::ERROR_CODES.iter().all(|c| !c.retryable));
-    const { assert!(reload_services::error_codes::RELOAD_FAILED.retryable) };
+    const { assert!(challenge::error_codes::RATE_LIMITED.retryable) };
 }
 
 #[test]
 fn a_declared_code_converts_to_the_wire_code_it_names() {
-    let declared = withdraw::error_codes::ALREADY_DECIDED;
+    let declared = withdraw::error_codes::ALREADY_DISABLED;
     let code = TrustTaskCode::from(declared);
     assert_eq!(code.to_string(), declared.code);
     assert_eq!(declared.code.parse::<TrustTaskCode>().unwrap(), code);
-    assert_eq!(code, withdraw::Payload::extended_code("alreadyDecided"));
+    assert_eq!(code, withdraw::Payload::extended_code("alreadyDisabled"));
     assert!(declared.matches(&code));
     assert!(!withdraw::error_codes::NOT_FOUND.matches(&code));
 }
@@ -74,12 +72,9 @@ fn a_family_code_keeps_its_family_namespace() {
 /// non-retryable (§8.5); a declared one carries what the spec declares.
 #[test]
 fn an_error_payload_takes_the_declared_retryable() {
-    let payload: ErrorPayload = reload_services::error_codes::RELOAD_FAILED.into();
+    let payload: ErrorPayload = challenge::error_codes::RATE_LIMITED.into();
     assert!(payload.retryable);
-    assert_eq!(
-        payload.code.to_string(),
-        "vta/management/reload-services:reloadFailed"
-    );
+    assert_eq!(payload.code.to_string(), "auth/challenge:rateLimited");
 }
 
 #[cfg(feature = "validate")]
@@ -87,7 +82,7 @@ mod index {
     use super::*;
     use trust_tasks_rs::schema_index::error_codes_for;
 
-    const WITHDRAW: &str = "https://trusttasks.org/spec/vtc/join-requests/withdraw/0.1";
+    const WITHDRAW: &str = "https://trusttasks.org/spec/device/disable/0.1";
 
     #[test]
     fn the_index_serves_the_same_slice_as_the_module() {
@@ -129,9 +124,9 @@ fn a_code_without_a_details_schema_carries_none() {
 #[cfg(all(feature = "validate", feature = "rooms", feature = "vault"))]
 mod details {
     use serde_json::json;
+    use trust_tasks_rs::specs::device::disable::v0_1 as withdraw;
     use trust_tasks_rs::specs::rooms::keys::file_key::v0_1 as file_key;
     use trust_tasks_rs::specs::vault::release::v0_2 as release;
-    use trust_tasks_rs::specs::vtc::join_requests::withdraw::v0_1 as withdraw;
 
     /// The emitter checks what it builds against the specification's schema,
     /// not a copy of it.

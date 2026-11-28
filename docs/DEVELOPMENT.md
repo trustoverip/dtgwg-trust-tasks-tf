@@ -577,6 +577,19 @@ the tree approaches. Nothing prebuilt is removed, so it is not a break. The list
 only shrinks: `npm run check-prebuilt-list` fails a change that adds a line, and
 removing lines is how the removal batch above will retire the rest.
 
+**The first Rust removal batch: `vtc/*` and `vta/*` (2026-11-28).** With the
+tree frozen, `trust-tasks-rs` still packaged to 9.89 MiB, about 12 KB under
+the 9.9 MiB guard, and any change to a family that keeps prebuilt modules
+grows it. Every `vtc/*` and `vta/*` version (704 of the 1507 listed) left
+`prebuilt-modules.txt`: those families are implemented only by Verifiable
+Trust Infrastructure, which generates its own with `trust-tasks-build`, and no
+other dependant enables their features. This removes the `vtc` and `vta`
+features and every module under `trust_tasks_rs::specs::{vtc,vta}` — a break
+of `trust-tasks-rs`, released as one in the core version group. Migration:
+`trust-tasks add <slug>/<M.N>` for each task used, and generate them in
+`build.rs` with `trust-tasks-build` (GETTING-STARTED.md, "Generate only the
+tasks you use"). TypeScript, Go and Dart are unchanged.
+
 **No family is on by default (#1102).** `trust-tasks-rs` and the `trust-tasks`
 facade both have `default = []` — the generator writes it, and
 `tests/spec_feature_manifest.rs` asserts it — so a plain dependency is the

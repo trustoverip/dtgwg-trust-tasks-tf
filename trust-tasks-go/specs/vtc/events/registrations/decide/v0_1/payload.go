@@ -27,7 +27,7 @@ const (
 // https://trusttasks.org/spec/vtc/events/registrations/decide/0.1#response. A decline is
 // a decision, answered here, never an error.
 //
-// Deprecated: superseded by vtc/events/registrations/decide/0.2
+// Deprecated: superseded by vtc/events/registrations/decide/0.3
 type Response struct {
 	Decision Decision `json:"decision"`
 
@@ -194,7 +194,7 @@ type EntryID = string
 // a waitlist), or decline it, with an optional note the registrant reads. The outer
 // document members are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/events/registrations/decide/0.2
+// Deprecated: superseded by vtc/events/registrations/decide/0.3
 type Payload struct {
 	RegistrationID RegistrationID `json:"registrationId"`
 	Decision       Decision       `json:"decision"`
@@ -219,7 +219,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/events/registrations/decide/0.2"
+const Deprecation = "superseded by vtc/events/registrations/decide/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/registrations/decide/0.1#response"

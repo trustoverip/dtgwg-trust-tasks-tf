@@ -53,7 +53,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Announcements — Send** Trust Task posts a host's announcement to an event — "bring a laptop", "we start fifteen minutes late" (VTI-EVT-120). It never changes the event's time, place or status, which a host changes with [`vtc/events/update`](../../../update/0.3/spec.md) so members' calendars stay right (VTI-EVT-121). Registrants read it with [`vtc/events/announcements/list`](../../list/0.1/spec.md); the community marks the event changed for their agents and puts the text in no notification.
+The **VTC Events — Announcements — Send** Trust Task posts a host's announcement to an event — "bring a laptop", "we start fifteen minutes late" (VTI-EVT-120). It never changes the event's time, place or status, which a host changes with [`vtc/events/update`](../../../update/0.4/spec.md) so members' calendars stay right (VTI-EVT-121). Registrants read it with [`vtc/events/announcements/list`](../../list/0.1/spec.md); the community marks the event changed for their agents and puts the text in no notification.
 
 ## Status of this Document
 

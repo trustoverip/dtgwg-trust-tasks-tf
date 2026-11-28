@@ -1,11 +1,12 @@
 //! The Type URI → schema lookup a dispatching consumer needs.
 
-// Looks up `vta`, `vtc` and `auth` URIs, which the index knows only when those
-// families are compiled in; no family is on by default (#1102).
+// Looks up `persona`, `vtn` and `auth` URIs, which the index knows only when those
+// families are compiled in; no family is on by default (#1102). (`vta` and `vtc` have no
+// prebuilt modules, so the framework crate's index does not know their URIs at all.)
 #![cfg(all(
     feature = "validate",
-    feature = "vta",
-    feature = "vtc",
+    feature = "persona",
+    feature = "vtn",
     feature = "auth"
 ))]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
@@ -15,12 +16,15 @@ use serde_json::json;
 use trust_tasks_rs::schema_index::schema_for;
 use trust_tasks_rs::validate::against_schema;
 
-const WEBVH_UPDATE: &str = "https://trusttasks.org/spec/vta/webvh/dids/update/2.1";
+/// `persona/attribute/delete/1.0`: a closed payload with an optimistic-concurrency
+/// precondition (`expectedVersion`), the shape the defect below is about.
+const ATTRIBUTE_DELETE: &str = "https://trusttasks.org/spec/persona/attribute/delete/1.0";
+const ULID: &str = "01HZX3V8K9Q2M4N6P8R0S2T4V6";
 
 #[test]
 fn a_dispatching_consumer_can_find_a_schema_by_type_uri() {
     assert!(
-        schema_for(WEBVH_UPDATE).is_some(),
+        schema_for(ATTRIBUTE_DELETE).is_some(),
         "a consumer that dispatches on the URI must be able to validate by it"
     );
     assert!(schema_for("https://trusttasks.org/spec/not/a/task/9.9").is_none());
@@ -28,29 +32,22 @@ fn a_dispatching_consumer_can_find_a_schema_by_type_uri() {
 
 #[test]
 fn a_valid_payload_passes() {
-    let schema = schema_for(WEBVH_UPDATE).unwrap();
-    let payload = json!({
-        "did": "did:webvh:QmScid:example.com:acme",
-        "document": { "id": "did:webvh:QmScid:example.com:acme" },
-        "expectedVersionId": "3-QmPrior"
-    });
+    let schema = schema_for(ATTRIBUTE_DELETE).unwrap();
+    let payload = json!({ "attributeId": ULID, "cascade": true, "expectedVersion": 3 });
     assert!(against_schema(schema, &payload).is_ok());
 }
 
 /// The defect this whole exercise came from.
 ///
-/// `expected_version_id` is the optimistic-concurrency precondition in the wrong
+/// `expected_version` is the optimistic-concurrency precondition in the wrong
 /// case. A permissive consumer drops it without a word, publishes with no
 /// lost-update protection, and the caller's own source still reads as though the
 /// danger were handled. The schema is closed precisely so that the member is
 /// *rejected* rather than *ignored*.
 #[test]
 fn a_safety_precondition_in_the_wrong_case_is_rejected_not_ignored() {
-    let schema = schema_for(WEBVH_UPDATE).unwrap();
-    let payload = json!({
-        "did": "did:webvh:QmScid:example.com:acme",
-        "expected_version_id": "3-QmPrior"
-    });
+    let schema = schema_for(ATTRIBUTE_DELETE).unwrap();
+    let payload = json!({ "attributeId": ULID, "expected_version": 3 });
     assert!(
         against_schema(schema, &payload).is_err(),
         "an unrecognised member must be refused — a member the consumer silently \
@@ -60,8 +57,8 @@ fn a_safety_precondition_in_the_wrong_case_is_rejected_not_ignored() {
 
 #[test]
 fn an_unknown_member_is_refused() {
-    let schema = schema_for(WEBVH_UPDATE).unwrap();
-    let payload = json!({ "did": "did:webvh:x", "skipApproval": true });
+    let schema = schema_for(ATTRIBUTE_DELETE).unwrap();
+    let payload = json!({ "attributeId": ULID, "skipApproval": true });
     assert!(against_schema(schema, &payload).is_err());
 }
 
@@ -71,9 +68,9 @@ fn an_unknown_member_is_refused() {
 /// stamps on a relayed task.
 #[test]
 fn the_framework_ext_slot_is_permitted() {
-    let schema = schema_for(WEBVH_UPDATE).unwrap();
+    let schema = schema_for(ATTRIBUTE_DELETE).unwrap();
     let payload = json!({
-        "did": "did:webvh:QmScid:example.com:acme",
+        "attributeId": ULID,
         "ext": { "openvtc.origin": "https://control.example.com" }
     });
     assert!(
@@ -84,7 +81,7 @@ fn the_framework_ext_slot_is_permitted() {
 
 #[test]
 fn a_missing_subject_is_refused() {
-    let schema = schema_for(WEBVH_UPDATE).unwrap();
+    let schema = schema_for(ATTRIBUTE_DELETE).unwrap();
     assert!(against_schema(schema, &json!({ "label": "no subject" })).is_err());
 }
 
@@ -92,7 +89,8 @@ fn a_missing_subject_is_refused() {
 // The response side
 // ---------------------------------------------------------------------------
 
-const VTC_MEMBERS_SHOW: &str = "https://trusttasks.org/spec/vtc/members/show/0.1";
+/// `vtn/listings/show/0.1`: request `{did}`, response `{entry: …}`.
+const LISTING_SHOW: &str = "https://trusttasks.org/spec/vtn/listings/show/0.1";
 
 /// A producer can validate what it is about to *send back*.
 ///
@@ -102,7 +100,7 @@ const VTC_MEMBERS_SHOW: &str = "https://trusttasks.org/spec/vtc/members/show/0.1
 /// is what each generated `Response` type already declares as its `TYPE_URI`.
 #[test]
 fn a_producer_can_find_the_response_schema_for_a_task() {
-    let uri = format!("{VTC_MEMBERS_SHOW}#response");
+    let uri = format!("{LISTING_SHOW}#response");
     assert!(
         schema_for(&uri).is_some(),
         "a producer that dispatches on the URI must be able to validate its own response"
@@ -116,17 +114,17 @@ fn a_producer_can_find_the_response_schema_for_a_task() {
 /// against the wrong shape, which is worse than not validating them.
 #[test]
 fn the_response_schema_is_not_the_request_schema() {
-    let req = schema_for(VTC_MEMBERS_SHOW).unwrap();
-    let resp = schema_for(&format!("{VTC_MEMBERS_SHOW}#response")).unwrap();
+    let req = schema_for(LISTING_SHOW).unwrap();
+    let resp = schema_for(&format!("{LISTING_SHOW}#response")).unwrap();
     assert_ne!(req, resp, "a task's two sides must not share one schema");
 }
 
-/// `members/show`'s response is `{member: …}` and its request is `{did}`.
+/// `listings/show`'s response is `{entry: …}` and its request is `{did}`.
 /// Each must refuse the other, or the index is not distinguishing them.
 #[test]
 fn each_side_refuses_the_other_side_document() {
-    let req = schema_for(VTC_MEMBERS_SHOW).unwrap();
-    let resp = schema_for(&format!("{VTC_MEMBERS_SHOW}#response")).unwrap();
+    let req = schema_for(LISTING_SHOW).unwrap();
+    let resp = schema_for(&format!("{LISTING_SHOW}#response")).unwrap();
     let request_doc = json!({ "did": "did:key:z6Mk" });
     assert!(against_schema(req, &request_doc).is_ok());
     assert!(

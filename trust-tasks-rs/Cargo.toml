@@ -79,8 +79,6 @@ all-specs = [
     "vetting",
     "voting",
     "vrc",
-    "vta",
-    "vtc",
     "vtn",
     "webvh",
     "witness",
@@ -118,8 +116,6 @@ vault = []
 vetting = []
 voting = []
 vrc = []
-vta = []
-vtc = []
 vtn = []
 webvh = []
 witness = []

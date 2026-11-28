@@ -1,0 +1,38 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A door session is opened for an event, never for a registration.",
+    "payload": {
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "registrationId": "reg_Hs7Qm2Lk9Tn4Bv1X"
+    }
+  },
+  {
+    "note": "`clientIdPrefix` is OpenID4VP's closed set.",
+    "payload": {
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "clientIdPrefix": "redirect_uri"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "ext": {
+        "bare": true
+      }
+    }
+  },
+  {
+    "note": "`walletUri` and `expiresAt` are REQUIRED on every answer.",
+    "variant": "response",
+    "payload": {
+      "sessionId": "x7Qm2Lk9Tn4Bv1Xs7Qm2Lk9",
+      "eventId": "evt_Rk4mT9xQ2nWb7LpZ",
+      "clientId": "decentralized_identifier:did:example:community"
+    }
+  }
+]

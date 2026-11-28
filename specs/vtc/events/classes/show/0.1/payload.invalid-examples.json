@@ -1,0 +1,21 @@
+[
+  {
+    "note": "No payload members.",
+    "payload": {
+      "period": "2026-12"
+    }
+  },
+  {
+    "note": "`floor` is never below 10.",
+    "variant": "response",
+    "payload": {
+      "suite": "pcs-bls12-381-v1",
+      "verificationKey": "zQ3shokFTS3brHcDQrn82RUDfCZESWL1ZdCEJwekUDPQiYBme",
+      "deployment": "x",
+      "period": "2026-12",
+      "periodEndsAt": "2027-01-01T00:00:00Z",
+      "classes": [],
+      "floor": 3
+    }
+  }
+]

@@ -493,6 +493,15 @@ type EventRef struct {
 	When     When           `json:"when"`
 	Status   EventLifecycle `json:"status"`
 	Sequence int64          `json:"sequence"`
+
+	// The reminders the event's hosts suggest, as minutes before its start, so the
+	// registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent
+	// where the hosts suggest none.
+	SuggestedReminderMinutes *[]ReminderMinutes `json:"suggestedReminderMinutes,omitempty"`
+
+	// The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event
+	// has none.
+	PlaceSummary *PlaceSummary `json:"placeSummary,omitempty"`
 }
 
 // ReminderMinutes A reminder's offset: how many minutes before the event's start it is
@@ -696,10 +705,11 @@ const (
 	EventRegistrantKindGuest   EventRegistrantKind = "guest"
 )
 
-// EventCheckInMethod How a check-in was made (VTI-EVT-162 – 164). `challenge`: the
+// EventCheckInMethod How a check-in was made (VTI-EVT-162 – 164, 173). `challenge`: the
 // registrant signed over a door challenge. `staff`: door staff checked them in by name.
 // `self`: the registrant checked in during the event without a challenge, where the
-// calendar allows.
+// calendar allows. `ticket`: the registrant presented their ticket credential at the door
+// through a door session (vtc/events/checkin/ticket-session/start).
 type EventCheckInMethod string
 
 // Values EventCheckInMethod may take, per this specification's schema.
@@ -707,6 +717,7 @@ const (
 	EventCheckInMethodChallenge EventCheckInMethod = "challenge"
 	EventCheckInMethodStaff     EventCheckInMethod = "staff"
 	EventCheckInMethodSelf      EventCheckInMethod = "self"
+	EventCheckInMethodTicket    EventCheckInMethod = "ticket"
 )
 
 // EventDoorChallengeValue A door challenge: at least 128 random bits, base64url without

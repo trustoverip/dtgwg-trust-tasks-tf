@@ -48,7 +48,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Guests — Withdraw** Trust Task withdraws a guest's registration, as [`vtc/events/registrations/withdraw`](../../../registrations/withdraw/0.2/spec.md) does a member's (VTI-EVT-037): always allowed, never parked, a repeat changing nothing.
+The **VTC Events — Guests — Withdraw** Trust Task withdraws a guest's registration, as [`vtc/events/registrations/withdraw`](../../../registrations/withdraw/0.3/spec.md) does a member's (VTI-EVT-037): always allowed, never parked, a repeat changing nothing.
 
 ## Status of this Document
 

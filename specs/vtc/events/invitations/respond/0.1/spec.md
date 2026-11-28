@@ -93,7 +93,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Invitations — Respond** Trust Task answers an invitation (VTI-EVT-104). `going` and `maybe` register the member exactly as [`vtc/events/registrations/register`](../../../registrations/register/0.2/spec.md) does — the same checks, the same receipt — and record the answer on the invitation. `decline` records on the invitation that the member will not come, and registers nothing: it is not a host's decline of a registration, and is never shown as one. A member who declined may answer again, or register, later.
+The **VTC Events — Invitations — Respond** Trust Task answers an invitation (VTI-EVT-104). `going` and `maybe` register the member exactly as [`vtc/events/registrations/register`](../../../registrations/register/0.3/spec.md) does — the same checks, the same receipt — and record the answer on the invitation. `decline` records on the invitation that the member will not come, and registers nothing: it is not a host's decline of a registration, and is never shown as one. A member who declined may answer again, or register, later.
 
 ## Status of this Document
 
