@@ -399,9 +399,14 @@ answer the question, not that it has no receipt.
 ## Profile: CPoE
 
 This section is informative. It states how a Holder whose capture primitive is
-Cryptographic Proof of Effort (CPoE — the `proof-of-effort` specifications and
-the WritersProof implementation) fills the members this specification leaves to
-the primitive, so that two implementations of this task over CPoE agree.
+Cryptographic Proof of Effort (CPoE — the `proof-of-effort` specifications,
+chiefly the
+[CPoE protocol](https://lf-decentralized-trust-labs.github.io/proof-of-effort/draft-condrey-cpoe-protocol.html)
+and
+[appraisal](https://lf-decentralized-trust-labs.github.io/proof-of-effort/draft-condrey-cpoe-appraisal.html)
+drafts, and the WritersProof implementation) fills the members this
+specification leaves to the primitive, so that two implementations of this task
+over CPoE agree.
 
 **`assessment.primitive`** is
 `https://lf-decentralized-trust-labs.github.io/proof-of-effort/profiles/rats-eat-profile-pop-1.0.json`,
@@ -421,8 +426,8 @@ a verdict.
 
 | Receipt | `mediaType` | Extension | What a Verifier verifies |
 |---|---|---|---|
-| Evidence packet | `application/cpoe+cbor` | `.cpoe` | The packet under the CPoE protocol specification; the Verifier appraises it itself. |
-| C2PA manifest store | `application/c2pa` | `.c2pa` | The manifest's claim signature and its hard binding to the artifact, with the evidence carried in a `com.writerslogic.process-proof` assertion (the label proposed to CAWG as `cawg.process-proof`). Preferred where the Verifier already runs a C2PA validator: the hard binding establishes that the receipt binds the artifact asked about (Verifier rule 4) without parsing CPoE. |
+| Evidence packet | `application/cpoe+cbor` | `.cpoe` | The packet under the [CPoE protocol](https://lf-decentralized-trust-labs.github.io/proof-of-effort/draft-condrey-cpoe-protocol.html); the Verifier appraises it itself. |
+| C2PA manifest store | `application/c2pa` | `.c2pa` | The manifest's claim signature and its hard binding to the artifact, with the evidence carried in a `com.writerslogic.process-proof` assertion (the label proposed to CAWG as `cawg.process-proof` in a [discussion draft](https://github.com/dcondrey/cawg-process-proof-assertion) whose envelope is not yet this assertion's schema). Preferred where the Verifier already runs a C2PA validator: the hard binding establishes that the receipt binds the artifact asked about (Verifier rule 4) without parsing CPoE. |
 
 A Holder serving the `uri` form sets `digestMultibase` over the bytes served
 (Holder rule 7).
