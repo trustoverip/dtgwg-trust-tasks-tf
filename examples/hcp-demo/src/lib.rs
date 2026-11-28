@@ -1002,7 +1002,8 @@ impl Shared {
                     },
                     "assertion": { "declarationType": "person-declared" },
                     "classification": { "categories": [category] },
-                    "standing": { "assurance": "authenticated", "confirmed": true },
+                    // No entry carries a confirmation record, so none is confirmed (HCP 7.4, 3.8).
+                    "standing": { "assurance": "authenticated", "confirmed": false },
                     "useUntil": use_until,
                 })
             })

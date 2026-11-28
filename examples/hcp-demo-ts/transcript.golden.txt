@@ -274,7 +274,7 @@
         "ref": "hcp-ref-0001",
         "standing": {
           "assurance": "authenticated",
-          "confirmed": true
+          "confirmed": false
         },
         "useUntil": "2026-11-25T11:00:08Z",
         "version": 1
@@ -296,7 +296,7 @@
         "ref": "hcp-ref-0002",
         "standing": {
           "assurance": "authenticated",
-          "confirmed": true
+          "confirmed": false
         },
         "useUntil": "2026-11-25T11:00:08Z",
         "version": 1
@@ -312,7 +312,7 @@
     "created": "2026-11-25T10:00:09Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z4VKGf8ev44e6WdXnk1tXNbzMjgLG8bhcTG468DJVgzrMtoyWVHzrhMi5oE1Ub49f8K2Sg4MjPVw95VAgJ5c119Vn",
+    "proofValue": "z2mddVrihxFrRefw9vhTRrxHG1JwTnUfdzbqBhuHyit6acHBGMNu96eYa8ZYE5LA8zhTcSx1S9xHSjCKetbCz6E9q",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
