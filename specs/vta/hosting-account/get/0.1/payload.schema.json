@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/hosting-account/get/0.1",
+  "title": "VTA Hosting Account — Get — payload",
+  "description": "A VTA's principal asks for the state of the account the VTA holds on the DID hosting service it self-registered with. The request names no account: a VTA holds at most one self-registered hosting account. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "refresh": {
+      "type": "boolean",
+      "description": "Ask the host before answering: the VTA reads its account with did-management/account/status (which counts as no activity) and answers with what the host said. Absent or false: the VTA answers from what it last recorded, without contacting the host."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Hosting Account — Get — response payload",
+      "description": "Whether the VTA holds a self-registered hosting account, and if it does, what it knows about it. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registered"],
+      "properties": {
+        "registered": {
+          "type": "boolean",
+          "description": "Whether this VTA holds a self-registered hosting account. false: it never self-registered (its DID is hosted some other way, or by the VTA itself), and `hosting` is absent."
+        },
+        "hosting": {
+          "$ref": "#/$defs/HostingRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "HostingRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serverDid", "domain", "registeredAt"],
+      "properties": {
+        "serverDid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID hosting service's DID — the only party whose expiry notices the VTA accepts for this account."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "description": "The domain the account is on, as the host names it (a host, with a port when one is not the default)."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host opened the account."
+        },
+        "account": {
+          "$ref": "../../../../did-management/_shared/0.4/hosting-account.schema.json#/$defs/HostingAccount",
+          "description": "The account as the host last reported it, verbatim. Absent until the VTA has heard from the host since registering."
+        },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When `account` was last read from the host, by a renewal, a status read or an expiry notice."
+        },
+        "renewedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host last accepted a renewal (did-management/account/renew)."
+        },
+        "lastNotice": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["stage", "receivedAt"],
+          "description": "The latest did-management/account/expiry-notice the host sent and the VTA accepted.",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "enum": ["disablePending", "disabled", "purgePending"],
+              "description": "The notice's stage, as did-management/account/expiry-notice names it: the account is about to be disabled, has been, or is about to be purged."
+            },
+            "receivedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the VTA accepted the notice."
+            }
+          }
+        },
+        "lastError": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Why the VTA's last attempt to reach the host failed, as the operator should read it. Absent once a later attempt succeeds."
+        }
+      }
+    }
+  }
+}

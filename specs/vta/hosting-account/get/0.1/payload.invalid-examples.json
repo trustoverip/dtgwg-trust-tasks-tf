@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Unknown request member — additionalProperties: false; the request names no account, so a selector is a producer bug.",
+    "payload": { "account": "did:example:other" }
+  },
+  {
+    "note": "refresh must be a boolean, not a string a lenient parser might coerce.",
+    "payload": { "refresh": "true" }
+  },
+  {
+    "note": "A response must say whether the VTA is registered.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "An expiry-notice stage outside the did-management/account/expiry-notice set.",
+    "variant": "response",
+    "payload": {
+      "registered": true,
+      "hosting": {
+        "serverDid": "did:webvh:QmHost:did.example.com",
+        "domain": "did.example.com",
+        "registeredAt": "2026-11-01T00:00:00Z",
+        "lastNotice": { "stage": "expired", "receivedAt": "2026-11-20T00:00:00Z" }
+      }
+    }
+  }
+]
