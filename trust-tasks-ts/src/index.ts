@@ -2970,6 +2970,9 @@ export import VtaDidsUpgrade_v1_1 = _VtaDidsUpgrade_v1_1;
 import * as _VtaHealthDetails_v0_1 from "./vta/health/details/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaHealthDetails_v0_1 = _VtaHealthDetails_v0_1;
+import * as _VtaHostingAccountGet_v0_1 from "./vta/hosting-account/get/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaHostingAccountGet_v0_1 = _VtaHostingAccountGet_v0_1;
 import * as _VtaManagementReloadServices_v1_0 from "./vta/management/reload-services/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaManagementReloadServices_v1_0 = _VtaManagementReloadServices_v1_0;
