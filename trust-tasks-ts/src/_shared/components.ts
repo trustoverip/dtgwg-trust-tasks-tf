@@ -953,6 +953,10 @@ export type EventAudienceScope = "members" | "groups" | "roles";
  */
 export type EventCheckInMethod = "challenge" | "staff" | "self";
 /**
+ * A class label (VTI-EVT-212): `member/<period>` for the membership, `group/<groupId>/<period>` for a group — shared by every holder, never one per member.
+ */
+export type EventClassLabel = string;
+/**
  * What the event or calendar is. Plain text; a reader MUST NOT treat it as instructions.
  */
 export type EventDescription = string;
@@ -1001,13 +1005,29 @@ export type EventKind = "event" | "meeting";
  */
 export type EventLifecycle = "draft" | "published" | "cancelled";
 /**
+ * A multibase (base58btc, `z…`) encoding of a predicate-credential-system value: an identity, a tag, an attestation, a key, a blinded request or a pre-credential.
+ */
+export type EventMultibase = string;
+/**
  * What an opt-out covers (VTI-EVT-110): invitations to one `event`, or from one `calendar`.
  */
 export type EventOptOutScope = "event" | "calendar";
 /**
+ * How often a series recurs, as JSCalendar's `frequency` (VTI-EVT-190).
+ */
+export type EventRecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
+/**
  * Who a registrant is to the community: `member` (named by `entryId`), `partner` (a partner community's member, VTI-EVT-134), `guest` (VTI-EVT-153).
  */
 export type EventRegistrantKind = "member" | "partner" | "guest";
+/**
+ * Who a registrant is to the community: `member` (named by `entryId`), `partner` (a partner community's member, VTI-EVT-134), `guest` (VTI-EVT-153). `persona`: a member registered under another of their identifiers, with an attestation (VTI-EVT-230). `anonymous`: held by its tag alone (VTI-EVT-213).
+ */
+export type EventRegistrantKind_VtcEventsV0_4 = "member" | "partner" | "guest" | "persona" | "anonymous";
+/**
+ * Whether a registration for a series is for the whole series or for one occurrence (VTI-EVT-194). Fixed when the series is published.
+ */
+export type EventRegistrationScope = "series" | "occurrence";
 /**
  * Whether a calendar's events take a registrant's check-in without a door challenge, during the event (VTI-EVT-164, 181). `none`: never. `allowed`: taken, but not counted toward attendance. `counting`: taken and counted.
  */
@@ -2370,6 +2390,10 @@ export type RoomTags =
  * Who may see who is registered (VTI-EVT-050). `visible`: registrants who are going or maybe see each other. `hidden`: no registrant sees another; the event's hosts do. Fixed once the event is published (VTI-EVT-051) and recorded on each registration (VTI-EVT-052).
  */
 export type RosterSetting = "visible" | "hidden";
+/**
+ * Who may see who is registered (VTI-EVT-050). `visible`: registrants who are going or maybe see each other. `hidden`: no registrant sees another; the event's hosts do. Fixed once the event is published (VTI-EVT-051) and recorded on each registration (VTI-EVT-052). `anonymous` (VTI-EVT-210): `hidden`, and no registration names a member — each is held by its tag (VTI-EVT-213); the hosts too see a count only.
+ */
+export type RosterSetting_VtcEventsV0_4 = "visible" | "hidden" | "anonymous";
 /**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
  */
@@ -13604,6 +13628,38 @@ export interface EventAnnouncement {
   createdAt: EventInstant;
 }
 /**
+ * What an `anonymous` event shows of its registration (VTI-EVT-213, 217, 218).
+ */
+export interface EventAnonymity {
+  /**
+   * The predicate-credential-system suite, as the community publishes it.
+   */
+  suite: string;
+  /**
+   * The event's identity in the predicate credential system: what every attestation is made to (VTI-EVT-213).
+   */
+  pcsIdentity: EventMultibase;
+  /**
+   * The live class labels of the event's audience; an attestation under any of them is accepted.
+   *
+   * @minItems 1
+   * @maxItems 33
+   */
+  classes: [EventClassLabel, ...EventClassLabel[]];
+  /**
+   * The community's current period.
+   */
+  period: string;
+  /**
+   * When the current period ends: a party that stops being a member keeps their credential until then (VTI-EVT-218).
+   */
+  periodEndsAt: EventInstant;
+  /**
+   * How many members hold a credential for a live class of the audience in the current period (VTI-EVT-217).
+   */
+  holderCount: number;
+}
+/**
  * How many counting events a member attended in one calendar in one month (VTI-EVT-185): the record attendance is counted from.
  */
 export interface EventAttendanceTally {
@@ -13683,6 +13739,31 @@ export interface EventCheckIn {
    */
   registrantDid?: string;
   registrantKind: EventRegistrantKind;
+  method: EventCheckInMethod;
+  checkedInAt: EventInstant;
+  /**
+   * For `staff`: the door staff member who recorded it.
+   */
+  checkedInBy?: EntryId;
+  /**
+   * Whether it counts toward the registrant's attendance (VTI-EVT-180 – 183).
+   */
+  counts?: boolean;
+}
+/**
+ * One check-in (VTI-EVT-165): which registration, how, and when. Never a record of who did not come.
+ */
+export interface EventCheckIn_VtcEventsV0_4 {
+  registrationId: RegistrationId;
+  /**
+   * Present for a member.
+   */
+  entryId?: EntryId;
+  /**
+   * Present for a partner's member or a guest.
+   */
+  registrantDid?: string;
+  registrantKind: EventRegistrantKind_VtcEventsV0_4;
   method: EventCheckInMethod;
   checkedInAt: EventInstant;
   /**
@@ -13783,6 +13864,52 @@ export interface EventInvitationLink_VtcEventsV0_3 {
   forGuests?: boolean;
 }
 /**
+ * One occurrence of a series as a reader is shown it, expanded on read (VTI-EVT-192).
+ */
+export interface EventOccurrence {
+  /**
+   * Its original start: the name it keeps however it is changed (VTI-EVT-191).
+   */
+  occurrence: LocalDateTime;
+  /**
+   * When it happens, after any change to it.
+   */
+  when: When;
+  /**
+   * Whether it will happen.
+   */
+  status: "scheduled" | "cancelled";
+  /**
+   * Where this occurrence's title differs from the series'.
+   */
+  title?: EventTitle;
+  /**
+   * Where this occurrence's place differs from the series'.
+   */
+  placeSummary?: PlaceSummary;
+}
+/**
+ * A change to one occurrence, kept against its original start (VTI-EVT-193). Members present replace the series' own for that occurrence; `cancelled` cancels it (VTI-EVT-196).
+ */
+export interface EventOccurrenceOverride {
+  /**
+   * The occurrence's new local start, in the series' zone.
+   */
+  start?: LocalDateTime;
+  duration?: JSCalendarDuration;
+  title?: EventTitle;
+  description?: EventDescription;
+  placeSummary?: PlaceSummary;
+  /**
+   * Shown only as an event's access details are (VTI-EVT-060).
+   */
+  access?: AccessDetails;
+  /**
+   * The occurrence is cancelled; registrations for it are kept and shown cancelled.
+   */
+  cancelled?: boolean;
+}
+/**
  * A member's opt-out of invitations (VTI-EVT-110). It removes them from no audience and stops no host's invitation by name.
  */
 export interface EventOptOut {
@@ -13796,6 +13923,112 @@ export interface EventOptOut {
    */
   calendarId?: CalendarId;
   createdAt: EventInstant;
+}
+/**
+ * An attestation to an event's identity (VTI-EVT-213): its tag, the shown class credential and the proof, bound to the carrying document (VTI-EVT-214). It names no member.
+ */
+export interface EventPcsAttestation {
+  /**
+   * The suite it was made under.
+   */
+  suite: string;
+  /**
+   * The attestation itself.
+   */
+  attestation: EventMultibase;
+  /**
+   * Its tag, as the attestation carries it: the registration's only identifier.
+   */
+  tag: EventMultibase;
+  /**
+   * The class it was made under; a responder checks it is live and the audience's.
+   */
+  classLabel: EventClassLabel;
+}
+/**
+ * What makes an event a series (VTI-EVT-190 – 193): one rule, and the changes to single occurrences keyed by their original starts.
+ */
+export interface EventRecurrence {
+  /**
+   * The series' rule, as JSCalendar carries it — an array of exactly one here.
+   *
+   * @minItems 1
+   * @maxItems 1
+   */
+  recurrenceRules: [EventRecurrenceRule];
+  /**
+   * Changes to single occurrences, keyed by each one's original start.
+   */
+  recurrenceOverrides?: {
+    [k: string]: EventOccurrenceOverride | undefined;
+  };
+}
+/**
+ * A day of the week a series falls on, as JSCalendar's NDay; `nthOfPeriod` (1 – 5 or −1 – −5) only for a monthly or yearly series, such as the second Tuesday (2) or the last Friday (−1).
+ */
+export interface EventRecurrenceDay {
+  /**
+   * The weekday.
+   */
+  day: "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
+  /**
+   * Which such weekday of the month or year. Never 0.
+   */
+  nthOfPeriod?: number;
+}
+/**
+ * A series' rule (VTI-EVT-190): JSCalendar's RecurrenceRule, limited to these members. Exactly one of `count` and `until` ends it. A responder MUST refuse any other member.
+ */
+export interface EventRecurrenceRule {
+  frequency: EventRecurrenceFrequency;
+  /**
+   * Every so many periods. Absent means 1.
+   */
+  interval?: number;
+  /**
+   * The weekdays it falls on.
+   *
+   * @minItems 1
+   * @maxItems 7
+   */
+  byDay?:
+    | [EventRecurrenceDay]
+    | [EventRecurrenceDay, EventRecurrenceDay]
+    | [EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay]
+    | [EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay]
+    | [EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay, EventRecurrenceDay]
+    | [
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay
+      ]
+    | [
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay,
+        EventRecurrenceDay
+      ];
+  /**
+   * The days of the month it falls on; negative counts from the end. Never 0.
+   *
+   * @minItems 1
+   * @maxItems 31
+   */
+  byMonthDay?: [number, ...number[]];
+  /**
+   * How many occurrences in all.
+   */
+  count?: number;
+  /**
+   * The last local date-time an occurrence may start at, in the series' zone.
+   */
+  until?: LocalDateTime;
 }
 /**
  * What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).
@@ -13831,6 +14064,45 @@ export interface EventRef_VtcEventsV0_2 {
    * The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none.
    */
   placeSummary?: PlaceSummary;
+}
+/**
+ * What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).
+ */
+export interface EventRef_VtcEventsV0_4 {
+  eventId: EventId;
+  title: EventTitle;
+  when: When;
+  status: EventLifecycle;
+  sequence: number;
+  /**
+   * The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none.
+   *
+   * @maxItems 4
+   */
+  suggestedReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none.
+   */
+  placeSummary?: PlaceSummary;
+  /**
+   * The occurrence a receipt concerns, on a series registered by occurrence.
+   */
+  occurrence?: LocalDateTime;
+}
+/**
+ * A link between a series and its continuation after a change from one occurrence onward (VTI-EVT-197).
+ */
+export interface EventSeriesLink {
+  eventId: EventId;
+  /**
+   * `continues`: this series continues that one. `continuedBy`: that one continues this.
+   */
+  relation: "continues" | "continuedBy";
 }
 /**
  * An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
@@ -14007,6 +14279,126 @@ export interface Event_VtcEventsV0_3 {
    * A badge offered to a member when their check-in is recorded, for them to accept (VTI-EVT-186).
    */
   attendanceBadge?: BadgeId;
+}
+/**
+ * An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
+ */
+export interface Event_VtcEventsV0_4 {
+  eventId: EventId;
+  calendarId: CalendarId;
+  kind: EventKind;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
+  when: When;
+  placeSummary?: PlaceSummary;
+  /**
+   * Only where the access details are public, or the caller is a host.
+   */
+  access?: AccessDetails;
+  audience: EventAudience_VtcEventsV0_2;
+  registration: RegistrationSettings;
+  roster: RosterSetting_VtcEventsV0_4;
+  /**
+   * Show the number going to the audience, subject to `countThreshold`. Absent means false.
+   */
+  showCount?: boolean;
+  /**
+   * Below this many going, a count is shown as `fewerThan`. Absent means 5.
+   */
+  countThreshold?: number;
+  /**
+   * Listed to its whole audience. An unlisted event is answered by vtc/events/show to a member of its audience who names it, and left out of vtc/events/list (VTI-EVT-022).
+   */
+  listed: boolean;
+  accessibility?: Accessibility;
+  /**
+   * Reminders the hosts suggest, as minutes before the start. A member's agent applies them unless the member chose otherwise; the community sends no reminder itself (VTI-EVT-040).
+   *
+   * @maxItems 4
+   */
+  suggestedReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * The event's appointed hosts. Its creator is the first.
+   *
+   * @maxItems 32
+   */
+  hosts?: EntryId[];
+  /**
+   * People going, plus-ones included: exact for a host; for anyone else only where `showCount` is true, and then as `Count` states.
+   */
+  goingCount?: Count;
+  /**
+   * True when `capacity` is reached. Shown to everyone who may register, whatever `showCount` says, since a registrant learns it anyway.
+   */
+  full?: boolean;
+  /**
+   * Incremented on every change of `when`, `access`, `status` or `kind` after publication — the changes a registrant must notice, as iTIP's SEQUENCE (VTI-EVT-006).
+   */
+  sequence: number;
+  /**
+   * Present once cancelled, where the host gave one. Plain text.
+   */
+  cancelReason?: string;
+  publishedAt?: EventInstant;
+  cancelledAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+  /**
+   * Absent means `none`.
+   */
+  invite?: EventInviteMode;
+  /**
+   * Members of the audience may invite other members of it, within the community's daily limit (VTI-EVT-105). Absent means false.
+   */
+  membersMayInvite?: boolean;
+  /**
+   * Present where the event has its own identifier (VTI-EVT-140).
+   */
+  identity?: EventIdentity;
+  /**
+   * Absent means `none` (VTI-EVT-150).
+   */
+  guests?: EventGuestAdmission;
+  /**
+   * Whether registrants going are issued a ticket (VTI-EVT-170). Absent means false.
+   */
+  tickets?: boolean;
+  /**
+   * Whether the event counts toward attendance (VTI-EVT-180). Absent: its calendar's default.
+   */
+  countsAttendance?: boolean;
+  /**
+   * A badge offered to a member when their check-in is recorded, for them to accept (VTI-EVT-186).
+   */
+  attendanceBadge?: BadgeId;
+  /**
+   * Present on a series (VTI-EVT-190).
+   */
+  recurrence?: EventRecurrence;
+  /**
+   * On a series: what a registration is for (VTI-EVT-194). Absent on a series means `series`.
+   */
+  registrationScope?: EventRegistrationScope;
+  /**
+   * Registration must be identified: persona registrations are refused (VTI-EVT-231). Absent means false.
+   */
+  identified?: boolean;
+  /**
+   * On an `anonymous` event (VTI-EVT-213).
+   */
+  anonymity?: EventAnonymity;
+  /**
+   * The series this one continues, or that continues it (VTI-EVT-197).
+   *
+   * @maxItems 2
+   */
+  relatedTo?: [] | [EventSeriesLink] | [EventSeriesLink, EventSeriesLink];
 }
 /**
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
@@ -19364,6 +19756,60 @@ export interface Registration_VtcEventsV0_2 {
   note?: string;
   createdAt: EventInstant;
   updatedAt: EventInstant;
+}
+/**
+ * One registrant's registration for one event. The registrant reads all of it; a host reads all of it; another registrant on a `visible` roster reads only `entryId`, `status` and `guests` (VTI-EVT-053). Exactly one of `entryId` (a member), `registrantDid` (a partner's member, a guest or a persona, VTI-EVT-134, 151, 230) and `tag` (an anonymous registrant, VTI-EVT-213) names the registrant.
+ */
+export interface Registration_VtcEventsV0_4 {
+  registrationId: RegistrationId;
+  eventId: EventId;
+  /**
+   * The registrant's directory entry, where they are a member. Exactly one of `entryId` and `registrantDid` is present.
+   */
+  entryId?: EntryId;
+  /**
+   * A registrant who is not a member of the community — a partner's member (VTI-EVT-134) — by the DID they presented as. Shown to the event's hosts and to the registrant only.
+   */
+  registrantDid?: string;
+  status: RegistrationStatus;
+  /**
+   * Plus-ones the registrant brings.
+   */
+  guests: number;
+  /**
+   * The registrant's and the hosts' view only.
+   */
+  answers?: RegistrationAnswers;
+  /**
+   * The `sha256` of the code of conduct the registrant acknowledged.
+   */
+  codeOfConductAcknowledged?: string;
+  /**
+   * While `waitlisted`: the registrant's place in the queue, 1 first.
+   */
+  waitlistPosition?: number;
+  /**
+   * The roster setting the registration was made under (VTI-EVT-052).
+   */
+  roster: RosterSetting_VtcEventsV0_4;
+  /**
+   * The event's `sequence` when the registration last changed, so a registrant sees whether the event changed since.
+   */
+  eventSequence: number;
+  /**
+   * A host's note on a decline or removal, shown to the registrant. Plain text.
+   */
+  note?: string;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+  /**
+   * On a series registered by occurrence: the occurrence, by its original start (VTI-EVT-194).
+   */
+  occurrence?: LocalDateTime;
+  /**
+   * On an `anonymous` event: the registration's only identifier (VTI-EVT-213).
+   */
+  tag?: EventMultibase;
 }
 /**
  * What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.

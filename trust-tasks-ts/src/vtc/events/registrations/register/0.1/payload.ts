@@ -9,7 +9,7 @@ import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTit
 /**
  * A member registers for an event, or changes their registration: going or maybe, how many guests, their answers to the event's questions, and the code of conduct they acknowledge. The community decides whether that makes them going, pending a host's decision or waitlisted, and its signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by vtc/events/registrations/register/0.2
+ * @deprecated superseded by vtc/events/registrations/register/0.3
  */
 export interface VTCEventsRegistrationsRegisterPayload {
   eventId: EventId;
@@ -34,7 +34,7 @@ export interface VTCEventsRegistrationsRegisterPayload {
 /**
  * The success response to a vtc/events/registrations/register/0.1 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/register/0.1#response.
  *
- * @deprecated superseded by vtc/events/registrations/register/0.2
+ * @deprecated superseded by vtc/events/registrations/register/0.3
  */
 export interface VTCEventsRegistrationsRegisterResponsePayload {
   /**
@@ -72,12 +72,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/events/registrations/register/0.2";
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/register/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/register/0.2
+ * @deprecated superseded by vtc/events/registrations/register/0.3
  */
 export type Payload = VTCEventsRegistrationsRegisterPayload;
 
@@ -87,7 +87,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registr
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/register/0.2
+ * @deprecated superseded by vtc/events/registrations/register/0.3
  */
 export type Response = VTCEventsRegistrationsRegisterResponsePayload;
 

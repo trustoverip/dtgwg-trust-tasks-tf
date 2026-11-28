@@ -288,7 +288,7 @@ typedef Ext = Map<String, dynamic>;
 /// The success response to a vtc/events/registrations/register/0.1 request: the
 /// member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is
 /// https://trusttasks.org/spec/vtc/events/registrations/register/0.1#response.
-@Deprecated('superseded by vtc/events/registrations/register/0.2')
+@Deprecated('superseded by vtc/events/registrations/register/0.3')
 class Response {
   const Response({
     required this.registration,
@@ -346,7 +346,7 @@ extension type const PayloadStatus(String value) {
 /// acknowledge. The community decides whether that makes them going, pending a host's
 /// decision or waitlisted, and its signed answer is the member's receipt. The outer
 /// document members are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by vtc/events/registrations/register/0.2')
+@Deprecated('superseded by vtc/events/registrations/register/0.3')
 class Payload {
   const Payload({
     required this.eventId,
@@ -410,7 +410,7 @@ class Payload {
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
 const String? deprecation =
-    'superseded by vtc/events/registrations/register/0.2';
+    'superseded by vtc/events/registrations/register/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

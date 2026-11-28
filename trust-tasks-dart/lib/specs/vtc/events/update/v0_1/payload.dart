@@ -962,7 +962,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// The success response to a vtc/events/update/0.1 request. Carried in a Trust Task
 /// document whose type is https://trusttasks.org/spec/vtc/events/update/0.1#response.
-@Deprecated('superseded by vtc/events/update/0.3')
+@Deprecated('superseded by vtc/events/update/0.4')
 class Response {
   const Response({
     required this.event,
@@ -988,7 +988,7 @@ class Response {
 
 /// Change an event. Members present replace what is stored. The outer document members
 /// are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by vtc/events/update/0.3')
+@Deprecated('superseded by vtc/events/update/0.4')
 class Payload {
   const Payload({
     required this.eventId,
@@ -1108,7 +1108,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/events/update/0.3';
+const String? deprecation = 'superseded by vtc/events/update/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vtc/events/update/0.1';

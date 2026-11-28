@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/anonymous/checkin/0.1",
+  "title": "VTC Events — Anonymous — Check In — payload",
+  "description": "Check in to an anonymous event by a fresh attestation carrying the registration's tag, bound to the door's challenge. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "challenge",
+    "attestation"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "occurrence": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+      "description": "On a series registered by occurrence: the occurrence, by its original start (VTI-EVT-194)."
+    },
+    "challenge": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventDoorChallengeValue",
+      "description": "The door's challenge, as scanned (VTI-EVT-161)."
+    },
+    "attestation": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventPcsAttestation",
+      "description": "The attestation to the event's identity (VTI-EVT-213), bound to this document (VTI-EVT-214)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Anonymous — Check In — response payload",
+      "description": "The success response to a vtc/events/anonymous/checkin/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/anonymous/checkin/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "checkedInAt"
+      ],
+      "properties": {
+        "tag": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventMultibase"
+        },
+        "checkedInAt": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "occurrence": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/LocalDateTime"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

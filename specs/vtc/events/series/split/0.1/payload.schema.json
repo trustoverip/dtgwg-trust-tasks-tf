@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/series/split/0.1",
+  "title": "VTC Events — Series — Split — payload",
+  "description": "Change a series from one occurrence onward: the series ends before it and a linked continuation starts with it, carrying its registrations. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "from"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "from": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+      "description": "The first occurrence the change applies to, by its original start."
+    },
+    "when": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/When",
+      "description": "The continuation's time; absent keeps the series' time of day and duration from `from`."
+    },
+    "recurrence": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventRecurrence",
+      "description": "The continuation's rule; absent continues the series' rule."
+    },
+    "title": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+    },
+    "description": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+    },
+    "placeSummary": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/PlaceSummary"
+    },
+    "access": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/AccessDetails"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Why, for the audit record. Plain text."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Series — Split — response payload",
+      "description": "The success response to a vtc/events/series/split/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/series/split/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ended",
+        "continuation"
+      ],
+      "properties": {
+        "ended": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/Event",
+          "description": "The series as it now stands, ending before `from`."
+        },
+        "continuation": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/Event",
+          "description": "The new series, starting with `from`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

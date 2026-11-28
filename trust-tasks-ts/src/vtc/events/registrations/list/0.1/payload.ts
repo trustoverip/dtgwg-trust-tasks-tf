@@ -14,7 +14,7 @@ export type View = "host" | "roster";
 /**
  * List an event's registrations as the caller may see them: every registration, answers included, for the event's hosts; on a `visible` roster, for a registrant who is going or maybe, the others who are going or maybe — who, their status and their guests, nothing else. On a `hidden` roster nobody but the hosts reads any. The outer document members are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by vtc/events/registrations/list/0.2
+ * @deprecated superseded by vtc/events/registrations/list/0.3
  */
 export interface VTCEventsRegistrationsListPayload {
   eventId: EventId;
@@ -60,7 +60,7 @@ export interface VTCEventsRegistrationsListPayload {
 /**
  * The success response to a vtc/events/registrations/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/list/0.1#response. `registrations` is present exactly when `view` is `host`, `roster` exactly when it is `roster`.
  *
- * @deprecated superseded by vtc/events/registrations/list/0.2
+ * @deprecated superseded by vtc/events/registrations/list/0.3
  */
 export interface VTCEventsRegistrationsListResponsePayload {
   eventId: EventId;
@@ -118,12 +118,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/events/registrations/list/0.2";
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/list/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/list/0.2
+ * @deprecated superseded by vtc/events/registrations/list/0.3
  */
 export type Payload = VTCEventsRegistrationsListPayload;
 
@@ -133,7 +133,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registr
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/events/registrations/list/0.2
+ * @deprecated superseded by vtc/events/registrations/list/0.3
  */
 export type Response = VTCEventsRegistrationsListResponsePayload;
 

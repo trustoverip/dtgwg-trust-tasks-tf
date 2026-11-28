@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.3",
+  "title": "VTC Events — Registrations — Withdraw — payload",
+  "description": "A member withdraws their registration for an event: always allowed, never held for anyone's decision, at any time before or after the registration window closes. A place it held passes to the waitlist. The community's signed answer is the member's receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/MembershipPresentation",
+      "description": "Only from a party who is not a member of this community, withdrawing the registration they made as a partner's member: their presentation of the membership credential a named partner issued them, as `registrations/register/0.2` takes it (VTI-EVT-132, VTI-EVT-135). Verified before, and without reference to, the event; discarded once decided (VTI-EVT-133). A member never sends it."
+    },
+    "occurrence": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+      "description": "On a series registered by occurrence: the occurrence, by its original start (VTI-EVT-194). Refused on an event that is not one."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Registrations — Withdraw — response payload",
+      "description": "The success response to a vtc/events/registrations/withdraw/0.3 request: the member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.3#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event",
+        "changed"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/Registration",
+          "description": "The registration as it now stands — `withdrawn`, or unchanged where it already ended."
+        },
+        "event": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventRef",
+          "description": "The event as it stood when the community answered."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False where the registration had already ended — withdrawn, declined or removed — or the event is cancelled, and nothing changed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
