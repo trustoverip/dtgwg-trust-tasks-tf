@@ -211,7 +211,7 @@ The client names the entry and the purpose. The payload is the top-level schema 
 
 The provider answers with the entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
-- `entry` is a `Disclosure` for a Context Client (HCP 7.4), with its `useUntil` (HCP 7.6), and the whole `Entry` for a Management Client.
+- `entry` is a `Disclosure` for a Context Client (HCP 7.4), with its `useUntil` (HCP 7.6), and the whole `Entry` for a Management Client. A disclosure's `standing.confirmed` is true only where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8); an unconfirmed `person-declared` entry, as in the example below, carries `confirmed: false`.
 - `retrievalId` identifies this retrieval in the provider's audit log.
 - `minimization` is the minimization report (HCP 7.5). Its `method` is `none`: entry-selection minimization is inapplicable when the caller names a single entry, and its absence is not non-conformance (HCP 5.2.2).
 - `directives` are the directives that apply, where the requester is a Context Client (HCP 6.4). Every result to a Context Client carries it, empty when none applies; a result to a Management Client carries it as null. HCP's own shape leaves the member optional; the carriage requires it, a list or null, so that "none applies" is never confused with "not a Context Client", *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
@@ -240,7 +240,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
       },
       "assertion": { "declarationType": "person-declared" },
       "classification": { "categories": ["health_context"] },
-      "standing": { "assurance": "authenticated", "confirmed": true },
+      "standing": { "assurance": "authenticated", "confirmed": false },
       "useUntil": "2026-11-25T21:00:01Z"
     },
     "retrievalId": "urn:uuid:0e7d4c2b-9a1f-4e3d-8b6c-2a5f1e0d9c83",

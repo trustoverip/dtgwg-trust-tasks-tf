@@ -222,7 +222,7 @@ The Context Client sends the query to the provider. The payload is the top-level
 
 The provider answers with the disclosed context. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
-- `entries` holds at most the lesser of `maxEntries` and 20 entries (HCP 7.2), in relevance order (HCP 7.3). `maxEntries` is a ceiling, not a target: the provider never pads the result to reach it (HCP 7.2). Each entry is a `Disclosure`. It carries a grant-scoped `ref` instead of the entry's stable `id`, the `version` disclosed, and the entry's `standing`. It withholds the entry's `id`, `subject` and `record` (HCP 7.4). Its `useUntil` is the time after which the client **MUST NOT** use the copy or pass it on (HCP 7.6). An `Entry` appears only where the requester is not a Context Client (HCP 5.2.1, 7.4). An empty `entries` is a successful answer: nothing matched, or nothing could be disclosed.
+- `entries` holds at most the lesser of `maxEntries` and 20 entries (HCP 7.2), in relevance order (HCP 7.3). `maxEntries` is a ceiling, not a target: the provider never pads the result to reach it (HCP 7.2). Each entry is a `Disclosure`. It carries a grant-scoped `ref` instead of the entry's stable `id`, the `version` disclosed, and the entry's `standing`: its `assurance` is the asserter's recorded assurance, and its `confirmed` is true only where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8). A `person-declared` entry the person has not confirmed is disclosed with `confirmed: false`, whatever its `assurance`: a declaration type never by itself establishes that the person confirmed an assertion (HCP 3.8, 3.11 invariant 8). It withholds the entry's `id`, `subject` and `record` (HCP 7.4). Its `useUntil` is the time after which the client **MUST NOT** use the copy or pass it on (HCP 7.6). An `Entry` appears only where the requester is not a Context Client (HCP 5.2.1, 7.4). An empty `entries` is a successful answer: nothing matched, or nothing could be disclosed.
 - `retrievalId` identifies this retrieval in the provider's audit log.
 - `minimization` is the provider's minimization report (HCP 7.5). Its `method` is the relevance method that determined the final ordering, which the provider declares in its discovery document (HCP 7.3, 19.3): `lexical`, `semantic` or `llm` among the registered values. A provider with no HCP discovery document declares it only here, and uses one method for every query under a grant, *pending HCP confirmation* ([question 58](#pending-hcp-confirmation)). It never carries a count of what was considered or withheld (HCP 7.5).
 - `categoriesSearched` lists the categories searched: those the request named or, where it named none, every category the grant can read for the purpose (HCP 5.2.1).
@@ -253,7 +253,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
         },
         "assertion": { "declarationType": "person-declared" },
         "classification": { "categories": ["general_preferences"] },
-        "standing": { "assurance": "authenticated", "confirmed": true },
+        "standing": { "assurance": "authenticated", "confirmed": false },
         "useUntil": "2026-11-25T10:00:01Z"
       },
       {
@@ -266,7 +266,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
         },
         "assertion": { "declarationType": "person-declared" },
         "classification": { "categories": ["health_context"] },
-        "standing": { "assurance": "authenticated", "confirmed": true },
+        "standing": { "assurance": "authenticated", "confirmed": false },
         "useUntil": "2026-11-24T22:00:01Z"
       }
     ],
