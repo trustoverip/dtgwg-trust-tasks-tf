@@ -4485,6 +4485,9 @@ export import VtcEventsRegistrationsList_v0_2 = _VtcEventsRegistrationsList_v0_2
 import * as _VtcEventsRegistrationsList_v0_3 from "./vtc/events/registrations/list/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcEventsRegistrationsList_v0_3 = _VtcEventsRegistrationsList_v0_3;
+import * as _VtcEventsRegistrationsList_v0_4 from "./vtc/events/registrations/list/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcEventsRegistrationsList_v0_4 = _VtcEventsRegistrationsList_v0_4;
 import * as _VtcEventsRegistrationsRegister_v0_1 from "./vtc/events/registrations/register/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcEventsRegistrationsRegister_v0_1 = _VtcEventsRegistrationsRegister_v0_1;

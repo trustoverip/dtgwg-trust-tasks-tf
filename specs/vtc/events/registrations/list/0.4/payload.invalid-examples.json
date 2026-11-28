@@ -1,0 +1,103 @@
+[
+  {
+    "note": "`eventId` is REQUIRED; registrations are listed one event at a time.",
+    "payload": {
+      "statuses": [
+        "pending"
+      ]
+    }
+  },
+  {
+    "note": "`statuses` are RegistrationStatus values.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "statuses": [
+        "checkedIn"
+      ]
+    }
+  },
+  {
+    "note": "A page holds at most 100 items.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "limit": 1000
+    }
+  },
+  {
+    "note": "An EventRosterEntry carries who, status and guests only — never answers (VTI-EVT-053).",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_BuildNight0312Thurs",
+      "view": "roster",
+      "roster": [
+        {
+          "entryId": "dir_AdaLovelace000000",
+          "status": "going",
+          "guests": 0,
+          "answers": {
+            "dietary": "Vegetarian"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "The roster view shows going and maybe only; a waitlisted registrant is not on it.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_BuildNight0312Thurs",
+      "view": "roster",
+      "roster": [
+        {
+          "entryId": "dir_AdaLovelace000000",
+          "status": "waitlisted",
+          "guests": 0
+        }
+      ]
+    }
+  },
+  {
+    "note": "`view` is REQUIRED: a reader must know whether it holds the host view or the roster view.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_BuildNight0312Thurs",
+      "roster": [
+        {
+          "entryId": "dir_AdaLovelace000000",
+          "status": "going",
+          "guests": 0
+        }
+      ]
+    }
+  },
+  {
+    "note": "An EventRosterEntry names a registrant by exactly one of `entryId` and `registrantDid`: never both, or a persona would lead to its member (VTI-EVT-230).",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_BuildNight0312Thurs",
+      "view": "roster",
+      "roster": [
+        {
+          "entryId": "dir_AdaLovelace000000",
+          "registrantDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+          "status": "going",
+          "guests": 0
+        }
+      ]
+    }
+  },
+  {
+    "note": "An EventRosterEntry names its registrant: one of `entryId` and `registrantDid` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_BuildNight0312Thurs",
+      "view": "roster",
+      "roster": [
+        {
+          "status": "going",
+          "guests": 0
+        }
+      ]
+    }
+  }
+]

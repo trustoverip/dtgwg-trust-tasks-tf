@@ -296,7 +296,7 @@ An event, a status, a guest count, answers and a code-of-conduct digest in; the 
 
 ### Correlation
 
-The community maintainer's identifier scope is public: it is addressed by the public DID its members already know it by. The member registers as their identity at this community; nothing in the request names any other community or any other identity of theirs. Who else is registered is never in the answer: other registrants are read, where the roster setting allows, with [`vtc/events/registrations/list`](../../list/0.3/spec.md) (VTI-EVT-053).
+The community maintainer's identifier scope is public: it is addressed by the public DID its members already know it by. The member registers as their identity at this community; nothing in the request names any other community or any other identity of theirs. Who else is registered is never in the answer: other registrants are read, where the roster setting allows, with [`vtc/events/registrations/list`](../../list/0.4/spec.md) (VTI-EVT-053).
 
 ### Retention
 
