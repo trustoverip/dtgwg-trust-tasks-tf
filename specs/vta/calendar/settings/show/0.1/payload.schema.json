@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/settings/show/0.1",
+  "title": "VTA Calendar — Settings — Show — payload",
+  "description": "A client reads a trust context's calendar settings: whether the VTA syncs the principal's events there, the default reminders, and the quiet hours. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Settings — Show — response payload",
+      "description": "The success response to a vta/calendar/settings/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/settings/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "settings"
+      ],
+      "properties": {
+        "settings": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarSettings"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

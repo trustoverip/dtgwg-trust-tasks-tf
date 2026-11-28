@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/receipts/deposit/0.1",
+  "title": "VTA Calendar — Receipts — Deposit — payload",
+  "description": "A client hands its VTA a community's signed reply about the principal's registration, exactly as it received it, for the VTA to verify and keep. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "document"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "document": {
+      "type": "object",
+      "description": "The community's reply document, exactly as received, proof included."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Receipts — Deposit — response payload",
+      "description": "The success response to a vta/calendar/receipts/deposit/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/receipts/deposit/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt",
+        "alreadyKept"
+      ],
+      "properties": {
+        "receipt": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarReceipt"
+        },
+        "alreadyKept": {
+          "type": "boolean",
+          "description": "The VTA already kept this document; nothing new was stored."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

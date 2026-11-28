@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/feeds/revoke/0.1",
+  "title": "VTA Calendar — Feeds — Revoke — payload",
+  "description": "A client revokes one of the principal's calendar feeds; its address stops working at once. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "feedId"
+  ],
+  "properties": {
+    "feedId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarFeedId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Feeds — Revoke — response payload",
+      "description": "The success response to a vta/calendar/feeds/revoke/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/feeds/revoke/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feed"
+      ],
+      "properties": {
+        "feed": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarFeed"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

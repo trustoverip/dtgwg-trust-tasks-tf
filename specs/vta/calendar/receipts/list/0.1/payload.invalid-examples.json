@@ -1,0 +1,32 @@
+[
+  {
+    "note": "`contextId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A receipt's `document` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "receiptId": "rcpt_R1vers1deReg000001",
+          "contextId": "personal",
+          "community": "did:webvh:QmRiverside:riverside-makers.example",
+          "eventId": "evt_Kq7N2qLm4Rt8Vx1ZsP0a",
+          "replyType": "https://trusttasks.org/spec/vtc/events/registrations/register/0.2#response",
+          "receivedAt": "2026-11-20T10:00:01Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "contextId": "personal",
+      "eventId": "evt_Kq7N2qLm4Rt8Vx1ZsP0a",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

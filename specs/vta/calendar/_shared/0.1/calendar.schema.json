@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/_shared/0.1/calendar",
+  "title": "VTA calendar — shared definitions for the vta/calendar/* spec family",
+  "description": "The member's calendar a VTA keeps for its principal across the communities it belongs to (VTI The Member's Calendar chapter, VTI-CAL-*). Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nPER TRUST CONTEXT. Every entry, setting, alert, receipt and feed belongs to the trust context of the identifier it concerns, and is answered only to a party with standing there (VTI-CAL-001, VTI-CAL-002).\n\nTWO TIERS. An event the principal registered for is `mine` and is held as the community answered it; an event the VTA holds only an `event` notification for is `notified` and is shown only as the notification states it, until the principal opens it (VTI-CAL-020, VTI-NTF-067).\n\nTHE VTA REMINDS. Reminders are fired by the VTA, never sent by a community (VTI-CAL-040 – 043, VTI-EVT-040).",
+  "$defs": {
+    "VtaCalendarContextId": {
+      "title": "VtaCalendarContextId",
+      "description": "A trust context of the VTA, by its identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "VtaCalendarDid": {
+      "title": "VtaCalendarDid",
+      "description": "A DID: a community, or an identifier of the principal's.",
+      "type": "string",
+      "minLength": 7,
+      "maxLength": 2048,
+      "pattern": "^did:[a-z0-9]+:"
+    },
+    "VtaCalendarTier": {
+      "title": "VtaCalendarTier",
+      "description": "`mine`: an event the principal holds a registration for, read from its community as the member (VTI-CAL-011). `notified`: an event the VTA holds only an `event` notification for, shown only as the notification states it (VTI-CAL-020).",
+      "type": "string",
+      "enum": [
+        "mine",
+        "notified"
+      ]
+    },
+    "VtaCalendarInstant": {
+      "title": "VtaCalendarInstant",
+      "description": "An RFC 3339 instant in UTC, whole seconds.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "VtaCalendarPeriod": {
+      "title": "VtaCalendarPeriod",
+      "description": "When an entry happens, as instants: computed by the VTA from the event's local start, zone and duration as the community last answered them, or taken from the notification's period for a `notified` entry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startsAt",
+        "endsAt"
+      ],
+      "properties": {
+        "startsAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        },
+        "endsAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        }
+      }
+    },
+    "VtaCalendarReminderMinutes": {
+      "title": "VtaCalendarReminderMinutes",
+      "description": "A reminder's offset: how many minutes before the event's start it is due. At most four weeks.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40320
+    },
+    "VtaCalendarReminderList": {
+      "title": "VtaCalendarReminderList",
+      "description": "Reminder offsets, distinct. Empty means no reminders.",
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/VtaCalendarReminderMinutes"
+      }
+    },
+    "VtaCalendarReminderSource": {
+      "title": "VtaCalendarReminderSource",
+      "description": "Where an entry's reminders come from (VTI-CAL-041). `alert`: the principal set them for this event. `event`: the event's suggested reminders. `default`: the context's default. `none`: the entry is not reminded of (VTI-CAL-040).",
+      "type": "string",
+      "enum": [
+        "alert",
+        "event",
+        "default",
+        "none"
+      ]
+    },
+    "VtaCalendarEntry": {
+      "title": "VtaCalendarEntry",
+      "description": "One entry of the principal's calendar. A `mine` entry carries the event and the registration as its community last answered them; a `notified` entry carries only what its notification states (VTI-CAL-020), and never a title.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "community",
+        "eventId",
+        "tier",
+        "period"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "community": {
+          "$ref": "#/$defs/VtaCalendarDid",
+          "description": "The community holding the event."
+        },
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId"
+        },
+        "tier": {
+          "$ref": "#/$defs/VtaCalendarTier"
+        },
+        "period": {
+          "$ref": "#/$defs/VtaCalendarPeriod"
+        },
+        "identifier": {
+          "$ref": "#/$defs/VtaCalendarDid",
+          "description": "The principal's identifier the entry concerns: the membership identifier the event was read as, or the notification's addressee."
+        },
+        "event": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventRef",
+          "description": "`mine` only: the event as its community last answered it."
+        },
+        "placeSummary": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/PlaceSummary",
+          "description": "`mine` only, where the community answered one."
+        },
+        "registrationStatus": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/RegistrationStatus",
+          "description": "`mine` only: the principal's registration."
+        },
+        "notificationRecordId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "`notified` only: the held notification (vta/notifications/show) the entry comes from."
+        },
+        "withdrawn": {
+          "type": "boolean",
+          "description": "`notified` only: the notification was withdrawn (VTI-CAL-022). Absent means false."
+        },
+        "reminders": {
+          "$ref": "#/$defs/VtaCalendarReminderList",
+          "description": "The offsets the VTA will remind at, after VTI-CAL-041 and VTI-CAL-040."
+        },
+        "reminderSource": {
+          "$ref": "#/$defs/VtaCalendarReminderSource"
+        },
+        "overlaps": {
+          "type": "boolean",
+          "description": "The entry's period overlaps another entry in the same answer (VTI-CAL-023). Absent means false."
+        },
+        "readAt": {
+          "$ref": "#/$defs/VtaCalendarInstant",
+          "description": "`mine` only: when the VTA last read the event from its community."
+        }
+      }
+    },
+    "VtaCalendarClock": {
+      "title": "VtaCalendarClock",
+      "description": "A local time of day, `HH:MM`, 24-hour.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "VtaCalendarQuietHours": {
+      "title": "VtaCalendarQuietHours",
+      "description": "A daily period in which the VTA fires no reminder (VTI-CAL-042), read in `timeZone`. A period whose `endsAt` is earlier than its `startsAt` runs past midnight.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startsAt",
+        "endsAt",
+        "timeZone"
+      ],
+      "properties": {
+        "startsAt": {
+          "$ref": "#/$defs/VtaCalendarClock"
+        },
+        "endsAt": {
+          "$ref": "#/$defs/VtaCalendarClock"
+        },
+        "timeZone": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/TimeZoneId"
+        }
+      }
+    },
+    "VtaCalendarSettings": {
+      "title": "VtaCalendarSettings",
+      "description": "A trust context's calendar settings (VTI-CAL-070).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "sync",
+        "defaultReminderMinutes"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "sync": {
+          "type": "boolean",
+          "description": "Whether the VTA reads the events of the communities the principal belongs to in this context (VTI-CAL-010). False until the principal chooses."
+        },
+        "defaultReminderMinutes": {
+          "$ref": "#/$defs/VtaCalendarReminderList",
+          "description": "Offsets for events that suggest none (VTI-CAL-041)."
+        },
+        "quietHours": {
+          "$ref": "#/$defs/VtaCalendarQuietHours"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/VtaCalendarInstant",
+          "description": "Absent until the settings are first changed."
+        },
+        "updatedBy": {
+          "$ref": "#/$defs/VtaCalendarDid",
+          "description": "The party that last changed them (VTI-CAL-070)."
+        }
+      }
+    },
+    "VtaCalendarSyncStatus": {
+      "title": "VtaCalendarSyncStatus",
+      "description": "How one community's read went. `read`: answered. `notSyncing`: the context's `sync` is off. `unavailable`: the community did not answer; the VTA tries again later. `refused`: the community refused the read (for example, the member has left).",
+      "type": "string",
+      "enum": [
+        "read",
+        "notSyncing",
+        "unavailable",
+        "refused"
+      ]
+    },
+    "VtaCalendarSyncResult": {
+      "title": "VtaCalendarSyncResult",
+      "description": "One community's read.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "community",
+        "status"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "community": {
+          "$ref": "#/$defs/VtaCalendarDid"
+        },
+        "status": {
+          "$ref": "#/$defs/VtaCalendarSyncStatus"
+        },
+        "changed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Entries added or changed by this read."
+        },
+        "lastReadAt": {
+          "$ref": "#/$defs/VtaCalendarInstant",
+          "description": "When the community last answered a read."
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "`refused` only: the community's error code."
+        }
+      }
+    },
+    "VtaCalendarAlert": {
+      "title": "VtaCalendarAlert",
+      "description": "The principal's own reminders for one event (VTI-CAL-041).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "community",
+        "eventId",
+        "reminderMinutes"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "community": {
+          "$ref": "#/$defs/VtaCalendarDid"
+        },
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId"
+        },
+        "reminderMinutes": {
+          "$ref": "#/$defs/VtaCalendarReminderList",
+          "description": "Empty: no reminders for this event."
+        }
+      }
+    },
+    "VtaCalendarFeedId": {
+      "title": "VtaCalendarFeedId",
+      "description": "Opaque identifier of a feed: `feed_` followed by 16 to 64 base64url characters. It is not the feed's address.",
+      "type": "string",
+      "pattern": "^feed_[A-Za-z0-9_-]{16,64}$"
+    },
+    "VtaCalendarFeedDetail": {
+      "title": "VtaCalendarFeedDetail",
+      "description": "What a feed carries of each `mine` entry (VTI-CAL-053). `busy`: only that time is taken. `titles`: the title and the times. `titlesAndPlaces`: also the place summary — never the access details. A `notified` entry is carried, where the feed includes the tier, only as busy time.",
+      "type": "string",
+      "enum": [
+        "busy",
+        "titles",
+        "titlesAndPlaces"
+      ]
+    },
+    "VtaCalendarFeed": {
+      "title": "VtaCalendarFeed",
+      "description": "A feed for a calendar application (VTI-CAL-050 – 055), as a party with standing in every context it covers sees it. Never its address, which only feeds/create returns.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedId",
+        "label",
+        "contextIds",
+        "detail",
+        "tiers",
+        "createdAt",
+        "expiresAt",
+        "fetchCount"
+      ],
+      "properties": {
+        "feedId": {
+          "$ref": "#/$defs/VtaCalendarFeedId"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "What the principal calls it: \"Phone calendar\". Plain text."
+        },
+        "contextIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/VtaCalendarContextId"
+          },
+          "description": "The contexts the feed covers."
+        },
+        "detail": {
+          "$ref": "#/$defs/VtaCalendarFeedDetail"
+        },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/VtaCalendarTier"
+          },
+          "description": "The tiers the feed carries."
+        },
+        "createdAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        },
+        "revokedAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        },
+        "lastFetchedAt": {
+          "$ref": "#/$defs/VtaCalendarInstant",
+          "description": "When a calendar application last read it (VTI-CAL-054)."
+        },
+        "fetchCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many times it has been read."
+        }
+      }
+    },
+    "VtaCalendarReceiptId": {
+      "title": "VtaCalendarReceiptId",
+      "description": "Opaque identifier of a kept receipt: `rcpt_` followed by 16 to 64 base64url characters.",
+      "type": "string",
+      "pattern": "^rcpt_[A-Za-z0-9_-]{16,64}$"
+    },
+    "VtaCalendarReceipt": {
+      "title": "VtaCalendarReceipt",
+      "description": "A community's signed reply the VTA keeps for its principal, exactly as received (VTI-CAL-030).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receiptId",
+        "contextId",
+        "community",
+        "replyType",
+        "receivedAt",
+        "document"
+      ],
+      "properties": {
+        "receiptId": {
+          "$ref": "#/$defs/VtaCalendarReceiptId"
+        },
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "community": {
+          "$ref": "#/$defs/VtaCalendarDid",
+          "description": "The reply's issuer, whose proof the VTA verified."
+        },
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId",
+          "description": "The event the reply names."
+        },
+        "replyType": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The reply document's Type URI, a `#response` of a vtc/events task. Any scheme a Type URI may take."
+        },
+        "receivedAt": {
+          "$ref": "#/$defs/VtaCalendarInstant"
+        },
+        "document": {
+          "type": "object",
+          "description": "The reply document, exactly as received, proof included, for a reader to verify itself."
+        }
+      }
+    },
+    "VtaCalendarBusyTarget": {
+      "title": "VtaCalendarBusyTarget",
+      "description": "A booking page the principal shares busy times with (VTI-CAL-060): the DID holding it and its identifier there.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "holder",
+        "pageId"
+      ],
+      "properties": {
+        "holder": {
+          "$ref": "#/$defs/VtaCalendarDid"
+        },
+        "pageId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The booking page's identifier at its holder."
+        }
+      }
+    },
+    "VtaCalendarBusyShare": {
+      "title": "VtaCalendarBusyShare",
+      "description": "The principal's choice to share busy times with one booking page, for one context.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "target",
+        "enabled"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/VtaCalendarContextId"
+        },
+        "target": {
+          "$ref": "#/$defs/VtaCalendarBusyTarget"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether busy times are shared."
+        },
+        "lastSharedAt": {
+          "$ref": "#/$defs/VtaCalendarInstant",
+          "description": "When the VTA last sent busy times to the target."
+        }
+      }
+    }
+  }
+}

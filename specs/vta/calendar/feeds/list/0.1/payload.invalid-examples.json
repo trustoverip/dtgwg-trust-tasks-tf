@@ -1,0 +1,38 @@
+[
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "includeUrls": true
+    }
+  },
+  {
+    "note": "A feed's `fetchCount` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "feedId": "feed_Ph0n3Ca1endar00001",
+          "label": "Phone calendar",
+          "contextIds": [
+            "personal"
+          ],
+          "detail": "titles",
+          "tiers": [
+            "mine"
+          ],
+          "createdAt": "2026-11-27T09:00:00Z",
+          "expiresAt": "2027-05-27T09:00:00Z",
+          "lastFetchedAt": "2026-11-27T09:14:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

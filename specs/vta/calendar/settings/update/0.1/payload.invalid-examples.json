@@ -1,0 +1,52 @@
+[
+  {
+    "note": "A reminder offset is at least one minute.",
+    "payload": {
+      "contextId": "personal",
+      "defaultReminderMinutes": [
+        0
+      ]
+    }
+  },
+  {
+    "note": "A clock is `HH:MM`, 24-hour.",
+    "payload": {
+      "contextId": "personal",
+      "quietHours": {
+        "startsAt": "10pm",
+        "endsAt": "07:00",
+        "timeZone": "Europe/London"
+      }
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "contextId": "personal",
+      "feeds": []
+    }
+  },
+  {
+    "note": "`settings` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "contextId": "personal",
+      "sync": true,
+      "defaultReminderMinutes": [
+        60
+      ],
+      "quietHours": {
+        "startsAt": "22:00",
+        "endsAt": "07:00",
+        "timeZone": "Europe/London"
+      },
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

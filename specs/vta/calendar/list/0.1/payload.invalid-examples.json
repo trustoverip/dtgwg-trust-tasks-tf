@@ -1,0 +1,49 @@
+[
+  {
+    "note": "`tiers` takes only `mine` and `notified`.",
+    "payload": {
+      "tiers": [
+        "accepted"
+      ]
+    }
+  },
+  {
+    "note": "`limit` is at most 200.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "includeTitles": true
+    }
+  },
+  {
+    "note": "An item's `tier` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "contextId": "personal",
+          "community": "did:webvh:QmRiverside:riverside-makers.example",
+          "eventId": "evt_Kq7N2qLm4Rt8Vx1ZsP0a",
+          "period": {
+            "startsAt": "2026-11-30T18:30:00Z",
+            "endsAt": "2026-11-30T20:00:00Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "from": "2026-11-30T00:00:00Z",
+      "to": "2026-12-07T00:00:00Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

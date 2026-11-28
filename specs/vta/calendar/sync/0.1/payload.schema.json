@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/sync/0.1",
+  "title": "VTA Calendar — Sync — payload",
+  "description": "A client asks its VTA to read now, from each community the principal belongs to, the events the principal registered for — in one trust context or in every one the caller has standing in — where the principal has chosen to sync. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId",
+      "description": "Only this context. Absent: every context the caller has standing in."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Sync — response payload",
+      "description": "The success response to a vta/calendar/sync/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/sync/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "results"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarSyncResult"
+          },
+          "description": "One per community the VTA read, or would have read, for the contexts asked about."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
