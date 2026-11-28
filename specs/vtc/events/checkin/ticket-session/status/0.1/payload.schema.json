@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/checkin/ticket-session/status/0.1",
+  "title": "VTC Events — Check-in — Ticket Session — Status — payload",
+  "description": "An event's door staff read where a door session they opened stands: still waiting, the ticket admitted (with the check-in it recorded), refused with a reason, or expired (VTI-EVT-173). The door staff member is the document proof's signer. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sessionId"
+  ],
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "minLength": 22,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "The session to read, as vtc/events/checkin/ticket-session/start returned it."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "TicketSessionState": {
+      "title": "TicketSessionState",
+      "description": "Where a door session stands. `pending`: no wallet has answered. `admitted`: a ticket was presented, verified and used; `checkIn` says what was recorded. `refused`: a presentation arrived and was refused; `refusal` says why. `expired`: the session closed with no answer.",
+      "type": "string",
+      "enum": [
+        "pending",
+        "admitted",
+        "refused",
+        "expired"
+      ]
+    },
+    "TicketRefusal": {
+      "title": "TicketRefusal",
+      "description": "Why a presented ticket did not admit (VTI-EVT-173). `ticketInvalid`: not a ticket this community or the event's identity issued, its proof or the wallet's key binding does not verify, or it has expired. `ticketRevoked`: its status in the community's shared status set is revoked. `ticketUsed`: it has already admitted its holder. `notGoing`: the registration it names is no longer going. `wrongEvent`: it is a ticket for another event.",
+      "type": "string",
+      "enum": [
+        "ticketInvalid",
+        "ticketRevoked",
+        "ticketUsed",
+        "notGoing",
+        "wrongEvent"
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Check-in — Ticket Session — Status — response payload",
+      "description": "The success response to a vtc/events/checkin/ticket-session/status/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/checkin/ticket-session/status/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "eventId",
+        "state"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "minLength": 22,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The session read."
+        },
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "occurrence": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/LocalDateTime",
+          "description": "The occurrence the session is for, where the event is a series (VTI-EVT-195)."
+        },
+        "state": {
+          "$ref": "#/$defs/TicketSessionState"
+        },
+        "checkIn": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventCheckIn",
+          "description": "Present exactly when `state` is `admitted`: the check-in the ticket recorded, with `method` `ticket`."
+        },
+        "refusal": {
+          "$ref": "#/$defs/TicketRefusal",
+          "description": "Present exactly when `state` is `refused`."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -4182,6 +4182,12 @@ export import VtcEventsCheckinRecord_v0_1 = _VtcEventsCheckinRecord_v0_1;
 import * as _VtcEventsCheckinRecord_v0_2 from "./vtc/events/checkin/record/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcEventsCheckinRecord_v0_2 = _VtcEventsCheckinRecord_v0_2;
+import * as _VtcEventsCheckinTicketSessionStart_v0_1 from "./vtc/events/checkin/ticket-session/start/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcEventsCheckinTicketSessionStart_v0_1 = _VtcEventsCheckinTicketSessionStart_v0_1;
+import * as _VtcEventsCheckinTicketSessionStatus_v0_1 from "./vtc/events/checkin/ticket-session/status/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcEventsCheckinTicketSessionStatus_v0_1 = _VtcEventsCheckinTicketSessionStatus_v0_1;
 import * as _VtcEventsClassesEnrol_v0_1 from "./vtc/events/classes/enrol/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcEventsClassesEnrol_v0_1 = _VtcEventsClassesEnrol_v0_1;
