@@ -1,0 +1,18 @@
+[
+  {
+    "note": "`invitationId` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "invitationId": "inv_Gr4ceDinner000001",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

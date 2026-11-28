@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/update/0.1",
+  "title": "VTA Events — Update — payload",
+  "description": "A client changes an event the VTA holds for its principal. A change of time, access details or kind after publication raises the event's sequence and revises every invitation's notification. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "kind": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventKind"
+    },
+    "title": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+    },
+    "description": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+    },
+    "when": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/When"
+    },
+    "placeSummary": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/PlaceSummary"
+    },
+    "access": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/AccessDetails"
+    },
+    "registration": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationSettings"
+    },
+    "roster": {
+      "$ref": "../../_shared/0.1/events.schema.json#/$defs/VtaEventRoster"
+    },
+    "suggestedReminderMinutes": {
+      "$ref": "../../_shared/0.1/events.schema.json#/$defs/VtaEventReminderList"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Update — response payload",
+      "description": "The success response to a vta/events/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.1/events.schema.json#/$defs/VtaEvent"
+        },
+        "notificationsRevised": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Invitation notifications revised because `sequence` changed (VTI-PEV-012)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

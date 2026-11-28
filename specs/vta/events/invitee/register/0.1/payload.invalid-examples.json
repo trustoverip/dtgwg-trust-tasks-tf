@@ -1,0 +1,40 @@
+[
+  {
+    "note": "An invitee says only `going` or `maybe`.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "status": "waitlisted"
+    }
+  },
+  {
+    "note": "At most 10 guests.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "status": "going",
+      "guests": 12
+    }
+  },
+  {
+    "note": "`displayName` is at most 64 characters.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "status": "going",
+      "displayName": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "status": "going",
+      "guests": 1,
+      "answers": {
+        "dietary": "No shellfish"
+      },
+      "displayName": "Grace",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

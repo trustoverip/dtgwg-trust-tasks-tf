@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/invitee/show/0.1",
+  "title": "VTA Events — Invitee — Show — payload",
+  "description": "An invitee reads an event a person invited them to, from the host they were invited by: the event without its access details, their own registration, and the roster where the event's roster setting shows it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Invitee — Show — response payload",
+      "description": "The success response to a vta/events/invitee/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/invitee/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventInviteeView"
+        },
+        "registration": {
+          "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventRegistration",
+          "description": "The invitee's own registration, where they hold one."
+        },
+        "roster": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventRosterEntry"
+          },
+          "description": "Present only where the roster is `visible` and the invitee is `going` or `maybe`: the other registrations that are (VTI-EVT-053, VTI-PEV-024)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

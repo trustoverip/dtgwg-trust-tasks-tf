@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/cancel/0.1",
+  "title": "VTA Events — Cancel — payload",
+  "description": "A client cancels a published event: it takes no more registrations, its registrants' receipts stand, and every invitation's notification is withdrawn. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Shown to invitees with the event."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Cancel — response payload",
+      "description": "The success response to a vta/events/cancel/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/cancel/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.1/events.schema.json#/$defs/VtaEvent"
+        },
+        "notificationsWithdrawn": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Invitation notifications withdrawn (VTI-PEV-012)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

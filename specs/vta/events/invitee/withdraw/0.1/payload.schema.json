@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/invitee/withdraw/0.1",
+  "title": "VTA Events — Invitee — Withdraw — payload",
+  "description": "An invitee withdraws their registration for an event a person invited them to, at any time, even after the event is cancelled or their invitation revoked. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Invitee — Withdraw — response payload",
+      "description": "The success response to a vta/events/invitee/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/invitee/withdraw/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventRegistration"
+        },
+        "event": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventRef"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "note": "`roster` is `visible` or `hidden`; a VTA offers no anonymous registration (VTI-PEV-002).",
+    "payload": {
+      "contextId": "friends",
+      "host": "did:webvh:QmAda:ada.example:dinner",
+      "title": "x",
+      "when": {
+        "start": "2026-12-04T19:00:00",
+        "timeZone": "Europe/London",
+        "duration": "PT3H"
+      },
+      "registration": {
+        "mode": "open"
+      },
+      "roster": "anonymous"
+    }
+  },
+  {
+    "note": "`host` is REQUIRED.",
+    "payload": {
+      "contextId": "friends",
+      "title": "x",
+      "when": {
+        "start": "2026-12-04T19:00:00",
+        "timeZone": "Europe/London",
+        "duration": "PT3H"
+      },
+      "registration": {
+        "mode": "open"
+      },
+      "roster": "hidden"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "contextId": "friends",
+      "host": "did:webvh:QmAda:ada.example:dinner",
+      "title": "Friday dinner",
+      "when": {
+        "start": "2026-12-04T19:00:00",
+        "timeZone": "Europe/London",
+        "duration": "PT3H"
+      },
+      "placeSummary": "Leeds",
+      "access": {
+        "places": [
+          {
+            "name": "Ada's flat",
+            "address": "14 Albion Street, Leeds LS1 6AB"
+          }
+        ],
+        "notes": "Ring the top bell."
+      },
+      "registration": {
+        "mode": "open",
+        "capacity": 6,
+        "waitlist": true,
+        "plusOnes": 1,
+        "questions": [
+          {
+            "questionId": "dietary",
+            "label": "Anything you don't eat?",
+            "kind": "text",
+            "required": false
+          }
+        ]
+      },
+      "roster": "visible",
+      "suggestedReminderMinutes": [
+        1440
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]
