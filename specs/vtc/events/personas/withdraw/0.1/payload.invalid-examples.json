@@ -1,0 +1,24 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`changed` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "registration": {},
+      "event": {
+        "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+        "title": "Thursday Build Night",
+        "when": {
+          "start": "2026-12-03T18:00:00",
+          "timeZone": "Europe/London",
+          "duration": "PT3H"
+        },
+        "status": "published",
+        "sequence": 2
+      }
+    }
+  }
+]

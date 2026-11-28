@@ -8,6 +8,8 @@ import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef_VtcEvents
 
 /**
  * List the caller's own registrations, each with the event it belongs to as the community now states it — what a member's agent reads to keep the member's calendar, and what it reads again with `updatedSince` to learn what changed. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/mine/list/0.3
  */
 export interface VTCEventsMineListPayload {
   /**
@@ -55,6 +57,8 @@ export interface VTCEventsMineListPayload {
 }
 /**
  * The success response to a vtc/events/mine/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/mine/list/0.2#response.
+ *
+ * @deprecated superseded by vtc/events/mine/list/0.3
  */
 export interface VTCEventsMineListResponsePayload {
   /**
@@ -97,15 +101,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/mine/list/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/mine/list/0.3
+ */
 export type Payload = VTCEventsMineListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/mine/list/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/mine/list/0.3
+ */
 export type Response = VTCEventsMineListResponsePayload;
 
 /**

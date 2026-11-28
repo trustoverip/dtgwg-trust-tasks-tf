@@ -21,7 +21,7 @@ type MineItem struct {
 // Task document whose type is
 // https://trusttasks.org/spec/vtc/events/mine/list/0.1#response.
 //
-// Deprecated: superseded by vtc/events/mine/list/0.2
+// Deprecated: superseded by vtc/events/mine/list/0.3
 type Response struct {
 	// In order of the later of the registration's and the event's last change, oldest first,
 	// then `registrationId`.
@@ -190,7 +190,7 @@ type EntryID = string
 // and what it reads again with `updatedSince` to learn what changed. The outer document
 // members are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/events/mine/list/0.2
+// Deprecated: superseded by vtc/events/mine/list/0.3
 type Payload struct {
 	// Only registrations whose registration or event changed at or after this instant
 	// (inclusive).
@@ -224,7 +224,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/events/mine/list/0.2"
+const Deprecation = "superseded by vtc/events/mine/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/mine/list/0.1#response"

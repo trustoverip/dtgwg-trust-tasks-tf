@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`attestation` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA"
+    }
+  },
+  {
+    "note": "`changed` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "tag": "zQ3shVc2UkAfJCdc1TR8E66J85h48P19mxcSvquTzPSnSqgxS",
+      "status": "withdrawn",
+      "guests": 0,
+      "event": {
+        "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+        "title": "Thursday Build Night",
+        "when": {
+          "start": "2026-12-03T18:00:00",
+          "timeZone": "Europe/London",
+          "duration": "PT3H"
+        },
+        "status": "published",
+        "sequence": 2
+      }
+    }
+  }
+]

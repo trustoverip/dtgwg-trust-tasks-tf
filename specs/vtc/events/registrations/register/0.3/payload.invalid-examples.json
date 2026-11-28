@@ -1,0 +1,55 @@
+[
+  {
+    "note": "`status` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "A member says only `going` or `maybe`; `pending` and `waitlisted` are the community's to decide (VTI-EVT-031 – 033).",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "status": "waitlisted"
+    }
+  },
+  {
+    "note": "Withdrawing is vtc/events/registrations/withdraw, not a status here.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "status": "withdrawn"
+    }
+  },
+  {
+    "note": "At most 10 guests, whatever the event allows.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "status": "going",
+      "guests": 12
+    }
+  },
+  {
+    "note": "`codeOfConductAcknowledged` is a lowercase hex SHA-256, not a URL.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "status": "going",
+      "codeOfConductAcknowledged": "https://riverside-makers.example/conduct"
+    }
+  },
+  {
+    "note": "The receipt names the event as it stood; `event` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "registration": {
+        "registrationId": "reg_Kf3nP8qLs2Vx7Bd1",
+        "eventId": "evt_IntroSoldering2611",
+        "entryId": "dir_AdaLovelace000000",
+        "status": "going",
+        "guests": 1,
+        "roster": "hidden",
+        "eventSequence": 1,
+        "createdAt": "2026-11-20T19:02:11Z",
+        "updatedAt": "2026-11-20T19:02:11Z"
+      }
+    }
+  }
+]

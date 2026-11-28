@@ -1,0 +1,31 @@
+[
+  {
+    "note": "At least one request.",
+    "payload": {
+      "period": "2026-12",
+      "pcsIdentity": "zQ3shtxV1FrJfhqE1dvxYRcCknWNjHc3c5X1y4ZPYuVuXjZRn",
+      "requests": []
+    }
+  },
+  {
+    "note": "A class label is shared, never one per member.",
+    "payload": {
+      "period": "2026-12",
+      "pcsIdentity": "zQ3shtxV1FrJfhqE1dvxYRcCknWNjHc3c5X1y4ZPYuVuXjZRn",
+      "requests": [
+        {
+          "classLabel": "member/carol/2026-12",
+          "request": "zQ3shokFTS3brHcDQrn82RUDfCZESWL1ZdCEJwekUDPQiYBme"
+        }
+      ]
+    }
+  },
+  {
+    "note": "One pre-credential per class.",
+    "variant": "response",
+    "payload": {
+      "period": "2026-12",
+      "preCredentials": []
+    }
+  }
+]

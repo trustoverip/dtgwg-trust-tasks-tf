@@ -1,0 +1,19 @@
+[
+  {
+    "note": "`operation` is one of the four.",
+    "payload": {
+      "contextId": "ctx-riverside",
+      "community": "did:example:community",
+      "operation": "vote",
+      "event": {},
+      "payload": {}
+    }
+  },
+  {
+    "note": "`tag` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "document": {}
+    }
+  }
+]

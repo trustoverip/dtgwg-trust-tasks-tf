@@ -88,7 +88,7 @@ related:
 
 ## Abstract
 
-The **VTC Events — Guests — Register** Trust Task lets a party who is not a member of the community register for an event that admits guests (VTI-EVT-150 – 154): any party under `open`, or under `invited` one who holds an invitation link made for guests. It is apart from [`vtc/events/registrations/register`](../../../registrations/register/0.2/spec.md) because a guest is admitted by the event's guest setting, never by its audience, and holds no directory entry: everything else about the registration — capacity, waitlist, questions, code of conduct, the receipt — is as that task states.
+The **VTC Events — Guests — Register** Trust Task lets a party who is not a member of the community register for an event that admits guests (VTI-EVT-150 – 154): any party under `open`, or under `invited` one who holds an invitation link made for guests. It is apart from [`vtc/events/registrations/register`](../../../registrations/register/0.3/spec.md) because a guest is admitted by the event's guest setting, never by its audience, and holds no directory entry: everything else about the registration — capacity, waitlist, questions, code of conduct, the receipt — is as that task states.
 
 ## Status of this Document
 

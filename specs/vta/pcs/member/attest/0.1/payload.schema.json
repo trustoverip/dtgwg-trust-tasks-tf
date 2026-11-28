@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/member/attest/0.1",
+  "title": "VTA PCS — Member — Attest — payload",
+  "description": "A member's client asks its VTA for an anonymous or persona events document: the VTA makes the attestation to the event's identity and signs the document with a key made for it alone, or as the persona. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "operation",
+    "event",
+    "payload"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The context the engine belongs to; its key is derived from this context's base, for events alone (VTI-EVT-212)."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "anonymousRegister",
+        "anonymousWithdraw",
+        "anonymousCheckin",
+        "personaRegister"
+      ],
+      "description": "Which document to build: vtc/events/anonymous/register, withdraw or checkin, or vtc/events/personas/register."
+    },
+    "event": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/Event",
+      "description": "The event as the community showed it, carrying `anonymity` (its identity and live classes)."
+    },
+    "payload": {
+      "type": "object",
+      "description": "The operation's payload without `attestation`: what the client wants registered, withdrawn or checked in."
+    },
+    "personaDid": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "For `personaRegister`: the persona to sign as."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Member — Attest — response payload",
+      "description": "The success response to a vta/pcs/member/attest/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/pcs/member/attest/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "tag"
+      ],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The signed document for the client to send unchanged, from a connection that does not identify the member, after a pause (VTI-EVT-214)."
+        },
+        "tag": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventMultibase",
+          "description": "The tag the attestation carries, for the client to show the member their registration."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

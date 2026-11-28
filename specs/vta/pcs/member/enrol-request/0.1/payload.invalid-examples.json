@@ -1,0 +1,16 @@
+[
+  {
+    "note": "`classes` is REQUIRED.",
+    "payload": {
+      "contextId": "ctx-riverside",
+      "community": "did:example:community",
+      "memberDid": "did:example:carol",
+      "parameters": {}
+    }
+  },
+  {
+    "note": "`document` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  }
+]

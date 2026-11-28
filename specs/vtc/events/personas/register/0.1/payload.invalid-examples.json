@@ -1,0 +1,40 @@
+[
+  {
+    "note": "`attestation` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "status": "going"
+    }
+  },
+  {
+    "note": "`status` is going or maybe.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "status": "pending",
+      "attestation": {
+        "suite": "pcs-bls12-381-v1",
+        "attestation": "z3u2en7t5LR2WJQ2YcVPYa1XxYz8XoJ7v1q5pFh3pE6Kp6uJmKq9ZcN2",
+        "tag": "zQ3shVc2UkAfJCdc1TR8E66J85h48P19mxcSvquTzPSnSqgxS",
+        "classLabel": "member/2026-12"
+      }
+    }
+  },
+  {
+    "note": "`wasCreated` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "registration": {},
+      "event": {
+        "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+        "title": "Thursday Build Night",
+        "when": {
+          "start": "2026-12-03T18:00:00",
+          "timeZone": "Europe/London",
+          "duration": "PT3H"
+        },
+        "status": "published",
+        "sequence": 2
+      }
+    }
+  }
+]

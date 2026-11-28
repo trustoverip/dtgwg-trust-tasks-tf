@@ -22,7 +22,7 @@ type ResponseItemsItem struct {
 // Response The success response to a vtc/events/list/0.1 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/vtc/events/list/0.1#response.
 //
-// Deprecated: superseded by vtc/events/list/0.3
+// Deprecated: superseded by vtc/events/list/0.4
 type Response struct {
 	// The events the caller may see, earliest start first.
 	Items []ResponseItemsItem `json:"items"`
@@ -486,7 +486,7 @@ type EntryID = string
 // Payload List the events the caller may see. The outer document members are owned by the
 // framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/events/list/0.3
+// Deprecated: superseded by vtc/events/list/0.4
 type Payload struct {
 	// Only events still running at or after this instant.
 	From *EventInstant `json:"from,omitempty"`
@@ -535,7 +535,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/events/list/0.3"
+const Deprecation = "superseded by vtc/events/list/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/list/0.1#response"

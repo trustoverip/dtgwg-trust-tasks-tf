@@ -13,6 +13,8 @@ export type Decision = "approve" | "decline";
 
 /**
  * A host decides a pending registration for an event in approval mode: approve it, which makes the registrant going (or waitlisted, where the event is full and keeps a waitlist), or decline it, with an optional note the registrant reads. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/registrations/decide/0.3
  */
 export interface VTCEventsRegistrationsDecidePayload {
   registrationId: RegistrationId;
@@ -25,6 +27,8 @@ export interface VTCEventsRegistrationsDecidePayload {
 }
 /**
  * The success response to a vtc/events/registrations/decide/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/registrations/decide/0.2#response. A decline is a decision, answered here, never an error.
+ *
+ * @deprecated superseded by vtc/events/registrations/decide/0.3
  */
 export interface VTCEventsRegistrationsDecideResponsePayload {
   decision: Decision;
@@ -56,15 +60,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/registrations/decide/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/decide/0.3
+ */
 export type Payload = VTCEventsRegistrationsDecidePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/decide/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/registrations/decide/0.3
+ */
 export type Response = VTCEventsRegistrationsDecideResponsePayload;
 
 /**

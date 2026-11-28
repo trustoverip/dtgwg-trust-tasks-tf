@@ -8,6 +8,8 @@ import type { AccessDetails, Accessibility, BadgeId, CalendarId, CodeOfConduct, 
 
 /**
  * List the events the caller may see. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/list/0.4
  */
 export interface VTCEventsListPayload {
   /**
@@ -50,6 +52,8 @@ export interface VTCEventsListPayload {
 }
 /**
  * The success response to a vtc/events/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/list/0.3#response.
+ *
+ * @deprecated superseded by vtc/events/list/0.4
  */
 export interface VTCEventsListResponsePayload {
   /**
@@ -91,15 +95,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/list/0.4";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/list/0.4
+ */
 export type Payload = VTCEventsListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/list/0.4
+ */
 export type Response = VTCEventsListResponsePayload;
 
 /**

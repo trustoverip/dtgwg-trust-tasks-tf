@@ -14,6 +14,8 @@ import (
 // Response The success response to a vtc/events/registrations/register/0.2 request: the
 // member's receipt (VTI-EVT-092). Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/vtc/events/registrations/register/0.2#response.
+//
+// Deprecated: superseded by vtc/events/registrations/register/0.3
 type Response struct {
 	// The registration as it now stands: `going`, `maybe`, `pending` or `waitlisted`, with
 	// the roster setting it was made under.
@@ -227,6 +229,8 @@ const (
 // acknowledge. The community decides whether that makes them going, pending a host's
 // decision or waitlisted, and its signed answer is the member's receipt. The outer
 // document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/events/registrations/register/0.3
 type Payload struct {
 	EventID EventID `json:"eventId"`
 
@@ -270,7 +274,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/events/registrations/register/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/registrations/register/0.2#response"

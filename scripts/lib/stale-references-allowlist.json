@@ -6,6 +6,15 @@
     },
     "rooms/records/list": {
       "rooms/records/put/0.1": "Says which records carry no `blobs`: those written by `rooms/records/put/0.1`, which had none. Naming a later version would invert it."
+    },
+    "vta/calendar/export": {
+      "vtc/events/registrations/register/0.2": "A sample receipt: the VTA keeps a community's signed reply exactly as received (VTI-CAL-030), whatever version it answered, so a vtc/events/registrations/register/0.2 reply stays a valid receipt after 0.3 is published."
+    },
+    "vta/calendar/receipts/deposit": {
+      "vtc/events/registrations/register/0.2": "A sample receipt: the VTA keeps a community's signed reply exactly as received (VTI-CAL-030), whatever version it answered, so a vtc/events/registrations/register/0.2 reply stays a valid receipt after 0.3 is published."
+    },
+    "vta/calendar/receipts/list": {
+      "vtc/events/registrations/register/0.2": "A sample receipt: the VTA keeps a community's signed reply exactly as received (VTI-CAL-030), whatever version it answered, so a vtc/events/registrations/register/0.2 reply stays a valid receipt after 0.3 is published."
     }
   },
   "documents": {

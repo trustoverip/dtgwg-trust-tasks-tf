@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`from` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA"
+    }
+  },
+  {
+    "note": "Unknown member.",
+    "payload": {
+      "eventId": "evt_W5k2N8xRb3Qz7TpLAAAA",
+      "from": "2027-01-07T18:00:00",
+      "kind": "meeting"
+    }
+  },
+  {
+    "note": "The response names both series.",
+    "variant": "response",
+    "payload": {
+      "ended": {}
+    }
+  }
+]

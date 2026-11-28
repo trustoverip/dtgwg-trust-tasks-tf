@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/cancel/0.4",
+  "title": "VTC Events — Cancel — payload",
+  "description": "Cancel a published event. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "Shown to registrants as `cancelReason`. Plain text."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Cancel — response payload",
+      "description": "The success response to a vtc/events/cancel/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/cancel/0.4#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.4/event.schema.json#/$defs/Event",
+          "description": "The cancelled event, as its host sees it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -304,7 +304,7 @@ typedef Ext = Map<String, dynamic>;
 /// Trust Task document whose type is
 /// https://trusttasks.org/spec/vtc/events/registrations/decide/0.1#response. A decline
 /// is a decision, answered here, never an error.
-@Deprecated('superseded by vtc/events/registrations/decide/0.2')
+@Deprecated('superseded by vtc/events/registrations/decide/0.3')
 class Response {
   const Response({
     required this.decision,
@@ -342,7 +342,7 @@ class Response {
 /// which makes the registrant going (or waitlisted, where the event is full and keeps
 /// a waitlist), or decline it, with an optional note the registrant reads. The outer
 /// document members are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by vtc/events/registrations/decide/0.2')
+@Deprecated('superseded by vtc/events/registrations/decide/0.3')
 class Payload {
   const Payload({
     required this.registrationId,
@@ -382,7 +382,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/events/registrations/decide/0.2';
+const String? deprecation = 'superseded by vtc/events/registrations/decide/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =
