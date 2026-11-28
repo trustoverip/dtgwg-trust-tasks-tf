@@ -2165,10 +2165,11 @@ extension type const EventRegistrantKind(String value) {
   ];
 }
 
-/// How a check-in was made (VTI-EVT-162 – 164). `challenge`: the registrant signed
-/// over a door challenge. `staff`: door staff checked them in by name. `self`: the
-/// registrant checked in during the event without a challenge, where the calendar
-/// allows.
+/// How a check-in was made (VTI-EVT-162 – 164, 173). `challenge`: the registrant
+/// signed over a door challenge. `staff`: door staff checked them in by name. `self`:
+/// the registrant checked in during the event without a challenge, where the calendar
+/// allows. `ticket`: the registrant presented their ticket credential at the door
+/// through a door session (vtc/events/checkin/ticket-session/start).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -2177,12 +2178,14 @@ extension type const EventCheckInMethod(String value) {
   static const EventCheckInMethod challenge = EventCheckInMethod('challenge');
   static const EventCheckInMethod staff = EventCheckInMethod('staff');
   static const EventCheckInMethod self = EventCheckInMethod('self');
+  static const EventCheckInMethod ticket = EventCheckInMethod('ticket');
 
   /// Every value this specification's schema permits.
   static const List<EventCheckInMethod> values = <EventCheckInMethod>[
     challenge,
     staff,
-    self
+    self,
+    ticket
   ];
 }
 

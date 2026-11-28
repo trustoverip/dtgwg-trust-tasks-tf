@@ -949,9 +949,9 @@ export type EventAnnouncementId = string;
  */
 export type EventAudienceScope = "members" | "groups" | "roles";
 /**
- * How a check-in was made (VTI-EVT-162 – 164). `challenge`: the registrant signed over a door challenge. `staff`: door staff checked them in by name. `self`: the registrant checked in during the event without a challenge, where the calendar allows.
+ * How a check-in was made (VTI-EVT-162 – 164, 173). `challenge`: the registrant signed over a door challenge. `staff`: door staff checked them in by name. `self`: the registrant checked in during the event without a challenge, where the calendar allows. `ticket`: the registrant presented their ticket credential at the door through a door session (vtc/events/checkin/ticket-session/start).
  */
-export type EventCheckInMethod = "challenge" | "staff" | "self";
+export type EventCheckInMethod = "challenge" | "staff" | "self" | "ticket";
 /**
  * A class label (VTI-EVT-212): `member/<period>` for the membership, `group/<groupId>/<period>` for a group — shared by every holder, never one per member.
  */
