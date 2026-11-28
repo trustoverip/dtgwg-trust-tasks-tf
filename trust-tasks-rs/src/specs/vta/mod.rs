@@ -9,7 +9,6 @@ pub mod credentials;
 pub mod did_templates;
 pub mod dids;
 pub mod health;
-pub mod hosting_account;
 pub mod management;
 pub mod memory;
 pub mod metrics;

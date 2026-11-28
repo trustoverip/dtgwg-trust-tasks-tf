@@ -13808,6 +13808,31 @@ export interface EventRef {
   sequence: number;
 }
 /**
+ * What a receipt says of the event a registration belongs to: enough for the registrant's agent to show it as it was when the community answered (VTI-EVT-092).
+ */
+export interface EventRef_VtcEventsV0_2 {
+  eventId: EventId;
+  title: EventTitle;
+  when: When;
+  status: EventLifecycle;
+  sequence: number;
+  /**
+   * The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none.
+   *
+   * @maxItems 4
+   */
+  suggestedReminderMinutes?:
+    | []
+    | [ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+    | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+  /**
+   * The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none.
+   */
+  placeSummary?: PlaceSummary;
+}
+/**
  * An event as the caller may see it. Members a caller may not see are left out: `registration` settings' `questions` are shown to everyone who may register, `access` only where it is public, `goingCount` as the roster setting allows (VTI-EVT-054).
  */
 export interface Event_VtcEventsV0_2 {
@@ -22996,7 +23021,7 @@ export interface VtaCalendarEntry {
   /**
    * `mine` only: the event as its community last answered it.
    */
-  event?: EventRef;
+  event?: EventRef_VtcEventsV0_2;
   /**
    * `mine` only, where the community answered one.
    */

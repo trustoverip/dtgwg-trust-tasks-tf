@@ -3,7 +3,7 @@
  * Source: specs/vtc/events/registrations/withdraw/0.2/payload.schema.json
  */
 
-import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
+import type { EntryId, EventId, EventInstant, EventLifecycle, EventRef_VtcEventsV0_2 as EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, Registration_VtcEventsV0_2 as Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, ReminderMinutes, RosterSetting, TimeZoneId, When } from "../../../../../_shared/components.js";
 
 
 /**
@@ -37,7 +37,7 @@ export interface VTCEventsRegistrationsWithdrawResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, RosterSetting, TimeZoneId, When };
+export type { EntryId, EventId, EventInstant, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, MembershipPresentation, PlaceSummary, Registration, RegistrationAnswer, RegistrationAnswers, RegistrationId, RegistrationStatus, ReminderMinutes, RosterSetting, TimeZoneId, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/events/registrations/withdraw/0.2" as const;
@@ -211,8 +211,35 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "sequence": {
           "type": "integer",
           "minimum": 0
+        },
+        "suggestedReminderMinutes": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ReminderMinutes"
+          },
+          "description": "The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none."
+        },
+        "placeSummary": {
+          "$ref": "#/$defs/PlaceSummary",
+          "description": "The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none."
         }
       }
+    },
+    "PlaceSummary": {
+      "title": "PlaceSummary",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text."
+    },
+    "ReminderMinutes": {
+      "title": "ReminderMinutes",
+      "description": "A reminder's offset: how many minutes before the event's start it is due. At most four weeks.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40320
     },
     "EventLifecycle": {
       "title": "EventLifecycle",

@@ -275,8 +275,22 @@ impl ::std::convert::TryFrom<::std::string::String> for EventLifecycle {
 pub struct EventRef {
     #[serde(rename = "eventId")]
     pub event_id: EventId,
+    ///The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none.
+    #[serde(
+        rename = "placeSummary",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub place_summary: ::std::option::Option<PlaceSummary>,
     pub sequence: u64,
     pub status: EventLifecycle,
+    ///The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none.
+    #[serde(
+        rename = "suggestedReminderMinutes",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub suggested_reminder_minutes: ::std::option::Option<Vec<ReminderMinutes>>,
     pub title: EventTitle,
     pub when: When,
 }
@@ -682,6 +696,68 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadCursor {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A coarse hint shown with the event to its whole audience — `Central London`, `Online` — never the address. Plain text.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PlaceSummary(::std::string::String);
+impl ::std::ops::Deref for PlaceSummary {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PlaceSummary> for ::std::string::String {
+    fn from(value: PlaceSummary) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PlaceSummary {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 200usize {
+            return Err("longer than 200 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PlaceSummary {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PlaceSummary {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PlaceSummary {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PlaceSummary {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1301,6 +1377,50 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrationStatus {
         value.parse()
     }
 }
+///A reminder's offset: how many minutes before the event's start it is due. At most four weeks.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct ReminderMinutes(pub ::std::num::NonZeroU64);
+impl ::std::ops::Deref for ReminderMinutes {
+    type Target = ::std::num::NonZeroU64;
+    fn deref(&self) -> &::std::num::NonZeroU64 {
+        &self.0
+    }
+}
+impl ::std::convert::From<ReminderMinutes> for ::std::num::NonZeroU64 {
+    fn from(value: ReminderMinutes) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::num::NonZeroU64> for ReminderMinutes {
+    fn from(value: ::std::num::NonZeroU64) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for ReminderMinutes {
+    type Err = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ReminderMinutes {
+    type Error = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for ReminderMinutes {
+    type Error = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for ReminderMinutes {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 ///The success response to a vtc/events/mine/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/mine/list/0.2#response.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -1543,8 +1663,16 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct EventRef {
         event_id: ::std::result::Result<super::EventId, ::std::string::String>,
+        place_summary: ::std::result::Result<
+            ::std::option::Option<super::PlaceSummary>,
+            ::std::string::String,
+        >,
         sequence: ::std::result::Result<u64, ::std::string::String>,
         status: ::std::result::Result<super::EventLifecycle, ::std::string::String>,
+        suggested_reminder_minutes: ::std::result::Result<
+            ::std::option::Option<Vec<super::ReminderMinutes>>,
+            ::std::string::String,
+        >,
         title: ::std::result::Result<super::EventTitle, ::std::string::String>,
         when: ::std::result::Result<super::When, ::std::string::String>,
     }
@@ -1552,8 +1680,10 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 event_id: Err("no value supplied for event_id".to_string()),
+                place_summary: Ok(Default::default()),
                 sequence: Err("no value supplied for sequence".to_string()),
                 status: Err("no value supplied for status".to_string()),
+                suggested_reminder_minutes: Ok(Default::default()),
                 title: Err("no value supplied for title".to_string()),
                 when: Err("no value supplied for when".to_string()),
             }
@@ -1568,6 +1698,16 @@ pub mod builder {
             self.event_id = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for event_id: {e}"));
+            self
+        }
+        pub fn place_summary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PlaceSummary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.place_summary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for place_summary: {e}"));
             self
         }
         pub fn sequence<T>(mut self, value: T) -> Self
@@ -1588,6 +1728,16 @@ pub mod builder {
             self.status = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn suggested_reminder_minutes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::ReminderMinutes>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.suggested_reminder_minutes = value.try_into().map_err(|e| {
+                format!("error converting supplied value for suggested_reminder_minutes: {e}")
+            });
             self
         }
         pub fn title<T>(mut self, value: T) -> Self
@@ -1616,8 +1766,10 @@ pub mod builder {
         fn try_from(value: EventRef) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 event_id: value.event_id?,
+                place_summary: value.place_summary?,
                 sequence: value.sequence?,
                 status: value.status?,
+                suggested_reminder_minutes: value.suggested_reminder_minutes?,
                 title: value.title?,
                 when: value.when?,
             })
@@ -1627,8 +1779,10 @@ pub mod builder {
         fn from(value: super::EventRef) -> Self {
             Self {
                 event_id: Ok(value.event_id),
+                place_summary: Ok(value.place_summary),
                 sequence: Ok(value.sequence),
                 status: Ok(value.status),
+                suggested_reminder_minutes: Ok(value.suggested_reminder_minutes),
                 title: Ok(value.title),
                 when: Ok(value.when),
             }
@@ -2196,7 +2350,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_EventInstant_9cf8a7cf!(), ",", crate::specs::shared_defs::d_EventLifecycle_3d99bf37!(), ",", crate::specs::shared_defs::d_EventRef_10be7eb2!(), ",", crate::specs::shared_defs::d_EventTitle_7ed66703!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_JSCalendarDuration_1512b122!(), ",", crate::specs::shared_defs::d_LocalDateTime_1e3e06f7!(), ",", crate::specs::shared_defs::d_MineItem_d0f07d22!(), ",", crate::specs::shared_defs::d_Registration_09aa7d29!(), ",", crate::specs::shared_defs::d_RegistrationAnswer_aa96e019!(), ",", crate::specs::shared_defs::d_RegistrationAnswers_94e05d0e!(), ",", crate::specs::shared_defs::d_RegistrationId_aadbc7a5!(), ",", crate::specs::shared_defs::d_RegistrationQuestionId_2b2977be!(), ",", crate::specs::shared_defs::d_RegistrationStatus_acc918c7!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/mine/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/mine/list/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"In order of the later of the registration's and the event's last change, oldest first, then `registrationId`.\",\"items\":{\"$ref\":\"#/$defs/MineItem\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Events — Mine — List — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_RosterSetting_f5d25358!(), ",", crate::specs::shared_defs::d_TimeZoneId_d7536905!(), ",", crate::specs::shared_defs::d_When_a8906ca9!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_EventId_949f8f11!(), ",", crate::specs::shared_defs::d_EventInstant_9cf8a7cf!(), ",", crate::specs::shared_defs::d_EventLifecycle_3d99bf37!(), ",", crate::specs::shared_defs::d_EventRef_da70f26d!(), ",", crate::specs::shared_defs::d_EventTitle_7ed66703!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_JSCalendarDuration_1512b122!(), ",", crate::specs::shared_defs::d_LocalDateTime_1e3e06f7!(), ",", crate::specs::shared_defs::d_MineItem_d0f07d22!(), ",", crate::specs::shared_defs::d_PlaceSummary_3534e514!(), ",", crate::specs::shared_defs::d_Registration_09aa7d29!(), ",", crate::specs::shared_defs::d_RegistrationAnswer_aa96e019!(), ",", crate::specs::shared_defs::d_RegistrationAnswers_94e05d0e!(), ",", crate::specs::shared_defs::d_RegistrationId_aadbc7a5!(), ",", crate::specs::shared_defs::d_RegistrationQuestionId_2b2977be!(), ",", crate::specs::shared_defs::d_RegistrationStatus_acc918c7!(), ",", crate::specs::shared_defs::d_ReminderMinutes_e2ca1103!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/events/mine/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/mine/list/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"In order of the later of the registration's and the event's last change, oldest first, then `registrationId`.\",\"items\":{\"$ref\":\"#/$defs/MineItem\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Events — Mine — List — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_RosterSetting_f5d25358!(), ",", crate::specs::shared_defs::d_TimeZoneId_d7536905!(), ",", crate::specs::shared_defs::d_When_a8906ca9!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

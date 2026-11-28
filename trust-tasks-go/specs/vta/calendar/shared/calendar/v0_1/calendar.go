@@ -297,7 +297,20 @@ type EventRef struct {
 	When     When           `json:"when"`
 	Status   EventLifecycle `json:"status"`
 	Sequence int64          `json:"sequence"`
+
+	// The reminders the event's hosts suggest, as minutes before its start, so the
+	// registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent
+	// where the hosts suggest none.
+	SuggestedReminderMinutes *[]ReminderMinutes `json:"suggestedReminderMinutes,omitempty"`
+
+	// The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event
+	// has none.
+	PlaceSummary *PlaceSummary `json:"placeSummary,omitempty"`
 }
+
+// ReminderMinutes A reminder's offset: how many minutes before the event's start it is
+// due. At most four weeks.
+type ReminderMinutes = int64
 
 // EventLifecycle `draft`: seen only by its hosts, changes freely, takes no registrations.
 // `published`: seen by its audience, takes registrations; its roster setting is fixed.

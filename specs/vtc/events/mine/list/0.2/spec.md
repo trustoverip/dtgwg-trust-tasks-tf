@@ -70,7 +70,7 @@ A conforming **consumer** (the community) **MUST**:
 1. Refuse a caller who is not an active member with `permissionDenied`.
 2. Answer an empty list while the community has events turned off (VTI-EVT-007).
 3. Answer only the caller's own registrations — every status, `withdrawn`, `declined` and `removed` included, so an agent learns a registration ended — and **MUST NOT** answer any other registrant's (VTI-EVT-053).
-4. Pair each registration with an `EventRef` of its event as the event stands now: `title`, `when`, `status` and `sequence` (VTI-EVT-006). An event that was cancelled is answered `cancelled`; an event that was deleted had no registrations (VTI-EVT-093) and is never answered.
+4. Pair each registration with an `EventRef` of its event as the event stands now: `title`, `when`, `status` and `sequence` (VTI-EVT-006), and, where the event has them, its `suggestedReminderMinutes` and `placeSummary`, so the registrant's agent can fire the hosts' suggested reminders and show the coarse place without reading the event again (VTI-CAL-041). An event that was cancelled is answered `cancelled`; an event that was deleted had no registrations (VTI-EVT-093) and is never answered.
 5. With `updatedSince`, answer only the items in which the registration or its event changed at or after that instant. With `statuses`, answer only registrations in one of them.
 6. Include the caller's own `answers` and `codeOfConductAcknowledged` until they are deleted on the event's retention schedule (VTI-EVT-090), and never another registrant's.
 7. Page as [`vtc/badges/list`](../../../../badges/list/0.1/spec.md) does: an opaque cursor bound to the caller and the filters, 50 items when `limit` is absent.

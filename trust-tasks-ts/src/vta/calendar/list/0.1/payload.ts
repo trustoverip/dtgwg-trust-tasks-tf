@@ -3,7 +3,7 @@
  * Source: specs/vta/calendar/list/0.1/payload.schema.json
  */
 
-import type { EventId, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, PlaceSummary, RegistrationStatus, TimeZoneId, VtaCalendarContextId, VtaCalendarDid, VtaCalendarEntry, VtaCalendarInstant, VtaCalendarPeriod, VtaCalendarReminderList, VtaCalendarReminderMinutes, VtaCalendarReminderSource, VtaCalendarTier, When } from "../../../../_shared/components.js";
+import type { EventId, EventLifecycle, EventRef_VtcEventsV0_2 as EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, PlaceSummary, RegistrationStatus, ReminderMinutes, TimeZoneId, VtaCalendarContextId, VtaCalendarDid, VtaCalendarEntry, VtaCalendarInstant, VtaCalendarPeriod, VtaCalendarReminderList, VtaCalendarReminderMinutes, VtaCalendarReminderSource, VtaCalendarTier, When } from "../../../../_shared/components.js";
 
 
 /**
@@ -60,7 +60,7 @@ export interface VTACalendarListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { EventId, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, PlaceSummary, RegistrationStatus, TimeZoneId, VtaCalendarContextId, VtaCalendarDid, VtaCalendarEntry, VtaCalendarInstant, VtaCalendarPeriod, VtaCalendarReminderList, VtaCalendarReminderMinutes, VtaCalendarReminderSource, VtaCalendarTier, When };
+export type { EventId, EventLifecycle, EventRef, EventTitle, Ext, JSCalendarDuration, LocalDateTime, PlaceSummary, RegistrationStatus, ReminderMinutes, TimeZoneId, VtaCalendarContextId, VtaCalendarDid, VtaCalendarEntry, VtaCalendarInstant, VtaCalendarPeriod, VtaCalendarReminderList, VtaCalendarReminderMinutes, VtaCalendarReminderSource, VtaCalendarTier, When };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/calendar/list/0.1" as const;
@@ -433,8 +433,28 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "sequence": {
           "type": "integer",
           "minimum": 0
+        },
+        "suggestedReminderMinutes": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ReminderMinutes"
+          },
+          "description": "The reminders the event's hosts suggest, as minutes before its start, so the registrant's agent can fire them without reading the event again (VTI-CAL-041). Absent where the hosts suggest none."
+        },
+        "placeSummary": {
+          "$ref": "#/$defs/PlaceSummary",
+          "description": "The event's coarse place hint, never an address (VTI-EVT-062). Absent where the event has none."
         }
       }
+    },
+    "ReminderMinutes": {
+      "title": "ReminderMinutes",
+      "description": "A reminder's offset: how many minutes before the event's start it is due. At most four weeks.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40320
     },
     "EventLifecycle": {
       "title": "EventLifecycle",
