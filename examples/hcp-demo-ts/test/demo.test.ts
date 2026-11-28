@@ -240,3 +240,14 @@ test("18. once the hold's lifetime passes undecided the thread is refused with t
   assert.equal(held.type, "https://trusttasks.org/spec/trust-task-next-step/0.1");
   assert.equal(fresh.held.get(first.threadId!)!.state, "pending");
 });
+
+test("19. a copy's useUntil is the grant's expiresAt where the grant ends inside the hour", async () => {
+  const { world } = await afterGrant();
+  const { contextClient: C, provider: P } = world;
+  world.clock.advance(12600); // the grant ends at 14:00:06; the query is issued at 13:30:08
+  const reply = await world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload(TOKEN)));
+  assert.equal(reply.type, query.RESPONSE_TYPE_URI);
+  const entries = (reply.payload as { entries: { useUntil: string }[] }).entries;
+  assert.ok(entries.length > 0);
+  for (const entry of entries) assert.equal(entry.useUntil, "2026-11-25T14:00:06Z"); // not now + 1 h, 14:30:08
+});

@@ -468,7 +468,13 @@ final class World {
             asked.any((c) => !grant.categories.contains(c))) {
           return refuse('permissionDenied', _neutralDenial);
         }
-        final useUntil = clock.plus(3600);
+        // A copy is usable for an hour, but never past the grant it was
+        // disclosed under (V0's rule). Both are whole-second UTC instants, so
+        // they order as strings.
+        final hour = clock.plus(3600);
+        final useUntil = hour.compareTo(grant.expiresAt) < 0
+            ? hour
+            : grant.expiresAt;
         final entries = [
           for (final e in _entries)
             if (asked.contains(e.category))

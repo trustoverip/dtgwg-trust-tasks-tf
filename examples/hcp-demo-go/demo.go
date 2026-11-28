@@ -680,7 +680,9 @@ func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Docu
 		limit = *p.MaxEntries
 	}
 	limit = min(limit, 20)
-	useUntil := w.Clock.Plus(3600)
+	// A copy is usable for an hour, but never past the grant it was disclosed
+	// under (V0's rule). Both are whole-second UTC instants, so they order as strings.
+	useUntil := min(w.Clock.Plus(3600), g.expiresAt)
 	disclosed := []json.RawMessage{}
 	for _, e := range entries {
 		if int64(len(disclosed)) == limit || !slices.Contains(asked, e.category) {

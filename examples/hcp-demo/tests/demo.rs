@@ -405,3 +405,22 @@ async fn t18_once_the_holds_lifetime_passes_undecided_the_thread_is_refused_and_
     );
     assert_eq!(fresh.hold(&thread_id).map(|(_, s)| s), Some("pending"));
 }
+
+#[tokio::test]
+async fn t19_a_copys_use_until_is_the_grants_expires_at_where_the_grant_ends_inside_the_hour() {
+    let (world, _) = after_grant().await;
+    let (p, c, _) = world.parties();
+    // The grant ends at 14:00:06; the query is issued at 13:30:08.
+    world.clock().advance(12600);
+    let sent = world
+        .request(c, p, &query_uri(), query_payload(TOKEN), None)
+        .await;
+    let reply = world.exchange(c, p, &sent).await.expect("a reply");
+    assert_eq!(reply["type"], query::Response::TYPE_URI);
+    let entries = reply["payload"]["entries"].as_array().expect("entries");
+    assert!(!entries.is_empty());
+    for entry in entries {
+        // Not now plus 1 hour, 14:30:08.
+        assert_eq!(entry["useUntil"], "2026-11-25T14:00:06Z");
+    }
+}

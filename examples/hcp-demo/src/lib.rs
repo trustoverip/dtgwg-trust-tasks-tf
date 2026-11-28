@@ -958,11 +958,12 @@ impl Shared {
                         g.active,
                         g.categories.clone(),
                         g.purposes.clone(),
+                        g.expires_at.clone(),
                     )
                 })
         };
         // 1. No grant has the token.
-        let Some((client, active, categories, purposes)) = found else {
+        let Some((client, active, categories, purposes, expires_at)) = found else {
             return self.refuse(&doc, Self::invalid_token()).await;
         };
         // 2. A token issued to another client is no use from this VID; checked
@@ -985,7 +986,9 @@ impl Shared {
             return self.refuse(&doc, Self::denied()).await;
         }
         // 5. The matching entries.
-        let use_until = self.clock.plus(3600);
+        // A copy is usable for an hour, but never past the grant it was disclosed
+        // under (V0's rule). Both are whole-second UTC instants, so they order as strings.
+        let use_until = self.clock.plus(3600).min(expires_at);
         let limit = p.max_entries.map_or(5, |n| n.get()).min(20) as usize;
         let entries: Vec<Value> = ENTRIES
             .iter()
