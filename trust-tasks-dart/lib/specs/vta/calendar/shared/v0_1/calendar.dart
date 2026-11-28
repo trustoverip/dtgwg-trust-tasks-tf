@@ -163,6 +163,14 @@ extension type const EventLifecycle(String value) {
   ];
 }
 
+/// A reminder's offset: how many minutes before the event's start it is due. At most
+/// four weeks.
+typedef ReminderMinutes = int;
+
+/// A coarse hint shown with the event to its whole audience — `Central London`,
+/// `Online` — never the address. Plain text.
+typedef PlaceSummary = String;
+
 /// What a receipt says of the event a registration belongs to: enough for the
 /// registrant's agent to show it as it was when the community answered (VTI-EVT-092).
 class EventRef {
@@ -172,6 +180,8 @@ class EventRef {
     required this.when,
     required this.status,
     required this.sequence,
+    this.suggestedReminderMinutes,
+    this.placeSummary,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -181,6 +191,12 @@ class EventRef {
         when: When.fromJson(json['when'] as Map<String, dynamic>),
         status: EventLifecycle(json['status'] as String),
         sequence: json['sequence'] as int,
+        suggestedReminderMinutes: json['suggestedReminderMinutes'] == null
+            ? null
+            : (json['suggestedReminderMinutes'] as List<dynamic>)
+                .map((e) => e as int)
+                .toList(),
+        placeSummary: json['placeSummary'] as String?,
       );
 
   final EventId eventId;
@@ -189,6 +205,15 @@ class EventRef {
   final EventLifecycle status;
   final int sequence;
 
+  /// The reminders the event's hosts suggest, as minutes before its start, so the
+  /// registrant's agent can fire them without reading the event again (VTI-CAL-041).
+  /// Absent where the hosts suggest none.
+  final List<ReminderMinutes>? suggestedReminderMinutes;
+
+  /// The event's coarse place hint, never an address (VTI-EVT-062). Absent where the
+  /// event has none.
+  final PlaceSummary? placeSummary;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'eventId': eventId,
@@ -196,12 +221,11 @@ class EventRef {
         'when': when.toJson(),
         'status': status.value,
         'sequence': sequence,
+        if (suggestedReminderMinutes != null)
+          'suggestedReminderMinutes': suggestedReminderMinutes!,
+        if (placeSummary != null) 'placeSummary': placeSummary!,
       };
 }
-
-/// A coarse hint shown with the event to its whole audience — `Central London`,
-/// `Online` — never the address. Plain text.
-typedef PlaceSummary = String;
 
 /// Where a registration stands (VTI-EVT-032). `going`: has a place. `maybe`: has said
 /// maybe; holds no place. `pending`: awaits a host's decision. `waitlisted`: waits for

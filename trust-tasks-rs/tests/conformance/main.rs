@@ -2082,11 +2082,6 @@ mod vta {
             mod v0_1;
         }
     }
-    mod hosting_account {
-        mod get {
-            mod v0_1;
-        }
-    }
     mod management {
         mod reload_services {
             mod v1_0;
