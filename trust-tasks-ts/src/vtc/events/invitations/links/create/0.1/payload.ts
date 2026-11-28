@@ -8,6 +8,8 @@ import type { EventId, EventInstant, EventInvitationLink, EventInvitationLinkId,
 
 /**
  * A host makes an invitation link for an event: a code an active member redeems to be invited by name, kept by the community only as a digest, with an expiry and a most number of redemptions. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/events/invitations/links/create/0.2
  */
 export interface VTCEventsInvitationsLinksCreatePayload {
   eventId: EventId;
@@ -27,6 +29,8 @@ export interface VTCEventsInvitationsLinksCreatePayload {
 }
 /**
  * The success response to a vtc/events/invitations/links/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/invitations/links/create/0.1#response.
+ *
+ * @deprecated superseded by vtc/events/invitations/links/create/0.2
  */
 export interface VTCEventsInvitationsLinksCreateResponsePayload {
   link: EventInvitationLink;
@@ -57,15 +61,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/events/invitations/links/create/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/events/invitations/links/create/0.2
+ */
 export type Payload = VTCEventsInvitationsLinksCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/events/invitations/links/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/events/invitations/links/create/0.2
+ */
 export type Response = VTCEventsInvitationsLinksCreateResponsePayload;
 
 /**

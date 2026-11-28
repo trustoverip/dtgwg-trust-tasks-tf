@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/tickets/show/0.1",
+  "title": "VTC Events — Tickets — Show — payload",
+  "description": "Read your own ticket for an event that issues tickets: a credential you present at a door the community does not run. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.3/event.schema.json#/$defs/MembershipPresentation",
+      "description": "A partner community's member: the presentation that admits them (VTI-EVT-132)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Tickets — Show — response payload",
+      "description": "The success response to a vtc/events/tickets/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/tickets/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "credential",
+        "validUntil"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventId"
+        },
+        "credential": {
+          "type": "object",
+          "description": "The ticket: a W3C Verifiable Credential issued by the event's identifier, or the community where the event has none, naming the registrant's identifier as subject and the event, with a status in the community's shared status set (VTI-EVT-170 – 172). Returned exactly as issued."
+        },
+        "validUntil": {
+          "$ref": "../../../_shared/0.3/event.schema.json#/$defs/EventInstant",
+          "description": "The end of the event (VTI-EVT-171)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

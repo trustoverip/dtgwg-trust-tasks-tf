@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/update/0.3",
+  "title": "VTC Events — Update — payload",
+  "description": "Change an event. Members present replace what is stored. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventId"
+    },
+    "title": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventTitle"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventDescription"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "when": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/When"
+    },
+    "placeSummary": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/PlaceSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "access": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/AccessDetails"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "audience": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventAudience"
+    },
+    "invite": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventInviteMode",
+      "description": "How the event invites its audience (VTI-EVT-100). Absent on create: `none`."
+    },
+    "membersMayInvite": {
+      "type": "boolean",
+      "description": "Members of the audience may invite other members of it (VTI-EVT-105)."
+    },
+    "registration": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/RegistrationSettings"
+    },
+    "roster": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/RosterSetting",
+      "description": "Only while the event is a draft (VTI-EVT-051)."
+    },
+    "showCount": {
+      "type": "boolean",
+      "description": "Show the number going to the audience, subject to `countThreshold`."
+    },
+    "countThreshold": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 100,
+      "description": "Below this many going, a count is shown as `fewerThan`. Absent means 5."
+    },
+    "listed": {
+      "type": "boolean",
+      "description": "Listed to its whole audience. Absent means true."
+    },
+    "accessibility": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/Accessibility"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "suggestedReminderMinutes": {
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.3/event.schema.json#/$defs/ReminderMinutes"
+      },
+      "description": "Reminders the hosts suggest, as minutes before the start."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "guests": {
+      "$ref": "../../_shared/0.3/event.schema.json#/$defs/EventGuestAdmission",
+      "description": "Absent: `none` (VTI-EVT-150)."
+    },
+    "tickets": {
+      "type": "boolean",
+      "description": "Issue a ticket to each registrant going (VTI-EVT-170). Absent: false."
+    },
+    "countsAttendance": {
+      "type": "boolean",
+      "description": "Whether it counts toward attendance (VTI-EVT-180). Absent: the calendar's default."
+    },
+    "attendanceBadge": {
+      "$ref": "../../../badges/_shared/0.1/badge.schema.json#/$defs/BadgeId",
+      "description": "A community badge offered on check-in (VTI-EVT-186)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Update — response payload",
+      "description": "The success response to a vtc/events/update/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/update/0.3#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event"
+      ],
+      "properties": {
+        "event": {
+          "$ref": "../../_shared/0.3/event.schema.json#/$defs/Event",
+          "description": "The event as it now is, as its host sees it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -14,6 +14,8 @@ import (
 // Response The success response to a vtc/events/calendars/create/0.1 request. Carried in
 // a Trust Task document whose type is
 // https://trusttasks.org/spec/vtc/events/calendars/create/0.1#response.
+//
+// Deprecated: superseded by vtc/events/calendars/create/0.2
 type Response struct {
 	Calendar Calendar `json:"calendar"`
 	Ext      *Ext     `json:"ext,omitempty"`
@@ -98,6 +100,8 @@ type GroupID = string
 
 // Payload Create a calendar of the community's or a group's own calendar. The outer
 // document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/events/calendars/create/0.2
 type Payload struct {
 	Name        EventTitle        `json:"name"`
 	Description *EventDescription `json:"description,omitempty"`
@@ -129,7 +133,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/events/calendars/create/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/events/calendars/create/0.1#response"

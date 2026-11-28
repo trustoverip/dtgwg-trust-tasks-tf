@@ -1122,13 +1122,20 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
             })
     }
 }
-///One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.
+///One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`. `eventsAttended` (VTI-EVT-184) counts the community events the member checked in to that count toward attendance, optionally only in `calendarId` and only within `withinDays` before evaluation, compared with `atLeast`; read by a badge's group, as the other counts are.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RuleCondition {
-    ///With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+    ///With `eventsAttended` only: count events in this calendar alone.
+    #[serde(
+        rename = "calendarId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub calendar_id: ::std::option::Option<RuleConditionCalendarId>,
+    ///With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`, `eventsAttended`) must be. Present exactly when `op` is `atLeast`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub count: ::std::option::Option<::std::num::NonZeroU64>,
     pub fact: RuleConditionFact,
@@ -1141,10 +1148,80 @@ pub struct RuleCondition {
     pub value: ::std::option::Option<RuleConditionValue>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub values: ::std::option::Option<::std::vec::Vec<RuleConditionValuesItem>>,
+    ///With `eventsAttended` only: count events attended within this many days before the rule is evaluated.
+    #[serde(
+        rename = "withinDays",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub within_days: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl RuleCondition {
     pub fn builder() -> builder::RuleCondition {
         Default::default()
+    }
+}
+///With `eventsAttended` only: count events in this calendar alone.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RuleConditionCalendarId(::std::string::String);
+impl ::std::ops::Deref for RuleConditionCalendarId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RuleConditionCalendarId> for ::std::string::String {
+    fn from(value: RuleConditionCalendarId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RuleConditionCalendarId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^cal_[A-Za-z0-9_-]{16,64}$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^cal_[A-Za-z0-9_-]{16,64}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RuleConditionCalendarId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RuleConditionCalendarId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RuleConditionCalendarId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RuleConditionCalendarId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`RuleConditionFact`
@@ -1177,6 +1254,8 @@ pub enum RuleConditionFact {
     IdeasSelected,
     #[serde(rename = "electionTickets")]
     ElectionTickets,
+    #[serde(rename = "eventsAttended")]
+    EventsAttended,
 }
 impl ::std::fmt::Display for RuleConditionFact {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1188,6 +1267,7 @@ impl ::std::fmt::Display for RuleConditionFact {
             Self::KudosReceived => f.write_str("kudosReceived"),
             Self::IdeasSelected => f.write_str("ideasSelected"),
             Self::ElectionTickets => f.write_str("electionTickets"),
+            Self::EventsAttended => f.write_str("eventsAttended"),
         }
     }
 }
@@ -1202,6 +1282,7 @@ impl ::std::str::FromStr for RuleConditionFact {
             "kudosReceived" => Ok(Self::KudosReceived),
             "ideasSelected" => Ok(Self::IdeasSelected),
             "electionTickets" => Ok(Self::ElectionTickets),
+            "eventsAttended" => Ok(Self::EventsAttended),
             _ => Err("invalid value".into()),
         }
     }
@@ -2060,6 +2141,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct RuleCondition {
+        calendar_id: ::std::result::Result<
+            ::std::option::Option<super::RuleConditionCalendarId>,
+            ::std::string::String,
+        >,
         count: ::std::result::Result<
             ::std::option::Option<::std::num::NonZeroU64>,
             ::std::string::String,
@@ -2075,20 +2160,36 @@ pub mod builder {
             ::std::option::Option<::std::vec::Vec<super::RuleConditionValuesItem>>,
             ::std::string::String,
         >,
+        within_days: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for RuleCondition {
         fn default() -> Self {
             Self {
+                calendar_id: Ok(Default::default()),
                 count: Ok(Default::default()),
                 fact: Err("no value supplied for fact".to_string()),
                 field: Ok(Default::default()),
                 op: Err("no value supplied for op".to_string()),
                 value: Ok(Default::default()),
                 values: Ok(Default::default()),
+                within_days: Ok(Default::default()),
             }
         }
     }
     impl RuleCondition {
+        pub fn calendar_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RuleConditionCalendarId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.calendar_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for calendar_id: {e}"));
+            self
+        }
         pub fn count<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
@@ -2151,6 +2252,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for values: {e}"));
             self
         }
+        pub fn within_days<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.within_days = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for within_days: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<RuleCondition> for super::RuleCondition {
         type Error = super::error::ConversionError;
@@ -2158,24 +2269,28 @@ pub mod builder {
             value: RuleCondition,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                calendar_id: value.calendar_id?,
                 count: value.count?,
                 fact: value.fact?,
                 field: value.field?,
                 op: value.op?,
                 value: value.value?,
                 values: value.values?,
+                within_days: value.within_days?,
             })
         }
     }
     impl ::std::convert::From<super::RuleCondition> for RuleCondition {
         fn from(value: super::RuleCondition) -> Self {
             Self {
+                calendar_id: Ok(value.calendar_id),
                 count: Ok(value.count),
                 fact: Ok(value.fact),
                 field: Ok(value.field),
                 op: Ok(value.op),
                 value: Ok(value.value),
                 values: Ok(value.values),
+                within_days: Ok(value.within_days),
             }
         }
     }
@@ -2191,7 +2306,7 @@ impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/groups/list/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_BadgeId_ee963a8c!(), ",", crate::specs::shared_defs::d_DynamicRule_fbb17bbd!(), ",", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_FieldKey_ce81c5ff!(), ",", crate::specs::shared_defs::d_Group_6ce28cc0!(), ",", crate::specs::shared_defs::d_GroupAudience_bff2a4aa!(), ",", crate::specs::shared_defs::d_GroupDescription_d2f6325b!(), ",", crate::specs::shared_defs::d_GroupId_22a30415!(), ",", crate::specs::shared_defs::d_GroupKind_bf3b945d!(), ",", crate::specs::shared_defs::d_GroupName_3d3abf73!(), ",", crate::specs::shared_defs::d_JoinPolicy_d191b2d5!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/list/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"group\":{\"$ref\":\"#/$defs/Group\"},\"myMembership\":{\"description\":\"The caller's own standing in the group.\",\"enum\":[\"member\",\"pending\",\"requested\",\"optedOut\",\"none\"],\"type\":\"string\"}},\"required\":[\"group\",\"myMembership\"],\"type\":\"object\"},\"maxItems\":200,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Groups — List — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_RuleCondition_5f3caa3b!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_BadgeId_ee963a8c!(), ",", crate::specs::shared_defs::d_DynamicRule_fbb17bbd!(), ",", crate::specs::shared_defs::d_EntryId_155910b5!(), ",", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_FieldKey_ce81c5ff!(), ",", crate::specs::shared_defs::d_Group_6ce28cc0!(), ",", crate::specs::shared_defs::d_GroupAudience_bff2a4aa!(), ",", crate::specs::shared_defs::d_GroupDescription_d2f6325b!(), ",", crate::specs::shared_defs::d_GroupId_22a30415!(), ",", crate::specs::shared_defs::d_GroupKind_bf3b945d!(), ",", crate::specs::shared_defs::d_GroupName_3d3abf73!(), ",", crate::specs::shared_defs::d_JoinPolicy_d191b2d5!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/list/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"group\":{\"$ref\":\"#/$defs/Group\"},\"myMembership\":{\"description\":\"The caller's own standing in the group.\",\"enum\":[\"member\",\"pending\",\"requested\",\"optedOut\",\"none\"],\"type\":\"string\"}},\"required\":[\"group\",\"myMembership\"],\"type\":\"object\"},\"maxItems\":200,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Groups — List — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_RuleCondition_8eb676b0!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

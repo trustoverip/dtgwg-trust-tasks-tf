@@ -77,7 +77,7 @@ A conforming **consumer** (the community) **MUST**:
 3. Set a registration that is `going`, `maybe`, `pending` or `waitlisted` to `removed`, record `note` where given, and answer `changed` true. Answer a registration already `withdrawn`, `declined` or `removed` as it stands with `changed` false.
 4. Where the registration was `going`, free its places and move the waitlist: the first `waitlisted` registration that fits becomes `going`, then the next, in order (VTI-EVT-033). Where it was `waitlisted`, remove it from the queue.
 5. Remove a registration also when its registrant leaves the community (VTI-EVT-039), without a host's request, as if a host had removed it with no note.
-6. Answer the registration as it now stands and an `EventRef` of the event; the registrant reads the same on [`vtc/events/show`](../../../show/0.2/spec.md) and [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md).
+6. Answer the registration as it now stands and an `EventRef` of the event; the registrant reads the same on [`vtc/events/show`](../../../show/0.3/spec.md) and [`vtc/events/mine/list`](../../../mine/list/0.2/spec.md).
 7. Audit the removal by reference — event, registration, entry, host — never with the registrant's answers (VTI-EVT-091).
 
 ## Authorization
