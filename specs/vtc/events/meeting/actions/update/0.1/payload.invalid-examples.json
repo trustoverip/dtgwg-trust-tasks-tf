@@ -1,0 +1,20 @@
+[
+  {
+    "note": "`actionId` is REQUIRED.",
+    "payload": {
+      "status": "done"
+    }
+  },
+  {
+    "note": "Statuses are `open`, `done` and `dropped`.",
+    "payload": {
+      "actionId": "act_ShedQuotes0000001",
+      "status": "finished"
+    }
+  },
+  {
+    "note": "`action` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

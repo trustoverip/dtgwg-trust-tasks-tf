@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`assignee` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "title": "Quotes"
+    }
+  },
+  {
+    "note": "Assignees are named by EntryId, never by DID.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "title": "Quotes",
+      "assignee": "did:example:kwame"
+    }
+  },
+  {
+    "note": "`action` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

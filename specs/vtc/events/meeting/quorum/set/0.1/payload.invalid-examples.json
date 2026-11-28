@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`quorumRule` is REQUIRED (`null` clears it).",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  },
+  {
+    "note": "Percentages are whole numbers from 1 to 100.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "quorumRule": {
+        "of": "roster",
+        "fractionPercent": 150
+      }
+    }
+  },
+  {
+    "note": "`eventId` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

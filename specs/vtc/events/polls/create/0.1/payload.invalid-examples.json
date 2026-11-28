@@ -1,0 +1,33 @@
+[
+  {
+    "note": "At least two candidate times.",
+    "payload": {
+      "calendarId": "cal_HarbourRowingMain",
+      "title": "AGM",
+      "voters": "hidden",
+      "slots": [
+        {
+          "slotId": "a",
+          "when": {
+            "start": "2026-12-05T10:00:00",
+            "timeZone": "Europe/London",
+            "duration": "PT3H"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "`voters` is REQUIRED.",
+    "payload": {
+      "calendarId": "cal_HarbourRowingMain",
+      "title": "AGM",
+      "slots": []
+    }
+  },
+  {
+    "note": "`poll` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

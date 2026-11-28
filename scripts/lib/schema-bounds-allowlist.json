@@ -324,12 +324,6 @@
       "url-scheme /$defs/AwardShare/properties/bakedImageUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
       "url-scheme /$defs/AwardShare/properties/verificationUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
     },
-    "vtc/boards/_shared/0.1/board.schema.json": {
-      "array-max-items /$defs/ElectionTemplate/properties/board/properties/auditors": "Baseline: no maxItems when the lint landed; the next version declares one."
-    },
-    "vtc/boards/show/0.1": {
-      "array-max-items /properties/state": "Baseline: no maxItems when the lint landed; the next version declares one."
-    },
     "vtc/community/profile/update/0.1": {
       "url-scheme /properties/logoUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
       "url-scheme /properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."

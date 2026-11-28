@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/show/0.1",
+  "title": "VTC Events — Meeting — Show — payload",
+  "description": "Read a meeting's agenda, chair and secretary, quorum, motions and minutes. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Show — response payload",
+      "description": "The success response to a vtc/events/meeting/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "agenda",
+        "motions"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "agenda": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../_shared/0.1/meeting.schema.json#/$defs/MeetingAgendaItem"
+          },
+          "description": "The agenda, in order."
+        },
+        "chair": {
+          "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The meeting's chair, by entry, where one is appointed."
+        },
+        "secretary": {
+          "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The meeting's secretary, by entry, where one is appointed."
+        },
+        "quorumRule": {
+          "$ref": "../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumRule",
+          "description": "The quorum rule, where one is set."
+        },
+        "quorum": {
+          "$ref": "../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumStatus",
+          "description": "Where quorum stands now, where a rule is set."
+        },
+        "motions": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../_shared/0.1/meeting.schema.json#/$defs/MeetingMotion"
+          },
+          "description": "The motions opened, oldest first."
+        },
+        "minutes": {
+          "$ref": "../../_shared/0.1/meeting.schema.json#/$defs/MeetingMinutes",
+          "description": "The minutes, once recorded."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

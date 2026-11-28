@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/quorum/set/0.1",
+  "title": "VTC Events — Meeting — Quorum — Set — payload",
+  "description": "A host sets or clears a meeting's quorum rule, before the meeting starts. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "quorumRule"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "quorumRule": {
+      "anyOf": [
+        {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumRule"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The rule; `null` clears it."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Quorum — Set — response payload",
+      "description": "The success response to a vtc/events/meeting/quorum/set/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/quorum/set/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "quorumRule": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumRule",
+          "description": "The rule now held, where one is."
+        },
+        "quorum": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumStatus",
+          "description": "Where quorum stands now, where a rule is held."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

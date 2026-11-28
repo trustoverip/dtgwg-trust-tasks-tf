@@ -8,6 +8,8 @@ import type { Author, Board, BoardAudience, BoardDescription, BoardHead, BoardId
 
 /**
  * Show one board and its ideas as the caller may see them, with each accepted idea's election stage, ballot count where its board is public, and result once tallied — never who took a ticket or voted. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/boards/show/0.2
  */
 export interface VTCBoardsShowPayload {
   boardId: BoardId;
@@ -28,6 +30,8 @@ export interface VTCBoardsShowPayload {
 }
 /**
  * The success response to a vtc/boards/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/show/0.1#response.
+ *
+ * @deprecated superseded by vtc/boards/show/0.2
  */
 export interface VTCBoardsShowResponsePayload {
   board: Board;
@@ -59,15 +63,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/boards/show/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/boards/show/0.2
+ */
 export type Payload = VTCBoardsShowPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/boards/show/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/boards/show/0.2
+ */
 export type Response = VTCBoardsShowResponsePayload;
 
 /**

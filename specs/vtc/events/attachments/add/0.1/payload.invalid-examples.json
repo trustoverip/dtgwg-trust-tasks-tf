@@ -1,0 +1,24 @@
+[
+  {
+    "note": "`kind` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "A material's address is `https` only.",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611",
+      "kind": "material",
+      "material": {
+        "name": "Kit",
+        "url": "http://example.com/kit"
+      }
+    }
+  },
+  {
+    "note": "`attachment` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

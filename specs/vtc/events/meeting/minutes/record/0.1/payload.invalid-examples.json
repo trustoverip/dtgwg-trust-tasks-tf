@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {
+      "text": "Minutes"
+    }
+  },
+  {
+    "note": "`minutes` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  }
+]

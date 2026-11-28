@@ -1,0 +1,118 @@
+[
+  {
+    "note": "A board without its election template.",
+    "payload": {
+      "title": "x",
+      "audience": {
+        "kind": "members"
+      },
+      "proposals": {
+        "opensAt": "2026-11-02T00:00:00Z",
+        "closesAt": "2026-11-10T00:00:00Z"
+      },
+      "voting": {
+        "opensAt": "2026-11-09T00:00:00Z",
+        "closesAt": "2026-11-12T09:00:00Z"
+      }
+    }
+  },
+  {
+    "note": "An audience kind outside the two the chapter allows.",
+    "payload": {
+      "title": "Trust Week Unconference",
+      "proposals": {
+        "opensAt": "2026-11-02T00:00:00Z",
+        "closesAt": "2026-11-10T00:00:00Z"
+      },
+      "voting": {
+        "opensAt": "2026-11-09T00:00:00Z",
+        "closesAt": "2026-11-12T09:00:00Z"
+      },
+      "template": {
+        "questions": [
+          {
+            "key": "attend",
+            "type": "choice",
+            "text": "Would you attend this session?",
+            "options": [
+              {
+                "key": "yes",
+                "label": "Yes, I'd attend"
+              },
+              {
+                "key": "no",
+                "label": "Not for me"
+              }
+            ],
+            "minSelections": 1,
+            "maxSelections": 1,
+            "optional": false
+          }
+        ],
+        "secrecy": "open",
+        "revote": "replace",
+        "board": {
+          "visibility": "public",
+          "auditors": []
+        },
+        "ballotBox": "did:example:ballot-box",
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "audience": {
+        "kind": "everyone"
+      }
+    }
+  },
+  {
+    "note": "A template marked binding: a board's elections are never binding, so the template has no such member.",
+    "payload": {
+      "title": "Trust Week Unconference",
+      "audience": {
+        "kind": "members"
+      },
+      "proposals": {
+        "opensAt": "2026-11-02T00:00:00Z",
+        "closesAt": "2026-11-10T00:00:00Z"
+      },
+      "voting": {
+        "opensAt": "2026-11-09T00:00:00Z",
+        "closesAt": "2026-11-12T09:00:00Z"
+      },
+      "template": {
+        "questions": [
+          {
+            "key": "attend",
+            "type": "choice",
+            "text": "Would you attend this session?",
+            "options": [
+              {
+                "key": "yes",
+                "label": "Yes, I'd attend"
+              },
+              {
+                "key": "no",
+                "label": "Not for me"
+              }
+            ],
+            "minSelections": 1,
+            "maxSelections": 1,
+            "optional": false
+          }
+        ],
+        "secrecy": "open",
+        "revote": "replace",
+        "board": {
+          "visibility": "public",
+          "auditors": []
+        },
+        "ballotBox": "did:example:ballot-box",
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10,
+        "binding": true
+      }
+    }
+  }
+]

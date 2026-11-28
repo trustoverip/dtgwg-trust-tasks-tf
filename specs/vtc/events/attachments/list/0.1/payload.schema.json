@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/attachments/list/0.1",
+  "title": "VTC Events — Attachments — List — payload",
+  "description": "Read the attachments of an event the caller may see: materials only to registrants who are going and to hosts. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Attachments — List — response payload",
+      "description": "The success response to a vtc/events/attachments/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/attachments/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "items"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../_shared/0.1/attachment.schema.json#/$defs/EventAttachment"
+          },
+          "description": "The attachments the caller may see, oldest first."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/polls/answer/0.1",
+  "title": "VTC Events — Polls — Answer — payload",
+  "description": "A member of a poll's audience answers it: yes, if need be or no for each candidate time, replacing their earlier answers. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pollId",
+    "answers"
+  ],
+  "properties": {
+    "pollId": {
+      "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollId"
+    },
+    "answers": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 30,
+      "propertyNames": {
+        "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollSlotId"
+      },
+      "additionalProperties": {
+        "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollChoice"
+      },
+      "description": "An answer for each time the caller answers; it replaces the caller's earlier answers."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Polls — Answer — response payload",
+      "description": "The success response to a vtc/events/polls/answer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/polls/answer/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pollId",
+        "myAnswers"
+      ],
+      "properties": {
+        "pollId": {
+          "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollId"
+        },
+        "myAnswers": {
+          "type": "object",
+          "maxProperties": 30,
+          "propertyNames": {
+            "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollSlotId"
+          },
+          "additionalProperties": {
+            "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollChoice"
+          },
+          "description": "The caller's answers now held."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

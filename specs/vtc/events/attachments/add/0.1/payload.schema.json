@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/attachments/add/0.1",
+  "title": "VTC Events — Attachments — Add — payload",
+  "description": "A host attaches to an event a community room bound to its roster, an opt-in room, a board whose audience is the event, a community election, or a material released to each registrant who is going. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "kind"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "kind": {
+      "$ref": "../../_shared/0.1/attachment.schema.json#/$defs/EventAttachmentKind"
+    },
+    "roomId": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 512,
+      "description": "For `room` and `optInRoom`: the community room's DID."
+    },
+    "admits": {
+      "$ref": "../../_shared/0.1/attachment.schema.json#/$defs/EventRoomAdmits",
+      "description": "For `room`: whom it admits. Absent means `going`."
+    },
+    "disclosure": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "For `optInRoom`, REQUIRED: what a registrant is told before entering — that those in it see each other. Plain text."
+    },
+    "boardId": {
+      "$ref": "../../../../boards/_shared/0.2/board.schema.json#/$defs/BoardId",
+      "description": "For `board`: a board whose audience is this event — an audience `vtc/boards/_shared/0.2` states (`vtc/boards/create` 0.2)."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId",
+      "description": "For `election`: the community election."
+    },
+    "material": {
+      "$ref": "../../_shared/0.1/attachment.schema.json#/$defs/EventMaterial",
+      "description": "For `material`: what is released."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Attachments — Add — response payload",
+      "description": "The success response to a vtc/events/attachments/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/attachments/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attachment"
+      ],
+      "properties": {
+        "attachment": {
+          "$ref": "../../_shared/0.1/attachment.schema.json#/$defs/EventAttachment"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

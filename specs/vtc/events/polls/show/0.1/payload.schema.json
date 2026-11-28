@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/polls/show/0.1",
+  "title": "VTC Events — Polls — Show — payload",
+  "description": "Read a scheduling poll: its times, the counts for each, who answered what where the poll's voters setting admits the caller, and the caller's own answers. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pollId"
+  ],
+  "properties": {
+    "pollId": {
+      "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Polls — Show — response payload",
+      "description": "The success response to a vtc/events/polls/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/polls/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "poll",
+        "tallies"
+      ],
+      "properties": {
+        "poll": {
+          "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPoll"
+        },
+        "tallies": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollTally"
+          },
+          "description": "Each candidate time's counts, in the poll's order."
+        },
+        "myAnswers": {
+          "type": "object",
+          "maxProperties": 30,
+          "propertyNames": {
+            "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollSlotId"
+          },
+          "additionalProperties": {
+            "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollChoice"
+          },
+          "description": "The caller's own answers, where they answered."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

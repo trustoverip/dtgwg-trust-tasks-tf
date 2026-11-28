@@ -1,0 +1,16 @@
+[
+  {
+    "note": "A state filter naming no state.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "state": []
+    }
+  },
+  {
+    "note": "A ticket member: a board never reports tickets (VTI-BRD-033).",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "ticketHeld": true
+    }
+  }
+]

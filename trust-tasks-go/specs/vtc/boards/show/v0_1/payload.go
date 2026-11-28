@@ -13,6 +13,8 @@ import (
 
 // Response The success response to a vtc/boards/show/0.1 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/vtc/boards/show/0.1#response.
+//
+// Deprecated: superseded by vtc/boards/show/0.2
 type Response struct {
 	Board Board  `json:"board"`
 	Ideas []Idea `json:"ideas"`
@@ -453,6 +455,8 @@ type BoardTitle = string
 // idea's election stage, ballot count where its board is public, and result once tallied
 // — never who took a ticket or voted. The outer document members are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/boards/show/0.2
 type Payload struct {
 	BoardID BoardID      `json:"boardId"`
 	State   *[]IdeaState `json:"state,omitempty"`
@@ -483,7 +487,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/boards/show/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/boards/show/0.1#response"
