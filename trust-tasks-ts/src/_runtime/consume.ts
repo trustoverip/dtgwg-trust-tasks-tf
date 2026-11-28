@@ -232,7 +232,13 @@ export type PayloadPolicy =
    */
   | { kind: "acceptUnvalidated" };
 
-/** The outcome of {@link consumeInbound}. */
+/**
+ * The outcome of {@link consumeInbound}.
+ *
+ * A duplicate of a document whose handler withheld its response
+ * ({@link Delivery}) is not `duplicate`: the handler is called again as a
+ * re-delivery, and its answer is `handled`, `rejected` or `accepted`.
+ */
 export type ConsumeOutcome<R> =
   /** Every check passed and the caller's handler produced a response. */
   | { kind: "handled"; response: TrustTaskDocument<R> }
@@ -283,10 +289,6 @@ export type ConsumeOutcome<R> =
    * - `inFlight === true` — the first execution has not finished. §7.2: the
    *   consumer SHOULD "return or expose the existing execution state rather
    *   than begin another".
-   *
-   * A duplicate of a document whose handler withheld its response
-   * ({@link Delivery}) is not this outcome: the handler is called again as a
-   * re-delivery, and its answer is `handled`, `rejected` or `accepted`.
    */
   | { kind: "duplicate"; priorResponse?: unknown; inFlight: boolean };
 
