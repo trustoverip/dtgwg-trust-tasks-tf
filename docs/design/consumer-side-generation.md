@@ -10,7 +10,7 @@ specification into every library.
 | 2. Rust end to end (`trust-tasks-build`, the CLI) | shipped | [build side](#milestone-2--rust-build-side-implemented), [the CLI](#milestone-2--the-cli) |
 | 3. TypeScript, Go, Dart generation from bundles | shipped in the 2026-10-26 releases | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) records the versions |
 | 4. Hand-written packages depend on the runtime only | shipped | [Milestone 4](#milestone-4--the-hand-written-packages) |
-| 5. Deprecate, then remove the prebuilt modules | deprecated; Rust tree frozen 2026-11-28; removal batch not chosen | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
+| 5. Deprecate, then remove the prebuilt modules | deprecated; Rust tree frozen 2026-11-28; first Rust removal batch (`vtc/*`, `vta/*`) 2026-11-28 | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
 
 Measurements below are dated where they were taken; they are not kept current.
 
@@ -447,6 +447,19 @@ Dart still generate every version — npm, the Go proxy and pub.dev have no limi
 the tree approaches. Nothing prebuilt is removed, so it is not a break. The list
 only shrinks: `npm run check-prebuilt-list` fails a change that adds a line, and
 removing lines is how the removal batch above will retire the rest.
+
+**The first Rust removal batch: `vtc/*` and `vta/*` (2026-11-28).** With the
+tree frozen, `trust-tasks-rs` still packaged to 9.89 MiB, about 12 KB under
+the 9.9 MiB guard, and any change to a family that keeps prebuilt modules
+grows it. Every `vtc/*` and `vta/*` version (704 of the 1507 listed) left
+`prebuilt-modules.txt`: those families are implemented only by Verifiable
+Trust Infrastructure, which generates its own with `trust-tasks-build`, and no
+other dependant enables their features. This removes the `vtc` and `vta`
+features and every module under `trust_tasks_rs::specs::{vtc,vta}` — a break
+of `trust-tasks-rs`, released as one in the core version group. Migration:
+`trust-tasks add <slug>/<M.N>` for each task used, and generate them in
+`build.rs` with `trust-tasks-build` (GETTING-STARTED.md, "Generate only the
+tasks you use"). TypeScript, Go and Dart are unchanged.
 
 ## Third-party sources
 

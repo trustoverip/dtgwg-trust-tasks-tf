@@ -169,6 +169,8 @@ main prebuilt on 2026-11-28) and for the framework's own families; a newer
 version is consumer-side only — generate it with `trust-tasks-build`. The list
 only shrinks (`npm run check-prebuilt-list`), and is left out of the `.crate`.
 See DEVELOPMENT.md, "Every prebuilt specification module is deprecated".
+The first removal batch took every `vtc/*` and `vta/*` version out of the list
+(2026-11-28): there are no `vtc` or `vta` features or modules any more.
 
 ## The prebuilt tree spells each shared `$defs` entry once
 
