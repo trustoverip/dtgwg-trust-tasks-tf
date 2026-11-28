@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`pageId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A tier is proven, never asserted: there is no `tier` in the request.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "tier": "members"
+    }
+  },
+  {
+    "note": "`page` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "tier": "members"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

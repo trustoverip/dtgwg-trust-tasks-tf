@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/pages/show/0.1",
+  "title": "VTC Booking — Pages — Show — payload",
+  "description": "Read one booking page as the caller's proven tier may see it, with the tier the caller is placed in. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pageId"
+  ],
+  "properties": {
+    "pageId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+    },
+    "presentation": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/MembershipPresentation",
+      "description": "A partner member's presentation, proving the `known` tier (VTI-BKG-031)."
+    },
+    "linkCode": {
+      "type": "string",
+      "minLength": 43,
+      "maxLength": 128,
+      "description": "The code from the page's link, for a guest."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Pages — Show — response payload",
+      "description": "The success response to a vtc/booking/pages/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/pages/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page"
+      ],
+      "properties": {
+        "page": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPage"
+        },
+        "tier": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingTier",
+          "description": "The tier the caller is placed in; absent for the host."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

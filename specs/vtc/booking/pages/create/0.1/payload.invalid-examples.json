@@ -1,0 +1,105 @@
+[
+  {
+    "note": "`meetingTypes` is REQUIRED.",
+    "payload": {
+      "title": "Calls",
+      "availability": {
+        "timeZone": "Europe/London",
+        "weekly": [
+          {
+            "day": "tuesday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          },
+          {
+            "day": "thursday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "A meeting type names at least one tier.",
+    "payload": {
+      "title": "Calls",
+      "availability": {
+        "timeZone": "Europe/London",
+        "weekly": [
+          {
+            "day": "tuesday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          },
+          {
+            "day": "thursday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          }
+        ]
+      },
+      "meetingTypes": [
+        {
+          "meetingTypeId": "intro",
+          "title": "Intro",
+          "lengthMinutes": 30,
+          "tiers": []
+        }
+      ]
+    }
+  },
+  {
+    "note": "`page` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "title": "Mentoring calls with Priya",
+      "availability": {
+        "timeZone": "Europe/London",
+        "weekly": [
+          {
+            "day": "tuesday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          },
+          {
+            "day": "thursday",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          }
+        ]
+      },
+      "meetingTypes": [
+        {
+          "meetingTypeId": "intro",
+          "title": "Intro call",
+          "lengthMinutes": 30,
+          "minimumNoticeMinutes": 1440,
+          "dailyCap": 3,
+          "tiers": [
+            {
+              "tier": "members"
+            },
+            {
+              "tier": "known",
+              "partners": [
+                "did:example:open-ledger-guild"
+              ],
+              "approvalRequired": true
+            },
+            {
+              "tier": "guests"
+            }
+          ]
+        }
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "note": "`bookingId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`changed` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "booking": {
+        "bookingId": "bkg_Hk3Wq9Ls2Dn6Hy4B",
+        "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+        "meetingTypeId": "intro",
+        "eventId": "evt_Sd8Kq2Lm4Rt8Vx1Z",
+        "start": "2026-12-01T14:00:00Z",
+        "end": "2026-12-01T14:30:00Z",
+        "tier": "members",
+        "status": "going",
+        "bookerEntryId": "dir_BenOkafor0000000",
+        "createdAt": "2026-11-28T10:05:00Z",
+        "updatedAt": "2026-11-28T10:05:00Z"
+      }
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "bookingId": "bkg_Hk3Wq9Ls2Dn6Hy4B",
+      "notify": false
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "bookingId": "bkg_Hk3Wq9Ls2Dn6Hy4B",
+      "reason": "Something came up — sorry!",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/bookings/reschedule/0.1",
+  "title": "VTC Booking — Bookings — Reschedule — payload",
+  "description": "The booker moves their booking to another free slot offered to their tier, while the tier's notice allows. The reply is a new receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bookingId",
+    "start"
+  ],
+  "properties": {
+    "bookingId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingId"
+    },
+    "start": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "The new slot's start."
+    },
+    "presentation": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/MembershipPresentation"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Bookings — Reschedule — response payload",
+      "description": "The success response to a vtc/booking/bookings/reschedule/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/bookings/reschedule/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "booking",
+        "event",
+        "registration"
+      ],
+      "properties": {
+        "booking": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/Booking"
+        },
+        "event": {
+          "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventRef"
+        },
+        "registration": {
+          "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/Registration"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

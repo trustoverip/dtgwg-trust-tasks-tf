@@ -1,0 +1,30 @@
+[
+  {
+    "note": "`role` is REQUIRED.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X"
+    }
+  },
+  {
+    "note": "`role` is `booker` or `host`.",
+    "payload": {
+      "role": "admin"
+    }
+  },
+  {
+    "note": "`items` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "role": "host",
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "from": "2026-12-01T00:00:00Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

@@ -1,0 +1,48 @@
+[
+  {
+    "note": "`intervals` is REQUIRED; an empty array withdraws.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X"
+    }
+  },
+  {
+    "note": "An interval carries nothing but its instants: no title.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "intervals": [
+        {
+          "start": "2026-12-01T15:00:00Z",
+          "end": "2026-12-01T16:30:00Z",
+          "title": "Dentist"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`suppliedAt` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "intervals": 2
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "intervals": [
+        {
+          "start": "2026-12-01T15:00:00Z",
+          "end": "2026-12-01T16:30:00Z"
+        },
+        {
+          "start": "2026-12-03T14:00:00Z",
+          "end": "2026-12-03T14:45:00Z"
+        }
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

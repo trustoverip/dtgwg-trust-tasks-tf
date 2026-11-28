@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/pages/delete/0.1",
+  "title": "VTC Booking — Pages — Delete — payload",
+  "description": "The host deletes their booking page; every booking on it that has not started is cancelled and its booker told. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pageId"
+  ],
+  "properties": {
+    "pageId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "Shown to the bookers on each cancelled booking's event. Plain text."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Pages — Delete — response payload",
+      "description": "The success response to a vtc/booking/pages/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/pages/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageId",
+        "bookingsCancelled"
+      ],
+      "properties": {
+        "pageId": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+        },
+        "bookingsCancelled": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Bookings that had not started, now cancelled."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
