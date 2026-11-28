@@ -545,6 +545,30 @@ export type BoardTitle = string;
  */
 export type BoardVisibility = "public" | "private";
 /**
+ * Opaque identifier of one booking: `bkg_` followed by 16 to 64 base64url characters.
+ */
+export type BookingId = string;
+/**
+ * A local time of day, `HH:MM`, read in the page's time zone.
+ */
+export type BookingLocalTime = string;
+/**
+ * A meeting type's key within its page.
+ */
+export type BookingMeetingTypeId = string;
+/**
+ * Opaque identifier of a booking page: `bkp_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BKG-001).
+ */
+export type BookingPageId = string;
+/**
+ * Who a rule is for (VTI-BKG-030). `members`: active members of the community. `known`: parties the community knows without their being members — a partner community's member proving it by credential, or a party with a relationship in force. `guests`: any party identified by its own identifier.
+ */
+export type BookingTier = "members" | "known" | "guests";
+/**
+ * A day of the week (iCalendar's MO … SU, spelled out).
+ */
+export type BookingWeekday = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+/**
  * The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
  */
 export type BundleDescriptor = StreamDescriptor | ChunkedDescriptor;
@@ -9778,6 +9802,626 @@ export interface BoardHead {
    */
   rootHash: DigestMultibase;
   issuedAt: string;
+}
+/**
+ * One booking (VTI-BKG-050): the slot, the tier the booker proved, and the event it is. The booker and the host read it; `answers` the host only.
+ */
+export interface Booking {
+  bookingId: BookingId;
+  pageId: BookingPageId;
+  meetingTypeId: BookingMeetingTypeId;
+  eventId: EventId;
+  start: EventInstant;
+  end: EventInstant;
+  tier: BookingTier;
+  status: RegistrationStatus;
+  /**
+   * A member booker's directory entry. Exactly one of this and `bookerDid`.
+   */
+  bookerEntryId?: EntryId;
+  /**
+   * A booker who is not a member, by their identifier.
+   */
+  bookerDid?: string;
+  /**
+   * The host's view only.
+   */
+  answers?: RegistrationAnswers;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * When a page offers time (VTI-BKG-020): weekly windows of local time in `timeZone`, with dated exceptions.
+ */
+export interface BookingAvailability {
+  timeZone: TimeZoneId;
+  /**
+   * The weekly windows.
+   *
+   * @maxItems 64
+   */
+  weekly: BookingWeeklyWindow[];
+  /**
+   * Dated exceptions; at most one per date.
+   *
+   * @maxItems 366
+   */
+  exceptions?: BookingException[];
+}
+/**
+ * One busy interval the host's agent supplies: merged, starting and ending on a quarter hour, nothing else (VTI-CAL-061, VTI-BKG-040).
+ */
+export interface BookingBusyInterval {
+  start: EventInstant;
+  end: EventInstant;
+}
+/**
+ * A dated exception that overrides the weekly windows on its date (VTI-BKG-020): `ranges` replaces that day's time; an empty `ranges` takes the whole day off.
+ */
+export interface BookingException {
+  /**
+   * The local date, `YYYY-MM-DD`.
+   */
+  date: string;
+  /**
+   * The time offered on that date; empty means none.
+   *
+   * @maxItems 8
+   */
+  ranges:
+    | []
+    | [BookingTimeRange]
+    | [BookingTimeRange, BookingTimeRange]
+    | [BookingTimeRange, BookingTimeRange, BookingTimeRange]
+    | [BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange]
+    | [BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange]
+    | [BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange, BookingTimeRange]
+    | [
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange
+      ]
+    | [
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange,
+        BookingTimeRange
+      ];
+}
+/**
+ * At most `count` bookings by one booker in any `periodDays` days (VTI-BKG-021).
+ */
+export interface BookingLimit {
+  /**
+   * Bookings allowed.
+   */
+  count: number;
+  /**
+   * The rolling period, in days.
+   */
+  periodDays: number;
+}
+/**
+ * One kind of meeting a page offers (VTI-BKG-010).
+ */
+export interface BookingMeetingType {
+  meetingTypeId: BookingMeetingTypeId;
+  title: EventTitle;
+  description?: EventDescription;
+  /**
+   * The meeting's length.
+   */
+  lengthMinutes: number;
+  /**
+   * Where it happens; released only to the parties of an accepted booking (VTI-EVT-060). Shown to the host only on the page.
+   */
+  place?: AccessDetails;
+  /**
+   * Questions a booker answers; read by the host only (VTI-BKG-011).
+   *
+   * @maxItems 20
+   */
+  questions?:
+    | []
+    | [RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion, RegistrationQuestion]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ]
+    | [
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion,
+        RegistrationQuestion
+      ];
+  /**
+   * Kept free before each booking.
+   */
+  bufferBeforeMinutes?: number;
+  /**
+   * Kept free after each booking.
+   */
+  bufferAfterMinutes?: number;
+  /**
+   * The least notice for a booking. Absent: 0.
+   */
+  minimumNoticeMinutes?: number;
+  /**
+   * Nothing is offered further ahead. Absent: 60.
+   */
+  horizonDays?: number;
+  /**
+   * The most bookings of this type on one local day.
+   */
+  dailyCap?: number;
+  /**
+   * One rule per tier that may book it.
+   *
+   * @minItems 1
+   * @maxItems 3
+   */
+  tiers: [BookingTierRule] | [BookingTierRule, BookingTierRule] | [BookingTierRule, BookingTierRule, BookingTierRule];
+}
+/**
+ * A booking page as the caller may see it (VTI-BKG-001). A booker sees the meeting types their tier may book, without places, buffers' reasons or other tiers' rules; the host sees all of it.
+ */
+export interface BookingPage {
+  pageId: BookingPageId;
+  /**
+   * The host's directory entry.
+   */
+  host: EntryId;
+  title: EventTitle;
+  description?: EventDescription;
+  availability: BookingAvailability;
+  /**
+   * The meeting types offered.
+   *
+   * @minItems 1
+   * @maxItems 16
+   */
+  meetingTypes:
+    | [BookingMeetingType]
+    | [BookingMeetingType, BookingMeetingType]
+    | [BookingMeetingType, BookingMeetingType, BookingMeetingType]
+    | [BookingMeetingType, BookingMeetingType, BookingMeetingType, BookingMeetingType]
+    | [BookingMeetingType, BookingMeetingType, BookingMeetingType, BookingMeetingType, BookingMeetingType]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ]
+    | [
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType,
+        BookingMeetingType
+      ];
+  /**
+   * The page's link (VTI-BKG-004), an `https` trigger link.
+   */
+  link?: string;
+  /**
+   * Host only: when the host's agent last supplied busy time.
+   */
+  busySuppliedAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * A free slot: an instant it starts and one it ends.
+ */
+export interface BookingSlot {
+  start: EventInstant;
+  end: EventInstant;
+}
+/**
+ * What one tier may book of a meeting type (VTI-BKG-030). A tier with no rule on a meeting type may not book it.
+ */
+export interface BookingTierRule {
+  tier: BookingTier;
+  /**
+   * The windows this tier is offered, within the page's. Absent: the page's.
+   */
+  availability?: BookingAvailability;
+  /**
+   * How long before a slot this tier may still book, reschedule or cancel. Absent: the meeting type's.
+   */
+  minimumNoticeMinutes?: number;
+  /**
+   * Bookings by this tier wait for the host (`pending`). Absent: false, except for `guests`, where absent means true (VTI-BKG-032).
+   */
+  approvalRequired?: boolean;
+  bookerLimit?: BookingLimit;
+  /**
+   * `members` only: narrows the tier by the language of an event's audience (VTI-EVT-020).
+   */
+  audience?: EventAudience_VtcEventsV0_2;
+  /**
+   * `known` only: the partner communities whose members, proving it by credential, are in the tier.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  partners?: [PartnerDid, ...PartnerDid[]];
+  /**
+   * `known` only: parties with a relationship in force with the community are in the tier. Absent: false.
+   */
+  relationships?: boolean;
+}
+/**
+ * A span of local time within one day; `endTime` after `startTime`.
+ */
+export interface BookingTimeRange {
+  startTime: BookingLocalTime;
+  endTime: BookingLocalTime;
+}
+/**
+ * Time offered every week on one day (RFC 7953's AVAILABLE with a weekly rule).
+ */
+export interface BookingWeeklyWindow {
+  day: BookingWeekday;
+  startTime: BookingLocalTime;
+  endTime: BookingLocalTime;
 }
 /**
  * Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.

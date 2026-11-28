@@ -1,0 +1,30 @@
+[
+  {
+    "note": "`pageId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`bookingsCancelled` is REQUIRED.",
+    "variant": "response",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X"
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "force": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "pageId": "bkp_Mt7Qw2Lk9Rn4Bv1X",
+      "reason": "I'm taking a break from mentoring.",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

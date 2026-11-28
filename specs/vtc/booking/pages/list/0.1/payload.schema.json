@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/pages/list/0.1",
+  "title": "VTC Booking — Pages — List — payload",
+  "description": "List the booking pages of the community the caller's tier admits them to, or one host's. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "host": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "Only this host's pages."
+    },
+    "mine": {
+      "type": "boolean",
+      "description": "Only the caller's own pages."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the filters; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most items to return, at most 100; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Pages — List — response payload",
+      "description": "The success response to a vtc/booking/pages/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/pages/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPage"
+          },
+          "description": "The pages, by title, then `pageId`."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more items follow: pass it as `cursor` to continue."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

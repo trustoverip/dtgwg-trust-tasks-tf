@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/bookings/list/0.1",
+  "title": "VTC Booking — Bookings — List — payload",
+  "description": "List the caller's own bookings, or — for a host — the bookings on their pages. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role"
+  ],
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "booker",
+        "host"
+      ],
+      "description": "`booker`: the caller's own bookings. `host`: bookings on the caller's pages."
+    },
+    "pageId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId",
+      "description": "Host only: one page."
+    },
+    "from": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only bookings ending at or after this."
+    },
+    "to": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only bookings starting before this."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the filters; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most items to return, at most 100; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Bookings — List — response payload",
+      "description": "The success response to a vtc/booking/bookings/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/bookings/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/Booking"
+          },
+          "description": "Earliest start first, then `bookingId`."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more items follow: pass it as `cursor` to continue."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

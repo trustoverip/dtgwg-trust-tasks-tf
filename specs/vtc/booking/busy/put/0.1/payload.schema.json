@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/busy/put/0.1",
+  "title": "VTC Booking — Busy — Put — payload",
+  "description": "The host's agent supplies the host's busy time to their booking page: merged, quarter-hour-widened intervals at most ninety days ahead, replacing the last supply. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pageId",
+    "intervals"
+  ],
+  "properties": {
+    "pageId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+    },
+    "intervals": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingBusyInterval"
+      },
+      "description": "The whole set; it replaces the last. Empty withdraws it (VTI-CAL-060)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Busy — Put — response payload",
+      "description": "The success response to a vtc/booking/busy/put/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/busy/put/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageId",
+        "intervals",
+        "suppliedAt"
+      ],
+      "properties": {
+        "pageId": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+        },
+        "intervals": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many intervals are held now."
+        },
+        "suppliedAt": {
+          "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

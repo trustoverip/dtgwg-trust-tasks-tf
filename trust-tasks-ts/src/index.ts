@@ -3858,6 +3858,42 @@ export import VtcBoardsShow_v0_1 = _VtcBoardsShow_v0_1;
 import * as _VtcBoardsUpdate_v0_1 from "./vtc/boards/update/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBoardsUpdate_v0_1 = _VtcBoardsUpdate_v0_1;
+import * as _BookingShared_v0_1 from "./vtc/booking/_shared/0.1/booking.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import BookingShared_v0_1 = _BookingShared_v0_1;
+import * as _VtcBookingBookingsBook_v0_1 from "./vtc/booking/bookings/book/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingBookingsBook_v0_1 = _VtcBookingBookingsBook_v0_1;
+import * as _VtcBookingBookingsCancel_v0_1 from "./vtc/booking/bookings/cancel/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingBookingsCancel_v0_1 = _VtcBookingBookingsCancel_v0_1;
+import * as _VtcBookingBookingsList_v0_1 from "./vtc/booking/bookings/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingBookingsList_v0_1 = _VtcBookingBookingsList_v0_1;
+import * as _VtcBookingBookingsReschedule_v0_1 from "./vtc/booking/bookings/reschedule/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingBookingsReschedule_v0_1 = _VtcBookingBookingsReschedule_v0_1;
+import * as _VtcBookingBusyPut_v0_1 from "./vtc/booking/busy/put/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingBusyPut_v0_1 = _VtcBookingBusyPut_v0_1;
+import * as _VtcBookingPagesCreate_v0_1 from "./vtc/booking/pages/create/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingPagesCreate_v0_1 = _VtcBookingPagesCreate_v0_1;
+import * as _VtcBookingPagesDelete_v0_1 from "./vtc/booking/pages/delete/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingPagesDelete_v0_1 = _VtcBookingPagesDelete_v0_1;
+import * as _VtcBookingPagesList_v0_1 from "./vtc/booking/pages/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingPagesList_v0_1 = _VtcBookingPagesList_v0_1;
+import * as _VtcBookingPagesShow_v0_1 from "./vtc/booking/pages/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingPagesShow_v0_1 = _VtcBookingPagesShow_v0_1;
+import * as _VtcBookingPagesUpdate_v0_1 from "./vtc/booking/pages/update/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingPagesUpdate_v0_1 = _VtcBookingPagesUpdate_v0_1;
+import * as _VtcBookingSlotsList_v0_1 from "./vtc/booking/slots/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBookingSlotsList_v0_1 = _VtcBookingSlotsList_v0_1;
 import * as _VtcCeremoniesList_v0_1 from "./vtc/ceremonies/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcCeremoniesList_v0_1 = _VtcCeremoniesList_v0_1;

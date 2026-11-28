@@ -1,0 +1,477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/_shared/0.1/booking",
+  "title": "Booking — shared definitions for the vtc/booking/* spec family",
+  "description": "A Verifiable Trust Community's booking pages (VTI Community Booking Pages chapter, VTI-BKG-*): a member's page where others book time with them. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nA BOOKING IS AN EVENT. Booking a slot creates an unlisted meeting event in the community (vtc/events/*), with a hidden roster, the host as its host and the booker registered on it (VTI-BKG-050); access details, receipts, reminders and changes are the event's.\n\nTIERS ARE PROVEN, NEVER ASSERTED. A booker is placed in the most trusted tier — `members`, `known`, `guests` — that they prove (VTI-BKG-031).\n\nBUSY TIME IS NEVER DISCLOSED. The host's agent supplies merged, quarter-hour-widened busy intervals (vtc/booking/busy/put); nobody is told why a slot is not offered (VTI-BKG-040, 041).",
+  "$defs": {
+    "BookingPageId": {
+      "title": "BookingPageId",
+      "description": "Opaque identifier of a booking page: `bkp_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BKG-001).",
+      "type": "string",
+      "pattern": "^bkp_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BookingId": {
+      "title": "BookingId",
+      "description": "Opaque identifier of one booking: `bkg_` followed by 16 to 64 base64url characters.",
+      "type": "string",
+      "pattern": "^bkg_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BookingMeetingTypeId": {
+      "title": "BookingMeetingTypeId",
+      "description": "A meeting type's key within its page.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$"
+    },
+    "BookingTier": {
+      "title": "BookingTier",
+      "description": "Who a rule is for (VTI-BKG-030). `members`: active members of the community. `known`: parties the community knows without their being members — a partner community's member proving it by credential, or a party with a relationship in force. `guests`: any party identified by its own identifier.",
+      "type": "string",
+      "enum": [
+        "members",
+        "known",
+        "guests"
+      ]
+    },
+    "BookingWeekday": {
+      "title": "BookingWeekday",
+      "description": "A day of the week (iCalendar's MO … SU, spelled out).",
+      "type": "string",
+      "enum": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ]
+    },
+    "BookingLocalTime": {
+      "title": "BookingLocalTime",
+      "description": "A local time of day, `HH:MM`, read in the page's time zone.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "BookingTimeRange": {
+      "title": "BookingTimeRange",
+      "description": "A span of local time within one day; `endTime` after `startTime`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startTime",
+        "endTime"
+      ],
+      "properties": {
+        "startTime": {
+          "$ref": "#/$defs/BookingLocalTime"
+        },
+        "endTime": {
+          "$ref": "#/$defs/BookingLocalTime"
+        }
+      }
+    },
+    "BookingWeeklyWindow": {
+      "title": "BookingWeeklyWindow",
+      "description": "Time offered every week on one day (RFC 7953's AVAILABLE with a weekly rule).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "day",
+        "startTime",
+        "endTime"
+      ],
+      "properties": {
+        "day": {
+          "$ref": "#/$defs/BookingWeekday"
+        },
+        "startTime": {
+          "$ref": "#/$defs/BookingLocalTime"
+        },
+        "endTime": {
+          "$ref": "#/$defs/BookingLocalTime"
+        }
+      }
+    },
+    "BookingException": {
+      "title": "BookingException",
+      "description": "A dated exception that overrides the weekly windows on its date (VTI-BKG-020): `ranges` replaces that day's time; an empty `ranges` takes the whole day off.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "ranges"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+          "description": "The local date, `YYYY-MM-DD`."
+        },
+        "ranges": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/BookingTimeRange"
+          },
+          "description": "The time offered on that date; empty means none."
+        }
+      }
+    },
+    "BookingAvailability": {
+      "title": "BookingAvailability",
+      "description": "When a page offers time (VTI-BKG-020): weekly windows of local time in `timeZone`, with dated exceptions.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeZone",
+        "weekly"
+      ],
+      "properties": {
+        "timeZone": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/TimeZoneId"
+        },
+        "weekly": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/BookingWeeklyWindow"
+          },
+          "description": "The weekly windows."
+        },
+        "exceptions": {
+          "type": "array",
+          "maxItems": 366,
+          "items": {
+            "$ref": "#/$defs/BookingException"
+          },
+          "description": "Dated exceptions; at most one per date."
+        }
+      }
+    },
+    "BookingLimit": {
+      "title": "BookingLimit",
+      "description": "At most `count` bookings by one booker in any `periodDays` days (VTI-BKG-021).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "periodDays"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Bookings allowed."
+        },
+        "periodDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 366,
+          "description": "The rolling period, in days."
+        }
+      }
+    },
+    "BookingTierRule": {
+      "title": "BookingTierRule",
+      "description": "What one tier may book of a meeting type (VTI-BKG-030). A tier with no rule on a meeting type may not book it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier"
+      ],
+      "properties": {
+        "tier": {
+          "$ref": "#/$defs/BookingTier"
+        },
+        "availability": {
+          "$ref": "#/$defs/BookingAvailability",
+          "description": "The windows this tier is offered, within the page's. Absent: the page's."
+        },
+        "minimumNoticeMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 525600,
+          "description": "How long before a slot this tier may still book, reschedule or cancel. Absent: the meeting type's."
+        },
+        "approvalRequired": {
+          "type": "boolean",
+          "description": "Bookings by this tier wait for the host (`pending`). Absent: false, except for `guests`, where absent means true (VTI-BKG-032)."
+        },
+        "bookerLimit": {
+          "$ref": "#/$defs/BookingLimit"
+        },
+        "audience": {
+          "allOf": [
+            {
+              "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventAudience"
+            }
+          ],
+          "description": "`members` only: narrows the tier by the language of an event's audience (VTI-EVT-020)."
+        },
+        "partners": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/PartnerDid"
+          },
+          "description": "`known` only: the partner communities whose members, proving it by credential, are in the tier."
+        },
+        "relationships": {
+          "type": "boolean",
+          "description": "`known` only: parties with a relationship in force with the community are in the tier. Absent: false."
+        }
+      }
+    },
+    "BookingMeetingType": {
+      "title": "BookingMeetingType",
+      "description": "One kind of meeting a page offers (VTI-BKG-010).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "meetingTypeId",
+        "title",
+        "lengthMinutes",
+        "tiers"
+      ],
+      "properties": {
+        "meetingTypeId": {
+          "$ref": "#/$defs/BookingMeetingTypeId"
+        },
+        "title": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+        },
+        "description": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+        },
+        "lengthMinutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 480,
+          "description": "The meeting's length."
+        },
+        "place": {
+          "allOf": [
+            {
+              "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/AccessDetails"
+            }
+          ],
+          "description": "Where it happens; released only to the parties of an accepted booking (VTI-EVT-060). Shown to the host only on the page."
+        },
+        "questions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/RegistrationQuestion"
+          },
+          "description": "Questions a booker answers; read by the host only (VTI-BKG-011)."
+        },
+        "bufferBeforeMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 240,
+          "description": "Kept free before each booking."
+        },
+        "bufferAfterMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 240,
+          "description": "Kept free after each booking."
+        },
+        "minimumNoticeMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 525600,
+          "description": "The least notice for a booking. Absent: 0."
+        },
+        "horizonDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 366,
+          "description": "Nothing is offered further ahead. Absent: 60."
+        },
+        "dailyCap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "The most bookings of this type on one local day."
+        },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/BookingTierRule"
+          },
+          "description": "One rule per tier that may book it."
+        }
+      }
+    },
+    "BookingPage": {
+      "title": "BookingPage",
+      "description": "A booking page as the caller may see it (VTI-BKG-001). A booker sees the meeting types their tier may book, without places, buffers' reasons or other tiers' rules; the host sees all of it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageId",
+        "host",
+        "title",
+        "availability",
+        "meetingTypes",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "pageId": {
+          "$ref": "#/$defs/BookingPageId"
+        },
+        "host": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The host's directory entry."
+        },
+        "title": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+        },
+        "description": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+        },
+        "availability": {
+          "$ref": "#/$defs/BookingAvailability"
+        },
+        "meetingTypes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/BookingMeetingType"
+          },
+          "description": "The meeting types offered."
+        },
+        "link": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "pattern": "^https://",
+          "description": "The page's link (VTI-BKG-004), an `https` trigger link."
+        },
+        "busySuppliedAt": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+          "description": "Host only: when the host's agent last supplied busy time."
+        },
+        "createdAt": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "updatedAt": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "BookingSlot": {
+      "title": "BookingSlot",
+      "description": "A free slot: an instant it starts and one it ends.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "end": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "BookingBusyInterval": {
+      "title": "BookingBusyInterval",
+      "description": "One busy interval the host's agent supplies: merged, starting and ending on a quarter hour, nothing else (VTI-CAL-061, VTI-BKG-040).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "end": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "One booking (VTI-BKG-050): the slot, the tier the booker proved, and the event it is. The booker and the host read it; `answers` the host only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bookingId",
+        "pageId",
+        "meetingTypeId",
+        "eventId",
+        "start",
+        "end",
+        "tier",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "bookingId": {
+          "$ref": "#/$defs/BookingId"
+        },
+        "pageId": {
+          "$ref": "#/$defs/BookingPageId"
+        },
+        "meetingTypeId": {
+          "$ref": "#/$defs/BookingMeetingTypeId"
+        },
+        "eventId": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "start": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "end": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "tier": {
+          "$ref": "#/$defs/BookingTier"
+        },
+        "status": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/RegistrationStatus"
+        },
+        "bookerEntryId": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "A member booker's directory entry. Exactly one of this and `bookerDid`."
+        },
+        "bookerDid": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:.+$",
+          "description": "A booker who is not a member, by their identifier."
+        },
+        "answers": {
+          "allOf": [
+            {
+              "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/RegistrationAnswers"
+            }
+          ],
+          "description": "The host's view only."
+        },
+        "createdAt": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "updatedAt": {
+          "$ref": "../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    }
+  }
+}

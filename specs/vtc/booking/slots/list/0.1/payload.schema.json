@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/booking/slots/list/0.1",
+  "title": "VTC Booking — Slots — List — payload",
+  "description": "The free slots of one meeting type that the caller's proven tier is offered, in a range — never why a slot is not offered. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pageId",
+    "meetingTypeId",
+    "from",
+    "to"
+  ],
+  "properties": {
+    "pageId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingPageId"
+    },
+    "meetingTypeId": {
+      "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingMeetingTypeId"
+    },
+    "from": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only slots starting at or after this."
+    },
+    "to": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/EventInstant",
+      "description": "Only slots starting before this; at most 62 days after `from`."
+    },
+    "presentation": {
+      "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/MembershipPresentation"
+    },
+    "linkCode": {
+      "type": "string",
+      "minLength": 43,
+      "maxLength": 128,
+      "description": "The code from the page's link, for a guest."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Booking — Slots — List — response payload",
+      "description": "The success response to a vtc/booking/slots/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/booking/slots/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "meetingTypeId",
+        "tier",
+        "timeZone",
+        "slots"
+      ],
+      "properties": {
+        "meetingTypeId": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingMeetingTypeId"
+        },
+        "tier": {
+          "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingTier"
+        },
+        "timeZone": {
+          "$ref": "../../../../events/_shared/0.4/event.schema.json#/$defs/TimeZoneId",
+          "description": "The page's zone, for showing the host's local time beside the viewer's."
+        },
+        "slots": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": {
+            "$ref": "../../../_shared/0.1/booking.schema.json#/$defs/BookingSlot"
+          },
+          "description": "Free slots, earliest first."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

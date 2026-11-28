@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`limit` is at most 100.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "`items` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — additionalProperties: false.",
+    "payload": {
+      "tier": "guests"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "host": "dir_Pr1yaNatarajan00",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]
