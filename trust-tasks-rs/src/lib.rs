@@ -49,6 +49,7 @@ mod canonical;
 mod ceremony;
 mod consume;
 mod critical;
+mod delivery;
 mod dispatcher;
 mod document;
 mod error;
@@ -86,6 +87,7 @@ pub use consume::{
     PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 pub use critical::check_critical_extensions;
+pub use delivery::Delivery;
 pub use dispatcher::Dispatcher;
 pub use document::{
     issued_at_now, trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask,

@@ -232,7 +232,13 @@ export type PayloadPolicy =
    */
   | { kind: "acceptUnvalidated" };
 
-/** The outcome of {@link consumeInbound}. */
+/**
+ * The outcome of {@link consumeInbound}.
+ *
+ * A duplicate of a document whose handler withheld its response
+ * ({@link Delivery}) is not `duplicate`: the handler is called again as a
+ * re-delivery, and its answer is `handled`, `rejected` or `accepted`.
+ */
 export type ConsumeOutcome<R> =
   /** Every check passed and the caller's handler produced a response. */
   | { kind: "handled"; response: TrustTaskDocument<R> }
@@ -286,6 +292,46 @@ export type ConsumeOutcome<R> =
    */
   | { kind: "duplicate"; priorResponse?: unknown; inFlight: boolean };
 
+/**
+ * Which delivery of a document {@link ConsumeOptions.handler} is answering,
+ * and whether its response may be kept in the SPEC §7.2 item 11 record.
+ * `consumeInbound` sets it as `parties.delivery` on the parties it hands the
+ * handler (a member of {@link ResolvedParties} no transport sets); a handler
+ * that ignores it sees no change.
+ *
+ * By default a duplicate document is answered from the response its first
+ * execution produced and never reaches the handler. A specification can rule
+ * that out: `hcp/grants/request` 0.1 issues an access token the provider keeps
+ * in no record, and answers a re-delivered copy of an answered request with a
+ * newly issued token. Such a handler calls {@link withholdResponse} while
+ * answering the first delivery; the `id` stays recorded as executed, but the
+ * response is not stored ({@link ReplayGuard.recordWithheld}). A duplicate of
+ * that document is then handed to the handler again with {@link redelivery}
+ * `true` — the document has already been executed, so the handler answers it
+ * (a new token for the same grant) and must not execute it again — and its
+ * answer is the `handled`, `rejected` or `accepted` outcome.
+ *
+ * The same mechanism exists in every runtime (Rust `Delivery::current()`, Go
+ * `trusttasks.DeliveryFrom(ctx)`, Dart `Delivery.current`); see
+ * `docs/runtime-parity.md`.
+ */
+export interface Delivery {
+  /**
+   * `true` when this document was executed before and its response kept out
+   * of the record: answer it, and do not execute it again (§7.2 item 11).
+   * `false` on the first execution.
+   */
+  readonly redelivery: boolean;
+  /**
+   * Keep the response the handler returns out of the duplicate-execution
+   * record. Applies to whatever the first execution answers — a success
+   * response, a non-retryable refusal, or nothing; a retryable refusal
+   * releases the claim regardless. No effect on a re-delivery (nothing is
+   * recorded for one) or without a replay guard.
+   */
+  withholdResponse(): void;
+}
+
 /** Wire-safe message for the `rejectIfPresent` path. */
 export const PROOF_NOT_ACCEPTED_BY_POLICY =
   "in-band proof not accepted by consumer policy (SPEC §7.2 item 7)";
@@ -317,6 +363,10 @@ export interface ConsumeOptions<P, R> {
    * at all for a specification that defines no success response (§4.4.1) —
    * which yields the `accepted` outcome. A throw aborts the pipeline, releases
    * the item-11 claim so the document can be resent, and is rethrown.
+   *
+   * `parties.delivery` says whether this is a re-delivery of a document whose
+   * response the handler withheld, and lets it withhold this one: see
+   * {@link Delivery}.
    */
   handler: (
     doc: TrustTaskDocument<P>,
@@ -542,6 +592,7 @@ export async function consumeInbound<P, R>(
   // corrected resend under the same `id` would come back `idConflict` forever
   // — and an attacker could pre-burn an `id` it had merely observed.
   let claim: { guard: ReplayGuard; digest: string } | undefined;
+  let redelivery = false;
   if (checks.replay.kind === "guard") {
     const { guard } = checks.replay;
     const digest = documentDigest(received);
@@ -578,6 +629,13 @@ export async function consumeInbound<P, R>(
 
     switch (verdict.kind) {
       case "duplicate":
+        // Executed before, and its handler kept the response out of the
+        // record: nothing to replay, so the handler answers it as a
+        // re-delivery, below. Not claimed: it is not executed again.
+        if (verdict.withheld === true && !verdict.inFlight) {
+          redelivery = true;
+          break;
+        }
         return verdict.priorResponse === undefined
           ? { kind: "duplicate", inFlight: verdict.inFlight }
           : { kind: "duplicate", priorResponse: verdict.priorResponse, inFlight: verdict.inFlight };
@@ -602,9 +660,29 @@ export async function consumeInbound<P, R>(
     }
   }
 
+  // A re-delivery of a document whose response was withheld: the handler
+  // answers it, told that it already executed. Nothing is claimed, released
+  // or recorded — the record of the first execution stands as it is.
+  if (redelivery) {
+    const answer = await handler(doc, {
+      ...resolved.parties,
+      delivery: { redelivery: true, withholdResponse: () => {} },
+    });
+    if (answer === undefined || answer === null) return { kind: "accepted" };
+    if (isErrorResponse(answer)) return { kind: "rejected", error: answer };
+    return { kind: "handled", response: answer as TrustTaskDocument<R> };
+  }
+
+  let withheld = false;
+  const delivery: Delivery = {
+    redelivery: false,
+    withholdResponse: () => {
+      withheld = true;
+    },
+  };
   let result: Awaited<ReturnType<typeof handler>>;
   try {
-    result = await handler(doc, resolved.parties);
+    result = await handler(doc, { ...resolved.parties, delivery });
   } catch (e) {
     // The handler did not finish, so nothing says the effect happened.
     // Holding the claim would answer every resend with an in-flight duplicate
@@ -621,7 +699,7 @@ export async function consumeInbound<P, R>(
   if (result === undefined || result === null) {
     // Fire-and-forget: nothing to cache, but the claim stands — the effect
     // happened, and item 11 is about the effect, not about the response.
-    await settle(claim, doc.id, undefined);
+    await settle(claim, doc.id, undefined, withheld);
     return { kind: "accepted" };
   }
   if (isErrorResponse(result)) {
@@ -632,11 +710,11 @@ export async function consumeInbound<P, R>(
     if (result.payload.retryable === true) {
       await claim?.guard.release?.(doc.id, claim.digest);
     } else {
-      await settle(claim, doc.id, result);
+      await settle(claim, doc.id, result, withheld);
     }
     return { kind: "rejected", error: result };
   }
-  await settle(claim, doc.id, result);
+  await settle(claim, doc.id, result, withheld);
   return { kind: "handled", response: result as TrustTaskDocument<R> };
 }
 
@@ -653,9 +731,18 @@ async function settle(
   claim: { guard: ReplayGuard; digest: string } | undefined,
   id: string,
   response: unknown,
+  withheld: boolean,
 ): Promise<void> {
   if (claim === undefined) return;
   try {
+    if (withheld) {
+      // The handler kept the response out of the record: record the
+      // completion only. A guard without `recordWithheld` records it with no
+      // response, so a duplicate is absorbed in silence.
+      if (claim.guard.recordWithheld !== undefined) await claim.guard.recordWithheld(id);
+      else await claim.guard.recordResponse?.(id, undefined);
+      return;
+    }
     await claim.guard.recordResponse?.(id, response);
   } catch {
     /* see above */

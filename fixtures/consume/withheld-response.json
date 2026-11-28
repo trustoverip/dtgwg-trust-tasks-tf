@@ -1,0 +1,68 @@
+{
+  "description": "Withheld-response vectors (SPEC §7.2 item 11, Disposition of a duplicate). Each case consumes its `deliveries` in order against one fresh replay guard, under the consequential checks at `now`, passing each document as received. The handler answers every delivery it is called for with a success response whose `id` is `resp-<n>` (n: the delivery's index in the case) and whose payload is {\"delivery\": \"first\"} or {\"delivery\": \"redelivery\"}, as the pipeline's delivery signal says; when the case has `withhold: true` it asks for its response to be kept out of the record on every call. Per delivery, `handler` is the signal the handler was called with (`first` or `redelivery`), or null when it was not called; `outcome` is `handled`, `duplicate`, or the refusal's error code; `priorResponseOf` is, for a duplicate, the index of the delivery whose response it replays.",
+  "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
+  "consumer": "did:web:consumer.example",
+  "now": "2026-11-01T00:00:30Z",
+  "documents": {
+    "original": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000101\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+    "conflicting": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000101\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:bob.example\"}}"
+  },
+  "cases": [
+    {
+      "name": "withheld response: a duplicate is handed to the handler as a re-delivery",
+      "withhold": true,
+      "deliveries": [
+        {
+          "document": "original",
+          "handler": "first",
+          "outcome": "handled"
+        },
+        {
+          "document": "original",
+          "handler": "redelivery",
+          "outcome": "handled"
+        },
+        {
+          "document": "original",
+          "handler": "redelivery",
+          "outcome": "handled"
+        },
+        {
+          "document": "conflicting",
+          "handler": null,
+          "outcome": "idConflict"
+        }
+      ],
+      "why": "The first delivery executes and its response is not stored; the id stays claimed, so every duplicate reaches the handler only as a re-delivery (never as a first execution, and withholding on a re-delivery changes nothing), and a different document under the id is still idConflict."
+    },
+    {
+      "name": "response recorded (the default): a duplicate replays it",
+      "withhold": false,
+      "deliveries": [
+        {
+          "document": "original",
+          "handler": "first",
+          "outcome": "handled"
+        },
+        {
+          "document": "original",
+          "handler": null,
+          "outcome": "duplicate",
+          "priorResponseOf": 0
+        },
+        {
+          "document": "original",
+          "handler": null,
+          "outcome": "duplicate",
+          "priorResponseOf": 0
+        },
+        {
+          "document": "conflicting",
+          "handler": null,
+          "outcome": "idConflict"
+        }
+      ],
+      "why": "A handler that does not opt out sees no change: the duplicate is absorbed and answered with the stored first response, and the handler is not called."
+    }
+  ]
+}

@@ -68,6 +68,14 @@ export type ReplayVerdict =
       priorResponse?: unknown;
       /** Whether that first execution is still running. */
       inFlight: boolean;
+      /**
+       * `true` when the first execution finished and its handler kept the
+       * response out of the record ({@link ReplayGuard.recordWithheld}). There
+       * is no `priorResponse` by the handler's choice, so `consumeInbound`
+       * hands the document back to the handler as a re-delivery
+       * (`Delivery.redelivery`) instead of absorbing it in silence.
+       */
+      withheld?: boolean;
     }
   /**
    * Already accepted under a *different* digest. §7.2 item 11 requires
@@ -139,6 +147,21 @@ export interface ReplayGuard {
   recordResponse?(id: string, response: unknown): Promise<void> | void;
 
   /**
+   * Mark `id`'s execution complete **without** its response: the handler kept
+   * the response out of the record (`delivery.withholdResponse()`), for example
+   * because it carries a secret the specification says the consumer keeps in
+   * no record. The claim stands, so a resend is still never executed a second
+   * time (SPEC §7.2 item 11); only the body is not stored. A later duplicate
+   * of the same document SHOULD then be answered
+   * `{ kind: "duplicate", inFlight: false, withheld: true }`.
+   *
+   * Optional. Without it `consumeInbound` calls `recordResponse(id, undefined)`,
+   * so such a duplicate is absorbed in silence: item 11 still holds and no
+   * response is stored, but the handler is never told of the re-delivery.
+   */
+  recordWithheld?(id: string): Promise<void> | void;
+
+  /**
    * Release a claim whose execution is not to stand — for example a refusal
    * the consumer marked `retryable`, where §8.4 has just invited the producer
    * to re-send the same bytes. Without this, that invited retry would come
@@ -165,6 +188,8 @@ interface Entry {
   retainUntil: number | undefined;
   response: unknown;
   completed: boolean;
+  /** The handler kept the response out of the record. */
+  withheld: boolean;
 }
 
 /**
@@ -310,6 +335,9 @@ export class InMemoryReplayGuard implements ReplayGuard {
       this.#delete(id);
     } else if (existing !== undefined) {
       if (existing.digest !== digest) return { kind: "conflict" };
+      if (existing.completed && existing.withheld) {
+        return { kind: "duplicate", inFlight: false, withheld: true };
+      }
       return existing.response === undefined
         ? { kind: "duplicate", inFlight: !existing.completed }
         : { kind: "duplicate", priorResponse: existing.response, inFlight: !existing.completed };
@@ -327,7 +355,7 @@ export class InMemoryReplayGuard implements ReplayGuard {
       if (held() >= this.#perIssuer) throw new ReplayGuardFullError(held(), true);
     }
 
-    this.#entries.set(id, { issuer, digest, retainUntil, response: undefined, completed: false });
+    this.#entries.set(id, { issuer, digest, retainUntil, response: undefined, completed: false, withheld: false });
     this.#held.set(issuer, held() + 1);
     if (retainUntil !== undefined && retainUntil < this.#earliestExpiry) this.#earliestExpiry = retainUntil;
     return { kind: "fresh" };
@@ -338,6 +366,15 @@ export class InMemoryReplayGuard implements ReplayGuard {
     if (entry === undefined) return;
     entry.response = response;
     entry.completed = true;
+    entry.withheld = false;
+  }
+
+  recordWithheld(id: string): void {
+    const entry = this.#entries.get(id);
+    if (entry === undefined) return;
+    entry.response = undefined;
+    entry.completed = true;
+    entry.withheld = true;
   }
 
   release(id: string, digest: string): void {

@@ -19,6 +19,7 @@ import {
   type RejectReason,
   type TrustTaskDocument,
 } from "./document.js";
+import type { Delivery } from "./consume.js";
 
 /**
  * Party identity after §4.8.1 precedence — the values a consumer applies for
@@ -27,6 +28,13 @@ import {
 export interface ResolvedParties {
   issuer?: string;
   recipient?: string;
+  /**
+   * Set by {@link consumeInbound} on the parties it hands its handler, never by
+   * a transport: which delivery of the document the handler is answering, and
+   * a way to keep its response out of the SPEC §7.2 item 11 record. See
+   * {@link Delivery}.
+   */
+  readonly delivery?: Delivery;
 }
 
 /**

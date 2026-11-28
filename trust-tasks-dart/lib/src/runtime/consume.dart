@@ -55,6 +55,7 @@ library;
 import 'canonical.dart';
 import 'codes.dart';
 import 'critical.dart';
+import 'delivery.dart';
 import 'document.dart';
 import 'extension.dart'
     show
@@ -291,6 +292,10 @@ final class Accepted<R> extends ConsumeOutcome<R> {
 /// * [inFlight] true — the first execution has not finished. §7.2: the consumer
 ///   SHOULD "return or expose the existing execution state rather than begin
 ///   another".
+///
+/// A duplicate of a document whose handler withheld its response ([Delivery])
+/// is not this outcome: the handler is called again as a re-delivery, and its
+/// answer is [Handled], [Rejected] or [Accepted].
 final class DuplicateOutcome<R> extends ConsumeOutcome<R> {
   const DuplicateOutcome({this.priorResponse, this.inFlight = false});
 
@@ -610,6 +615,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   // attacker could pre-burn an `id` it had merely observed.
   ReplayGuard? claimedGuard;
   String? claimedDigest;
+  var redelivery = false;
   final replay = checks.replay;
   if (replay is GuardedReplay) {
     final guard = replay.guard;
@@ -667,6 +673,11 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     }
 
     switch (verdict) {
+      // Executed before, and its handler kept the response out of the record:
+      // nothing to replay, so the handler answers it as a re-delivery, below.
+      // Not claimed: it is not executed again.
+      case Duplicate(withheld: true, inFlight: false):
+        redelivery = true;
       case Duplicate(:final priorResponse, :final inFlight):
         return DuplicateOutcome<R>(
           priorResponse: priorResponse,
@@ -691,9 +702,24 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   /// cannot un-happen it. The record of the *claim* is what item 11 needs and it
   /// is already written; all that is lost is the ability to hand the same
   /// response back, and the duplicate is still absorbed.
+  // The handler reads it through `Delivery.current`, and may withhold its
+  // response from the record.
+  final delivery = newDelivery(redelivery: false);
+
   Future<void> settle(Map<String, dynamic>? response) async {
     if (claimedGuard == null) return;
     try {
+      if (delivery.isResponseWithheld) {
+        // The handler kept the response out of the record: record the
+        // completion only. A guard that cannot says so with no response, and a
+        // duplicate is then absorbed in silence.
+        if (claimedGuard is WithholdingReplayGuard) {
+          await claimedGuard.recordWithheld(doc.id);
+        } else {
+          await claimedGuard.recordResponse(doc.id, null);
+        }
+        return;
+      }
       await claimedGuard.recordResponse(doc.id, response);
     } on Object {
       /* see above */
@@ -716,9 +742,25 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     }
   }
 
+  // A re-delivery of a document whose response was withheld: the handler
+  // answers it, told that it already executed. Nothing is claimed, released or
+  // recorded — the record of the first execution stands as it is.
+  if (redelivery) {
+    final TrustTaskDocument<R>? answer;
+    try {
+      answer = await runWithDelivery(
+        newDelivery(redelivery: true),
+        () => handler(doc, parties),
+      );
+    } on Refusal catch (refusal) {
+      return Rejected<R>(refusal.response);
+    }
+    return answer == null ? Accepted<R>() : Handled<R>(answer);
+  }
+
   TrustTaskDocument<R>? response;
   try {
-    response = await handler(doc, parties);
+    response = await runWithDelivery(delivery, () => handler(doc, parties));
   } on Refusal catch (refusal) {
     // §8.4: a retryable refusal has just invited the producer to re-send this
     // document bit-for-bit. Holding the claim would answer that invited retry

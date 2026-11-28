@@ -163,6 +163,17 @@ case trusttasks.OutcomeDuplicate:
 }
 ```
 
+**A response the record must not keep.** Where a specification forbids the
+consumer to keep its response — `hcp/grants/request` 0.1 keeps the access token
+in no record, and answers a re-delivered copy of an answered request with a
+newly issued token — the handler calls `trusttasks.DeliveryFrom(ctx).WithholdResponse()`.
+The id stays recorded as executed, but the response is not stored, and a
+duplicate comes back to the handler with `DeliveryFrom(ctx).Redelivery()` true
+(answer it; do not execute it again) instead of as `OutcomeDuplicate`. Nothing
+changes for a handler that does not opt out. A custom `ReplayGuard` supports it
+by implementing `WithholdingReplayGuard` and answering a duplicate with
+`Withheld: true`; see [`docs/runtime-parity.md`](../docs/runtime-parity.md).
+
 `NewErrorID` is any function returning a fresh, unique identifier; the module
 has no dependencies, so it brings no UUID package. With the standard library:
 

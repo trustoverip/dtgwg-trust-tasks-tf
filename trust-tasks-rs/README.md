@@ -174,6 +174,17 @@ match outcome {
 }
 ```
 
+**A response the record must not keep.** Where a specification forbids the
+consumer to keep its response — `hcp/grants/request` 0.1 keeps the access token
+in no record, and answers a re-delivered copy of an answered request with a
+newly issued token — the handler calls `Delivery::current()` and
+`withhold_response()`. The `id` stays recorded as executed, but the response is
+not stored, and a duplicate comes back to the handler with `is_redelivery()`
+`true` (answer it; do not execute it again) instead of as `Duplicate`. Nothing
+changes for a handler that does not opt out. A custom `ReplayGuard` supports it
+by overriding `record_withheld` and answering `ReplayVerdict::Withheld`; see
+[`docs/runtime-parity.md`](../docs/runtime-parity.md).
+
 `Payload::IS_PROOF_REQUIRED` (codegen-emitted from each spec's
 `proofRequirement.requirement: REQUIRED` front-matter) is enforced
 authoritatively; `ProofPolicy` makes the proof-handling tradeoff explicit at

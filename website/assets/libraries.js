@@ -89,7 +89,7 @@ window.TT_LIBRARY_CAPABILITIES = [
     id: "replay",
     group: "Core",
     label: "Duplicate-execution guard",
-    note: "§7.2 item 11. Every transport binding delegates replay defence to the consumer, so a library without this leaves an ordinary mediator redelivery able to execute a consequential task twice.",
+    note: "§7.2 item 11. Every transport binding delegates replay defence to the consumer, so a library without this leaves an ordinary mediator redelivery able to execute a consequential task twice. A handler may keep a response out of the record (a secret the specification says the consumer keeps in no record) and is then handed a duplicate as a re-delivery instead of having it answered from the record.",
   },
   {
     id: "errors",

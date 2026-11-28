@@ -70,7 +70,11 @@ final class Fresh extends ReplayVerdict {
 /// Already accepted under the *same* digest — a §8.4 retry, or a replay. The
 /// caller **MUST NOT** execute again.
 final class Duplicate extends ReplayVerdict {
-  const Duplicate({this.priorResponse, this.inFlight = false});
+  const Duplicate({
+    this.priorResponse,
+    this.inFlight = false,
+    this.withheld = false,
+  });
 
   /// The response document the first execution produced, as the JSON map
   /// [ReplayGuard.recordResponse] was given, where one was retained.
@@ -78,6 +82,13 @@ final class Duplicate extends ReplayVerdict {
 
   /// Whether that first execution is still running.
   final bool inFlight;
+
+  /// Whether the first execution finished and its handler kept the response
+  /// out of the record ([WithholdingReplayGuard.recordWithheld]). There is no
+  /// [priorResponse] by the handler's choice, so [consumeInbound] hands the
+  /// document back to the handler as a re-delivery ([Delivery.isRedelivery])
+  /// instead of absorbing it in silence.
+  final bool withheld;
 }
 
 /// Already accepted under a *different* digest. §7.2 item 11 requires
@@ -158,6 +169,26 @@ abstract interface class IssuerScopedReplayGuard implements ReplayGuard {
   );
 }
 
+/// A [ReplayGuard] that can record an execution as complete without its
+/// response, because the handler kept the response out of the record
+/// ([Delivery.withholdResponse]) — for example because it carries a secret the
+/// specification says the consumer keeps in no record.
+///
+/// [consumeInbound] calls [recordWithheld] in place of
+/// [ReplayGuard.recordResponse] when the handler withheld its response. On a
+/// guard that does not implement this interface it calls
+/// `recordResponse(id, null)`, so such a duplicate is absorbed in silence —
+/// item 11 still holds and no response is stored, but the handler is never
+/// told of the re-delivery. A separate interface, so that existing guards keep
+/// compiling.
+abstract interface class WithholdingReplayGuard implements ReplayGuard {
+  /// Mark [id]'s execution complete with no response. The claim stands, so a
+  /// resend is still never executed a second time (SPEC §7.2 item 11); only
+  /// the body is not stored. A later duplicate of the same document SHOULD
+  /// then be answered `Duplicate(withheld: true)`.
+  Future<void> recordWithheld(String id);
+}
+
 /// How a consumer applies SPEC §7.2 item 11 in [consumeInbound].
 sealed class ReplayPolicy {
   const ReplayPolicy();
@@ -188,6 +219,7 @@ class _Entry {
   final DateTime? retainUntil;
   Map<String, dynamic>? response;
   bool completed = false;
+  bool withheld = false;
 }
 
 /// The live-record count [InMemoryReplayGuard] retains when given no explicit
@@ -262,7 +294,8 @@ final class ReplayGuardFullException implements Exception {
 ///
 /// Dart is single-threaded per isolate and none of these methods await, so
 /// claim-and-record is atomic by construction.
-class InMemoryReplayGuard implements IssuerScopedReplayGuard {
+class InMemoryReplayGuard
+    implements IssuerScopedReplayGuard, WithholdingReplayGuard {
   /// Builds a guard retaining at most [capacity] records.
   ///
   /// A capacity below 1 takes [defaultReplayCapacity]. It is not treated as
@@ -360,6 +393,9 @@ class InMemoryReplayGuard implements IssuerScopedReplayGuard {
         _remove(id);
       } else {
         if (existing.digest != digest) return const Conflict();
+        if (existing.completed && existing.withheld) {
+          return const Duplicate(withheld: true);
+        }
         return Duplicate(
           priorResponse: existing.response,
           inFlight: !existing.completed,
@@ -399,6 +435,16 @@ class InMemoryReplayGuard implements IssuerScopedReplayGuard {
     if (entry == null) return;
     entry.response = response;
     entry.completed = true;
+    entry.withheld = false;
+  }
+
+  @override
+  Future<void> recordWithheld(String id) async {
+    final entry = _entries[id];
+    if (entry == null) return;
+    entry.response = null;
+    entry.completed = true;
+    entry.withheld = true;
   }
 
   @override
