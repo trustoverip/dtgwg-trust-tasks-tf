@@ -31,6 +31,185 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.44.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.43.0...trust-tasks-rs-v0.44.0) — 2026-11-28
+
+
+### Added
+
+- **rs**: No prebuilt modules for the vtc and vta families ([#1416](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1416))
+
+Every vtc/* and vta/* version leaves trust-tasks-rs/prebuilt-modules.txt
+  (704 of 1507): the first Rust removal batch of consumer-side generation's
+  milestone 5. trust-tasks-rs packaged to 9.89 MiB, about 12 KB under the
+  9.9 MiB guard for crates.io's 10 MiB upload limit, and any change to a
+  family that keeps prebuilt modules grows it.
+
+  Removes the vtc and vta features and every module under
+  trust_tasks_rs::specs::{vtc,vta}, and their schema_index entries. Those
+  families are implemented only by Verifiable Trust Infrastructure, which
+  generates its own with trust-tasks-build; no other dependant enables
+  them. Migration: trust-tasks add <slug>/<M.N> and trust-tasks-build.
+  TypeScript, Go and Dart are unchanged.
+
+  The package is 5.36 MiB (was 9.89 MiB). Tests that used vtc/vta
+  modules as specimens now use still-prebuilt ones of the same shape.
+
+- **vtc/events**: Check-in, tickets, guests, attendance, event identity (phase 4) ([#1413](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1413))
+
+VTI-EVT-140 - 186 (trustoverip/dtgwg-vti-spec#130).
+
+  - _shared/0.3: the 0.2 shapes plus EventIdentity, EventGuestAdmission,
+    EventSelfCheckIn, EventRegistrantKind, EventCheckInMethod,
+    EventDoorChallengeValue, EventCheckIn, EventAttendanceTally; the Event
+    gains identity, guests, tickets, countsAttendance, attendanceBadge;
+    the Calendar gains selfCheckIn and countsAttendance; an invitation
+    link may be forGuests.
+  - 0.3 of create (identity, with noKeyHolder / keyHolderUnavailable,
+    badgeNotFound), update, show, list, publish, cancel; 0.2 of
+    calendars/create, update, list; invitations/links/create 0.2
+    (forGuests, guestsNotAdmitted).
+  - New 0.1: checkin/challenge, checkin/record, checkin/list,
+    tickets/show, attendance/show, guests/register, guests/withdraw.
+  - groups/_shared/0.1 RuleCondition: eventsAttended appended to the
+    fact enum, with optional calendarId and withinDays (additive).
+
+  New versions are consumer-side only (no prebuilt Rust module, #1411).
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vta**: Vta/hosting-account/get/0.1 — a VTA's principal reads its self-registered hosting account ([#1410](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1410))
+
+A VTA that self-registered its DID with a third-party DID hosting service
+  (did-management/account/register) keeps the account alive itself; this task
+  carries what it knows about that account — the host's lifecycle state and
+  dates as last reported, renewal time, the last expiry notice, the last error
+  reaching the host — to the principal that can act on it. refresh reads the
+  account from the host with account/status (no activity); it never renews.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **rs**: New spec families get no prebuilt module ([#1411](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1411))
+
+trust-tasks-rs packaged to 9.93 MiB with the vta/calendar family ([#1409](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1409)),
+  past the 9.9 MiB guard below crates.io's 10 MiB upload limit. Nearly all of
+  the crate is the prebuilt specification tree, deprecated since milestone 5
+  of docs/design/consumer-side-generation.md.
+
+  The Rust prebuilt tree is now frozen: trust-tasks-codegen prebuilds a
+  version only if trust-tasks-rs/prebuilt-modules.txt lists it (exactly what
+  main prebuilt on 2026-11-28) or its family is the framework's own. A later
+  version is consumer-side only in Rust - an application generates it with
+  trust-tasks-build - and trust_tasks_rs::schema_index answers None for it.
+  TypeScript, Go and Dart still generate every version. Nothing prebuilt is
+  removed.
+
+  The list only shrinks: check-prebuilt-list (in the spec lifecycle job)
+  fails a change that adds a line. check-bindings reads the list on its own,
+  accepts a missing Rust module for an unlisted version, fails a module for
+  one, and now compares the TS, Go and Dart schemas whether or not Rust has
+  a module. spec_feature_manifest gives a family with no listed version no
+  feature. The list is left out of the .crate.
+
+- **vtc/events**: Publish/cancel 0.2, withdraw by presentation, invitation revoke ([#1407](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1407))
+
+Closes three gaps OpenVTC VTI's phase-2 implementation reported
+  (OpenVTC/verifiable-trust-infrastructure#2846):
+
+  - vtc/events/publish/0.2 and cancel/0.2 answer the _shared/0.2 Event
+    (invite mode, membersMayInvite, audience.partners), as create/update
+    0.2 do; their requests are 0.1's.
+  - registrations/withdraw/0.2 gains an optional presentation, in place
+    (an additive optional member): a partner community's member withdraws
+    the registration they made as one (VTI-EVT-037, VTI-EVT-135), verified
+    as register/0.2 verifies it.
+  - vtc/events/invitations/revoke/0.1: a host revokes an invitation
+    (VTI-EVT-103); its notification is withdrawn, it no longer puts the
+    member in the audience, and a registration the member made stands.
+    Codes: invitationNotFound, alreadyRevoked.
+
+  Stale references to cancel/0.1 rewritten. Bindings regenerated for
+  Rust, TypeScript, Go and Dart.
+
+- **did-management/account**: Self-registration of hosted DIDs, with invites, liveness and expiry notices ([#1405](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1405))
+
+* feat(did-management/account): self-registration of hosted DIDs, with invites, liveness and expiry notices
+
+  Adds the did-management/account family, for a party with no account on a
+  DID hosting service (an agent that minted its own DID before it had
+  anywhere to publish it):
+
+  - account/register/0.1: register a self-certifying did:webvh. Identity
+    comes from the log itself (the proof is checked against the document the
+    log implies, never a network resolution); entitlement from an operator
+    invite or a trust community's signed voucher.
+  - account/renew/0.1, account/status/0.1: the holder keeps its account alive
+    and reads where it stands in the inactivity lifecycle.
+  - account/expiry-notice/0.1: the service warns the holder before its DIDs
+    are disabled, at disablement, and before purge.
+  - account/invite/{issue,list,revoke}/0.1: operator invites (token + claim
+    code, single use, stored hashed).
+  - server/info/0.2 (extends 0.1): publishes each domain's self-registration
+    terms, which a registrant must read before minting, since the path is
+    fixed into the DID.
+  - did-management/_shared/0.4: HostingAccount and AccountInvite.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vtc/events**: Invitations, opt-outs, announcements (phase 2) ([#1406](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1406))
+
+VTI Community Events phase 2 (VTI-EVT-100 - 135, dtgwg-vti-spec #126).
+
+  New 0.1 tasks: invitations/send, invitations/list, invitations/respond,
+  invitations/links/create, invitations/links/revoke,
+  invitations/links/redeem, optouts/set, optouts/list,
+  announcements/send, announcements/list.
+
+  0.2 of create, update (invite: none | notify | expect,
+  membersMayInvite, audience.partners, partnerInvalid), show and
+  registrations/register (a partner member's MembershipPresentation),
+  registrations/list (othersGoing in the roster view), and list,
+  mine/list, registrations/withdraw, decide, remove (the 0.2 Event and
+  Registration). _shared/0.2: EventInviteMode, EventInvitation(+Id,
+  Inviter, Answer), EventInvitationLink(+Id), EventOptOut(+Scope),
+  EventAnnouncement(+Id), MembershipPresentation, PartnerDid;
+  Registration names a partner's member by registrantDid.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vtc/events**: Community events and calendars, phase 1 ([#1402](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1402))
+
+* feat(vtc/events): community events and calendars, phase 1 (21 tasks)
+
+  vtc/events/*/0.1, the VTI Community Events chapter (VTI-EVT-001 - 095,
+  dtgwg-vti-spec #125): calendars (create, update, list), events (create,
+  update, publish, cancel, delete, show, list), the member's own events
+  (mine/list), access details released to registrants who are going
+  (access/show), registrations (register, withdraw, list, decide, remove),
+  hosts by appointment (appoint, remove, list), and reports.
+
+  Time is JSCalendar's: local start, IANA time zone, duration. The roster
+  setting (visible | hidden) is fixed at publish and recorded on each
+  registration; register and withdraw answer the registrant's receipt.
+  Reminder offsets are integer minutes; the community never sends a
+  reminder itself (VTI-EVT-040).
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+
+
+### Specifications
+
+- **vtc/events**: EventRef carries suggested reminders and the place summary ([#1415](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1415))
+
+EventRef (_shared/0.2 and 0.3) gains two optional members, in place as a
+  released version may: suggestedReminderMinutes and placeSummary. The
+  member's VTA reads its events only through mine/list (VTI-CAL-011/021),
+  so without them it cannot fire the hosts' suggested reminders
+  (VTI-CAL-041) or put the coarse place in a titlesAndPlaces feed.
+  mine/list/0.2 item 4 now says it carries them where the event has them.
+  Never an address: placeSummary stays the coarse hint (VTI-EVT-062).
+
+
+
 ## [0.43.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.42.0...trust-tasks-rs-v0.43.0) — 2026-11-27
 
 
