@@ -653,7 +653,9 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     still shows `delivered` from the earlier notice (or `abandoned`, where that notice was abandoned), while
     `usableUntil` can be a new copy's `useUntil`, after the revoke. Where the client was notified before, such an app
     shows the notice as in progress until `notification` or `usableUntil` changes after the revoke, or until 24 hours
-    pass. HCP does not say which events carry a non-null `grantId`; we read `revocation.notified` as carrying the
+    pass. That fallback is best-effort: the summary is per client, so copies disclosed to the same client under
+    another live grant can also move `usableUntil`, and only the `revocation.notified` event answers reliably. HCP
+    does not say which events carry a non-null `grantId`; we read `revocation.notified` as carrying the
     revoked grant's, since each notice names one grant (9.9) and `grantId` matches the one in audit events (6.1.5).
     *Ask:* should HCP add a value such as `pending` for a notice still being retried, so that the summary can say so?
     And, since `notification` covers only the client's most recent notice, so that the summary alone cannot tell a
