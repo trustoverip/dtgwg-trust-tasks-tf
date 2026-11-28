@@ -35,7 +35,7 @@ below. When the editors answer, update that section and the marked sentences.
 - **Added 2026-11-27, assumption taken:** questions 58 (the relevance method without a discovery document) and 59 (a
   revocation notice still being delivered).
 - **Still open, no assumption taken:** questions 44, 46, 48 and 57. Question 47 needs none yet, because we do not offer
-  what it asks about.
+  what it asks about. HCP 14.8 partly answers 57's part (b), and the specs follow it.
 - **Decided, not carried:** questions 35 and 36 (no Trust Task defines an operation HCP does not).
 - **Appear in no spec:** questions 35, 36, 43 to 52 and 57, 13 in all (41 is unused). The others are cited in the
   `## Pending HCP confirmation` section of each spec they affect, question 56 included (the governance specs and
@@ -79,6 +79,15 @@ below. When the editors answer, update that section and the marked sentences.
   `credentialInvalid`) are defined once, in [the family conventions](CONVENTIONS.md#1-family-error-codes), and every
   spec declares each with the same meaning, so 2's reading now reaches every spec that declares `hcp:invalidToken`.
   Every working-assumption mark names its question; no question changed.
+- 2026-11-27: questions 58 and 59 added, and 39 reworded for a newly issued token on a resubmission. Later the same
+  day: 58's assumption widened from one relevance method per grant to one per provider, as 7.3's single declaration
+  reads, with cross-references to 36 and 48; 59's assumption gains the cases where `notification` does not describe
+  the grant just revoked (it is per client and for the most recent notice only, and a client with no disclosed
+  entries is never notified), and its retry period is our 24-hour bound (question 16), since 9.9 sets only a
+  minimum; 57(b) cites 14.8, which keeps an entry's status when a supporting credential is revoked. After review, 59
+  reads this grant's notice outcome from the `revocation.notified` audit event (8.1, 8.2) instead of inferring it
+  from `usableUntil`, keeps the summary only as a fallback that shows a stale `delivered` or `abandoned` as in
+  progress, and adds a per-grant `notification` to its Ask.
 
 Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, C4→10, 16→11, (new)→12, 20→13, (new)→14, 2→15,
 3→16, 4→17, C6→18, (new)→19, 24→20, 8→21, 9→22, 10→23, 11→24, 12→25, C7→26, 13→27, 26 (the second 23)→28, 15→29,
@@ -254,9 +263,13 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     repeats it in the minimization report as `method`. A provider reached only over the carriage publishes no HCP
     discovery document (question 36), so it has nowhere to make the declaration 7.3 asks for.
     *Assumption taken:* for such a provider, the `minimization.method` of each query response is the declaration.
-    The provider uses one method for every query under a grant, so a client can rely on the first response it sees.
+    The provider uses one method for every query it answers, under every grant, as 7.3's single declaration in a
+    discovery document reads (a get-entry result still reports `none`, 7.5), so a client can rely on the first
+    response it sees from that provider.
     *Ask:* is the per-response `method` enough, or should the method be declared somewhere a client can read before
-    its first query (for example in the grant, or in a binding-level discovery document)?
+    its first query (for example in the grant, or in a binding-level discovery document)? See also question 36 (a
+    binding carrying the discovery document) and question 48 (the conformance suite, whose minimization test checks
+    the declared method against the discovery document, 20.1).
     *Specs:* `hcp/entries/query` (Response).
 
 ## `hcp/entries/get`, `create`, `revise`, `withdraw`
@@ -297,7 +310,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
 
 <!-- Added 2026-11-26; a separate list, so the number renders as written. -->
 
-57. **Health entries resting on supporting credentials (16.2, 14.6, 14.7).** 16.2 requires an `issuer-attested`
+57. **Health entries resting on supporting credentials (16.2, 14.6, 14.7, 14.8).** 16.2 requires an `issuer-attested`
     entry in `health_context` to carry a credential, as its content or in support of it, at least one of which passes
     verification at ingest, and rejects a write where none passes with credential invalid. Two points that rule
     leaves open:
@@ -308,12 +321,14 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     (b) An entry admitted only because a supporting credential passed at ingest: if that credential is later revoked
     or suspended, should the entry still be disclosed? 14.7 withholds disclosure, and sets `revoked` or `suspended`,
     only for a *content* credential; for a supporting credential it changes only its `verification` (14.8). 16.2's "at
-    least one credential passes" then holds at ingest but not afterwards.
+    least one credential passes" then holds at ingest but not afterwards. 14.8 partly answers (b): "A revoked or
+    suspended supporting credential does not change the entry's status", so the entry stays disclosable.
     *Assumption taken:* none. `hcp/entries/create` and `hcp/entries/revise` refuse such a write with
     `hcp:credentialInvalid` as 16.2 says, and their `message` names the failed check without choosing among several;
-    disclosure follows 14.7 as written.
-    *Ask:* for (a), what should the detail say; for (b), is disclosure after the last passing supporting credential is
-    revoked or suspended intended, and if not, which state should the entry take?
+    disclosure follows 14.7 and 14.8 as written, so an entry whose last passing supporting credential is revoked or
+    suspended stays disclosable.
+    *Ask:* for (a), what should the detail say; for (b), does 16.2 intend its rule to apply at ingest only, so that
+    14.8's rule stands for a health entry too, and if not, which state should the entry take?
     *Specs:* none yet (`hcp/entries/create`, `hcp/entries/revise` and the disclosing specs would follow the answer).
 
 ## `hcp/entries/hard-delete`, `confirm`, `set-categories`, `restrict-purposes`
@@ -619,13 +634,34 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
 
 59. **How does the disclosure summary show a revocation notice that is still being delivered (6.2.4, 8.6, 9.9)?**
     The summary's `notification` is `delivered`, `abandoned` or `none` (HCP's result shape). After a revoke, the
-    provider keeps retrying the notice for up to the 9.9 window, and during that time none of the three values says
-    "being delivered": `none` reads as "no notice", which is also what a grant that was never revoked, or a client
-    that holds no disclosed copies, shows.
-    *Assumption taken:* `none` covers a notice not yet sent or still being retried, as well as no notice at all. An
-    Authorizing Principal's app that sees `none` on a grant it has just revoked shows the notice as in progress, and
-    reads `delivered` or `abandoned` as final.
+    provider keeps retrying the notice for up to 24 hours (our carriage bound, question 16; 9.9 sets only a minimum
+    of 5 attempts over at least 1 hour), and during that time none of the three values says "being delivered":
+    `none` reads as "no notice", which is also what a grant that was never revoked, or a client that holds no
+    disclosed copies, shows.
+    *Assumption taken:* `none` covers a notice not yet sent or still being retried, as well as no notice at all, and
+    only `delivered` and `abandoned` are final. But `notification` is per client and covers only the client's most
+    recent notice (8.6), so it does not by itself describe the notice for the grant just revoked. An Authorizing
+    Principal's app therefore reads this grant's outcome from the audit log, in `hcp/audit/read` (filtered by the
+    client and by `eventType`, from the revoke): the `revocation.notified` event (8.1) whose `grantId` (8.2) is the
+    revoked grant, appended on first successful delivery or on abandonment (6.2.3), with `outcome` (`delivered` or
+    `abandoned`), `attempts` and `lastUseUntil` in its `data` (8.2, 6.2.4). Until that event appears, the notice is
+    in progress. A client that holds no entries disclosed under the revoked grant is never notified
+    (`hcp/grants/revoked`, Delivery rules carried from HCP), and its `none` means nothing to tell, not in progress;
+    the app reads it that way where the revoked grant is absent from the client's `grants`. The summary is only a
+    fallback, for an app that cannot read the log, and on its own it cannot tell this grant's notice from an earlier
+    one: a client told of an earlier revocation, granted again and given new copies, then revoked within the hour,
+    still shows `delivered` from the earlier notice (or `abandoned`, where that notice was abandoned), while
+    `usableUntil` can be a new copy's `useUntil`, after the revoke. Where the client was notified before, such an app
+    shows the notice as in progress until `notification` or `usableUntil` changes after the revoke, or until 24 hours
+    pass. That fallback is best-effort: the summary is per client, so copies disclosed to the same client under
+    another live grant can also move `usableUntil`, and only the `revocation.notified` event answers reliably. HCP
+    does not say which events carry a non-null `grantId`; we read `revocation.notified` as carrying the
+    revoked grant's, since each notice names one grant (9.9) and `grantId` matches the one in audit events (6.1.5).
     *Ask:* should HCP add a value such as `pending` for a notice still being retried, so that the summary can say so?
+    And, since `notification` covers only the client's most recent notice, so that the summary alone cannot tell a
+    stale `delivered` or `abandoned` from this grant's, should the summary give `notification` per grant (for
+    example in each member of `grants`)? Can 8.2 confirm that `revocation.notified` carries the revoked grant's
+    `grantId`?
     *Specs:* `hcp/disclosures/summary`.
 
 ## `hcp/delegations/*`
