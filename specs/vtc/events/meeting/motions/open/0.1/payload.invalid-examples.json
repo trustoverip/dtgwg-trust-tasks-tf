@@ -1,0 +1,21 @@
+[
+  {
+    "note": "`template` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "title": "Adopt the budget"
+    }
+  },
+  {
+    "note": "`title` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "template": {}
+    }
+  },
+  {
+    "note": "`motion` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]

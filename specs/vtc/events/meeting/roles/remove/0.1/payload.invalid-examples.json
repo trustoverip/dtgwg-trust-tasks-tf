@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`role` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  },
+  {
+    "note": "Roles are `chair` and `secretary`.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "role": "treasurer"
+    }
+  },
+  {
+    "note": "`eventId` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "chair": "dir_MaryOkafor00000000"
+    }
+  }
+]

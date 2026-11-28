@@ -1,0 +1,17 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`eventId` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "quorum": {
+        "present": 1,
+        "required": 1,
+        "met": true
+      }
+    }
+  }
+]

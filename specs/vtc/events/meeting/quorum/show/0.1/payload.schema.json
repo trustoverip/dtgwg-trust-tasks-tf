@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/quorum/show/0.1",
+  "title": "VTC Events — Meeting — Quorum — Show — payload",
+  "description": "Read where a meeting's quorum stands now, from its roll call. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Quorum — Show — response payload",
+      "description": "The success response to a vtc/events/meeting/quorum/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/quorum/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "quorumRule": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumRule",
+          "description": "The rule, where one is set."
+        },
+        "quorum": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingQuorumStatus",
+          "description": "Where quorum stands now, where a rule is set."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`agenda` is REQUIRED.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  },
+  {
+    "note": "Each item needs a `title`.",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing",
+      "agenda": [
+        {
+          "timeboxMinutes": 5
+        }
+      ]
+    }
+  },
+  {
+    "note": "`agenda` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  }
+]

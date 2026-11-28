@@ -1,0 +1,13 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`agenda` and `motions` are REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_AGM2026HarbourRowing"
+    }
+  }
+]

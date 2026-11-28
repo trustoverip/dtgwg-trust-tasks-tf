@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/attachments/_shared/0.1/attachment",
+  "title": "Event attachment — shared definitions for the vtc/events/attachments/* spec family",
+  "description": "What an event has attached (VTI Community Events chapter, VTI-EVT-240 – 252): a community room bound to its roster, a board whose audience is the event, an election, or a material released to each registrant who is going. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "EventAttachmentId": {
+      "title": "EventAttachmentId",
+      "description": "Opaque identifier of one attachment: `att_` followed by 16 to 64 base64url characters, unique within the community.",
+      "type": "string",
+      "pattern": "^att_[A-Za-z0-9_-]{16,64}$"
+    },
+    "EventAttachmentKind": {
+      "title": "EventAttachmentKind",
+      "description": "`room`: a community room bound to the event's roster (VTI-EVT-240 – 242), only on a `visible` roster. `optInRoom`: a room a registrant enters only by their own act, offered on a `hidden` roster (VTI-EVT-244). `board`: a board whose audience is the event (VTI-EVT-250). `election`: a community election linked to the event. `material`: a file or page released to each registrant who is going (VTI-EVT-243).",
+      "type": "string",
+      "enum": [
+        "room",
+        "optInRoom",
+        "board",
+        "election",
+        "material"
+      ]
+    },
+    "EventRoomAdmits": {
+      "title": "EventRoomAdmits",
+      "description": "Whom a bound room admits (VTI-EVT-241). `going`: registrants who are going. `goingAndMaybe`: also those who said maybe — only on a `visible` roster.",
+      "type": "string",
+      "enum": [
+        "going",
+        "goingAndMaybe"
+      ]
+    },
+    "EventMaterial": {
+      "title": "EventMaterial",
+      "description": "A material released to each registrant who is going, as access details are (VTI-EVT-243): a name and an `https` address, or a record in a room the registrant may read.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "What it is. Plain text."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "Where it is, as an `https` address. No other scheme."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "More about it. Plain text."
+        }
+      }
+    },
+    "EventAttachment": {
+      "title": "EventAttachment",
+      "description": "One attachment, as its reader may see it. Exactly the member its `kind` names is present: `roomId` for `room` and `optInRoom`, `boardId` for `board`, `electionId` for `election`, `material` for `material`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attachmentId",
+        "eventId",
+        "kind",
+        "attachedAt"
+      ],
+      "properties": {
+        "attachmentId": {
+          "$ref": "#/$defs/EventAttachmentId"
+        },
+        "eventId": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId",
+          "description": "The event it is attached to."
+        },
+        "kind": {
+          "$ref": "#/$defs/EventAttachmentKind"
+        },
+        "roomId": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 512,
+          "description": "The community room's DID."
+        },
+        "admits": {
+          "$ref": "#/$defs/EventRoomAdmits",
+          "description": "For `room`: whom it admits. Absent means `going`."
+        },
+        "disclosure": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "For `optInRoom`: what a registrant is told before entering — that those in it see each other. Plain text."
+        },
+        "boardId": {
+          "$ref": "../../../../boards/_shared/0.2/board.schema.json#/$defs/BoardId",
+          "description": "The board, by its identifier (`vtc/boards` 0.2, whose audience may be an event)."
+        },
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId",
+          "description": "The community election, by its identifier."
+        },
+        "material": {
+          "$ref": "#/$defs/EventMaterial"
+        },
+        "attachedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it was attached."
+        }
+      }
+    }
+  }
+}

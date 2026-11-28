@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/actions/add/0.1",
+  "title": "VTC Events — Meeting — Actions — Add — payload",
+  "description": "The chair, the secretary or a host records an action item a meeting asked a member to do. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "title",
+    "assignee"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "What is to be done. Plain text."
+    },
+    "assignee": {
+      "$ref": "../../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "Who is to do it."
+    },
+    "dueAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When it is due."
+    },
+    "links": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingLink"
+      },
+      "description": "What it points at."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Actions — Add — response payload",
+      "description": "The success response to a vtc/events/meeting/actions/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/actions/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingActionItem"
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

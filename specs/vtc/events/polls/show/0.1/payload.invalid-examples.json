@@ -1,0 +1,13 @@
+[
+  {
+    "note": "`pollId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`tallies` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "poll": {}
+    }
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "`items` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "eventId": "evt_IntroSoldering2611"
+    }
+  }
+]

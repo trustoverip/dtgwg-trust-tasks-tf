@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/polls/close/0.1",
+  "title": "VTC Events — Polls — Close — payload",
+  "description": "A poll's creator or a runner of its calendar closes it, naming the time chosen and, optionally, making a draft event at that time. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pollId"
+  ],
+  "properties": {
+    "pollId": {
+      "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollId"
+    },
+    "chosenSlotId": {
+      "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPollSlotId",
+      "description": "The time chosen. Absent: closed without a choice."
+    },
+    "createEvent": {
+      "type": "boolean",
+      "description": "Also make a draft event of the poll's kind, in its calendar, at the chosen time. Absent means false."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Polls — Close — response payload",
+      "description": "The success response to a vtc/events/polls/close/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/polls/close/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "poll"
+      ],
+      "properties": {
+        "poll": {
+          "$ref": "../../_shared/0.1/poll.schema.json#/$defs/EventPoll"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

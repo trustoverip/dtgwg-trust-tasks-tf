@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`public` is REQUIRED.",
+    "payload": {
+      "calendarId": "cal_RiversideOpenDays"
+    }
+  },
+  {
+    "note": "`public` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "calendarId": "cal_RiversideOpenDays"
+    }
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/agenda/update/0.1",
+  "title": "VTC Events — Meeting — Agenda — Update — payload",
+  "description": "The chair, the secretary or a host replaces a meeting's agenda: its items in order, each with an owner, a time box and links. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "agenda"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "agenda": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/AgendaItemInput"
+      },
+      "description": "The whole agenda, in order; it replaces the one held."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "AgendaItemInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "description": "An agenda item as sent: `itemId` names an existing item to keep its identity; absent, the community gives the item a new one.",
+      "properties": {
+        "itemId": {
+          "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingAgendaItemId"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "What the item is. Plain text."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "More about it. Plain text."
+        },
+        "owner": {
+          "$ref": "../../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "Who leads it."
+        },
+        "timeboxMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600,
+          "description": "Minutes allotted to it."
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingLink"
+          },
+          "description": "What it points at."
+        },
+        "done": {
+          "type": "boolean",
+          "description": "Marked done."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Agenda — Update — response payload",
+      "description": "The success response to a vtc/events/meeting/agenda/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/agenda/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "agenda"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "agenda": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingAgendaItem"
+          },
+          "description": "The agenda now held."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

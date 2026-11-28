@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/meeting/roles/appoint/0.1",
+  "title": "VTC Events — Meeting — Roles — Appoint — payload",
+  "description": "A host appoints an active member the meeting's chair or secretary. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "role",
+    "entryId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "role": {
+      "$ref": "../../../_shared/0.1/meeting.schema.json#/$defs/MeetingRole"
+    },
+    "entryId": {
+      "$ref": "../../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "The member appointed."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Events — Meeting — Roles — Appoint — response payload",
+      "description": "The success response to a vtc/events/meeting/roles/appoint/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/events/meeting/roles/appoint/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "chair": {
+          "$ref": "../../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The meeting's chair, by entry, where one is appointed."
+        },
+        "secretary": {
+          "$ref": "../../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The meeting's secretary, by entry, where one is appointed."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

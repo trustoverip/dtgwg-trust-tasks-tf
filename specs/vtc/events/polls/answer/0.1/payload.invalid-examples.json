@@ -1,0 +1,24 @@
+[
+  {
+    "note": "`answers` is REQUIRED.",
+    "payload": {
+      "pollId": "pol_AGM2026TimesPoll01"
+    }
+  },
+  {
+    "note": "Answers are `yes`, `ifNeedBe` or `no`.",
+    "payload": {
+      "pollId": "pol_AGM2026TimesPoll01",
+      "answers": {
+        "sat-5": "maybe"
+      }
+    }
+  },
+  {
+    "note": "`myAnswers` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "pollId": "pol_AGM2026TimesPoll01"
+    }
+  }
+]

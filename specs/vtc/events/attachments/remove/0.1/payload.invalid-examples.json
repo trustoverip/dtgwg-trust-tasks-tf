@@ -1,0 +1,19 @@
+[
+  {
+    "note": "`attachmentId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Attachments are named by AttachmentId.",
+    "payload": {
+      "attachmentId": "evt_IntroSoldering2611"
+    }
+  },
+  {
+    "note": "`eventId` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {
+      "attachmentId": "att_KitListSoldering01"
+    }
+  }
+]

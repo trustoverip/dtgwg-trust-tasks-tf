@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/events/polls/_shared/0.1/poll",
+  "title": "Event poll — shared definitions for the vtc/events/polls/* spec family",
+  "description": "A scheduling poll (VTI Community Events chapter, VTI-EVT-270 – 273): candidate times put to an audience, answered yes, if need be or no for each, closed into an event at the chosen time. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen). A poll confers nothing, and its answers are deleted on the community's retention schedule once it closes.",
+  "$defs": {
+    "EventPollId": {
+      "title": "EventPollId",
+      "description": "Opaque identifier of a poll: `pol_` followed by 16 to 64 base64url characters, unique within the community.",
+      "type": "string",
+      "pattern": "^pol_[A-Za-z0-9_-]{16,64}$"
+    },
+    "EventPollSlotId": {
+      "title": "EventPollSlotId",
+      "description": "A candidate time's key within its poll.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+    },
+    "EventPollSlot": {
+      "title": "EventPollSlot",
+      "description": "One candidate time, as an event's `when` states it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotId",
+        "when"
+      ],
+      "properties": {
+        "slotId": {
+          "$ref": "#/$defs/EventPollSlotId"
+        },
+        "when": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/When"
+        }
+      }
+    },
+    "EventPollChoice": {
+      "title": "EventPollChoice",
+      "description": "An answer for one candidate time: `yes`, `ifNeedBe` or `no`.",
+      "type": "string",
+      "enum": [
+        "yes",
+        "ifNeedBe",
+        "no"
+      ]
+    },
+    "EventPollVoters": {
+      "title": "EventPollVoters",
+      "description": "Who sees who answered what (VTI-EVT-271). `visible`: everyone the poll's audience admits. `hostsOnly`: the poll's creator and the hosts of its calendar. `hidden`: nobody — every reader, the creator included, sees counts only. Fixed when the poll is created.",
+      "type": "string",
+      "enum": [
+        "visible",
+        "hostsOnly",
+        "hidden"
+      ]
+    },
+    "EventPollState": {
+      "title": "EventPollState",
+      "description": "`open`: takes answers. `closed`: takes none; may name the chosen time and the event made from it.",
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ]
+    },
+    "EventPollTally": {
+      "title": "EventPollTally",
+      "description": "How a candidate time was answered: counts, and — only where the poll's `voters` setting admits the reader — who answered what.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotId",
+        "yes",
+        "ifNeedBe",
+        "no"
+      ],
+      "properties": {
+        "slotId": {
+          "$ref": "#/$defs/EventPollSlotId"
+        },
+        "yes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Answers of `yes`."
+        },
+        "ifNeedBe": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Answers of `ifNeedBe`."
+        },
+        "no": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Answers of `no`."
+        },
+        "voters": {
+          "type": "object",
+          "maxProperties": 1000,
+          "propertyNames": {
+            "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/EventPollChoice"
+          },
+          "description": "Each answerer's choice, keyed by entry — only where the reader may see who answered."
+        }
+      }
+    },
+    "EventPoll": {
+      "title": "EventPoll",
+      "description": "A scheduling poll as its reader may see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pollId",
+        "calendarId",
+        "title",
+        "slots",
+        "audience",
+        "voters",
+        "state",
+        "createdAt"
+      ],
+      "properties": {
+        "pollId": {
+          "$ref": "#/$defs/EventPollId"
+        },
+        "calendarId": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/CalendarId",
+          "description": "The calendar the event it closes into will belong to."
+        },
+        "kind": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventKind",
+          "description": "The kind of event it closes into. Absent means `event`."
+        },
+        "title": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventTitle"
+        },
+        "description": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventDescription"
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/EventPollSlot"
+          },
+          "description": "The candidate times."
+        },
+        "audience": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventAudience"
+        },
+        "voters": {
+          "$ref": "#/$defs/EventPollVoters"
+        },
+        "closesAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it stops taking answers, where set."
+        },
+        "state": {
+          "$ref": "#/$defs/EventPollState"
+        },
+        "chosenSlotId": {
+          "$ref": "#/$defs/EventPollSlotId",
+          "description": "Once closed: the time chosen, where one was."
+        },
+        "eventId": {
+          "$ref": "../../../_shared/0.4/event.schema.json#/$defs/EventId",
+          "description": "Once closed into an event: the draft made from it."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it was created."
+        }
+      }
+    }
+  }
+}

@@ -487,6 +487,24 @@ export type BoardAudience =
       groupId: GroupId;
     };
 /**
+ * Who may see and use a board (VTI-BRD-003): every active member of the community (`members`), the members of one community group (`group`, with `groupId`), or the registrants of one event who are going and its hosts (`event`, with `eventId`, VTI-EVT-250) — on an event whose roster is `hidden` or `anonymous`, its ideas and notes are shown without their authors (VTI-EVT-251). Facilitators always see the board.
+ */
+export type BoardAudience_VtcBoardsV0_2 =
+  | {
+      kind: "members";
+    }
+  | {
+      kind: "group";
+      groupId: GroupId;
+    }
+  | {
+      kind: "event";
+      /**
+       * The event whose registrants who are going, and whose hosts, the board is for.
+       */
+      eventId: EventId;
+    };
+/**
  * What the board is for. Plain text; a reader MUST NOT treat it as instructions.
  */
 export type BoardDescription = string;
@@ -969,6 +987,14 @@ export type EpochFloor = number;
  */
 export type EventAnnouncementId = string;
 /**
+ * Opaque identifier of one attachment: `att_` followed by 16 to 64 base64url characters, unique within the community.
+ */
+export type EventAttachmentId = string;
+/**
+ * `room`: a community room bound to the event's roster (VTI-EVT-240 – 242), only on a `visible` roster. `optInRoom`: a room a registrant enters only by their own act, offered on a `hidden` roster (VTI-EVT-244). `board`: a board whose audience is the event (VTI-EVT-250). `election`: a community election linked to the event. `material`: a file or page released to each registrant who is going (VTI-EVT-243).
+ */
+export type EventAttachmentKind = "room" | "optInRoom" | "board" | "election" | "material";
+/**
  * Whom the event is for, before `rule` narrows it. `members`: every active member. `groups`: members of any of `groups` — which covers a badge, since a community badge is a group. `roles`: members holding any of `roles`.
  */
 export type EventAudienceScope = "members" | "groups" | "roles";
@@ -1037,6 +1063,26 @@ export type EventMultibase = string;
  */
 export type EventOptOutScope = "event" | "calendar";
 /**
+ * An answer for one candidate time: `yes`, `ifNeedBe` or `no`.
+ */
+export type EventPollChoice = "yes" | "ifNeedBe" | "no";
+/**
+ * Opaque identifier of a poll: `pol_` followed by 16 to 64 base64url characters, unique within the community.
+ */
+export type EventPollId = string;
+/**
+ * A candidate time's key within its poll.
+ */
+export type EventPollSlotId = string;
+/**
+ * `open`: takes answers. `closed`: takes none; may name the chosen time and the event made from it.
+ */
+export type EventPollState = "open" | "closed";
+/**
+ * Who sees who answered what (VTI-EVT-271). `visible`: everyone the poll's audience admits. `hostsOnly`: the poll's creator and the hosts of its calendar. `hidden`: nobody — every reader, the creator included, sees counts only. Fixed when the poll is created.
+ */
+export type EventPollVoters = "visible" | "hostsOnly" | "hidden";
+/**
  * How often a series recurs, as JSCalendar's `frequency` (VTI-EVT-190).
  */
 export type EventRecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
@@ -1052,6 +1098,10 @@ export type EventRegistrantKind_VtcEventsV0_4 = "member" | "partner" | "guest" |
  * Whether a registration for a series is for the whole series or for one occurrence (VTI-EVT-194). Fixed when the series is published.
  */
 export type EventRegistrationScope = "series" | "occurrence";
+/**
+ * Whom a bound room admits (VTI-EVT-241). `going`: registrants who are going. `goingAndMaybe`: also those who said maybe — only on a `visible` roster.
+ */
+export type EventRoomAdmits = "going" | "goingAndMaybe";
 /**
  * Whether a calendar's events take a registrant's check-in without a door challenge, during the event (VTI-EVT-164, 181). `none`: never. `allowed`: taken, but not counted toward attendance. `counting`: taken and counted.
  */
@@ -1430,6 +1480,30 @@ export type MatchNumber = string;
  * The number the service chooses at claim, shows only to the starter (through redeem), and the approver enters from the starter's screen: two digits for `login`, four digits for `deviceEnrol` (from 0.2; 0.1 allowed two only). A string so that a leading zero survives. A service MUST use the length its purpose sets, and MUST refuse an entered number of the other length as a mismatch.
  */
 export type MatchNumber_AuthOobV0_2 = string;
+/**
+ * Opaque identifier of one action item: `act_` followed by 16 to 64 base64url characters, unique within the community.
+ */
+export type MeetingActionItemId = string;
+/**
+ * `open`: to do. `done`: done. `dropped`: no longer to do.
+ */
+export type MeetingActionStatus = "open" | "done" | "dropped";
+/**
+ * Opaque identifier of one agenda item: `agi_` followed by 16 to 64 base64url characters, unique within its meeting.
+ */
+export type MeetingAgendaItemId = string;
+/**
+ * `draft`: recorded, not yet approved; may be recorded again. `approved`: approved by the chair, fixed; a correction is a later record (VTI-EVT-265).
+ */
+export type MeetingMinutesState = "draft" | "approved";
+/**
+ * Opaque identifier of one motion: `mot_` followed by 16 to 64 base64url characters, unique within the community.
+ */
+export type MeetingMotionId = string;
+/**
+ * `chair`: runs the meeting — the agenda, the motions, the minutes' approval. `secretary`: records the minutes and the action items. Each held by appointment (VTI-EVT-257); a meeting has at most one chair and one secretary.
+ */
+export type MeetingRole = "chair" | "secretary";
 /**
  * What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
  */
@@ -9804,6 +9878,177 @@ export interface BoardHead {
   issuedAt: string;
 }
 /**
+ * A board as one caller may see it.
+ */
+export interface Board_VtcBoardsV0_2 {
+  boardId: BoardId;
+  title: BoardTitle;
+  description?: BoardDescription;
+  status: BoardStatus;
+  audience: BoardAudience_VtcBoardsV0_2;
+  /**
+   * When ideas are taken (VTI-BRD-010).
+   */
+  proposals: Window;
+  /**
+   * When every idea's election takes ballots. Opens after `proposals` opens and closes after it closes (VTI-BRD-001).
+   */
+  voting: Window;
+  /**
+   * @maxItems 32
+   */
+  topics?: Topic_VtcBoardsV0_1[];
+  /**
+   * @maxItems 16
+   */
+  formats?:
+    | []
+    | [IdeaFormat]
+    | [IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ];
+  /**
+   * The most ideas one member may have on the board that are not `withdrawn` or `declined`. Absent: no limit beyond the community's own.
+   */
+  maxIdeasPerMember?: number;
+  /**
+   * How facilitators intend to select, in plain words (VTI-BRD-041), e.g. "The twelve ideas the most members would attend".
+   */
+  selectionRule?: string;
+  /**
+   * @maxItems 256
+   */
+  timetable?: Slot_VtcBoardsV0_1[];
+  template: ElectionTemplate_VtcBoardsV0_2;
+  createdAt: string;
+  /**
+   * Whether the caller facilitates this board.
+   */
+  facilitator: boolean;
+  /**
+   * How many of the board's ideas are in each state the caller may see.
+   */
+  ideaCounts: {
+    proposed?: number;
+    open?: number;
+    selected?: number;
+    notSelected?: number;
+    declined?: number;
+    merged?: number;
+    withdrawn?: number;
+  };
+}
+/**
  * One booking (VTI-BKG-050): the slot, the tier the booker proved, and the event it is. The booker and the host read it; `answers` the host only.
  */
 export interface Booking {
@@ -13780,6 +14025,183 @@ export interface ElectionTemplate {
   textReleaseThreshold: number;
 }
 /**
+ * Every member of an idea's election manifest that the board fixes (VTI-BRD-030). When a facilitator accepts an idea the community completes it: `electionId` (naming the board and the idea), `community`, `title` and `description` from the idea, `registrationOpensAt` and `votingOpensAt` from the board's voting window's `opensAt` or the acceptance, whichever is later, `votingClosesAt` from its `closesAt`, `roll` from the board's audience (rule `members`, a credential roll naming the group, or — for an event — rule `listed` naming the registrants going when the idea is accepted, VTI-EVT-250), and `binding: false`. A board's template is never binding, and so has no `binding` member.
+ */
+export interface ElectionTemplate_VtcBoardsV0_2 {
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  questions:
+    | [Question]
+    | [Question, Question]
+    | [Question, Question, Question]
+    | [Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ];
+  secrecy: SecrecyLevel;
+  revote: Revote;
+  /**
+   * The ballot box's board for each idea's election, as a manifest states it (VTI-VOT-052). `public` lets a board show each idea's ballot count while voting is open (VTI-BRD-033).
+   */
+  board: {
+    visibility: BoardVisibility;
+    /**
+     * @maxItems 16
+     */
+    auditors:
+      | []
+      | [string]
+      | [string, string]
+      | [string, string, string]
+      | [string, string, string, string]
+      | [string, string, string, string, string]
+      | [string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+      | [
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string
+        ]
+      | [
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string,
+          string
+        ];
+  };
+  /**
+   * The DID of the voting service every idea's election is registered with; one on the community's list (VTI-VOT-082).
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061). A board SHOULD set it false (VTI-BRD-033).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065); SHOULD be at least 10.
+   */
+  textReleaseThreshold: number;
+}
+/**
  * A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
  */
 export interface EncryptedBallot {
@@ -14304,6 +14726,42 @@ export interface EventAnonymity {
   holderCount: number;
 }
 /**
+ * One attachment, as its reader may see it. Exactly the member its `kind` names is present: `roomId` for `room` and `optInRoom`, `boardId` for `board`, `electionId` for `election`, `material` for `material`.
+ */
+export interface EventAttachment {
+  attachmentId: EventAttachmentId;
+  /**
+   * The event it is attached to.
+   */
+  eventId: EventId;
+  kind: EventAttachmentKind;
+  /**
+   * The community room's DID.
+   */
+  roomId?: string;
+  /**
+   * For `room`: whom it admits. Absent means `going`.
+   */
+  admits?: EventRoomAdmits;
+  /**
+   * For `optInRoom`: what a registrant is told before entering — that those in it see each other. Plain text.
+   */
+  disclosure?: string;
+  /**
+   * The board, by its identifier (`vtc/boards` 0.2, whose audience may be an event).
+   */
+  boardId?: BoardId;
+  /**
+   * The community election, by its identifier.
+   */
+  electionId?: ElectionId;
+  material?: EventMaterial;
+  /**
+   * When it was attached.
+   */
+  attachedAt: string;
+}
+/**
  * How many counting events a member attended in one calendar in one month (VTI-EVT-185): the record attendance is counted from.
  */
 export interface EventAttendanceTally {
@@ -14508,6 +14966,23 @@ export interface EventInvitationLink_VtcEventsV0_3 {
   forGuests?: boolean;
 }
 /**
+ * A material released to each registrant who is going, as access details are (VTI-EVT-243): a name and an `https` address, or a record in a room the registrant may read.
+ */
+export interface EventMaterial {
+  /**
+   * What it is. Plain text.
+   */
+  name: string;
+  /**
+   * Where it is, as an `https` address. No other scheme.
+   */
+  url?: string;
+  /**
+   * More about it. Plain text.
+   */
+  description?: string;
+}
+/**
  * One occurrence of a series as a reader is shown it, expanded on read (VTI-EVT-192).
  */
 export interface EventOccurrence {
@@ -14588,6 +15063,79 @@ export interface EventPcsAttestation {
    * The class it was made under; a responder checks it is live and the audience's.
    */
   classLabel: EventClassLabel;
+}
+/**
+ * A scheduling poll as its reader may see it.
+ */
+export interface EventPoll {
+  pollId: EventPollId;
+  /**
+   * The calendar the event it closes into will belong to.
+   */
+  calendarId: CalendarId;
+  /**
+   * The kind of event it closes into. Absent means `event`.
+   */
+  kind?: EventKind;
+  title: EventTitle;
+  description?: EventDescription;
+  /**
+   * The candidate times.
+   *
+   * @minItems 2
+   * @maxItems 30
+   */
+  slots: [EventPollSlot, EventPollSlot, ...EventPollSlot[]];
+  audience: EventAudience_VtcEventsV0_2;
+  voters: EventPollVoters;
+  /**
+   * When it stops taking answers, where set.
+   */
+  closesAt?: string;
+  state: EventPollState;
+  /**
+   * Once closed: the time chosen, where one was.
+   */
+  chosenSlotId?: EventPollSlotId;
+  /**
+   * Once closed into an event: the draft made from it.
+   */
+  eventId?: EventId;
+  /**
+   * When it was created.
+   */
+  createdAt: string;
+}
+/**
+ * One candidate time, as an event's `when` states it.
+ */
+export interface EventPollSlot {
+  slotId: EventPollSlotId;
+  when: When;
+}
+/**
+ * How a candidate time was answered: counts, and — only where the poll's `voters` setting admits the reader — who answered what.
+ */
+export interface EventPollTally {
+  slotId: EventPollSlotId;
+  /**
+   * Answers of `yes`.
+   */
+  yes: number;
+  /**
+   * Answers of `ifNeedBe`.
+   */
+  ifNeedBe: number;
+  /**
+   * Answers of `no`.
+   */
+  no: number;
+  /**
+   * Each answerer's choice, keyed by entry — only where the reader may see who answered.
+   */
+  voters?: {
+    [k: string]: EventPollChoice | undefined;
+  };
 }
 /**
  * What makes an event a series (VTI-EVT-190 – 193): one rule, and the changes to single occurrences keyed by their original starts.
@@ -17332,6 +17880,204 @@ export interface MediatorAcl {
    * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
    */
   tspEnabled?: boolean;
+}
+/**
+ * Something a meeting asked a member to do (VTI-EVT-266). The assignee's own agent may show it in their calendar (VTI-CAL-024).
+ */
+export interface MeetingActionItem {
+  actionId: MeetingActionItemId;
+  /**
+   * The meeting it came from.
+   */
+  eventId: EventId;
+  /**
+   * What is to be done. Plain text.
+   */
+  title: string;
+  /**
+   * Who is to do it, by entry.
+   */
+  assignee: EntryId;
+  /**
+   * When it is due.
+   */
+  dueAt?: string;
+  status: MeetingActionStatus;
+  /**
+   * What it points at.
+   *
+   * @maxItems 8
+   */
+  links?:
+    | []
+    | [MeetingLink]
+    | [MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink];
+  /**
+   * When it was recorded.
+   */
+  createdAt: string;
+  /**
+   * When it last changed.
+   */
+  updatedAt: string;
+}
+/**
+ * One item of a meeting's agenda (VTI-EVT-256). The agenda is the ordered list of these.
+ */
+export interface MeetingAgendaItem {
+  itemId: MeetingAgendaItemId;
+  /**
+   * What the item is. Plain text.
+   */
+  title: string;
+  /**
+   * More about it. Plain text.
+   */
+  description?: string;
+  /**
+   * Who leads the item, by entry.
+   */
+  owner?: EntryId;
+  /**
+   * Minutes allotted to it.
+   */
+  timeboxMinutes?: number;
+  /**
+   * What it points at.
+   *
+   * @maxItems 8
+   */
+  links?:
+    | []
+    | [MeetingLink]
+    | [MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink]
+    | [MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink, MeetingLink];
+  /**
+   * Marked done by the chair or the secretary. Absent means false.
+   */
+  done?: boolean;
+}
+/**
+ * Something an agenda item or an action item points at: a board idea, an election, a record in the meeting's room, or a web page. Exactly one of the members names it.
+ */
+export interface MeetingLink {
+  /**
+   * A board idea, by its identifier (`vtc/boards`).
+   */
+  boardIdeaId?: string;
+  /**
+   * A community election, by its identifier.
+   */
+  electionId?: ElectionId;
+  /**
+   * A record in the meeting's room, by the identifier the room gives it.
+   */
+  roomRecordId?: string;
+  /**
+   * A web page, by its `https` address. No other scheme.
+   */
+  url?: string;
+}
+/**
+ * A meeting's minutes (VTI-EVT-265): where they are kept and whether they are approved.
+ */
+export interface MeetingMinutes {
+  state: MeetingMinutesState;
+  /**
+   * Where the minutes are kept in the meeting's room, where it has one.
+   */
+  roomRecordId?: string;
+  /**
+   * The minutes themselves, where the meeting has no room. Plain text.
+   */
+  text?: string;
+  /**
+   * When they were last recorded.
+   */
+  recordedAt: string;
+  /**
+   * When the chair approved them.
+   */
+  approvedAt?: string;
+}
+/**
+ * A motion: a question the meeting puts to a community election (VTI-EVT-262). Its standing — open, closed, its result — is the election's, read from the election, never copied here.
+ */
+export interface MeetingMotion {
+  motionId: MeetingMotionId;
+  /**
+   * What is moved. Plain text.
+   */
+  title: string;
+  /**
+   * The agenda item it belongs to.
+   */
+  agendaItemId?: MeetingAgendaItemId;
+  /**
+   * The community election that decides it.
+   */
+  electionId: ElectionId;
+  /**
+   * When it was opened.
+   */
+  openedAt: string;
+  /**
+   * Those present toward quorum when it was opened.
+   */
+  presentAtOpening?: number;
+}
+/**
+ * How many must be present for the meeting to decide (VTI-EVT-260). Exactly one of `count` and `fractionPercent`. `of` names who counts: the meeting's roster (those registered and going) or, with `role`, the community's active members holding that role.
+ */
+export interface MeetingQuorumRule {
+  /**
+   * `roster`: counted against the meeting's registrants who are going. `role`: counted against the community's active members holding `role`.
+   */
+  of: "roster" | "role";
+  /**
+   * Present exactly when `of` is `role`.
+   */
+  role?: RoleName;
+  /**
+   * At least this many present.
+   */
+  count?: number;
+  /**
+   * At least this percentage of those counted, rounded up.
+   */
+  fractionPercent?: number;
+}
+/**
+ * Where the quorum stands now, read from the roll call (VTI-EVT-258, VTI-EVT-261).
+ */
+export interface MeetingQuorumStatus {
+  /**
+   * Those present who count toward the rule.
+   */
+  present: number;
+  /**
+   * Those the rule counts against, where the rule is a fraction.
+   */
+  eligible?: number;
+  /**
+   * How many must be present for quorum.
+   */
+  required: number;
+  /**
+   * Whether quorum is met now.
+   */
+  met: boolean;
 }
 /**
  * One community member as the maintainer sees it: the membership record joined with its ACL role.

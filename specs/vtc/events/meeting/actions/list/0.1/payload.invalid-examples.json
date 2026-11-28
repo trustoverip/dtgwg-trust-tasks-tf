@@ -1,0 +1,13 @@
+[
+  {
+    "note": "Unknown member — `mine` is `assignedToMe`.",
+    "payload": {
+      "mine": true
+    }
+  },
+  {
+    "note": "`items` is REQUIRED on the answer.",
+    "variant": "response",
+    "payload": {}
+  }
+]
