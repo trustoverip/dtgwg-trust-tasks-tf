@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/list/0.1",
+  "title": "VTA Calendar — List — payload",
+  "description": "A client reads the principal's calendar across the trust contexts it has standing in: the events the principal registered for, as their communities answered them, and the events it has only been told of, as their notifications state them. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+      },
+      "description": "Only these contexts. Absent: every context the caller has standing in (VTI-CAL-002)."
+    },
+    "from": {
+      "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarInstant",
+      "description": "Only entries still running at or after this instant. Absent: now."
+    },
+    "to": {
+      "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarInstant",
+      "description": "Only entries starting before this instant. Absent: sixty days after `from`."
+    },
+    "tiers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarTier"
+      },
+      "description": "Only these tiers. Absent: both."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same caller and filters; the VTA refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the VTA chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — List — response payload",
+      "description": "The success response to a vta/calendar/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarEntry"
+          },
+          "description": "Earliest start first, then community and event identifier."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

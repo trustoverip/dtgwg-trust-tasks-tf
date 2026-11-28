@@ -1,0 +1,42 @@
+[
+  {
+    "note": "`enabled` is REQUIRED.",
+    "payload": {
+      "contextId": "personal",
+      "target": {
+        "holder": "did:webvh:QmRiverside:riverside-makers.example",
+        "pageId": "bkp_AdaOfficeHours001"
+      }
+    }
+  },
+  {
+    "note": "`target.holder` is a DID.",
+    "payload": {
+      "contextId": "personal",
+      "target": {
+        "holder": "riverside",
+        "pageId": "x"
+      },
+      "enabled": true
+    }
+  },
+  {
+    "note": "`share` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "contextId": "personal",
+      "target": {
+        "holder": "did:webvh:QmRiverside:riverside-makers.example",
+        "pageId": "bkp_AdaOfficeHours001"
+      },
+      "enabled": true,
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/alerts/set/0.1",
+  "title": "VTA Calendar — Alerts — Set — payload",
+  "description": "A client sets the principal's own reminders for one event in their calendar, in place of the event's suggestions and the context's default. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "eventId",
+    "reminderMinutes"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "community": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarDid"
+    },
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId"
+    },
+    "reminderMinutes": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarReminderList",
+      "description": "Empty: no reminders for this event."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Alerts — Set — response payload",
+      "description": "The success response to a vta/calendar/alerts/set/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/alerts/set/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alert"
+      ],
+      "properties": {
+        "alert": {
+          "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarAlert"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

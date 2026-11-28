@@ -2724,6 +2724,48 @@ export import VtaBackupInitiateImport_v1_1 = _VtaBackupInitiateImport_v1_1;
 import * as _VtaBackupPutChunk_v1_0 from "./vta/backup/put-chunk/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaBackupPutChunk_v1_0 = _VtaBackupPutChunk_v1_0;
+import * as _CalendarShared_v0_1 from "./vta/calendar/_shared/0.1/calendar.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import CalendarShared_v0_1 = _CalendarShared_v0_1;
+import * as _VtaCalendarAlertsClear_v0_1 from "./vta/calendar/alerts/clear/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarAlertsClear_v0_1 = _VtaCalendarAlertsClear_v0_1;
+import * as _VtaCalendarAlertsSet_v0_1 from "./vta/calendar/alerts/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarAlertsSet_v0_1 = _VtaCalendarAlertsSet_v0_1;
+import * as _VtaCalendarBusyShare_v0_1 from "./vta/calendar/busy/share/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarBusyShare_v0_1 = _VtaCalendarBusyShare_v0_1;
+import * as _VtaCalendarExport_v0_1 from "./vta/calendar/export/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarExport_v0_1 = _VtaCalendarExport_v0_1;
+import * as _VtaCalendarFeedsCreate_v0_1 from "./vta/calendar/feeds/create/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarFeedsCreate_v0_1 = _VtaCalendarFeedsCreate_v0_1;
+import * as _VtaCalendarFeedsList_v0_1 from "./vta/calendar/feeds/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarFeedsList_v0_1 = _VtaCalendarFeedsList_v0_1;
+import * as _VtaCalendarFeedsRevoke_v0_1 from "./vta/calendar/feeds/revoke/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarFeedsRevoke_v0_1 = _VtaCalendarFeedsRevoke_v0_1;
+import * as _VtaCalendarList_v0_1 from "./vta/calendar/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarList_v0_1 = _VtaCalendarList_v0_1;
+import * as _VtaCalendarReceiptsDeposit_v0_1 from "./vta/calendar/receipts/deposit/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarReceiptsDeposit_v0_1 = _VtaCalendarReceiptsDeposit_v0_1;
+import * as _VtaCalendarReceiptsList_v0_1 from "./vta/calendar/receipts/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarReceiptsList_v0_1 = _VtaCalendarReceiptsList_v0_1;
+import * as _VtaCalendarSettingsShow_v0_1 from "./vta/calendar/settings/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarSettingsShow_v0_1 = _VtaCalendarSettingsShow_v0_1;
+import * as _VtaCalendarSettingsUpdate_v0_1 from "./vta/calendar/settings/update/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarSettingsUpdate_v0_1 = _VtaCalendarSettingsUpdate_v0_1;
+import * as _VtaCalendarSync_v0_1 from "./vta/calendar/sync/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaCalendarSync_v0_1 = _VtaCalendarSync_v0_1;
 import * as _CollectionShared_v0_1 from "./vta/collection/_shared/0.1/collection.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import CollectionShared_v0_1 = _CollectionShared_v0_1;

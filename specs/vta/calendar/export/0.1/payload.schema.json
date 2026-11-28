@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/export/0.1",
+  "title": "VTA Calendar — Export — payload",
+  "description": "A client exports the principal's calendar as iCalendar, together with the receipts the VTA keeps — what the member takes with them, whether or not any community still answers. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+      },
+      "description": "Only these contexts. Absent: every context the caller has standing in (VTI-CAL-002)."
+    },
+    "from": {
+      "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarInstant",
+      "description": "Only entries ending after this. Absent: no lower bound."
+    },
+    "to": {
+      "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarInstant",
+      "description": "Only entries starting before this. Absent: no upper bound."
+    },
+    "includeReceipts": {
+      "type": "boolean",
+      "description": "Absent: true."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same caller and filters; the VTA refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the VTA chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Export — response payload",
+      "description": "The success response to a vta/calendar/export/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/export/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ics"
+      ],
+      "properties": {
+        "ics": {
+          "type": "string",
+          "maxLength": 4000000,
+          "description": "An iCalendar (RFC 5545) object of the `mine` entries in range, titles, times and place summaries, never access details or registrants (VTI-CAL-053). The same on every page."
+        },
+        "receipts": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarReceipt"
+          },
+          "description": "One page of the kept receipts in range, as received (VTI-CAL-030)."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

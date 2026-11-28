@@ -162,6 +162,14 @@ emits must be reachable both as `crate::…` (here) and as `::trust_tasks_rs::�
 door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 `examples/consumer-app` (the `consumer-app` job) is what catches a missing one.
 
+## The prebuilt tree is frozen
+
+`src/specs` holds a module for each version `prebuilt-modules.txt` lists (what
+main prebuilt on 2026-11-28) and for the framework's own families; a newer
+version is consumer-side only — generate it with `trust-tasks-build`. The list
+only shrinks (`npm run check-prebuilt-list`), and is left out of the `.crate`.
+See DEVELOPMENT.md, "Every prebuilt specification module is deprecated".
+
 ## The prebuilt tree spells each shared `$defs` entry once
 
 A shared schema (a family's `_shared/` key-roles or device-binding schema, the

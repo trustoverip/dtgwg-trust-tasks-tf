@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`feedId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A feed identifier is `feed_` and 16 – 64 base64url characters, not the address.",
+    "payload": {
+      "feedId": "https://vta.example/calendar/feeds/x.ics"
+    }
+  },
+  {
+    "note": "`feed` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "feedId": "feed_Ph0n3Ca1endar00001",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

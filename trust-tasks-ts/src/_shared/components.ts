@@ -3121,6 +3121,61 @@ export type VirtualFeature = "audio" | "chat" | "feed" | "moderator" | "phone" |
  */
 export type Visibility = "open" | "attributed" | "private";
 /**
+ * A local time of day, `HH:MM`, 24-hour.
+ */
+export type VtaCalendarClock = string;
+/**
+ * A trust context of the VTA, by its identifier.
+ */
+export type VtaCalendarContextId = string;
+/**
+ * A DID: a community, or an identifier of the principal's.
+ */
+export type VtaCalendarDid = string;
+/**
+ * What a feed carries of each `mine` entry (VTI-CAL-053). `busy`: only that time is taken. `titles`: the title and the times. `titlesAndPlaces`: also the place summary — never the access details. A `notified` entry is carried, where the feed includes the tier, only as busy time.
+ */
+export type VtaCalendarFeedDetail = "busy" | "titles" | "titlesAndPlaces";
+/**
+ * Opaque identifier of a feed: `feed_` followed by 16 to 64 base64url characters. It is not the feed's address.
+ */
+export type VtaCalendarFeedId = string;
+/**
+ * An RFC 3339 instant in UTC, whole seconds.
+ */
+export type VtaCalendarInstant = string;
+/**
+ * Opaque identifier of a kept receipt: `rcpt_` followed by 16 to 64 base64url characters.
+ */
+export type VtaCalendarReceiptId = string;
+/**
+ * Reminder offsets, distinct. Empty means no reminders.
+ *
+ * @maxItems 4
+ */
+export type VtaCalendarReminderList =
+  | []
+  | [VtaCalendarReminderMinutes]
+  | [VtaCalendarReminderMinutes, VtaCalendarReminderMinutes]
+  | [VtaCalendarReminderMinutes, VtaCalendarReminderMinutes, VtaCalendarReminderMinutes]
+  | [VtaCalendarReminderMinutes, VtaCalendarReminderMinutes, VtaCalendarReminderMinutes, VtaCalendarReminderMinutes];
+/**
+ * A reminder's offset: how many minutes before the event's start it is due. At most four weeks.
+ */
+export type VtaCalendarReminderMinutes = number;
+/**
+ * Where an entry's reminders come from (VTI-CAL-041). `alert`: the principal set them for this event. `event`: the event's suggested reminders. `default`: the context's default. `none`: the entry is not reminded of (VTI-CAL-040).
+ */
+export type VtaCalendarReminderSource = "alert" | "event" | "default" | "none";
+/**
+ * How one community's read went. `read`: answered. `notSyncing`: the context's `sync` is off. `unavailable`: the community did not answer; the VTA tries again later. `refused`: the community refused the read (for example, the member has left).
+ */
+export type VtaCalendarSyncStatus = "read" | "notSyncing" | "unavailable" | "refused";
+/**
+ * `mine`: an event the principal holds a registration for, read from its community as the member (VTI-CAL-011). `notified`: an event the VTA holds only an `event` notification for, shown only as the notification states it (VTI-CAL-020).
+ */
+export type VtaCalendarTier = "mine" | "notified";
+/**
  * Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.
  */
 export type WallVisibility = "members" | "nobody";
@@ -22630,6 +22685,211 @@ export interface VirtualPlace {
 export interface VotingParameters {
   suite: "ps-ddh-bls12381";
   votingKey: Multibase_VotingV0_1;
+}
+/**
+ * The principal's own reminders for one event (VTI-CAL-041).
+ */
+export interface VtaCalendarAlert {
+  contextId: VtaCalendarContextId;
+  community: VtaCalendarDid;
+  eventId: EventId;
+  /**
+   * Empty: no reminders for this event.
+   */
+  reminderMinutes: VtaCalendarReminderList;
+}
+/**
+ * The principal's choice to share busy times with one booking page, for one context.
+ */
+export interface VtaCalendarBusyShare {
+  contextId: VtaCalendarContextId;
+  target: VtaCalendarBusyTarget;
+  /**
+   * Whether busy times are shared.
+   */
+  enabled: boolean;
+  /**
+   * When the VTA last sent busy times to the target.
+   */
+  lastSharedAt?: VtaCalendarInstant;
+}
+/**
+ * A booking page the principal shares busy times with (VTI-CAL-060): the DID holding it and its identifier there.
+ */
+export interface VtaCalendarBusyTarget {
+  holder: VtaCalendarDid;
+  /**
+   * The booking page's identifier at its holder.
+   */
+  pageId: string;
+}
+/**
+ * One entry of the principal's calendar. A `mine` entry carries the event and the registration as its community last answered them; a `notified` entry carries only what its notification states (VTI-CAL-020), and never a title.
+ */
+export interface VtaCalendarEntry {
+  contextId: VtaCalendarContextId;
+  /**
+   * The community holding the event.
+   */
+  community: VtaCalendarDid;
+  eventId: EventId;
+  tier: VtaCalendarTier;
+  period: VtaCalendarPeriod;
+  /**
+   * The principal's identifier the entry concerns: the membership identifier the event was read as, or the notification's addressee.
+   */
+  identifier?: VtaCalendarDid;
+  /**
+   * `mine` only: the event as its community last answered it.
+   */
+  event?: EventRef;
+  /**
+   * `mine` only, where the community answered one.
+   */
+  placeSummary?: PlaceSummary;
+  /**
+   * `mine` only: the principal's registration.
+   */
+  registrationStatus?: RegistrationStatus;
+  /**
+   * `notified` only: the held notification (vta/notifications/show) the entry comes from.
+   */
+  notificationRecordId?: string;
+  /**
+   * `notified` only: the notification was withdrawn (VTI-CAL-022). Absent means false.
+   */
+  withdrawn?: boolean;
+  /**
+   * The offsets the VTA will remind at, after VTI-CAL-041 and VTI-CAL-040.
+   */
+  reminders?: VtaCalendarReminderList;
+  reminderSource?: VtaCalendarReminderSource;
+  /**
+   * The entry's period overlaps another entry in the same answer (VTI-CAL-023). Absent means false.
+   */
+  overlaps?: boolean;
+  /**
+   * `mine` only: when the VTA last read the event from its community.
+   */
+  readAt?: VtaCalendarInstant;
+}
+/**
+ * A feed for a calendar application (VTI-CAL-050 – 055), as a party with standing in every context it covers sees it. Never its address, which only feeds/create returns.
+ */
+export interface VtaCalendarFeed {
+  feedId: VtaCalendarFeedId;
+  /**
+   * What the principal calls it: "Phone calendar". Plain text.
+   */
+  label: string;
+  /**
+   * The contexts the feed covers.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  contextIds: [VtaCalendarContextId, ...VtaCalendarContextId[]];
+  detail: VtaCalendarFeedDetail;
+  /**
+   * The tiers the feed carries.
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  tiers: [VtaCalendarTier] | [VtaCalendarTier, VtaCalendarTier];
+  createdAt: VtaCalendarInstant;
+  expiresAt: VtaCalendarInstant;
+  revokedAt?: VtaCalendarInstant;
+  /**
+   * When a calendar application last read it (VTI-CAL-054).
+   */
+  lastFetchedAt?: VtaCalendarInstant;
+  /**
+   * How many times it has been read.
+   */
+  fetchCount: number;
+}
+/**
+ * When an entry happens, as instants: computed by the VTA from the event's local start, zone and duration as the community last answered them, or taken from the notification's period for a `notified` entry.
+ */
+export interface VtaCalendarPeriod {
+  startsAt: VtaCalendarInstant;
+  endsAt: VtaCalendarInstant;
+}
+/**
+ * A daily period in which the VTA fires no reminder (VTI-CAL-042), read in `timeZone`. A period whose `endsAt` is earlier than its `startsAt` runs past midnight.
+ */
+export interface VtaCalendarQuietHours {
+  startsAt: VtaCalendarClock;
+  endsAt: VtaCalendarClock;
+  timeZone: TimeZoneId;
+}
+/**
+ * A community's signed reply the VTA keeps for its principal, exactly as received (VTI-CAL-030).
+ */
+export interface VtaCalendarReceipt {
+  receiptId: VtaCalendarReceiptId;
+  contextId: VtaCalendarContextId;
+  /**
+   * The reply's issuer, whose proof the VTA verified.
+   */
+  community: VtaCalendarDid;
+  /**
+   * The event the reply names.
+   */
+  eventId?: EventId;
+  /**
+   * The reply document's Type URI, a `#response` of a vtc/events task. Any scheme a Type URI may take.
+   */
+  replyType: string;
+  receivedAt: VtaCalendarInstant;
+  /**
+   * The reply document, exactly as received, proof included, for a reader to verify itself.
+   */
+  document: {};
+}
+/**
+ * A trust context's calendar settings (VTI-CAL-070).
+ */
+export interface VtaCalendarSettings {
+  contextId: VtaCalendarContextId;
+  /**
+   * Whether the VTA reads the events of the communities the principal belongs to in this context (VTI-CAL-010). False until the principal chooses.
+   */
+  sync: boolean;
+  /**
+   * Offsets for events that suggest none (VTI-CAL-041).
+   */
+  defaultReminderMinutes: VtaCalendarReminderList;
+  quietHours?: VtaCalendarQuietHours;
+  /**
+   * Absent until the settings are first changed.
+   */
+  updatedAt?: VtaCalendarInstant;
+  /**
+   * The party that last changed them (VTI-CAL-070).
+   */
+  updatedBy?: VtaCalendarDid;
+}
+/**
+ * One community's read.
+ */
+export interface VtaCalendarSyncResult {
+  contextId: VtaCalendarContextId;
+  community: VtaCalendarDid;
+  status: VtaCalendarSyncStatus;
+  /**
+   * Entries added or changed by this read.
+   */
+  changed?: number;
+  /**
+   * When the community last answered a read.
+   */
+  lastReadAt?: VtaCalendarInstant;
+  /**
+   * `refused` only: the community's error code.
+   */
+  code?: string;
 }
 /**
  * An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.

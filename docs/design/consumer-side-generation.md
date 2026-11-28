@@ -10,7 +10,7 @@ specification into every library.
 | 2. Rust end to end (`trust-tasks-build`, the CLI) | shipped | [build side](#milestone-2--rust-build-side-implemented), [the CLI](#milestone-2--the-cli) |
 | 3. TypeScript, Go, Dart generation from bundles | shipped in the 2026-10-26 releases | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) records the versions |
 | 4. Hand-written packages depend on the runtime only | shipped | [Milestone 4](#milestone-4--the-hand-written-packages) |
-| 5. Deprecate, then remove the prebuilt modules | deprecated; removal batch not chosen | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
+| 5. Deprecate, then remove the prebuilt modules | deprecated; Rust tree frozen 2026-11-28; removal batch not chosen | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
 
 Measurements below are dated where they were taken; they are not kept current.
 
@@ -433,6 +433,20 @@ is still held byte for byte to the prebuilt tree.
 The withdrawal batch that removes them — one declared break per library — is
 chosen once the generators' use is known; the earliest is the first quarterly
 batch at least 90 days after the deprecation ships.
+
+**The Rust prebuilt tree is frozen (2026-11-28).** `trust-tasks-rs` packaged
+to 9.93 MiB with the `vta/calendar` family (#1409), against crates.io's 10 MiB
+upload limit. From then on a version gets a prebuilt Rust module only if
+`trust-tasks-rs/prebuilt-modules.txt` lists it — exactly what main prebuilt on
+that day — or its family is the framework's own. Every later version is
+consumer-side only in Rust: an application generates it with
+`trust-tasks-build` from the registry bundle, and `trust_tasks_rs::schema_index`
+answers `None` for it (it is the framework crate's index of what it prebuilds;
+an application asks the index its own build generated). TypeScript, Go and
+Dart still generate every version — npm, the Go proxy and pub.dev have no limit
+the tree approaches. Nothing prebuilt is removed, so it is not a break. The list
+only shrinks: `npm run check-prebuilt-list` fails a change that adds a line, and
+removing lines is how the removal batch above will retire the rest.
 
 ## Third-party sources
 

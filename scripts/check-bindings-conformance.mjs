@@ -81,6 +81,30 @@ let lifecycleSummary = { withdrawn: 0, deprecated: 0 };
  */
 const RUST_HAND_WRITTEN = new Set(["trust-task-error"]);
 
+/**
+ * The specification versions that keep a prebuilt Rust module
+ * (`trust-tasks-rs/prebuilt-modules.txt`, milestone 5 of
+ * docs/design/consumer-side-generation.md). A non-framework version not listed
+ * there is **consumer-side only** in Rust: an application generates it with
+ * `trust-tasks-build`, so its absence from `src/specs` is by design — and a
+ * module for it is a failure, since the list is the whole decision.
+ *
+ * Read here independently of trust-tasks-codegen (see the header note): the
+ * list is data both read, never code both share. TypeScript, Go and Dart still
+ * generate every version.
+ */
+const RUST_PREBUILT = new Set(
+  fs
+    .readFileSync(path.join(ROOT, "trust-tasks-rs", "prebuilt-modules.txt"), "utf8")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#")),
+);
+/** SPEC §6.1's reserved families, always prebuilt and never listed. */
+const isFrameworkFamily = (slug) => /^trust-(task|ceremony)($|-|\/)/.test(slug);
+const rustIsPrebuilt = (slug, version) => isFrameworkFamily(slug) || RUST_PREBUILT.has(`${slug}/${version}`);
+let rustConsumerSideOnly = 0;
+
 /* ── Discovery ──────────────────────────────────────────────────────────── */
 
 /**
@@ -967,9 +991,20 @@ for (const spec of specs) {
           `was removed, or this slug should no longer be listed in RUST_HAND_WRITTEN.`,
       );
     }
+  } else if (!rs && !rustIsPrebuilt(spec.slug, spec.version)) {
+    rustConsumerSideOnly += 1;
   } else if (!rs) {
     fail(where, `no generated Rust module declares TYPE_URI ${typeUri}`);
-  } else {
+  } else if (!rustIsPrebuilt(spec.slug, spec.version)) {
+    seenRs.add(typeUri);
+    fail(
+      where,
+      `trust-tasks-rs prebuilds a module for this version, but trust-tasks-rs/prebuilt-modules.txt ` +
+        `does not list it. New versions are consumer-side only in Rust (milestone 5): regenerate ` +
+        `with trust-tasks-codegen rather than adding the line, which only shrinks.`,
+    );
+  }
+  if (rs && rustIsPrebuilt(spec.slug, spec.version)) {
     seenRs.add(typeUri);
     const reqPolicy = rustPolicy(rs.src, "Payload");
     const respPolicy = rustPolicy(rs.src, "Response");
@@ -1076,6 +1111,9 @@ for (const spec of specs) {
       }
     }
 
+  }
+
+  {
     /* — The four shipped schemas must be the same document — */
     //
     // Each generator inlines cross-file `$ref`s itself: `resolve_cross_file_refs`
@@ -1106,8 +1144,8 @@ for (const spec of specs) {
 
         const shipped = [
           ["TypeScript", tsConst, tsSchemaConst(ts.src, tsConst)],
-          ["Rust", rsConst, rustSchemaConst(rs.src, rsConst)],
         ];
+        if (rs) shipped.push(["Rust", rsConst, rustSchemaConst(rs.src, rsConst)]);
         if (go) shipped.push(["Go", goConst, goSchemaConst(go.src, goConst)]);
         if (dart) shipped.push(["Dart", dartConst, dartSchemaConst(dart.src, dartConst)]);
 
@@ -1712,7 +1750,7 @@ if (problems.length > 0) {
 
 console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
-    `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
+    `${tsByUri.size} TypeScript, ${rsByUri.size} Rust (${rustConsumerSideOnly} consumer-side only, by design), ${goByUri.size} Go and ` +
     `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes (${rustDetailsSchemasChecked} with a detailsSchema) ` +
     `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
     `MAX_DOCUMENT_BYTES, ${dartSizeBoundsChecked} match Dart, ${tsSizeBoundsChecked} TypeScript and ${goSizeBoundsChecked} Go maxDocumentBytes. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +

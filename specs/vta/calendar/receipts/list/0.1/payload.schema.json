@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/calendar/receipts/list/0.1",
+  "title": "VTA Calendar — Receipts — List — payload",
+  "description": "A client lists the communities' signed replies about the principal's registrations that the VTA keeps, each exactly as received. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarContextId"
+    },
+    "community": {
+      "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarDid",
+      "description": "Only this community's."
+    },
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.2/event.schema.json#/$defs/EventId",
+      "description": "Only this event's."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same caller and filters; the VTA refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the VTA chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Calendar — Receipts — List — response payload",
+      "description": "The success response to a vta/calendar/receipts/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/calendar/receipts/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "../../../_shared/0.1/calendar.schema.json#/$defs/VtaCalendarReceipt"
+          },
+          "description": "The receipts, newest first, each exactly as received."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
