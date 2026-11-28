@@ -105,6 +105,50 @@ const UNIT_TEST_FAMILIES: &[&str] = &["acl"];
 /// too, which must not carry it.
 const PREBUILT_DEPRECATION: &str = "#[deprecated(note = \"the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \\\"Generate only the tasks you use\\\")\")]";
 
+/// The frozen list of specification versions that keep a prebuilt module,
+/// relative to the repository root (milestone 5 of
+/// docs/design/consumer-side-generation.md).
+const PREBUILT_LIST: &str = "trust-tasks-rs/prebuilt-modules.txt";
+
+/// `(slug, version)` for every line of [`PREBUILT_LIST`] — `<slug>/<M.N>`, with
+/// `#` comments and blank lines ignored. A missing file is an error rather
+/// than "prebuild nothing", which would silently empty the crate.
+fn read_prebuilt_list(repo_root: &Path) -> Result<std::collections::BTreeSet<(String, String)>> {
+    let path = repo_root.join(PREBUILT_LIST);
+    let text = fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+    let mut out = std::collections::BTreeSet::new();
+    for (n, line) in text.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let (slug, version) = line.rsplit_once('/').ok_or_else(|| {
+            anyhow!(
+                "{PREBUILT_LIST}:{}: expected <slug>/<M.N>, got {line:?}",
+                n + 1
+            )
+        })?;
+        let is_version = version.split_once('.').is_some_and(|(a, b)| {
+            !a.is_empty() && !b.is_empty() && (a.to_owned() + b).chars().all(|c| c.is_ascii_digit())
+        });
+        if slug.is_empty() || !is_version {
+            return Err(anyhow!(
+                "{PREBUILT_LIST}:{}: expected <slug>/<M.N>, got {line:?}",
+                n + 1
+            ));
+        }
+        if is_reserved_family(slug.split('/').next().unwrap_or(slug)) {
+            return Err(anyhow!(
+                "{PREBUILT_LIST}:{}: {line} is a framework specification, always prebuilt; \
+                 it must not be listed",
+                n + 1
+            ));
+        }
+        out.insert((slug.to_string(), version.to_string()));
+    }
+    Ok(out)
+}
+
 fn unit_test_gate(family: &str) -> &'static str {
     if UNIT_TEST_FAMILIES.contains(&family) {
         ""
@@ -426,6 +470,36 @@ fn main() -> Result<()> {
         }
     }
 
+    // The prebuilt tree is frozen (milestone 5): a version gets a prebuilt
+    // module only if `prebuilt-modules.txt` lists it, or its family is the
+    // framework's own. Everything else is consumer-side only — an application
+    // generates it from the registry bundle with `trust-tasks-build` — which is
+    // what keeps the `.crate` under crates.io's upload limit as the registry
+    // grows. The list only shrinks (`npm run check-prebuilt-list`).
+    let prebuilt = read_prebuilt_list(&repo_root)?;
+    let mut consumer_side = 0usize;
+    specs.retain(|s| {
+        let keep = is_reserved_family(s.family())
+            || prebuilt.contains(&(s.slug.clone(), s.version.clone()));
+        if !keep {
+            consumer_side += 1;
+        }
+        keep
+    });
+    for (slug, version) in &prebuilt {
+        if !specs
+            .iter()
+            .any(|s| &s.slug == slug && &s.version == version)
+        {
+            // A withdrawn version, or one removed from `specs/`: generated
+            // nowhere either way. Its line should go with it.
+            println!(
+                "note: {PREBUILT_LIST} lists {slug}/{version}, which is not a live or deprecated \
+                 version on disk; remove the line"
+            );
+        }
+    }
+
     println!("Discovered {} specs:", specs.len());
     for s in &specs {
         println!("  {}/{}", s.slug, s.version);
@@ -489,11 +563,13 @@ fn main() -> Result<()> {
     write_cargo_features(&gated, &repo_root)?;
 
     println!(
-        "\nGenerated {} payload modules into {} ({} deprecated, {} withdrawn and skipped)",
+        "\nGenerated {} payload modules into {} ({} deprecated, {} withdrawn and skipped, {} \
+         consumer-side only — not in {PREBUILT_LIST})",
         specs.len(),
         out_root.display(),
         specs.iter().filter(|s| s.deprecation.is_some()).count(),
-        withdrawn
+        withdrawn,
+        consumer_side
     );
     println!(
         "Feature-gated {} spec families ({} framework-reserved families are always compiled)",

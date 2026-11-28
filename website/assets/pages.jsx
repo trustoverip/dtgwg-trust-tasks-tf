@@ -2629,7 +2629,7 @@ trust-tasks generate --lang ts --out src/tasks`} />
             </table>
           </div>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch", marginTop: "var(--tt-space-5)" }}>
-            <b>The prebuilt modules are deprecated.</b> Each library still ships a generated module for every specification in the registry, and each is marked deprecated in all four — <code>#[deprecated]</code>, <code>@deprecated</code>, <code>Deprecated:</code>, <code>@Deprecated</code> — in favour of generating the ones you pin. The framework's own specifications are not affected: the runtimes speak them. The model is described in <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/docs/design/consumer-side-generation.md" target="_blank" rel="noreferrer">consumer-side generation</a>.
+            <b>The prebuilt modules are deprecated.</b> TypeScript, Go and Dart still ship a generated module for every specification in the registry, and trust-tasks-rs for every version published before 28 November 2026 (a newer one is generated only by the application, which keeps the crate under crates.io's upload limit); each is marked deprecated in all four — <code>#[deprecated]</code>, <code>@deprecated</code>, <code>Deprecated:</code>, <code>@Deprecated</code> — in favour of generating the ones you pin. The framework's own specifications are not affected: the runtimes speak them. The model is described in <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/docs/design/consumer-side-generation.md" target="_blank" rel="noreferrer">consumer-side generation</a>.
           </p>
         </div>
       </section>
@@ -2876,12 +2876,12 @@ function RustImplementationPage({ setRoute }) {
       role: "Core library",
       tagline: "Framework primitives, types, dispatcher.",
       summary:
-        "The reference implementation of SPEC.md §4–§11 — TrustTask<P> envelopes, TypeUri parser, Proof/ProofVerifier traits, the typed error pipeline, TransportHandler with §4.8.1 identity precedence baked in, a discovery module, and the runtime that generated payload modules plug into. It also still ships a prebuilt module for every registry spec, deprecated in favour of generating the ones you pin with trust-tasks-build.",
+        "The reference implementation of SPEC.md §4–§11 — TrustTask<P> envelopes, TypeUri parser, Proof/ProofVerifier traits, the typed error pipeline, TransportHandler with §4.8.1 identity precedence baked in, a discovery module, and the runtime that generated payload modules plug into. It also still ships a prebuilt module for every registry spec version published before 28 November 2026, deprecated in favour of generating the ones you pin with trust-tasks-build; newer versions are generated only that way.",
       bullets: [
         "TrustTask<P>, TypeUri, Proof, RejectReason, ErrorPayload",
         "TransportHandler trait + NoopHandler / InMemoryHandler",
         "Dispatcher<R> for typed multi-spec consumers",
-        "specs::* — prebuilt payload types for every registry spec (deprecated)",
+        "specs::* — prebuilt payload types for the registry spec versions published before 28 November 2026 (deprecated)",
         "Optional validate feature — JSON Schema check against embedded schemas",
       ],
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-rs",

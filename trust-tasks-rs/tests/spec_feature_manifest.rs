@@ -44,7 +44,32 @@ fn repo_root() -> PathBuf {
 /// Withdrawn Versions"), so a family whose every version is withdrawn has no
 /// module and no feature — `confirm` became the first such family in the
 /// withdrawal batch of 2027-01-01.
+///
+/// Nor is a version `prebuilt-modules.txt` does not list (milestone 5 of
+/// docs/design/consumer-side-generation.md): it is consumer-side only, so a
+/// family with no listed version — any family added after the freeze — has no
+/// feature either. The list is read here on its own, not through the generator.
 fn families_on_disk(specs_dir: &Path) -> BTreeSet<String> {
+    let listed: BTreeSet<String> = std::fs::read_to_string(
+        specs_dir
+            .parent()
+            .expect("specs/ has a parent")
+            .join("trust-tasks-rs/prebuilt-modules.txt"),
+    )
+    .expect("read trust-tasks-rs/prebuilt-modules.txt")
+    .lines()
+    .map(str::trim)
+    .filter(|l| !l.is_empty() && !l.starts_with('#'))
+    .map(str::to_string)
+    .collect();
+    let is_listed = |version_dir: &Path| {
+        version_dir
+            .strip_prefix(specs_dir)
+            .ok()
+            .and_then(|rel| rel.to_str())
+            .is_some_and(|rel| listed.contains(&rel.replace('\\', "/")))
+    };
+
     fn is_withdrawn(version_dir: &Path) -> bool {
         let Ok(spec) = std::fs::read_to_string(version_dir.join("spec.md")) else {
             return false;
@@ -60,16 +85,19 @@ fn families_on_disk(specs_dir: &Path) -> BTreeSet<String> {
             })
     }
 
-    fn has_spec(dir: &Path) -> bool {
+    fn has_spec(dir: &Path, is_listed: &dyn Fn(&Path) -> bool) -> bool {
         let Ok(entries) = std::fs::read_dir(dir) else {
             return false;
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.is_dir() && has_spec(&path) {
+            if path.is_dir() && has_spec(&path, is_listed) {
                 return true;
             }
-            if path.file_name().is_some_and(|n| n == "payload.schema.json") && !is_withdrawn(dir) {
+            if path.file_name().is_some_and(|n| n == "payload.schema.json")
+                && !is_withdrawn(dir)
+                && is_listed(dir)
+            {
                 return true;
             }
         }
@@ -87,7 +115,7 @@ fn families_on_disk(specs_dir: &Path) -> BTreeSet<String> {
         if name.starts_with('_') || name == "trust-task-error" || is_reserved(&name) {
             continue;
         }
-        if has_spec(&path) {
+        if has_spec(&path, &is_listed) {
             out.insert(name);
         }
     }

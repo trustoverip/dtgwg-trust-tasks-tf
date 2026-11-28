@@ -211,6 +211,14 @@ When you add `bindings/<slug>/<version>/spec.md`, add the matching entry:
 entry, and on a `prosePath` that does not match its `id`; a listed binding with
 no directory warns.
 
+### `trust-tasks-rs/prebuilt-modules.txt` — never add to it
+
+The versions that keep a prebuilt Rust module. A new spec version needs no
+line: it is consumer-side only in Rust, and trust-tasks-codegen leaves it out.
+Adding one back grows a crate at crates.io's upload limit, and
+`npm run check-prebuilt-list` refuses it. A withdrawal batch removes the
+withdrawn versions' lines (codegen notes any line that names no live version).
+
 ### Adding or changing a library — `libraries.js`
 
 The fifth list: `website/assets/libraries.js` → `window.TT_LIBRARIES` and
@@ -382,7 +390,8 @@ defects three times.
 | Check | Asserts | Cannot see |
 |---|---|---|
 | `codegen-drift`, `bindings-drift` (×3: TS, Go and Dart) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
-| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; no withdrawn version is generated and every other one carries the same deprecation note in all four; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; no withdrawn version is generated and every other one carries the same deprecation note in all four; Rust has a module for exactly the versions `trust-tasks-rs/prebuilt-modules.txt` lists plus the framework's own, and the other three for every version; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
+| `The prebuilt Rust module list only shrinks` (in `spec lifecycle rules`, `npm run check-prebuilt-list`) | the change adds no line to `trust-tasks-rs/prebuilt-modules.txt` against the merge base | whether a line removed was meant to be — removing one drops a prebuilt module, a break of `trust-tasks-rs` |
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions (including which user agents get the static pages); that `response-headers-policy.json` sets every security header and its Content-Security-Policy allows each script, stylesheet and `fetch` the page makes, with no inline script | whether the deployed site actually serves them — the policy is applied by hand (`infra/cloudfront/apply-response-headers.sh`), and `verify.sh` checks the live headers |
@@ -553,6 +562,20 @@ carries `#[allow(deprecated)]` (CI denies warnings); new runtime code must not
 depend on a non-framework family at all. The TS, Go and Dart equivalence tests
 mask exactly the mark and nothing else, so change its wording in the generator
 and the test together.
+
+**The Rust prebuilt tree is frozen (2026-11-28).** `trust-tasks-rs` packaged
+to 9.93 MiB with the `vta/calendar` family (#1409), against crates.io's 10 MiB
+upload limit. From then on a version gets a prebuilt Rust module only if
+`trust-tasks-rs/prebuilt-modules.txt` lists it — exactly what main prebuilt on
+that day — or its family is the framework's own. Every later version is
+consumer-side only in Rust: an application generates it with
+`trust-tasks-build` from the registry bundle, and `trust_tasks_rs::schema_index`
+answers `None` for it (it is the framework crate's index of what it prebuilds;
+an application asks the index its own build generated). TypeScript, Go and
+Dart still generate every version — npm, the Go proxy and pub.dev have no limit
+the tree approaches. Nothing prebuilt is removed, so it is not a break. The list
+only shrinks: `npm run check-prebuilt-list` fails a change that adds a line, and
+removing lines is how the removal batch above will retire the rest.
 
 **No family is on by default (#1102).** `trust-tasks-rs` and the `trust-tasks`
 facade both have `default = []` — the generator writes it, and
