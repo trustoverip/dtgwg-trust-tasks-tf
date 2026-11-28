@@ -84,7 +84,10 @@ below. When the editors answer, update that section and the marked sentences.
   reads, with cross-references to 36 and 48; 59's assumption gains the cases where `notification` does not describe
   the grant just revoked (it is per client and for the most recent notice only, and a client with no disclosed
   entries is never notified), and its retry period is our 24-hour bound (question 16), since 9.9 sets only a
-  minimum; 57(b) cites 14.8, which keeps an entry's status when a supporting credential is revoked.
+  minimum; 57(b) cites 14.8, which keeps an entry's status when a supporting credential is revoked. After review, 59
+  reads this grant's notice outcome from the `revocation.notified` audit event (8.1, 8.2) instead of inferring it
+  from `usableUntil`, keeps the summary only as a fallback that shows a stale `delivered` or `abandoned` as in
+  progress, and adds a per-grant `notification` to its Ask.
 
 Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, C4→10, 16→11, (new)→12, 20→13, (new)→14, 2→15,
 3→16, 4→17, C6→18, (new)→19, 24→20, 8→21, 9→22, 10→23, 11→24, 12→25, C7→26, 13→27, 26 (the second 23)→28, 15→29,
@@ -635,17 +638,28 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     of 5 attempts over at least 1 hour), and during that time none of the three values says "being delivered":
     `none` reads as "no notice", which is also what a grant that was never revoked, or a client that holds no
     disclosed copies, shows.
-    *Assumption taken:* `none` covers a notice not yet sent or still being retried, as well as no notice at all. An
-    Authorizing Principal's app that sees `none` on a grant it has just revoked shows the notice as in progress, and
-    reads `delivered` or `abandoned` as final. That reading holds only where the value describes the notice for that
-    grant, and `notification` is per client and covers only the client's most recent notice (8.6). So an app also
-    allows for two cases. A client that holds no entries disclosed under the revoked grant is never notified
-    (`hcp/grants/revoked`, Delivery rules carried from HCP), and its `none` means nothing to tell, not in progress; the app
-    reads it that way where the revoked grant is absent from the client's `grants`. A client already told of an
-    earlier revocation shows `delivered` at once, so `delivered` is final for this grant only when `usableUntil` (the
-    delivery time) is at or after the revoke. Otherwise the app shows the notice as in progress, for at most 24
-    hours.
+    *Assumption taken:* `none` covers a notice not yet sent or still being retried, as well as no notice at all, and
+    only `delivered` and `abandoned` are final. But `notification` is per client and covers only the client's most
+    recent notice (8.6), so it does not by itself describe the notice for the grant just revoked. An Authorizing
+    Principal's app therefore reads this grant's outcome from the audit log, in `hcp/audit/read` (filtered by the
+    client and by `eventType`, from the revoke): the `revocation.notified` event (8.1) whose `grantId` (8.2) is the
+    revoked grant, appended on first successful delivery or on abandonment (6.2.3), with `outcome` (`delivered` or
+    `abandoned`), `attempts` and `lastUseUntil` in its `data` (8.2, 6.2.4). Until that event appears, the notice is
+    in progress. A client that holds no entries disclosed under the revoked grant is never notified
+    (`hcp/grants/revoked`, Delivery rules carried from HCP), and its `none` means nothing to tell, not in progress;
+    the app reads it that way where the revoked grant is absent from the client's `grants`. The summary is only a
+    fallback, for an app that cannot read the log, and on its own it cannot tell this grant's notice from an earlier
+    one: a client told of an earlier revocation, granted again and given new copies, then revoked within the hour,
+    still shows `delivered` from the earlier notice (or `abandoned`, where that notice was abandoned), while
+    `usableUntil` can be a new copy's `useUntil`, after the revoke. Where the client was notified before, such an app
+    shows the notice as in progress until `notification` or `usableUntil` changes after the revoke, or until 24 hours
+    pass. HCP does not say which events carry a non-null `grantId`; we read `revocation.notified` as carrying the
+    revoked grant's, since each notice names one grant (9.9) and `grantId` matches the one in audit events (6.1.5).
     *Ask:* should HCP add a value such as `pending` for a notice still being retried, so that the summary can say so?
+    And, since `notification` covers only the client's most recent notice, so that the summary alone cannot tell a
+    stale `delivered` or `abandoned` from this grant's, should the summary give `notification` per grant (for
+    example in each member of `grants`)? Can 8.2 confirm that `revocation.notified` carries the revoked grant's
+    `grantId`?
     *Specs:* `hcp/disclosures/summary`.
 
 ## `hcp/delegations/*`
