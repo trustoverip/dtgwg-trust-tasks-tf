@@ -1,0 +1,379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/_shared/0.1/events",
+  "title": "VTA events — shared definitions for the vta/events/* spec family",
+  "description": "Events a VTA holds for its principal outside any community (VTI Events Hosted by a Person chapter, VTI-PEV-*). Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nTHE HOST IS A PERSONA. An event is held in the trust context of the persona identifier it is held under; invitations name that identifier as the thing's holder (VTI-PEV-001, VTI-NTF-068).\n\nINVITEES ONLY. Invitations go only to contacts the principal names, and invitee operations are accepted only from the identifier an invitation in force names (VTI-PEV-010, VTI-PEV-020).\n\nREUSE. Time, kind, lifecycle, registration settings, access details, registration status and the event summary are the vtc/events family's own shapes.",
+  "$defs": {
+    "VtaEventContextId": {
+      "title": "VtaEventContextId",
+      "description": "A trust context of the VTA, by its identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "VtaEventDid": {
+      "title": "VtaEventDid",
+      "description": "A DID: the event's host (a persona identifier the principal holds), or an invitee's identifier.",
+      "type": "string",
+      "minLength": 7,
+      "maxLength": 2048,
+      "pattern": "^did:[a-z0-9]+:"
+    },
+    "VtaEventRoster": {
+      "title": "VtaEventRoster",
+      "description": "The roster setting of an event a VTA holds: `visible`, in which registrants who are `going` or `maybe` see one another by display name; or `hidden`, in which no registrant sees another. Fixed at publish (VTI-EVT-051). A VTA offers no `anonymous` (VTI-PEV-002).",
+      "type": "string",
+      "enum": [
+        "visible",
+        "hidden"
+      ]
+    },
+    "VtaEventDisplayName": {
+      "title": "VtaEventDisplayName",
+      "description": "The name a registrant asks to be shown by on a `visible` roster. Never their identifier (VTI-PEV-024).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "VtaEventReminderList": {
+      "title": "VtaEventReminderList",
+      "description": "Reminder offsets the host suggests, in minutes before the start, distinct. The invitee's own VTA decides whether to use them (VTI-CAL-041).",
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/ReminderMinutes"
+      }
+    },
+    "VtaEvent": {
+      "title": "VtaEvent",
+      "description": "An event a VTA holds for its principal, outside any community (VTI-PEV-001). As the principal's clients see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "contextId",
+        "host",
+        "kind",
+        "status",
+        "title",
+        "when",
+        "registration",
+        "roster",
+        "sequence",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "contextId": {
+          "$ref": "#/$defs/VtaEventContextId",
+          "description": "The trust context the event is held in: the host's (VTI-PEV-001)."
+        },
+        "host": {
+          "$ref": "#/$defs/VtaEventDid",
+          "description": "The persona identifier the event is held under. Invitations name it as the thing's holder (VTI-NTF-068) and invitees address it."
+        },
+        "kind": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventKind"
+        },
+        "status": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventLifecycle"
+        },
+        "title": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+        },
+        "description": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+        },
+        "when": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/When"
+        },
+        "placeSummary": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/PlaceSummary"
+        },
+        "access": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/AccessDetails",
+          "description": "Released only to the principal and to invitees whose registration is `going` (VTI-PEV-024). Present only in vta/events/show."
+        },
+        "registration": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationSettings"
+        },
+        "roster": {
+          "$ref": "#/$defs/VtaEventRoster"
+        },
+        "suggestedReminderMinutes": {
+          "$ref": "#/$defs/VtaEventReminderList"
+        },
+        "goingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Places taken: `going` registrations and their guests."
+        },
+        "invitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Invitations in force."
+        },
+        "full": {
+          "type": "boolean",
+          "description": "True when `going` registrations and their guests reach `capacity`."
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Raised on every change of time, access details, status or kind after publication (VTI-EVT-006)."
+        },
+        "cancelReason": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "publishedAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "cancelledAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "createdAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "updatedAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "VtaEventInviteeView": {
+      "title": "VtaEventInviteeView",
+      "description": "An event as an invitee sees it: no access details (those are vta/events/invitee/access/show, to `going` registrants), no counts of invitations and no other invitee (VTI-PEV-041).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "host",
+        "kind",
+        "status",
+        "title",
+        "when",
+        "registration",
+        "roster",
+        "sequence"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "host": {
+          "$ref": "#/$defs/VtaEventDid"
+        },
+        "kind": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventKind"
+        },
+        "status": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventLifecycle"
+        },
+        "title": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventTitle"
+        },
+        "description": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventDescription"
+        },
+        "when": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/When"
+        },
+        "placeSummary": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/PlaceSummary"
+        },
+        "registration": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationSettings"
+        },
+        "roster": {
+          "$ref": "#/$defs/VtaEventRoster"
+        },
+        "suggestedReminderMinutes": {
+          "$ref": "#/$defs/VtaEventReminderList"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "True when no place is free. Never the count itself."
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cancelReason": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "VtaEventInvitationId": {
+      "title": "VtaEventInvitationId",
+      "description": "An invitation's identifier at its host.",
+      "type": "string",
+      "pattern": "^inv_[A-Za-z0-9_-]{16,64}$"
+    },
+    "VtaEventInvitationStatus": {
+      "title": "VtaEventInvitationStatus",
+      "description": "`active`: in force; its `event` notification stands. `revoked`: the principal revoked it, or the invitee ceased to be a contact of the host; its notification is withdrawn (VTI-PEV-012).",
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ]
+    },
+    "VtaEventInvitation": {
+      "title": "VtaEventInvitation",
+      "description": "One invitation: a contact of the host the principal named (VTI-PEV-010).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invitationId",
+        "eventId",
+        "invitee",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "invitationId": {
+          "$ref": "#/$defs/VtaEventInvitationId"
+        },
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "invitee": {
+          "$ref": "#/$defs/VtaEventDid",
+          "description": "The invitee's identifier: the notification's audience and the only signer the host accepts invitee operations from for this event (VTI-PEV-020)."
+        },
+        "status": {
+          "$ref": "#/$defs/VtaEventInvitationStatus"
+        },
+        "createdAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "updatedAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "VtaEventRegistration": {
+      "title": "VtaEventRegistration",
+      "description": "An invitee's registration for an event a VTA holds. At most one per invitee per event (VTI-EVT-030).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registrationId",
+        "eventId",
+        "registrantDid",
+        "status",
+        "guests",
+        "roster",
+        "eventSequence",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "registrationId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationId"
+        },
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "registrantDid": {
+          "$ref": "#/$defs/VtaEventDid",
+          "description": "The invitee's identifier. Shown to the principal and the registrant alone (VTI-PEV-024)."
+        },
+        "displayName": {
+          "$ref": "#/$defs/VtaEventDisplayName"
+        },
+        "status": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationStatus"
+        },
+        "guests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "answers": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationAnswers",
+          "description": "Present only to the principal and the registrant (VTI-PEV-041)."
+        },
+        "codeOfConductAcknowledged": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "waitlistPosition": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "roster": {
+          "$ref": "#/$defs/VtaEventRoster",
+          "description": "The roster setting the registration was made under (VTI-EVT-052)."
+        },
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The event's `sequence` when the registration last changed."
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "A note the principal gave with a decision, shown to the registrant."
+        },
+        "createdAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        },
+        "updatedAt": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventInstant"
+        }
+      }
+    },
+    "VtaEventRosterEntry": {
+      "title": "VtaEventRosterEntry",
+      "description": "Another registrant on a `visible` roster: their display name if they gave one, their state and guests, and nothing else of them (VTI-PEV-024).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "guests"
+      ],
+      "properties": {
+        "displayName": {
+          "$ref": "#/$defs/VtaEventDisplayName"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "going",
+            "maybe"
+          ]
+        },
+        "guests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "VtaEventMine": {
+      "title": "VtaEventMine",
+      "description": "One of the signer's registrations at the host addressed, with the event as it stands (VTI-PEV-031).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "#/$defs/VtaEventRegistration"
+        },
+        "event": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventRef"
+        }
+      }
+    }
+  }
+}

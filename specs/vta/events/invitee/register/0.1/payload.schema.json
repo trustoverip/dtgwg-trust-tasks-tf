@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/invitee/register/0.1",
+  "title": "VTA Events — Invitee — Register — payload",
+  "description": "An invitee registers for an event a person invited them to, or changes their registration. The host decides whether that makes them going, pending or waitlisted, and its signed answer is the invitee's receipt. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "status"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "going",
+        "maybe"
+      ],
+      "description": "What the invitee says. Whether `going` makes them going, pending or waitlisted is the host's to decide (VTI-EVT-031 – 033). To stop going, use vta/events/invitee/withdraw."
+    },
+    "guests": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Plus-ones, at most the event's `plusOnes`. Absent means 0 on a new registration and unchanged on a change."
+    },
+    "answers": {
+      "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/RegistrationAnswers",
+      "description": "Answers to the event's questions; on a change they replace the ones held."
+    },
+    "codeOfConductAcknowledged": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The `sha256` of the event's code of conduct, where it names one (VTI-EVT-035)."
+    },
+    "displayName": {
+      "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventDisplayName",
+      "description": "The name to be shown by on a `visible` roster. Absent: shown by none."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Invitee — Register — response payload",
+      "description": "The success response to a vta/events/invitee/register/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/invitee/register/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "event"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "../../../_shared/0.1/events.schema.json#/$defs/VtaEventRegistration"
+        },
+        "event": {
+          "$ref": "../../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventRef",
+          "description": "The event as it stood when the host answered."
+        },
+        "wasCreated": {
+          "type": "boolean",
+          "description": "True when this request created the registration rather than changing one held."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

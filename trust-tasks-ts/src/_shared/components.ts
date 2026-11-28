@@ -3318,6 +3318,41 @@ export type VtaCalendarSyncStatus = "read" | "notSyncing" | "unavailable" | "ref
  */
 export type VtaCalendarTier = "mine" | "notified";
 /**
+ * A trust context of the VTA, by its identifier.
+ */
+export type VtaEventContextId = string;
+/**
+ * A DID: the event's host (a persona identifier the principal holds), or an invitee's identifier.
+ */
+export type VtaEventDid = string;
+/**
+ * The name a registrant asks to be shown by on a `visible` roster. Never their identifier (VTI-PEV-024).
+ */
+export type VtaEventDisplayName = string;
+/**
+ * An invitation's identifier at its host.
+ */
+export type VtaEventInvitationId = string;
+/**
+ * `active`: in force; its `event` notification stands. `revoked`: the principal revoked it, or the invitee ceased to be a contact of the host; its notification is withdrawn (VTI-PEV-012).
+ */
+export type VtaEventInvitationStatus = "active" | "revoked";
+/**
+ * Reminder offsets the host suggests, in minutes before the start, distinct. The invitee's own VTA decides whether to use them (VTI-CAL-041).
+ *
+ * @maxItems 4
+ */
+export type VtaEventReminderList =
+  | []
+  | [ReminderMinutes]
+  | [ReminderMinutes, ReminderMinutes]
+  | [ReminderMinutes, ReminderMinutes, ReminderMinutes]
+  | [ReminderMinutes, ReminderMinutes, ReminderMinutes, ReminderMinutes];
+/**
+ * The roster setting of an event a VTA holds: `visible`, in which registrants who are `going` or `maybe` see one another by display name; or `hidden`, in which no registrant sees another. Fixed at publish (VTI-EVT-051). A VTA offers no `anonymous` (VTI-PEV-002).
+ */
+export type VtaEventRoster = "visible" | "hidden";
+/**
  * Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.
  */
 export type WallVisibility = "members" | "nobody";
@@ -25005,6 +25040,139 @@ export interface VtaCalendarSyncResult {
    * `refused` only: the community's error code.
    */
   code?: string;
+}
+/**
+ * An event a VTA holds for its principal, outside any community (VTI-PEV-001). As the principal's clients see it.
+ */
+export interface VtaEvent {
+  eventId: EventId;
+  /**
+   * The trust context the event is held in: the host's (VTI-PEV-001).
+   */
+  contextId: VtaEventContextId;
+  /**
+   * The persona identifier the event is held under. Invitations name it as the thing's holder (VTI-NTF-068) and invitees address it.
+   */
+  host: VtaEventDid;
+  kind: EventKind;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
+  when: When;
+  placeSummary?: PlaceSummary;
+  /**
+   * Released only to the principal and to invitees whose registration is `going` (VTI-PEV-024). Present only in vta/events/show.
+   */
+  access?: AccessDetails;
+  registration: RegistrationSettings;
+  roster: VtaEventRoster;
+  suggestedReminderMinutes?: VtaEventReminderList;
+  /**
+   * Places taken: `going` registrations and their guests.
+   */
+  goingCount?: number;
+  /**
+   * Invitations in force.
+   */
+  invitationCount?: number;
+  /**
+   * True when `going` registrations and their guests reach `capacity`.
+   */
+  full?: boolean;
+  /**
+   * Raised on every change of time, access details, status or kind after publication (VTI-EVT-006).
+   */
+  sequence: number;
+  cancelReason?: string;
+  publishedAt?: EventInstant;
+  cancelledAt?: EventInstant;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * One invitation: a contact of the host the principal named (VTI-PEV-010).
+ */
+export interface VtaEventInvitation {
+  invitationId: VtaEventInvitationId;
+  eventId: EventId;
+  /**
+   * The invitee's identifier: the notification's audience and the only signer the host accepts invitee operations from for this event (VTI-PEV-020).
+   */
+  invitee: VtaEventDid;
+  status: VtaEventInvitationStatus;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * An event as an invitee sees it: no access details (those are vta/events/invitee/access/show, to `going` registrants), no counts of invitations and no other invitee (VTI-PEV-041).
+ */
+export interface VtaEventInviteeView {
+  eventId: EventId;
+  host: VtaEventDid;
+  kind: EventKind;
+  status: EventLifecycle;
+  title: EventTitle;
+  description?: EventDescription;
+  when: When;
+  placeSummary?: PlaceSummary;
+  registration: RegistrationSettings;
+  roster: VtaEventRoster;
+  suggestedReminderMinutes?: VtaEventReminderList;
+  /**
+   * True when no place is free. Never the count itself.
+   */
+  full?: boolean;
+  sequence: number;
+  cancelReason?: string;
+}
+/**
+ * One of the signer's registrations at the host addressed, with the event as it stands (VTI-PEV-031).
+ */
+export interface VtaEventMine {
+  registration: VtaEventRegistration;
+  event: EventRef_VtcEventsV0_4;
+}
+/**
+ * An invitee's registration for an event a VTA holds. At most one per invitee per event (VTI-EVT-030).
+ */
+export interface VtaEventRegistration {
+  registrationId: RegistrationId;
+  eventId: EventId;
+  /**
+   * The invitee's identifier. Shown to the principal and the registrant alone (VTI-PEV-024).
+   */
+  registrantDid: VtaEventDid;
+  displayName?: VtaEventDisplayName;
+  status: RegistrationStatus;
+  guests: number;
+  /**
+   * Present only to the principal and the registrant (VTI-PEV-041).
+   */
+  answers?: RegistrationAnswers;
+  codeOfConductAcknowledged?: string;
+  waitlistPosition?: number;
+  /**
+   * The roster setting the registration was made under (VTI-EVT-052).
+   */
+  roster: VtaEventRoster;
+  /**
+   * The event's `sequence` when the registration last changed.
+   */
+  eventSequence: number;
+  /**
+   * A note the principal gave with a decision, shown to the registrant.
+   */
+  note?: string;
+  createdAt: EventInstant;
+  updatedAt: EventInstant;
+}
+/**
+ * Another registrant on a `visible` roster: their display name if they gave one, their state and guests, and nothing else of them (VTI-PEV-024).
+ */
+export interface VtaEventRosterEntry {
+  displayName?: VtaEventDisplayName;
+  status: "going" | "maybe";
+  guests: number;
 }
 /**
  * An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.

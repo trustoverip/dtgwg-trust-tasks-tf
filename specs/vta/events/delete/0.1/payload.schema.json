@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/events/delete/0.1",
+  "title": "VTA Events — Delete — payload",
+  "description": "A client deletes a draft event the VTA holds. A published event is cancelled, not deleted, so its registrants' receipts keep pointing at something. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId"
+  ],
+  "properties": {
+    "eventId": {
+      "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Events — Delete — response payload",
+      "description": "The success response to a vta/events/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/events/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "deleted"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "../../../../vtc/events/_shared/0.4/event.schema.json#/$defs/EventId"
+        },
+        "deleted": {
+          "type": "boolean",
+          "const": true,
+          "description": "Always true: the draft and everything of it are gone."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`eventId` is REQUIRED.",
+    "payload": {
+      "title": "Saturday dinner"
+    }
+  },
+  {
+    "note": "`roster` is `visible` or `hidden`.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "roster": "anonymous"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "when": {
+        "start": "2026-12-04T19:30:00",
+        "timeZone": "Europe/London",
+        "duration": "PT3H"
+      },
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

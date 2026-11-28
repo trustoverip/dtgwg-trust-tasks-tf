@@ -1,0 +1,30 @@
+[
+  {
+    "note": "`invitees` names at least one.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "invitees": []
+    }
+  },
+  {
+    "note": "An invitee is a DID.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "invitees": [
+        "grace@example.com"
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "invitees": [
+        "did:key:z6MkGraceHopperPairwise"
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

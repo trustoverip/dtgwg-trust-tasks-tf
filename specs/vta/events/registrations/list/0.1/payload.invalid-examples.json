@@ -1,0 +1,24 @@
+[
+  {
+    "note": "`statuses` takes registration statuses only.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "statuses": [
+        "invited"
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "eventId": "evt_FridayDinner2611000",
+      "statuses": [
+        "going",
+        "waitlisted"
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

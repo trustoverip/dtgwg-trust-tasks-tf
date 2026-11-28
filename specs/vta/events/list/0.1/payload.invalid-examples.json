@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`statuses` takes only lifecycle values.",
+    "payload": {
+      "statuses": [
+        "ended"
+      ]
+    }
+  },
+  {
+    "note": "`limit` is at most 200.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "statuses": [
+        "draft",
+        "published"
+      ],
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]
