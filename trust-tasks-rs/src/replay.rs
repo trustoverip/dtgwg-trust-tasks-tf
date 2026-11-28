@@ -77,6 +77,21 @@
 //! [`ConsumeOutcome::Duplicate`](crate::ConsumeOutcome::Duplicate) is a
 //! separate outcome from both `Handled` and `Rejected` — a caller that folded
 //! it into `Rejected` would be reporting a failure that did not happen.
+//!
+//! # A response kept out of the record
+//!
+//! Some specifications forbid the consumer to keep its response: `hcp/grants/request`
+//! 0.1 issues an access token that the provider keeps in no record, and answers
+//! a re-delivered copy of an answered request with a *newly issued* token. A
+//! handler opts out per response with
+//! [`Delivery::withhold_response`](crate::Delivery::withhold_response). The
+//! pipeline then calls [`ReplayGuard::record_withheld`] instead of
+//! [`ReplayGuard::record_response`]: the `id` stays claimed, so item 11 still
+//! holds, but no response body is stored. A later duplicate is answered
+//! [`ReplayVerdict::Withheld`], and the pipeline hands it to the handler as a
+//! re-delivery ([`Delivery::is_redelivery`](crate::Delivery::is_redelivery))
+//! rather than replaying anything. Nothing changes for a handler that does not
+//! opt out. See `docs/runtime-parity.md`.
 
 use std::collections::{BTreeMap, HashMap};
 use std::fmt;
@@ -173,6 +188,18 @@ pub enum ReplayVerdict {
     /// digest. SPEC §7.2 item 11 requires `idConflict`, and requires that the
     /// document **MUST NOT** be treated as a retry of the original.
     Conflict,
+
+    /// This `id` was already accepted under a document with the *same* digest,
+    /// its execution finished, and its handler kept the response out of the
+    /// record ([`ReplayGuard::record_withheld`]). The caller **MUST NOT**
+    /// execute again; the pipeline hands the document to the handler as a
+    /// re-delivery ([`Delivery::is_redelivery`](crate::Delivery::is_redelivery))
+    /// so it can answer without the stored response it chose not to keep.
+    ///
+    /// A [`Duplicate`](Self::Duplicate) in every respect but one: there is no
+    /// prior response to return, by the handler's choice rather than because
+    /// the specification defines none.
+    Withheld,
 }
 
 /// The record could not be consulted or written.
@@ -266,6 +293,26 @@ pub trait ReplayGuard: Send + Sync {
         Ok(())
     }
 
+    /// Mark `id`'s execution complete **without** its response: the handler
+    /// kept the response out of the record
+    /// ([`Delivery::withhold_response`](crate::Delivery::withhold_response)),
+    /// for example because it carries a secret the specification says the
+    /// consumer keeps in no record. The claim stands, so a resend is still
+    /// never executed a second time (SPEC §7.2 item 11); only the body is not
+    /// stored. A later duplicate of the same document **SHOULD** then be
+    /// answered [`ReplayVerdict::Withheld`], so the pipeline can hand it to the
+    /// handler as a re-delivery.
+    ///
+    /// The default records the completion with no response
+    /// (`record_response(id, None)`), so a guard that does not implement this
+    /// absorbs such a duplicate in silence, as
+    /// `Duplicate { prior_response: None, in_flight: false }`. That still
+    /// satisfies item 11 and still stores no response; the handler is just
+    /// never told of the re-delivery.
+    async fn record_withheld(&self, id: &str) -> Result<(), ReplayGuardError> {
+        self.record_response(id, None).await
+    }
+
     /// Release a claim whose execution never began — for example because a
     /// check *after* the claim refused the document.
     ///
@@ -336,6 +383,10 @@ impl<T: ReplayGuard + ?Sized> ReplayGuard for &T {
         response: Option<&Value>,
     ) -> Result<(), ReplayGuardError> {
         (**self).record_response(id, response).await
+    }
+
+    async fn record_withheld(&self, id: &str) -> Result<(), ReplayGuardError> {
+        (**self).record_withheld(id).await
     }
 
     async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
@@ -457,6 +508,9 @@ struct Entry {
     retain_until: Option<DateTime<Utc>>,
     response: Option<Value>,
     completed: bool,
+    /// The handler kept the response out of the record
+    /// ([`ReplayGuard::record_withheld`]).
+    withheld: bool,
     seq: u64,
 }
 
@@ -628,7 +682,9 @@ impl ReplayGuard for InMemoryReplayGuard {
         }
 
         if let Some(entry) = inner.entries.get(id) {
-            let verdict = if &entry.digest == digest {
+            let verdict = if &entry.digest == digest && entry.completed && entry.withheld {
+                ReplayVerdict::Withheld
+            } else if &entry.digest == digest {
                 ReplayVerdict::Duplicate {
                     prior_response: entry.response.clone(),
                     in_flight: !entry.completed,
@@ -670,6 +726,7 @@ impl ReplayGuard for InMemoryReplayGuard {
                 retain_until,
                 response: None,
                 completed: false,
+                withheld: false,
                 seq,
             },
         );
@@ -689,6 +746,17 @@ impl ReplayGuard for InMemoryReplayGuard {
         if let Some(entry) = inner.entries.get_mut(id) {
             entry.response = response.cloned();
             entry.completed = true;
+            entry.withheld = false;
+        }
+        Ok(())
+    }
+
+    async fn record_withheld(&self, id: &str) -> Result<(), ReplayGuardError> {
+        let mut inner = self.inner.lock().expect("replay guard mutex");
+        if let Some(entry) = inner.entries.get_mut(id) {
+            entry.response = None;
+            entry.completed = true;
+            entry.withheld = true;
         }
         Ok(())
     }

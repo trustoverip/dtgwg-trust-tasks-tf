@@ -242,6 +242,18 @@ switch (outcome.kind) {
 }
 ```
 
+**A response the record must not keep.** Where a specification forbids the
+consumer to keep its response — `hcp/grants/request` 0.1 keeps the access token
+in no record, and answers a re-delivered copy of an answered request with a
+newly issued token — the handler calls `parties.delivery?.withholdResponse()`.
+The `id` stays recorded as executed, but the response is not stored, and a
+duplicate comes back to the handler with `parties.delivery.redelivery === true`
+(answer it; do not execute it again) instead of as `duplicate`. Nothing changes
+for a handler that does not opt out. A custom `ReplayGuard` supports it by
+implementing `recordWithheld` and answering
+`{ kind: "duplicate", inFlight: false, withheld: true }`; see
+[`docs/runtime-parity.md`](../docs/runtime-parity.md).
+
 **The envelope is checked before anything reads it.** `JSON.parse(body) as
 TrustTaskDocument<P>` checks nothing, so `consumeInbound` first refuses
 `malformedRequest` a document whose framework members are not the types SPEC

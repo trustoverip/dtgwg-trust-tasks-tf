@@ -259,6 +259,10 @@ const (
 	//   - InFlight true — the first execution has not finished. §7.2: the consumer
 	//     SHOULD "return or expose the existing execution state rather than begin
 	//     another".
+	//
+	// A duplicate of a document whose handler withheld its response ([Delivery])
+	// is not this outcome: the handler is called again as a re-delivery, and its
+	// answer is [OutcomeHandled], [OutcomeRejected] or [OutcomeAccepted].
 	OutcomeDuplicate OutcomeKind = "duplicate"
 )
 
@@ -657,6 +661,7 @@ func ConsumeInbound[P, R any](
 	// same id would come back idConflict forever — and an attacker could pre-burn
 	// an id it had merely observed.
 	var claimed *claim
+	redelivery := false
 	if opts.Checks.Replay.Kind == ReplayGuarded {
 		guard := opts.Checks.Replay.Guard
 		if guard == nil {
@@ -713,6 +718,13 @@ func ConsumeInbound[P, R any](
 
 		switch verdict.Kind {
 		case VerdictDuplicate:
+			// Executed before, and its handler kept the response out of the
+			// record: nothing to replay, so the handler answers it as a
+			// re-delivery, below. Not claimed: it is not executed again.
+			if verdict.Withheld && !verdict.InFlight {
+				redelivery = true
+				break
+			}
 			return ConsumeOutcome[R]{
 				Kind:          OutcomeDuplicate,
 				PriorResponse: verdict.PriorResponse,
@@ -738,6 +750,24 @@ func ConsumeInbound[P, R any](
 		}
 	}
 
+	// A re-delivery of a document whose response was withheld: the handler
+	// answers it, told that it already executed. Nothing is claimed, released or
+	// recorded — the record of the first execution stands as it is.
+	if redelivery {
+		response, err := opts.Handler(withDelivery(ctx, &Delivery{redelivery: true}), doc, parties)
+		if err != nil {
+			var refusal *Refusal
+			if !errors.As(err, &refusal) {
+				return zero, err
+			}
+			return ConsumeOutcome[R]{Kind: OutcomeRejected, Error: refusal.Response}, nil
+		}
+		if response == nil {
+			return ConsumeOutcome[R]{Kind: OutcomeAccepted}, nil
+		}
+		return ConsumeOutcome[R]{Kind: OutcomeHandled, Response: response}, nil
+	}
+
 	// A handler that panics (or calls runtime.Goexit) never returns, so the
 	// settle and release calls below never run. This defer releases the claim on
 	// that path: nothing says the effect happened, and holding the claim would
@@ -751,7 +781,10 @@ func ConsumeInbound[P, R any](
 			claimed.release(ctx, doc.ID)
 		}
 	}()
-	response, err := opts.Handler(ctx, doc, parties)
+	// The handler reads it through DeliveryFrom, and may withhold its response
+	// from the record.
+	delivery := &Delivery{}
+	response, err := opts.Handler(withDelivery(ctx, delivery), doc, parties)
 	handlerReturned = true
 	if err != nil {
 		var refusal *Refusal
@@ -770,7 +803,7 @@ func ConsumeInbound[P, R any](
 		if refusal.Response != nil && refusal.Response.Payload.Retryable {
 			claimed.release(ctx, doc.ID)
 		} else {
-			claimed.settle(ctx, doc.ID, refusal.Response)
+			claimed.settle(ctx, doc.ID, refusal.Response, delivery.withheld.Load())
 		}
 		return ConsumeOutcome[R]{Kind: OutcomeRejected, Error: refusal.Response}, nil
 	}
@@ -778,11 +811,11 @@ func ConsumeInbound[P, R any](
 	if response == nil {
 		// Fire-and-forget: nothing to cache, but the claim stands — the effect
 		// happened, and item 11 is about the effect, not about the response.
-		claimed.settle(ctx, doc.ID, nil)
+		claimed.settle(ctx, doc.ID, nil, delivery.withheld.Load())
 		return ConsumeOutcome[R]{Kind: OutcomeAccepted}, nil
 	}
 
-	claimed.settle(ctx, doc.ID, response)
+	claimed.settle(ctx, doc.ID, response, delivery.withheld.Load())
 	return ConsumeOutcome[R]{Kind: OutcomeHandled, Response: response}, nil
 }
 
@@ -813,12 +846,24 @@ func settleContext(ctx context.Context) (context.Context, context.CancelFunc) {
 // already written; all that is lost is the ability to hand the same response back,
 // and the duplicate is still absorbed. Guards should log their own failures —
 // there is nowhere to report this from here.
-func (c *claim) settle(ctx context.Context, id string, response any) {
+//
+// withheld: the handler kept the response out of the record
+// ([Delivery.WithholdResponse]), so only the completion is recorded and a
+// duplicate comes back to the handler as a re-delivery.
+func (c *claim) settle(ctx context.Context, id string, response any, withheld bool) {
 	if c == nil {
 		return
 	}
 	ctx, cancel := settleContext(ctx)
 	defer cancel()
+	if withheld {
+		if withholding, ok := c.guard.(WithholdingReplayGuard); ok {
+			_ = withholding.RecordWithheld(ctx, id)
+		} else {
+			_ = c.guard.RecordResponse(ctx, id, nil)
+		}
+		return
+	}
 	var encoded json.RawMessage
 	if response != nil {
 		// A MarshalJSON that panics must not leave the claim in flight: the

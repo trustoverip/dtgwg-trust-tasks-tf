@@ -113,6 +113,13 @@ type ReplayVerdict struct {
 
 	// InFlight reports whether that first execution is still running.
 	InFlight bool
+
+	// Withheld reports, for a duplicate, that the first execution finished and
+	// its handler kept the response out of the record
+	// ([WithholdingReplayGuard.RecordWithheld]). There is no PriorResponse by
+	// the handler's choice, so [ConsumeInbound] hands the document back to the
+	// handler as a re-delivery ([Delivery.Redelivery]) instead of absorbing it.
+	Withheld bool
 }
 
 // ReplayGuard is the consumer-side record that makes SPEC §7.2 item 11 true.
@@ -190,6 +197,7 @@ type replayEntry struct {
 	bounded     bool
 	response    json.RawMessage
 	completed   bool
+	withheld    bool
 }
 
 // InMemoryReplayGuard is a bounded, in-process [ReplayGuard]: a map from id to
@@ -271,6 +279,26 @@ var ErrReplayGuardIssuerShare = errors.New("trusttasks: in-memory replay guard: 
 type IssuerScopedReplayGuard interface {
 	ReplayGuard
 	ClaimFor(ctx context.Context, issuer, id, digest string, retainUntil, now time.Time) (ReplayVerdict, error)
+}
+
+// WithholdingReplayGuard is a [ReplayGuard] that can record an execution as
+// complete without its response, because the handler kept the response out of
+// the record ([Delivery.WithholdResponse]) — for example because it carries a
+// secret the specification says the consumer keeps in no record.
+//
+// RecordWithheld marks id's execution complete with no response. The claim
+// stands, so a resend is still never executed a second time (SPEC §7.2 item
+// 11); only the body is not stored. A later duplicate of the same document
+// SHOULD then be answered with a [VerdictDuplicate] verdict whose Withheld is
+// true. [ConsumeInbound] calls it in place of RecordResponse when the handler
+// withheld its response; on a guard that does not implement this interface it
+// calls RecordResponse(ctx, id, nil), so such a duplicate is absorbed in
+// silence — item 11 still holds and no response is stored, but the handler is
+// never told of the re-delivery. A separate interface, so that existing guards
+// keep compiling.
+type WithholdingReplayGuard interface {
+	ReplayGuard
+	RecordWithheld(ctx context.Context, id string) error
 }
 
 // NewInMemoryReplayGuard builds a guard retaining at most capacity records.
@@ -365,6 +393,9 @@ func (g *InMemoryReplayGuard) ClaimFor(
 			if entry.digest != digest {
 				return ReplayVerdict{Kind: VerdictConflict}, nil
 			}
+			if entry.completed && entry.withheld {
+				return ReplayVerdict{Kind: VerdictDuplicate, Withheld: true}, nil
+			}
 			return ReplayVerdict{
 				Kind:          VerdictDuplicate,
 				PriorResponse: entry.response,
@@ -421,6 +452,22 @@ func (g *InMemoryReplayGuard) RecordResponse(
 	entry := element.Value.(*replayEntry)
 	entry.response = response
 	entry.completed = true
+	entry.withheld = false
+	return nil
+}
+
+// RecordWithheld implements [WithholdingReplayGuard].
+func (g *InMemoryReplayGuard) RecordWithheld(_ context.Context, id string) error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	element, found := g.entries[id]
+	if !found {
+		return nil
+	}
+	entry := element.Value.(*replayEntry)
+	entry.response = nil
+	entry.completed = true
+	entry.withheld = true
 	return nil
 }
 

@@ -67,6 +67,7 @@ export {
   type ConsumeChecks,
   type ConsumeOptions,
   type ConsumeOutcome,
+  type Delivery,
   type PayloadPolicy,
   type PayloadValidator,
   type ProofPolicy,

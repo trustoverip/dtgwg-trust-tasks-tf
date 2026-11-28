@@ -86,6 +86,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::async_dispatch::AsyncDispatcher;
+use crate::delivery::Delivery;
 use crate::dispatcher::{build_error_response, RequestOrigin};
 use crate::document::{ErrorResponse, TrustTask};
 use crate::error::{ErrorPayload, RejectReason};
@@ -534,6 +535,11 @@ pub enum ConsumeOutcome<R> {
     /// * `in_flight == true` — the original execution has not finished. §7.2:
     ///   "the *consumer* **SHOULD** return or expose the existing execution
     ///   state rather than begin another."
+    ///
+    /// A duplicate of a document whose handler withheld its response
+    /// ([`Delivery::withhold_response`]) is not this outcome: the handler is
+    /// called again as a re-delivery ([`Delivery::is_redelivery`]) and its
+    /// answer is [`Handled`](Self::Handled) or [`Rejected`](Self::Rejected).
     Duplicate {
         /// The response the first execution produced, if the
         /// [`ReplayGuard`](crate::ReplayGuard) retained one.
@@ -1246,6 +1252,7 @@ where
     // anyway, but which producers do — would come back `idConflict` forever,
     // and an attacker could pre-burn an `id` it had merely observed.
     let mut claim: Option<(&dyn ReplayGuard, DocumentDigest)> = None;
+    let mut redelivery = false;
     if let ReplayPolicy::Guard(guard) = replay {
         // Over the document as received when it is in hand: SPEC §7.2 compares
         // the whole received document, and `doc`'s re-serialisation drops
@@ -1302,6 +1309,11 @@ where
                     in_flight,
                 };
             }
+            // Executed before, and its handler kept the response out of the
+            // record (`Delivery::withhold_response`): nothing to replay, so the
+            // handler answers it as a re-delivery, below. Not claimed: it is
+            // not executed again.
+            Ok(ReplayVerdict::Withheld) => redelivery = true,
             Ok(ReplayVerdict::Conflict) => {
                 return route_rejection(
                     transport,
@@ -1321,6 +1333,22 @@ where
         }
     }
 
+    // A re-delivery of a document whose response was withheld: the handler
+    // answers it, told that it already executed (`Delivery::is_redelivery`).
+    // Nothing is claimed, released or recorded — the record of the first
+    // execution stands as it is.
+    if redelivery {
+        let delivery = Delivery::redelivery();
+        let outcome = {
+            let mut running = std::pin::pin!(delivery.scope(|| handler(doc, parties)));
+            std::future::poll_fn(|cx| delivery.scope(|| running.as_mut().poll(cx))).await
+        };
+        return match outcome {
+            Ok(response) => AnswerOutcome::Handled(response),
+            Err(error_response) => AnswerOutcome::Rejected(error_response),
+        };
+    }
+
     // All §7.2 checks passed. Hand to the caller's business handler.
     //
     // `claim` is held across this await. If the handler panics, its
@@ -1337,14 +1365,18 @@ where
         digest: Some(digest),
         executing: &executing,
     });
+    // The handler reads it through `Delivery::current`, and may withhold its
+    // response from the record.
+    let delivery = Delivery::first();
     let outcome = {
-        let mut running = std::pin::pin!(handler(doc, parties));
+        let mut running = std::pin::pin!(delivery.scope(|| handler(doc, parties)));
         std::future::poll_fn(|cx| {
             executing.store(true, AtomicOrdering::Relaxed);
-            running.as_mut().poll(cx)
+            delivery.scope(|| running.as_mut().poll(cx))
         })
         .await
     };
+    let withheld = delivery.is_response_withheld();
     // The handler has returned: a cancellation from here on (mid-release,
     // mid-record) abandons the settlement, not an effect in progress.
     executing.store(false, AtomicOrdering::Relaxed);
@@ -1360,7 +1392,7 @@ where
                 // still absorbed. Guards should log their own failures — there
                 // is nowhere to report this from here.
                 let (guard, _) = claim.settle();
-                record_settled(guard, &doc_id, &response).await;
+                record_settled(guard, &doc_id, &response, withheld).await;
             }
             AnswerOutcome::Handled(response)
         }
@@ -1383,7 +1415,7 @@ where
                     // the record stands and a replay is answered with the same
                     // determination rather than re-evaluated.
                     let (guard, _) = claim.settle();
-                    record_settled(guard, &doc_id, &error_response).await;
+                    record_settled(guard, &doc_id, &error_response, withheld).await;
                 }
             }
             AnswerOutcome::Rejected(error_response)
@@ -1396,7 +1428,20 @@ where
 /// A `Serialize` impl that panics still settles the claim — with no response
 /// to hand back, so a resend is absorbed rather than left in flight until the
 /// record expires — before the panic continues unchanged.
-async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, response: &T) {
+///
+/// `withheld`: the handler kept the response out of the record
+/// ([`Delivery::withhold_response`]), so only the completion is recorded and a
+/// duplicate comes back to the handler as a re-delivery.
+async fn record_settled<T: Serialize>(
+    guard: &dyn ReplayGuard,
+    id: &str,
+    response: &T,
+    withheld: bool,
+) {
+    if withheld {
+        let _ = guard.record_withheld(id).await;
+        return;
+    }
     let encoded = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         serde_json::to_value(response)
     }));

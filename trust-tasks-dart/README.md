@@ -150,6 +150,17 @@ switch (outcome) {
 The outcome is a sealed hierarchy, so that `switch` is exhaustive and the
 compiler tells you if a case is missing.
 
+**A response the record must not keep.** Where a specification forbids the
+consumer to keep its response — `hcp/grants/request` 0.1 keeps the access token
+in no record, and answers a re-delivered copy of an answered request with a
+newly issued token — the handler calls `Delivery.current!.withholdResponse()`.
+The `id` stays recorded as executed, but the response is not stored, and a
+duplicate comes back to the handler with `Delivery.current!.isRedelivery` true
+(answer it; do not execute it again) instead of as `DuplicateOutcome`. Nothing
+changes for a handler that does not opt out. A custom `ReplayGuard` supports it
+by implementing `WithholdingReplayGuard` and answering
+`Duplicate(withheld: true)`; see [`docs/runtime-parity.md`](../docs/runtime-parity.md).
+
 `payloadPolicy` and `checks` are **required**. Both have an obvious "skip it"
 setting, and defaulting to it would silently reproduce the defects they exist to
 remove: a payload nobody validated, and a consequential task executed twice by an
